@@ -179,8 +179,9 @@ public static class GeometryExt
 
     public static float GetClockwiseAngleTo(this Vector2 v, Vector2 to)
     {
+        if (v == to) return 0f;
         var angleTo = v.AngleTo(to);
-        return 2f * Mathf.Pi - angleTo;
+        return (2f * Mathf.Pi - angleTo) % (2f * Mathf.Pi);
     }
 
     public static float RadToDegrees(this float rad)
@@ -221,21 +222,35 @@ public static class GeometryExt
         return res / points.Count;
     }
 
-    public static IEnumerable<Vector2Pair> GetSegments(this IEnumerable<Vector2> points)
+    public static IEnumerable<LineSegment> GetLineSegments(this IEnumerable<Vector2> points)
     {
         return Enumerable.Range(0, points.Count() - 1)
             .Select(i =>
             {
-                return new Vector2Pair(points.ElementAt(i), points.ElementAt(i + 1));
+                return new LineSegment(points.ElementAt(i), points.ElementAt(i + 1));
             });
     }
 
+    public static LineSegment GetFirst(this IEnumerable<LineSegment> segments)
+    {
+        var noTo = segments.Where(s => segments.Any(n => n.PointsTo(s) == false));
+        if (noTo.Count() != 1) throw new Exception();
+        return segments.First(s => segments.Any(n => n.PointsTo(s) == false));
+    }
     public static IEnumerable<Vector2> GetPoints(this IEnumerable<Vector2Pair> pairs)
     {
         var result = Enumerable.Range(0, pairs.Count())
             .Select(i => pairs.ElementAt(i).V)
             .ToList();
         result.Add(pairs.Last().W);
+        return result;
+    }
+    public static IEnumerable<Vector2> GetPoints(this IEnumerable<LineSegment> pairs)
+    {
+        var result = Enumerable.Range(0, pairs.Count())
+            .Select(i => pairs.ElementAt(i).From)
+            .ToList();
+        result.Add(pairs.Last().To);
         return result;
     }
 }

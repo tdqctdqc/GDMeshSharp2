@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 public static class EdgeDisturber
 {
@@ -16,51 +17,36 @@ public static class EdgeDisturber
             for (var j = 0; j < poly.Neighbors.Count; j++)
             {
                 var nPoly = poly.Neighbors[j];
-                if(disturbedEdges.Contains(new Vector2(poly.Id, nPoly.Id))
-                   || disturbedEdges.Contains(new Vector2(nPoly.Id, poly.Id)))
+                if (poly.Id > nPoly.Id)
                 {
-                    continue;
+                    DisturbEdge(poly, nPoly, noise);
                 }
-
-                disturbedEdges.Add(new Vector2(poly.Id, nPoly.Id));
-                DisturbEdge(poly, nPoly, noise);
             }
         }
     }
 
-    private static void DisturbEdge(Polygon poly1, Polygon poly2, OpenSimplexNoise noise)
+    private static void DisturbEdge(Polygon highId, Polygon lowId, OpenSimplexNoise noise)
     {
-        if (poly1.Center.DistanceTo(poly2.Center) > 1000f)
-        {
-            //todo create clone to do it
-            
-            return;
-        }
-        var border = poly1.GetEdge(poly2);
-        var stack = new Stack<EdgeDisturbInfo>();
-        var disturbed = new List<EdgeDisturbInfo>();
-        var newPoints = new List<Vector2>();
-        var first = new EdgeDisturbInfo(poly1, poly2);
-        first.Disturb(3, .3f, .2f, 5f, noise);
-        var curr = first;
-        while (curr != null || stack.Count > 0)
-        {
-            while (curr != null)
-            {
-                stack.Push(curr);
-                curr = curr.Left;
-            }
+        if (lowId.Center.DistanceTo(highId.Center) > 1000f) return;
+        var border = highId.GetEdge(lowId);
+        
+        var hiSegs = border.HighSegsRel;
+        var loSegs = border.LowSegsRel;
 
-            curr = stack.Pop();
-            disturbed.Add(curr);
-            curr = curr.Right;
-        }
-        for (var i = 0; i < disturbed.Count; i++)
-        {
-            newPoints.Add(disturbed[i].Start);
-        }
-        newPoints.Add(disturbed[disturbed.Count - 1].End);
-        border.ReplacePoints(newPoints);
+        var axis = border.GetOffsetToOtherPoly(highId);
+        var dist = axis.Length();
+        
+        var deviation = Root.Random.RandfRange(.3f, .7f);
+        var newHiPoint = axis * deviation;
+        var newLoPoint = -axis * (1f - deviation);
+        if (highId.Id % 100 == 0) GD.Print(newHiPoint.DistanceTo(hiSegs[0].From));
+        var newSegsHi = new List<LineSegment>
+            {new LineSegment(hiSegs[0].From, newHiPoint), 
+                new LineSegment(newHiPoint, hiSegs[0].To)};
+        var newSegsLow = new List<LineSegment>
+            {new LineSegment(loSegs[0].From, newLoPoint), 
+                new LineSegment(newLoPoint, loSegs[0].To)};
+        border.ReplacePoints(newSegsHi, newSegsLow);
     }
 
     private class EdgeDisturbInfo
@@ -84,16 +70,6 @@ public static class EdgeDisturber
             End = edgeP2;
         }
 
-        public EdgeDisturbInfo(Polygon p1, Polygon p2)
-        {
-            P1 = p1.Center;
-            P2 = p2.Center;
-            var edge = p1.GetEdge(p2).GetPointsAbs();
-            Start = edge[0];
-            End = edge[1];
-            T1 = new Triangle(P1, Start, End);
-            T2 = new Triangle(P2, Start, End);
-        }
 
         public void Disturb(int times, float disturb, float disturbDecay, float minWidth, OpenSimplexNoise noise)
         {
@@ -105,12 +81,8 @@ public static class EdgeDisturber
             var splitPoint2 = T2.GetRandomPointInside(sample, 1f - sample);
             var splitPoint = Root.Random.GetWeighted(splitPoint1, T1.GetArea(), splitPoint2, T2.GetArea());
             
-            var t1left = new Triangle(P1, splitPoint, Start);
-            var t2left = new Triangle(splitPoint, P2, Start);
             var left = new EdgeDisturbInfo(P1, P2, Start, splitPoint);
-            var t1right = new Triangle(P1, splitPoint, End);
-            var t2right = new Triangle(P2, splitPoint, End);
-            var right = new EdgeDisturbInfo(P2, P1, splitPoint, End);
+            var right = new EdgeDisturbInfo(P1, P2, End, splitPoint);
             if(left.Check(minWidth) && right.Check(minWidth))
             {
                 Left = left;

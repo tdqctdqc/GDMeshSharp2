@@ -22,30 +22,55 @@ public class CellGraphic : Node2D
         if (color == null) color = ColorsExt.GetRandomColor();
         triMesh.Modulate = color.Value;
         AddChild(triMesh);
-        if(geologyCell.Seed.Id % 25 == 0) AddBorder(geologyCell, color.Value);
+        if(geologyCell.Seed.Id % 25 == 0) AddOuterBorder(geologyCell, color.Value);
     }
 
-    private void AddBorder(GeologyCell geologyCell, Color color)
+    private void AddInnerBorder(GeologyCell cell, Color color)
     {
-        var border = geologyCell.GetOrderedOuterBorder();
+        var borderPolyGeos = cell.PolyGeos
+            .Where(p => p.Neighbors.Any(n => ((GeologyPolygon) n).Cell != cell));
         var iter = 0;
-        for (var i = 0; i < border.Count; i++)
+
+        foreach (var poly in borderPolyGeos)
         {
-            var poly = border[i];
-            var polyForeignEdges = poly.GeoNeighbors
-                .Where(n => n.Cell == geologyCell)
-                .Select(n => poly.GetEdge(n))
-                .SelectMany(b => b.GetPointsRel(poly))
-                .Distinct().Reverse().ToList();
-            for (var j = 0; j < polyForeignEdges.Count - 1; j++)
+            var segments = poly.NeighborBorders.SelectMany(b => b.GetSegsRel(poly));
+            foreach (var lineSegment in segments)
             {
-                var point = polyForeignEdges[j] * 1.1f + poly.Center;
-                var next = polyForeignEdges[(j + 1) % polyForeignEdges.Count] * 1.1f + poly.Center;
+                var point = lineSegment.From * .9f + poly.Center;
+                var next = lineSegment.To * .9f + poly.Center;
                 var arrow = MeshGenerator.GetArrowGraphic(point, next, 10f);
                 arrow.Modulate = ColorsExt.GetRainbowColor(iter);
                 AddChild(arrow);
             }
+
             iter++;
         }
+        
+    }
+    private void AddOuterBorder(GeologyCell geologyCell, Color color)
+    {
+        var edges = geologyCell.GetOrderedBorderPairs();
+        var iter = 0;
+        var currOppCell = edges[0].Foreign.Cell;
+        for (var i = 0; i < edges.Count; i++)
+        {
+            var edge = edges[i];
+            if (currOppCell != edges[i].Foreign.Cell)
+            {
+                currOppCell = edges[i].Foreign.Cell;
+                iter++;
+            }
+
+            var segments = edge.Foreign.GetEdge(edge.Native).GetSegsRel(edge.Foreign);
+            foreach (var lineSegment in segments)
+            {
+                var from = lineSegment.To * 1.1f + edge.Foreign.Center;
+                var to = lineSegment.From * 1.1f + edge.Foreign.Center;
+                var arrow = MeshGenerator.GetArrowGraphic(from, to, 10f);
+                arrow.Modulate = ColorsExt.GetRainbowColor(iter);
+                AddChild(arrow);
+            }
+        }
+        
     }
 }

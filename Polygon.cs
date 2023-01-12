@@ -13,7 +13,7 @@ public class Polygon : IGraphNode<Polygon, PolygonBorder>
     public PolygonBorder GetEdge(Polygon neighbor) 
         => _borderDic[neighbor];
     public List<Polygon> Neighbors { get; private set; }
-    public List<PolygonBorder> NeighborBorders { get; private set; }
+    public IEnumerable<PolygonBorder> NeighborBorders => Neighbors.Select(n => GetEdge(n));
     private Dictionary<Polygon, PolygonBorder> _borderDic;
     public List<Vector2> NoNeighborBorders { get; private set; }
     public BoundingBox BoundingBox { get; private set; }
@@ -22,7 +22,6 @@ public class Polygon : IGraphNode<Polygon, PolygonBorder>
         Id = id;
         Center = center;
         Neighbors = new List<Polygon>();
-        NeighborBorders = new List<PolygonBorder>();
         NoNeighborBorders = new List<Vector2>();
         BoundingBox = new BoundingBox();
         _borderDic = new Dictionary<Polygon, PolygonBorder>();
@@ -32,7 +31,6 @@ public class Polygon : IGraphNode<Polygon, PolygonBorder>
     {
         if (Neighbors.Contains(poly)) return;
         Neighbors.Add(poly);
-        NeighborBorders.Add(border);
         _borderDic.Add(poly, border);
         var startN = Neighbors[0];
         for (int i = 0; i < Neighbors.Count; i++)
@@ -43,11 +41,11 @@ public class Polygon : IGraphNode<Polygon, PolygonBorder>
             }
             else break;
         }
-        Neighbors = Neighbors.OrderByClockwise(Vector2.Zero, 
-            n => GetEdge(n).GetOffsetToOtherPoly(this),
-            startN)
+        Neighbors = Neighbors
+            .OrderByClockwise(Vector2.Zero, 
+                n => GetEdge(n).GetOffsetToOtherPoly(this),
+                startN)
             .ToList();
-        NeighborBorders = Neighbors.Select(n => GetEdge(n)).ToList();
 
         border.GetPointsAbs().ForEach(BoundingBox.RegisterPoint);
     }
@@ -58,7 +56,6 @@ public class Polygon : IGraphNode<Polygon, PolygonBorder>
         var index = Neighbors.IndexOf(poly);
         if (index == -1) return;
         Neighbors.RemoveAt(index);
-        NeighborBorders.RemoveAt(index);
         _borderDic.Remove(poly);
     }
 
@@ -74,7 +71,7 @@ public class Polygon : IGraphNode<Polygon, PolygonBorder>
     {
         var tris = new List<Vector2>();
         var borderPointLists =
-            NeighborBorders
+            Neighbors.Select(n => GetEdge(n))
                 .Select(b => b.GetPointsRel(this));
         int iter = 0;
         foreach (var bpList in borderPointLists)
@@ -89,17 +86,5 @@ public class Polygon : IGraphNode<Polygon, PolygonBorder>
         }
 
         return tris;
-    }
-
-    public List<Vector2> GetBorderPointsRelClockwise()
-    {
-        if (NoNeighborBorders.Count > 0)
-        {
-            return new List<Vector2>();
-        }
-        else
-        {
-            return NeighborBorders.SelectMany(n => n.GetPointsRel(this)).ToList();
-        }
     }
 }

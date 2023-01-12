@@ -24,11 +24,6 @@ public class Root : Node
         _generateNext.Connect("button_up", this, nameof(PressedGenerateNext));
         _generateTest = (Button) FindNode("GenerateTest");
         _generateTest.Connect("button_up", this, nameof(PressedGenerateTest));
-        
-        
-        GD.Print(Vector2.Right.AngleTo(Vector2.Down).RadToDegrees());
-        GD.Print(Vector2.Right.AngleTo(Vector2.Left).RadToDegrees());
-        GD.Print(Vector2.Right.AngleTo(Vector2.Up).RadToDegrees());
     }
 
     private void PressedGenerateTest()

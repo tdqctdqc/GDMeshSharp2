@@ -30,8 +30,8 @@ public static class Graphics
         node.AddChild(landWaterGraphics);
         holder.AddLayer(landWaterGraphics, "landWater");
 
-        // var polyLabels = GetPolygonLabelGraphics(worldData);
-        // node.AddChild(polyLabels);
+        var polyLabels = GetPolygonLabelGraphics(worldData);
+        node.AddChild(polyLabels);
 
         // var mtnGraphics = holder.GenerateLayer(worldData.FaultLines, m => m.GetFaultLineGraphic(), "mountains");
         // node.AddChild(mtnGraphics);

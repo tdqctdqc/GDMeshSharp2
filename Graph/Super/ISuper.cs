@@ -24,6 +24,11 @@ public static class ISuperExt
             super.GetSubNeighbors, s => super.GetSubSuper(s).Equals(super) == false,
             transform);
     }
+    public static List<Edge<TSub>> GetOrderedBorderPairs<TSub>(this ISuper<TSub> super) where TSub : class
+    {
+        return GenerationUtility.GetOrderedBorderPairs(GetBorderElements(super), 
+            super.GetSubNeighbors, s => super.GetSubSuper(s).Equals(super) == false);
+    }
     public static List<TSub> GetOrderedBorder<TSub>(this ISuper<TSub> super) where TSub : class
     {
         return GenerationUtility.GetOrderedBorder(GetBorderElements(super), 

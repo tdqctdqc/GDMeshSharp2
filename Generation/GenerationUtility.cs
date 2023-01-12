@@ -71,17 +71,7 @@ public static class GenerationUtility
             .Select(i => i.element);
     }
 
-    private struct Edge<TNode>
-    {
-        public TNode Native { get; set; }
-        public TNode Foreign { get; set; }
-
-        public Edge(TNode native, TNode foreign)
-        {
-            Native = native;
-            Foreign = foreign;
-        }
-    }
+    
 
     public static IEnumerable<TSub> GetBorderElements<TSub>(IEnumerable<TSub> els, 
         Func<TSub, IEnumerable<TSub>> getNeighbors,
@@ -96,24 +86,24 @@ public static class GenerationUtility
         Func<TSub, bool> checkForeign,
         Func<TSub, TSub, TResult> transform) where TSub : class
     {
-        return OrderBorder(borderSubs, getSubNeighbors, checkForeign, e => transform(e.Native, e.Foreign));
+        return GetOrderedBorderPairs(borderSubs, getSubNeighbors, checkForeign)
+            .Select(e => transform(e.Native, e.Foreign)).ToList();
     }
     public static List<TSub> GetOrderedBorder<TSub>(
         IEnumerable<TSub> borderSubs, Func<TSub, IEnumerable<TSub>> getSubNeighbors,
         Func<TSub, bool> checkForeign) where TSub : class
     {
-        return OrderBorder(borderSubs, getSubNeighbors, checkForeign, e => e.Native);
+        return GetOrderedBorderPairs(borderSubs, getSubNeighbors, checkForeign).Select(e => e.Native).ToList();
     }
     public static List<TSub> GetOrderedOuterBorder<TSub>(
         IEnumerable<TSub> borderSubs, Func<TSub, IEnumerable<TSub>> getSubNeighbors,
         Func<TSub, bool> checkForeign) where TSub : class
     {
-        return OrderBorder(borderSubs, getSubNeighbors, checkForeign, e => e.Foreign);
+        return GetOrderedBorderPairs(borderSubs, getSubNeighbors, checkForeign).Select(e => e.Foreign).ToList();
     }
-    private static List<TResult> OrderBorder<TSub, TResult>( 
+    public static List<Edge<TSub>> GetOrderedBorderPairs<TSub>( 
         IEnumerable<TSub> borderSubs, Func<TSub, IEnumerable<TSub>> getSubNeighbors, 
-        Func<TSub, bool> checkForeign,
-        Func<Edge<TSub>, TResult> transform) where TSub : class
+        Func<TSub, bool> checkForeign) where TSub : class
     {
         var nativeEdgeDic = new Dictionary<TSub, List<Edge<TSub>>>();
         var foreignEdgeDic = new Dictionary<TSub, List<Edge<TSub>>>();
@@ -183,17 +173,27 @@ public static class GenerationUtility
             }
         }
 
-        var result = new List<TResult>();
+        var result = new List<Edge<TSub>>();
         for (int i = left.Count - 1; i >= 0; i--)
         {
-            result.Add(transform(left[i]));
+            result.Add(left[i]);
         }
-        result.Add(transform(firstEdge));
+        result.Add(firstEdge);
         for (var i = 0; i < right.Count; i++)
         {
-            result.Add(transform(right[i]));
+            result.Add(right[i]);
         }
-
         return result;
+    }
+}
+public struct Edge<TNode>
+{
+    public TNode Native { get; set; }
+    public TNode Foreign { get; set; }
+
+    public Edge(TNode native, TNode foreign)
+    {
+        Native = native;
+        Foreign = foreign;
     }
 }

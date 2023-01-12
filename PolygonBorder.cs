@@ -5,13 +5,12 @@ using System.Linq;
 
 public class PolygonBorder 
 {
-    public List<Vector2> LowPointsRel { get; private set; }
-    public List<Vector2> HighPointsRel { get; private set; }
+    public List<LineSegment> LowSegsRel { get; private set; }
+    public List<LineSegment> HighSegsRel { get; private set; }
     public Polygon LowId { get; private set; }
     public Polygon HighId { get; private set; }
     
-    //todo make store points clockwise for each, can just use order by clockwise 
-    public PolygonBorder(Polygon poly1, Polygon poly2, List<Vector2> points)
+    public PolygonBorder(Polygon poly1, Polygon poly2, List<LineSegment> segments)
     {
         if (poly1.Id < poly2.Id)
         {
@@ -24,43 +23,75 @@ public class PolygonBorder
             HighId = poly1;
         }
 
-        var segments = points.Select(p => p - HighId.Center).GetSegments();
-        HighPointsRel = segments
-            .OrderByClockwise(Vector2.Zero, s => s.V, segments.First())
-            .GetPoints()
-            .ToList();
-        LowPointsRel = HighPointsRel.Select(p => p + HighId.Center - LowId.Center).Reverse().ToList();
+        HighSegsRel = GetSegments(segments, HighId);
+        LowSegsRel = GetSegments(segments, LowId);
     }
-    public PolygonBorder(Polygon poly1, List<Vector2> poly1PointsRel, 
-        Polygon poly2, List<Vector2> poly2PointsRel)
+
+    private List<LineSegment> GetSegments(List<LineSegment> abs, Polygon poly)
     {
+        var res = new List<LineSegment>();
+        
+        var first = abs[0];
+        var leg1 = first.From - poly.Center;
+        var leg2 = first.To - poly.Center;
+        var leg1Angle = leg1.GetClockwiseAngleTo(leg2).RadToDegrees();
+        var leg2Angle = leg2.GetClockwiseAngleTo(leg1).RadToDegrees();
+        bool alter = leg1Angle < leg2Angle;
+        
+        for (var i = 0; i < abs.Count; i++)
+        {
+            var seg = abs[i];
+            var t = seg.To - poly.Center;
+            var f = seg.From - poly.Center;
+            res.Add(alter ?  new LineSegment(t, f) : new LineSegment(f, t));
+        }
+
+        return res;
+    }
+    
+    public PolygonBorder(Polygon poly1, List<LineSegment> poly1SegsRel, 
+        Polygon poly2, List<LineSegment> poly2SegsRel)
+    {
+        List<LineSegment> abs1 = poly1SegsRel.Select(p => p.ChangeOrigin(poly1.Center, Vector2.Zero)).ToList();
+        List<LineSegment> abs2 = poly2SegsRel.Select(p => p.ChangeOrigin(poly2.Center, Vector2.Zero)).ToList();
         if (poly1.Id < poly2.Id)
         {
             LowId = poly1;
             HighId = poly2;
-            LowPointsRel = poly1PointsRel.OrderByClockwise(Vector2.Zero, v => v, poly1PointsRel[0]).ToList();
-            HighPointsRel = poly2PointsRel.OrderByClockwise(Vector2.Zero, v => v, poly2PointsRel[0]).ToList();
+            HighSegsRel = GetSegments(abs2, HighId);
+            LowSegsRel = GetSegments(abs1, LowId);
         }
         else
         {
             LowId = poly2;
             HighId = poly1;
-            LowPointsRel = poly2PointsRel.OrderByClockwise(Vector2.Zero, v => v, poly2PointsRel[0]).ToList();
-            HighPointsRel = poly1PointsRel.OrderByClockwise(Vector2.Zero, v => v, poly1PointsRel[0]).ToList();
+            HighSegsRel = GetSegments(abs1, HighId);
+            LowSegsRel = GetSegments(abs2, LowId);
         }
     }
 
     public List<Vector2> GetPointsRel(Polygon p)
     {
-        if (p == LowId) return LowPointsRel;
-        if (p == HighId) return HighPointsRel;
+        if (p == LowId) return LowSegsRel.GetPoints().ToList();
+        if (p == HighId) return HighSegsRel.GetPoints().ToList();
         throw new Exception();
     }
 
+    public List<LineSegment> GetSegsRel(Polygon p)
+    {
+        if (p == LowId) return LowSegsRel;
+        if (p == HighId) return HighSegsRel;
+        throw new Exception();
+    }
+    public List<LineSegment> GetSegsAbs()
+    {
+        return HighSegsRel.Select(s => s.ChangeOrigin(HighId.Center, Vector2.Zero)).ToList();
+    }
     public Vector2 GetOffsetToOtherPoly(Polygon p)
     {
         var other = GetOtherPoly(p);
-        return GetPointsRel(p)[0] - GetPointsRel(other)[LowPointsRel.Count - 1];
+        var otherCount = GetSegsRel(other).Count;
+        return GetSegsRel(p)[0].From - GetSegsRel(other)[otherCount - 1].To;
     }
     public Polygon GetOtherPoly(Polygon p)
     {
@@ -70,15 +101,11 @@ public class PolygonBorder
     }
     public List<Vector2> GetPointsAbs()
     {
-        return HighPointsRel.Select(p => p + HighId.Center).ToList();
+        return HighSegsRel.GetPoints().Select(p => p + HighId.Center).ToList();
     }
-    public void ReplacePoints(List<Vector2> newPointsAbsolute)
+    public void ReplacePoints(List<LineSegment> newSegmentsHiRel, List<LineSegment> newSegmentsLowRel)
     {
-        var segments = newPointsAbsolute.Select(p => p - HighId.Center).GetSegments();
-        HighPointsRel = segments
-            .OrderByClockwise(Vector2.Zero, s => s.V, segments.First())
-            .GetPoints()
-            .ToList();
-        LowPointsRel = HighPointsRel.Select(p => p + HighId.Center - LowId.Center).Reverse().ToList();
+        HighSegsRel = newSegmentsHiRel;
+        LowSegsRel = newSegmentsLowRel;
     }
 }
