@@ -5,26 +5,41 @@ using Godot;
 
 public class PolygonGraphic : Node2D
 {
+    public Polygon Poly { get; private set; }
+    private Node2D _triMesh;
     public PolygonGraphic()
     {
         
     }
 
-    public PolygonGraphic(Polygon poly, Color? color = null, bool border = false)
+    public PolygonGraphic(Polygon poly, bool border = false)
     {
-        var tris = poly.GetTris();
-        var triMesh = MeshGenerator.GetMeshInstance(tris);
-        color = color.HasValue ? color.Value : ColorsExt.GetRandomColor();
-        triMesh.Modulate = new Color(color.Value, .5f);
-        AddChild(triMesh);
+        Poly = poly;
+        var tris = poly.GetTrisRel();
+        // Position = poly.Center;
+        _triMesh = MeshGenerator.GetMeshInstance(tris);
+        _triMesh.Modulate = new Color(Poly.Color, .5f);
+        AddChild(_triMesh);
+        
+
         if(poly.Id % 25 == 0)
         {
-            AddBorderGraphic(poly);
+            // AddBorderGraphic(poly);
+
             // AddBorderPolysGraphic(poly, color.Value.Inverted());
         }
 
     }
 
+    public void SetColor(Color color)
+    {
+        _triMesh.Modulate = color;
+    }
+
+    public void ClearColor()
+    {
+        _triMesh.Modulate = Poly.Color;
+    }
     private void AddBorderPolysGraphic(Polygon poly, Color color)
     {
         
@@ -32,7 +47,7 @@ public class PolygonGraphic : Node2D
         {
             var edge = poly.GetEdge(poly.Neighbors[i]);
             var offset = edge.GetOffsetToOtherPoly(poly);
-            var centerArrow = MeshGenerator.GetArrowGraphic(poly.Center,  poly.Center + offset, 10f);
+            var centerArrow = MeshGenerator.GetArrowGraphic(Vector2.Zero, offset, 10f);
             AddChild(centerArrow);
             
 
@@ -41,7 +56,7 @@ public class PolygonGraphic : Node2D
             
             var from = poly.GetEdge(poly.Neighbors[i]).GetPointsRel(poly).Avg();
             var to = poly.GetEdge(poly.Neighbors[next]).GetPointsRel(poly).Avg();
-            var arrow = MeshGenerator.GetArrowGraphic(from + poly.Center, to + poly.Center, 5f);
+            var arrow = MeshGenerator.GetArrowGraphic(from, to, 5f);
             arrow.Modulate = color;
             AddChild(arrow);
         }
@@ -56,8 +71,8 @@ public class PolygonGraphic : Node2D
             for (var j = 0; j < border.Count; j++)
             {
                 var seg = border[j];
-                var from = seg.From * .9f + poly.Center;
-                var to = seg.To * .9f + poly.Center;
+                var from = seg.From * .9f;
+                var to = seg.To * .9f;
                 if (from == to) continue;
                 var arrow = MeshGenerator.GetArrowGraphic(from, to, 5f);
                 arrow.Modulate = ColorsExt.GetRainbowColor(iter);
@@ -65,5 +80,18 @@ public class PolygonGraphic : Node2D
                 AddChild(arrow);
             }
         }
+    }
+
+    private void AddLabel()
+    {
+        var back = MeshGenerator.GetLineMesh(Poly.Center + Vector2.Up * 10f, Poly.Center + Vector2.Down * 10f,
+            20f);
+        var num = new Label();
+        num.Text = Poly.Id.ToString();
+        num.RectScale = Vector2.One;
+        num.Modulate = Colors.Black;
+        num.RectGlobalPosition = Poly.Center + Vector2.Left * 10f;
+        back.AddChild(num);
+        AddChild(back);
     }
 }

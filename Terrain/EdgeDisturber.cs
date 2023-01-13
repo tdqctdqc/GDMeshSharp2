@@ -20,6 +20,7 @@ public static class EdgeDisturber
                 if (poly.Id > nPoly.Id)
                 {
                     DisturbEdge(poly, nPoly, noise);
+                    // DisturbEdge(poly, nPoly, noise);
                 }
             }
         }
@@ -27,25 +28,43 @@ public static class EdgeDisturber
 
     private static void DisturbEdge(Polygon highId, Polygon lowId, OpenSimplexNoise noise)
     {
-        if (lowId.Center.DistanceTo(highId.Center) > 1000f) return;
         var border = highId.GetEdge(lowId);
-        
         var hiSegs = border.HighSegsRel;
         var loSegs = border.LowSegsRel;
+        var axisHi = border.GetOffsetToOtherPoly(highId);
+        var sample = Mathf.Abs(noise.GetNoise2d(highId.Center.x, highId.Center.y)) * .5f;
+        sample = Mathf.Pow(sample, 1f / 3f);
+        var newSegsHi = new List<LineSegment>();
+        var newSegsLow = new List<LineSegment>();
+        var count = border.HighSegsRel.Count;
+        for (int i = 0; i < count; i++)
+        {
+            var angleDeviation = Root.Random.RandfRange(.5f - sample, .5f + sample);
+            var lengthDeviation = Root.Random.RandfRange(1f - sample, 1f);
+            var hiSeg = hiSegs[i];
+            var loSeg = loSegs[count - 1 - i];
+            Vector2 hiDevVector;
+            Vector2 loDevVector;
 
-        var axis = border.GetOffsetToOtherPoly(highId);
-        var dist = axis.Length();
+            if (Root.Random.Randf() > .5f)
+            {
+                var temp = hiSeg.From.LinearInterpolate(hiSeg.To, angleDeviation);
+                hiDevVector = temp * lengthDeviation;
+                loDevVector = loSeg.Mid + (hiDevVector - hiSeg.Mid);
+            }
+            else
+            {
+                var temp = loSeg.To.LinearInterpolate(loSeg.From, angleDeviation);
+                loDevVector = temp * lengthDeviation;
+                hiDevVector = hiSeg.Mid + (loDevVector - loSeg.Mid);
+            }
+            
+            newSegsHi.Add(new LineSegment(hiSeg.From, hiDevVector));
+            newSegsHi.Add(new LineSegment(hiDevVector, hiSeg.To));
+            newSegsLow.Add(new LineSegment(loSeg.From, loDevVector));
+            newSegsLow.Add(new LineSegment(loDevVector, loSeg.To));
+        }
         
-        var deviation = Root.Random.RandfRange(.3f, .7f);
-        var newHiPoint = axis * deviation;
-        var newLoPoint = -axis * (1f - deviation);
-        if (highId.Id % 100 == 0) GD.Print(newHiPoint.DistanceTo(hiSegs[0].From));
-        var newSegsHi = new List<LineSegment>
-            {new LineSegment(hiSegs[0].From, newHiPoint), 
-                new LineSegment(newHiPoint, hiSegs[0].To)};
-        var newSegsLow = new List<LineSegment>
-            {new LineSegment(loSegs[0].From, newLoPoint), 
-                new LineSegment(newLoPoint, loSegs[0].To)};
         border.ReplacePoints(newSegsHi, newSegsLow);
     }
 

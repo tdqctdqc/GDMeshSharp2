@@ -11,10 +11,13 @@ public class Root : Node
     private Button _generate, _generateNext, _generateTest;
     private SpinBox _seed;
     private GraphicLayerHolder _holder;
-    private CameraController _cam;
+    public static CameraController Cam { get; private set; }
+    public static ButtonContainer ButtonContainer { get; private set; }
+    public static Vector2 Bounds { get; private set; }
     public override void _Ready()
     {
-        _cam = (CameraController) FindNode("Camera2D");
+        Cam = (CameraController) FindNode("Camera2D");
+        ButtonContainer = (ButtonContainer) FindNode("ButtonContainer");
         _holder = (GraphicLayerHolder)FindNode("GraphicLayerHolder");
         _holder.Setup();
         _seed = (SpinBox) FindNode("Seed");
@@ -55,6 +58,8 @@ public class Root : Node
         MoveChild(_node, 0);
 
         var worldData = WorldGenerator.Generate();
+        Cam.SetBounds(worldData.Dimensions);
+        Bounds = worldData.Dimensions;
         Graphics.BuildGraphics(_node, _holder, worldData);
     }
 

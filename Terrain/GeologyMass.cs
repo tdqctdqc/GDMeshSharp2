@@ -8,6 +8,7 @@ public class GeologyMass : ISuper<GeologyPlate>
     public int Id { get; private set; }
     public Continent Continent { get; private set; }
     public GeologyPlate Seed { get; private set; }
+    public GeologyPolygon SeedPoly => Seed.SeedPoly;
     public HashSet<GeologyPlate> Plates { get; private set; }
     public HashSet<GeologyPlate> NeighboringPlates { get; private set; }
     public Dictionary<GeologyPlate, int> NeighboringPlatesAdjCount { get; private set; }

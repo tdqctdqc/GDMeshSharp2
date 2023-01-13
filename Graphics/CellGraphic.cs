@@ -15,7 +15,7 @@ public class CellGraphic : Node2D
         var tris = new List<Vector2>();
         foreach (var poly in geologyCell.PolyGeos)
         {
-            tris.AddRange(poly.GetTris());
+            tris.AddRange(poly.GetTrisAbs());
         }
         
         var triMesh = MeshGenerator.GetMeshInstance(tris);

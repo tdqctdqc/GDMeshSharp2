@@ -4,18 +4,20 @@ using System.Collections.Generic;
 
 public class GraphicLayerHolder : Control
 {
-    private Dictionary<string, Node2D> _layers;
-    private Dictionary<string, ButtonToken> _tokens;
-    private Container _container;
+    private Dictionary<string, GraphicView> _views;
+    private Dictionary<string, ButtonToken> _viewTokens;
+    private Container _viewButtonsContainer;
+    private Container _overlayButtonsContainer;
 
     public void Setup()
     {
-        _container = (Container) FindNode("Container");
-        _tokens = new Dictionary<string, ButtonToken>();
-        _layers = new Dictionary<string, Node2D>();
+        _viewButtonsContainer = (Container) FindNode("ViewButtons");
+        _overlayButtonsContainer = (Container) FindNode("OverlayButtons");
+        _viewTokens = new Dictionary<string, ButtonToken>();
+        _views = new Dictionary<string, GraphicView>();
     }
 
-    public Node2D GenerateLayer<T>(List<T> elements, Func<T, Node2D> getNode, string name)
+    public Node2D GenerateView<T>(List<T> elements, Func<T, Node2D> getNode, string name)
     {
         var graphics = new Node2D();
         for (var i = 0; i < elements.Count; i++)
@@ -24,54 +26,64 @@ public class GraphicLayerHolder : Control
             var graphic = getNode(el);
             graphics.AddChild(graphic);
         }
-        AddLayer(graphics, name);
+        AddView(graphics, name);
         return graphics;
     }
 
     public void Clear()
     {
-        foreach (var keyValuePair in _tokens)
+        foreach (var keyValuePair in _viewTokens)
         {
             keyValuePair.Value.Free();
         }
-        _tokens.Clear();
+        _viewTokens.Clear();
 
-        while (_container.GetChildCount() > 0)
+        
+        foreach (var keyValuePair in _views)
         {
-            _container.GetChild(0).Free();
+            keyValuePair.Value.Clear();
         }
-
-        _layers = new Dictionary<string, Node2D>();
+        _viewTokens.Clear();
+        _views.Clear();
+        while (_viewButtonsContainer.GetChildCount() > 0)
+        {
+            _viewButtonsContainer.GetChild(0).Free();
+        }
     }
 
-    public void AddLayer(Node2D layer, string name)
+    public void AddView(Node2D layer, string name)
     {
-        if (_layers.Count > 0) layer.Visible = false;
-        _layers.Add(name, layer);
+        var view = new GraphicView(layer);
+        bool vis = true;
+        if (_views.Count > 0) vis = false;
+            
+        view.Toggle(vis);
+        _views.Add(name, view);
         var button = new Button();
         button.Text = layer.Visible
             ? "Selected " + name
             : "Turn on " + name;
-        _container.AddChild(button);
+        _viewButtonsContainer.AddChild(button);
         var token = new ButtonToken();
-        token.Setup(button, () => ToggleLayer(name));
-        _tokens.Add(name, token);
+        token.Setup(button, () => _views[name].Toggle(vis));
+        _viewTokens.Add(name, token);
     }
-    private void ToggleLayer(string layerName)
+
+    public void AddOverlay(string viewName, string overlayName, Node2D overlay)
     {
-        foreach (var keyValuePair in _layers)
+        _views[viewName].AddOverlay(overlay, overlayName, _overlayButtonsContainer);
+    }
+    private void ToggleLayer(string activeViewName)
+    {
+        foreach (var keyValuePair in _views)
         {
             var layer = keyValuePair.Value;
             var name = keyValuePair.Key;
-            if(name == layerName)
-                layer.Visible = true;
-            else
-                layer.Visible = false;
-            
-            _tokens[name].Button.Text = layer.Visible
+            var vis = name == activeViewName;
+            _views[name].Toggle(vis);
+            _viewTokens[name].Button.Text = vis
                 ? "Selected " + name
                 : "Turn on " + name;
         }
     }
-    
 }

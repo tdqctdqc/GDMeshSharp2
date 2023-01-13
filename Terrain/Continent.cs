@@ -7,6 +7,7 @@ public class Continent : ISuper<GeologyMass>
 {
     public int Id { get; private set; }
     public GeologyMass Seed { get; private set; }
+    public GeologyPolygon SeedPoly => Seed.SeedPoly;
     public BoundingBox BoundingBox { get; private set; }
     public HashSet<GeologyMass> Masses { get; private set; }
     public HashSet<GeologyMass> NeighboringMasses { get; private set; }

@@ -7,6 +7,7 @@ public class GeologyPlate : ISuper<GeologyCell>
 {
     public int Id { get; private set; }
     public GeologyCell Seed { get; private set; }
+    public GeologyPolygon SeedPoly => Seed.Seed;
     public GeologyMass Mass { get; private set; }
     public HashSet<GeologyCell> Cells { get; private set; }
     public HashSet<GeologyCell> NeighboringCells { get; private set; }

@@ -17,6 +17,7 @@ public class Polygon : IGraphNode<Polygon, PolygonBorder>
     private Dictionary<Polygon, PolygonBorder> _borderDic;
     public List<Vector2> NoNeighborBorders { get; private set; }
     public BoundingBox BoundingBox { get; private set; }
+    public Color Color { get; private set; }
     public Polygon(int id, Vector2 center)
     {
         Id = id;
@@ -25,6 +26,7 @@ public class Polygon : IGraphNode<Polygon, PolygonBorder>
         NoNeighborBorders = new List<Vector2>();
         BoundingBox = new BoundingBox();
         _borderDic = new Dictionary<Polygon, PolygonBorder>();
+        Color = ColorsExt.GetRandomColor();
     }
     
     public virtual void AddNeighbor(Polygon poly, PolygonBorder border)
@@ -67,21 +69,35 @@ public class Polygon : IGraphNode<Polygon, PolygonBorder>
         BoundingBox.RegisterPoint(to);
     }
 
-    public List<Vector2> GetTris()
+    public List<Vector2> GetTrisAbs()
     {
         var tris = new List<Vector2>();
-        var borderPointLists =
-            Neighbors.Select(n => GetEdge(n))
-                .Select(b => b.GetPointsRel(this));
-        int iter = 0;
-        foreach (var bpList in borderPointLists)
+        for (var i = 0; i < Neighbors.Count; i++)
         {
-            for (var i = 0; i < bpList.Count - 1; i++)
+            var edge = GetEdge(Neighbors[i]);
+            var segs = edge.GetSegsRel(this);
+            for (var j = 0; j < segs.Count; j++)
             {
-                iter++;
-                tris.Add(bpList[i] + this.Center);
-                tris.Add(bpList[i + 1] + this.Center);
-                tris.Add(this.Center);
+                tris.Add(Center);
+                tris.Add(segs[j].From + Center);
+                tris.Add(segs[j].To + Center);
+            }
+        }
+
+        return tris;
+    }
+    public List<Vector2> GetTrisRel()
+    {
+        var tris = new List<Vector2>();
+        for (var i = 0; i < Neighbors.Count; i++)
+        {
+            var edge = GetEdge(Neighbors[i]);
+            var segs = edge.GetSegsRel(this);
+            for (var j = 0; j < segs.Count; j++)
+            {
+                tris.Add(Vector2.Zero);
+                tris.Add(segs[j].From);
+                tris.Add(segs[j].To);
             }
         }
 
