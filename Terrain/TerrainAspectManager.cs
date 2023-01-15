@@ -5,16 +5,12 @@ using Godot;
 
 public abstract class TerrainAspectManager<TAspect> where TAspect: TerrainAspect
 {
-    
     public List<TAspect> LandByPriority { get; private set; }
     public List<TAspect> WaterByPriority { get; private set; }
     public TAspect LandDefault { get; protected set; } 
     public TAspect WaterDefault { get; protected set; } 
     public Dictionary<TAspect, TerrainAspectHolder> Holders { get; private set; }
-    protected abstract Func<GeologyPolygon, float> _polyMetric { get; set; }
     protected abstract  Func<TAspect, float> _getMin { get; set; }
-    protected abstract  Func<GeologyPolygon, TAspect, bool> _allowed { get; set; }
-    protected abstract Dictionary<GeologyPolygon, List<(Triangle, TAspect)>> _polyTris { get; set; }
 
     public TerrainAspectManager(TAspect waterDefault, TAspect landDefault, List<TAspect> waterValues, 
         List<TAspect> landValues)
@@ -30,18 +26,16 @@ public abstract class TerrainAspectManager<TAspect> where TAspect: TerrainAspect
     }
     public TAspect GetValueFromPoly(GeologyPolygon p)
     {
-        var metric = _polyMetric(p);
         if (p.IsWater)
         {
             for (var i = 0; i < WaterByPriority.Count; i++)
             {
                 var val = WaterByPriority[i];
-                if (_allowed(p, val) && metric >= _getMin(val))
+                if (val.Allowed(p))
                 {
                     return val;
                 }
             }
-
             return WaterDefault;
         }
         else
@@ -49,12 +43,11 @@ public abstract class TerrainAspectManager<TAspect> where TAspect: TerrainAspect
             for (var i = 0; i < LandByPriority.Count; i++)
             {
                 var val = LandByPriority[i];
-                if (_allowed(p, val) && metric >= _getMin(val))
+                if (val.Allowed(p))
                 {
                     return val;
                 }
             }
-
             return LandDefault;
         }
     }
@@ -78,54 +71,47 @@ public abstract class TerrainAspectManager<TAspect> where TAspect: TerrainAspect
         return LandDefault;
     }
 
-    public void AddLandformTris(TAspect aspect, GeologyPolygon p, List<Triangle> trisRel)
-    {
-        Holders[aspect].AddTris(p, trisRel);
-    }
     
-    public Dictionary<TAspect, List<List<GeologyPolygon>>> GetUnions(List<GeologyPolygon> polys)
+    public Dictionary<TAspect, List<List<GeologyPolygon>>> GetUnions(HashSet<GeologyPolygon> polys)
     {
-        bool compare(GeologyPolygon p1, GeologyPolygon p2)
-        {
-            return GetValueFromPoly(p1).Equals(GetValueFromPoly(p1));
-        }
-        var unions = UnionFind<GeologyPolygon, float>.DoUnionFind(polys.ToList(), 
-            compare,
-            poly => poly.GeoNeighbors
-        );
-        
         var result = new Dictionary<TAspect, List<List<GeologyPolygon>>>();
-        
-        for (var i = 0; i < unions.Count; i++)
+        //todo need to allow overlaps
+        var aspects = LandByPriority.Union(WaterByPriority).ToList();
+        for (var i = 0; i < aspects.Count; i++)
         {
-            var aspect = GetValueFromPoly(unions[0][0]);
-            if(result.ContainsKey(aspect) == false) result.Add(aspect, new List<List<GeologyPolygon>>());
-            result[aspect].Add(unions[i]);
+            var aspect = aspects[i];
+            var union = UnionFind<GeologyPolygon, float>.DoUnionFind(polys.ToList(), 
+                (p1, p2) => compare(aspect, p1, p2),
+                poly => poly.GeoNeighbors
+            );
+            result.Add(aspect, union.Where(u => aspect.Allowed(u[0])).ToList());
         }
-
+        bool compare(TAspect aspect, GeologyPolygon p1, GeologyPolygon p2)
+        {
+            return aspect.Allowed(p1) == aspect.Allowed(p2);
+        }
         return result;
     }
     
-    public void BuildTris(List<GeologyPolygon> affectedPolys)
+    public void BuildTris(HashSet<GeologyPolygon> affectedPolys)
     {
-        var unions = GetUnions(affectedPolys);
-        var hash = unions.ToDictionary(pair => pair.Key, pair => pair.Value.SelectMany(p => p).ToHashSet());
-        var polyLists = hash.ToDictionary(pair => pair.Key, pair => pair.Value.ToList());
-        var polyTrisMany = new Dictionary<TAspect, Dictionary<GeologyPolygon, (TAspect, List<Triangle>)>>();
-        //todo foreach to have build mesh
-        BuildAspects(affectedPolys);
-        _polyTris = new Dictionary<GeologyPolygon, List<(Triangle, TAspect)>>();
-        void BuildAspects(List<GeologyPolygon> polys)
+        var aspectUnions = GetUnions(affectedPolys);
+        foreach (var keyValuePair in aspectUnions)
         {
-            var polyTris = new Dictionary<GeologyPolygon, List<Triangle>>();
-            polys.ForEach(p =>
+            var aspect = keyValuePair.Key;
+            if (aspect == LandDefault || aspect == WaterDefault) continue; 
+
+            var unions = keyValuePair.Value;
+            unions.SelectMany(u => u).ToList().ForEach(p =>
             {
-                var aspect = GetValueFromPoly(p);
-                var tris = aspect.BuildTrisForPoly(p, hash[aspect]);
-                var list = new List<(Triangle, TAspect)>();
-                tris.ForEach(t => list.Add(new ValueTuple<Triangle, TAspect>(t, aspect)));
-                _polyTris.Add(p, list);
+                var tris = aspect.TriBuilder.BuildTrisForPoly(p);
+                AddTris(aspect, p, tris);
             });
         }
+    }
+    public void AddTris(TAspect aspect, GeologyPolygon p, List<Triangle> trisRel)
+    {
+        if (trisRel == null || trisRel.Count == 0) return;
+        Holders[aspect].AddTris(p, trisRel);
     }
 }

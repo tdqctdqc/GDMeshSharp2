@@ -7,19 +7,23 @@ public class VegetationManager : TerrainAspectManager<Vegetation>
 {
     public static Vegetation Swamp = new Vegetation(
         new HashSet<Landform>{LandformManager.Plain}, 
-        .7f, Colors.DarkKhaki, "Swamp");
+        .7f, Colors.DarkKhaki, "Swamp", new BlobTriBuilder());
+    
     public static Vegetation Forest = new Vegetation(
         new HashSet<Landform>{LandformManager.Hill, LandformManager.Plain}, 
-        .5f, Colors.DarkGreen, "Forest");
+        .5f, Colors.DarkGreen, "Forest", new BlobTriBuilder());
+    
     public static Vegetation Grassland = new Vegetation(
         new HashSet<Landform>{LandformManager.Hill, LandformManager.Plain}, 
-        .2f, Colors.Limegreen, "Grassland");
+        .2f, Colors.Limegreen, "Grassland", new BlobTriBuilder());
+    
     public static Vegetation Desert = new Vegetation(
         new HashSet<Landform>{LandformManager.Hill, LandformManager.Plain}, 
-        0f, Colors.Limegreen, "Desert");
+        0f, Colors.Limegreen, "Desert", new BlobTriBuilder());
+    
     public static Vegetation Barren = new Vegetation(
         new HashSet<Landform>{LandformManager.Mountain, LandformManager.Peak}, 
-        0f, Colors.Limegreen, "Barren");
+        0f, Colors.Limegreen, "Barren", null);
 
 
     public VegetationManager() 
@@ -27,15 +31,7 @@ public class VegetationManager : TerrainAspectManager<Vegetation>
     {
         
     }
-
-    protected override Func<GeologyPolygon, float> _polyMetric { get; set; } = p => p.Moisture;
     protected override Func<Vegetation, float> _getMin { get; set; } = v => v.MinMoisture;
+    
 
-    protected override Func<GeologyPolygon, Vegetation, bool> _allowed { get; set; } = (p, v) =>
-    {
-        var pLandform = Root.WorldData.Landforms.GetValueFromPoly(p);
-        return v.AllowedLandforms.Contains(pLandform);
-    };
-
-    protected override Dictionary<GeologyPolygon, List<(Triangle, Vegetation)>> _polyTris { get; set; }
 }

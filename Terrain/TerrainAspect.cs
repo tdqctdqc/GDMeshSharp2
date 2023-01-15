@@ -6,10 +6,8 @@ using Godot;
 
 public abstract class TerrainAspect
 {
-    public abstract Func<GeologyPolygon, HashSet<GeologyPolygon>, List<Triangle>> BuildTrisForPoly { get;
-        protected set;
-    }
-    
-    
-    
+    public abstract ITriBuilder TriBuilder { get; protected set; }
+    public abstract bool Allowed(GeologyPolygon poly);
+    public abstract Color Color { get; protected set; }
+    // public abstract bool Passes(GeologyPolygon p);
 }

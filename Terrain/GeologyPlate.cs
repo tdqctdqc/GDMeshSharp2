@@ -64,7 +64,7 @@ public class GeologyPlate : ISuper<GeologyCell>
         return borderPolys;
     }
     
-    public List<Edge<GeologyPolygon>> GetOrderedBorderRelative(GeologyPlate aPlate)
+    public List<BorderEdge<GeologyPolygon>> GetOrderedBorderRelative(GeologyPlate aPlate)
     {
         var borderCellPolys = this
             .GetBorderElements()

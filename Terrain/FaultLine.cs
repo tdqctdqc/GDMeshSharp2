@@ -11,8 +11,8 @@ public class FaultLine
     public List<GeologyPolygon> PolyFootprint { get; private set; }
     public float Friction { get; private set; }
     public GeologyPolygon Origin => HighId.SeedPoly;
-    public List<Edge<GeologyPolygon>> Edges { get; private set; }
-    public FaultLine(float friction, GeologyPlate highId, GeologyPlate lowId, List<Edge<GeologyPolygon>> edgesHi)
+    public List<BorderEdge<GeologyPolygon>> Edges { get; private set; }
+    public FaultLine(float friction, GeologyPlate highId, GeologyPlate lowId, List<BorderEdge<GeologyPolygon>> edgesHi)
     {
         Friction = friction;
         HighId = highId;

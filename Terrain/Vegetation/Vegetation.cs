@@ -7,20 +7,22 @@ public class Vegetation : TerrainAspect
 {
     public HashSet<Landform> AllowedLandforms { get; private set; }
     public float MinMoisture { get; private set; }
-    public Color Color { get; private set; }
     public string Name { get; private set; }
+    public override ITriBuilder TriBuilder { get; protected set; }
+    public override Color Color { get; protected set; }
 
-    public Vegetation(HashSet<Landform> allowedLandforms, float minMoisture, Color color, string name)
+    public Vegetation(HashSet<Landform> allowedLandforms, float minMoisture, Color color, string name, ITriBuilder triBuilder)
     {
+        TriBuilder = triBuilder;
         AllowedLandforms = allowedLandforms;
         MinMoisture = minMoisture;
         Color = color;
         Name = name;
     }
 
-    public override Func<GeologyPolygon, HashSet<GeologyPolygon>, List<Triangle>> BuildTrisForPoly
+    public override bool Allowed(GeologyPolygon p)
     {
-        get;
-        protected set;
+        var pLandform = Root.WorldData.Landforms.GetValueFromPoly(p);
+        return AllowedLandforms.Contains(pLandform) && p.Moisture >= MinMoisture;
     }
 }

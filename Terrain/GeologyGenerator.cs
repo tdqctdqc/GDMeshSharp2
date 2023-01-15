@@ -200,78 +200,12 @@ public class GeologyGenerator
 
     private void BuildLandformTris()
     {
-        var affectedPolys = Data.FaultLines.SelectMany(f => f.PolyFootprint).Where(p => p.IsLand).ToList();
-
+        var affectedPolys = Data.FaultLines.SelectMany(f => f.PolyFootprint).Where(p => p.IsLand).ToHashSet();
         Data.Landforms.BuildTris(affectedPolys);
-        
-        
-        
-        
-        void BuildTris(Landform landform)
-        {
-            var unions = GetLandformUnions(landform, affectedPolys);
-            var hash = unions.SelectMany(u => u).ToHashSet();
-            var polyList = hash.ToList();
-            var polyTris = new Dictionary<GeologyPolygon, List<Triangle>>();
-            polyList.ForEach(p =>
-            {
-                polyTris.Add(p, new List<Triangle>());
+    }
 
-                if (landform == LandformManager.Hill)
-                {
-                    var tris = p.GeoNeighbors.SelectMany(n => p.GetPolyBorder(n).GetSegsRel(p)
-                        .Select(s => new Triangle(s.From, s.To, Vector2.Zero))).ToList();
-                    polyTris[p].AddRange(tris);
-                }
-                else if (landform == LandformManager.Mountain)
-                {
-                    p.GeoNeighbors.ForEach(n =>
-                    {
-                        var segs = p.GetPolyBorder(n)
-                            .GetSegsRel(p);
-                        if (hash.Contains(n))
-                        {
-                            segs.ForEach(seg =>
-                            {
-                                polyTris[p].Add(new Triangle(seg.From, seg.To, Vector2.Zero));
-                            });
-                        }
-                        else
-                        {
-                            var otherStrength = Mathf.Clamp(n.Roughness / landform.MinRoughness, 0f, .8f);
-                            var spike = segs.GetMiddlePoint() * otherStrength;
-                            var firstLeg = segs[0].From * .5f * otherStrength;
-                            var lastLeg = segs[segs.Count - 1].To * .5f * otherStrength;
-                            polyTris[p].Add(new Triangle(firstLeg, lastLeg, spike));
-                            polyTris[p].Add(new Triangle(firstLeg, lastLeg, Vector2.Zero));
-                        }
-                    });
-                }
-                else if (landform == LandformManager.Peak)
-                {
-                    var mtnNeighbors = p.GeoNeighbors.Where(n => n.Roughness > LandformManager.Mountain.MinRoughness);
-                    
-                    var tris = mtnNeighbors.SelectMany(n => p.GetPolyBorder(n).GetSegsRel(p)
-                        .Select(s => new Triangle(s.From * .5f, s.To * .5f, Vector2.Zero))).ToList();
-                    polyTris[p].AddRange(tris);
-                }
-            });
-            foreach (var keyValuePair in polyTris)
-            {
-                Data.Landforms.AddLandformTris(landform, keyValuePair.Key, keyValuePair.Value);
-            }
-        }
-        List<List<GeologyPolygon>> GetLandformUnions(Landform landform, List<GeologyPolygon> polys)
-        {
-            bool compare(GeologyPolygon p1, GeologyPolygon p2)
-            {
-                return p1.Roughness >= landform.MinRoughness == p2.Roughness >= landform.MinRoughness;
-            }
-            var unions = UnionFind<GeologyPolygon, float>.DoUnionFind(polys.ToList(), 
-                compare,
-                poly => poly.GeoNeighbors
-            );
-            return unions.Where(u => u[0].Roughness >= landform.MinRoughness).ToList();
-        }
+    private void BuildVegetationTris()
+    {
+        
     }
 }

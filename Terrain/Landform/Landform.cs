@@ -7,18 +7,21 @@ public class Landform : TerrainAspect
 {
     public string Name { get; private set; }
     public float MinRoughness { get; private set; }
-    public Color Color { get; private set; }
-
-    public Landform(string name, float minRoughness, Color color, Func<GeologyPolygon, HashSet<GeologyPolygon>, List<Triangle>> BuildTrisForPoly)
+    public override bool Allowed(GeologyPolygon poly)
     {
+        return poly.Roughness >= MinRoughness && poly.IsWater == (this == LandformManager.Water);
+    }
+
+    public override Color Color { get; protected set; }
+    public override ITriBuilder TriBuilder { get; protected set; }
+
+
+    public Landform(string name, float minRoughness, Color color, ITriBuilder triBuilder)
+    {
+        TriBuilder = triBuilder;
         Name = name;
         MinRoughness = minRoughness;
         Color = color;
     }
 
-    public override Func<GeologyPolygon, HashSet<GeologyPolygon>, List<Triangle>> BuildTrisForPoly
-    {
-        get;
-        protected set;
-    }
 }

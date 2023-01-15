@@ -12,9 +12,9 @@ public class Polygon : IGraphNode<Polygon, PolygonBorder>
 
     public PolygonBorder GetPolyBorder(Polygon neighbor) 
         => _borderDic[neighbor];
-    public List<Polygon> Neighbors { get; private set; }
+    public List<Polygon> Neighbors { get; protected set; }
     public IEnumerable<PolygonBorder> NeighborBorders => Neighbors.Select(n => GetPolyBorder(n));
-    private Dictionary<Polygon, PolygonBorder> _borderDic;
+    protected Dictionary<Polygon, PolygonBorder> _borderDic;
     public List<Vector2> NoNeighborBorders { get; private set; }
     public BoundingBox BoundingBox { get; private set; }
     public Color Color { get; private set; }

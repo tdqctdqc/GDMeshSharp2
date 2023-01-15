@@ -93,13 +93,13 @@ public static class GenerationUtility
     {
         return GetOrderedBorderPairs(borderSubs, getSubNeighbors, checkForeign).Select(e => e.Foreign).ToList();
     }
-    public static List<Edge<TSub>> GetOrderedBorderPairs<TSub>( 
+    public static List<BorderEdge<TSub>> GetOrderedBorderPairs<TSub>( 
         IEnumerable<TSub> borderSubs, Func<TSub, IEnumerable<TSub>> getSubNeighbors, 
         Func<TSub, bool> checkForeign) where TSub : class
     {
-        var nativeEdgeDic = new Dictionary<TSub, List<Edge<TSub>>>();
-        var foreignEdgeDic = new Dictionary<TSub, List<Edge<TSub>>>();
-        var edges = new HashSet<Edge<TSub>>();
+        var nativeEdgeDic = new Dictionary<TSub, List<BorderEdge<TSub>>>();
+        var foreignEdgeDic = new Dictionary<TSub, List<BorderEdge<TSub>>>();
+        var edges = new HashSet<BorderEdge<TSub>>();
         foreach (var sub in borderSubs)
         {
             if (nativeEdgeDic.ContainsKey(sub))
@@ -108,27 +108,27 @@ public static class GenerationUtility
             }
 
             var thisSubEdges = getSubNeighbors(sub).Where(checkForeign)
-                .Select(n => new Edge<TSub>(sub, n)).ToList();
+                .Select(n => new BorderEdge<TSub>(sub, n)).ToList();
             nativeEdgeDic.Add(sub, thisSubEdges);
             foreach (var e in thisSubEdges)
             {
                 edges.Add(e);
-                if(foreignEdgeDic.ContainsKey(e.Foreign) == false) foreignEdgeDic.Add(e.Foreign, new List<Edge<TSub>>());
+                if(foreignEdgeDic.ContainsKey(e.Foreign) == false) foreignEdgeDic.Add(e.Foreign, new List<BorderEdge<TSub>>());
                 foreignEdgeDic[e.Foreign].Add(e);
             }
         }
         //todo optimize by just making edges as you traverse? 
-        bool adjacentSub(Edge<TSub> e, TSub s)
+        bool adjacentSub(BorderEdge<TSub> e, TSub s)
         {
             var ns = getSubNeighbors(s);
             return ns.Contains(e.Foreign) && ns.Contains(e.Native);
         }
-        bool adjacentEdge(Edge<TSub> e1, Edge<TSub> e2)
+        bool adjacentEdge(BorderEdge<TSub> e1, BorderEdge<TSub> e2)
         {
             return adjacentSub(e1, e2.Native) || adjacentSub(e1, e2.Foreign);
         }
 
-        IEnumerable<Edge<TSub>> getAdjEdges(Edge<TSub> edge)
+        IEnumerable<BorderEdge<TSub>> getAdjEdges(BorderEdge<TSub> edge)
         {
             return nativeEdgeDic[edge.Native].Union(foreignEdgeDic[edge.Foreign])
                 .Where(e => e.Equals(edge) == false && adjacentEdge(e, edge))
@@ -140,10 +140,10 @@ public static class GenerationUtility
         var firstEdgeNeighbors = getAdjEdges(firstEdge);
         
         
-        var left = new List<Edge<TSub>>();
-        var right = new List<Edge<TSub>>();
+        var left = new List<BorderEdge<TSub>>();
+        var right = new List<BorderEdge<TSub>>();
         var count = firstEdgeNeighbors.Count();
-        var covered = new HashSet<Edge<TSub>> {firstEdge};
+        var covered = new HashSet<BorderEdge<TSub>> {firstEdge};
         if (count > 0)
         {
             traverse(firstEdgeNeighbors.ElementAt(0), left);
@@ -153,7 +153,7 @@ public static class GenerationUtility
             traverse(firstEdgeNeighbors.ElementAt(1), right);
         }
 
-        void traverse(Edge<TSub> e, List<Edge<TSub>> list)
+        void traverse(BorderEdge<TSub> e, List<BorderEdge<TSub>> list)
         {
             list.Add(e);
             covered.Add(e);
@@ -165,7 +165,7 @@ public static class GenerationUtility
             }
         }
 
-        var result = new List<Edge<TSub>>();
+        var result = new List<BorderEdge<TSub>>();
         for (int i = left.Count - 1; i >= 0; i--)
         {
             result.Add(left[i]);
@@ -178,14 +178,4 @@ public static class GenerationUtility
         return result;
     }
 }
-public struct Edge<TNode>
-{
-    public TNode Native { get; set; }
-    public TNode Foreign { get; set; }
 
-    public Edge(TNode native, TNode foreign)
-    {
-        Native = native;
-        Foreign = foreign;
-    }
-}

@@ -17,7 +17,7 @@ public static class ISuperExt
     {
         return super.Subs.Where(s => super.GetSubNeighbors(s).Any(n => super.GetSubSuper(n).Equals(super) == false));
     }
-    public static List<Edge<TSub>> GetOrderedBorderPairs<TSub>(this ISuper<TSub> super) where TSub : class
+    public static List<BorderEdge<TSub>> GetOrderedBorderPairs<TSub>(this ISuper<TSub> super) where TSub : class
     {
         return GenerationUtility.GetOrderedBorderPairs(GetBorderElements(super), 
             super.GetSubNeighbors, s => super.GetSubSuper(s).Equals(super) == false);

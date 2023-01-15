@@ -31,9 +31,13 @@ public static class Graphics
         // holder.AddOverlay("polygons", "fault lines", faultLineNode);
         // node.AddChild(faultLineNode);
 
-        var landformTris = GetLandformTrisGraphics(worldData);
+        var landformTris = GetTerrainAspectTrisGraphics(worldData.Landforms);
         holder.AddOverlay("polygons", "Landform Tris", landformTris);
         node.AddChild(landformTris);
+        
+        var vegTris = GetTerrainAspectTrisGraphics(worldData.Vegetation);
+        holder.AddOverlay("polygons", "Vegetation Tris", vegTris);
+        node.AddChild(vegTris);
     }
 
     private static void AddPolyViewMode(List<PolygonGraphic> polyGraphics, Func<GeologyPolygon, Color> getColor, string name)
@@ -49,13 +53,14 @@ public static class Graphics
         }, "Show " + name);
     }
 
-    private static Node2D GetLandformTrisGraphics(WorldData data)
+    private static Node2D GetTerrainAspectTrisGraphics<T>(TerrainAspectManager<T> aspectManager)
+        where T : TerrainAspect
     {
         var els = new List<Node2D>();
-        for (var i = data.Landforms.LandByPriority.Count - 1; i >= 0; i--)
+        for (var i = aspectManager.LandByPriority.Count - 1; i >= 0; i--)
         {
-            var landform = data.Landforms.LandByPriority[i];
-            var holder = data.Landforms.Holders[landform];
+            var aspect = aspectManager.LandByPriority[i];
+            var holder = aspectManager.Holders[aspect];
             foreach (var kvp2 in holder.Tris)
             {
                 if (kvp2.Value.Count == 0) continue;
@@ -68,7 +73,7 @@ public static class Graphics
                 });
                 var mesh = MeshGenerator.GetMeshInstance(tris);
                 mesh.Position = kvp2.Key.Center;
-                mesh.Modulate = landform.Color;
+                mesh.Modulate = aspect.Color;
                 els.Add(mesh);
             }
         }
@@ -76,5 +81,4 @@ public static class Graphics
         res.Setup(els, 10, e => e.Position);
         return res;
     }
-    
 }

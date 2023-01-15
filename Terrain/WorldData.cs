@@ -12,6 +12,7 @@ public class WorldData
     public List<Continent> Continents { get; private set; }
     public List<FaultLine> FaultLines { get; private set; }
     public LandformManager Landforms { get; private set; }
+    public VegetationManager Vegetation { get; private set; }
     public WorldData(Vector2 dimensions)
     {
         Dimensions = dimensions;
@@ -22,5 +23,6 @@ public class WorldData
         GeoPolygons = new List<GeologyPolygon>();
         FaultLines = new List<FaultLine>();
         Landforms = new LandformManager();
+        Vegetation = new VegetationManager();
     }
 }
