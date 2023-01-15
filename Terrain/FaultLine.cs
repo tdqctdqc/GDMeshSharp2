@@ -5,45 +5,35 @@ using Godot;
 
 public class FaultLine 
 {
-    public List<List<Vector2>> Segments { get; private set; }
+    public List<List<LineSegment>> Segments { get; private set; }
     public GeologyPlate LowId { get; private set; }
     public GeologyPlate HighId { get; private set; }
     public List<GeologyPolygon> PolyFootprint { get; private set; }
     public float Friction { get; private set; }
-    public FaultLine(float friction, List<List<Vector2>> segments, GeologyPlate highId, GeologyPlate lowId)
+    public GeologyPolygon Origin => HighId.SeedPoly;
+    public List<Edge<GeologyPolygon>> Edges { get; private set; }
+    public FaultLine(float friction, GeologyPlate highId, GeologyPlate lowId, List<Edge<GeologyPolygon>> edgesHi)
     {
         Friction = friction;
-        Segments = segments;
         HighId = highId;
         LowId = lowId;
         PolyFootprint = new List<GeologyPolygon>();
+        Segments = edgesHi.Select(
+            e => e.Native.GetPolyBorder(e.Foreign)
+                .GetSegsRel(e.Native)
+                .Select(l => l.ChangeOrigin(e.Native.Center, Origin.Center))
+                .ToList())
+            .ToList();
+        Segments.ForEach(ss => ss.ForEach(s => s.Clamp(Root.Bounds.x)));
+        Edges = edgesHi;
     }
 
-    public float DistToFault(Vector2 point)
+    public float GetDist(Polygon poly)
     {
-        float dist = Mathf.Inf;
-        Segments.ForEach(seg =>
-        {
-            for (var i = 0; i < seg.Count - 1; i++)
-            {
-                var sampleDist = point.DistFromLineSegmentToPoint(seg[i], seg[i + 1]);
-                if (sampleDist < dist)
-                {
-                    dist = sampleDist;
-                }
-            }
-        });
-        return dist;
+        return Segments.Select(seg => seg.Select(l => l.DistanceTo(Origin.GetOffsetTo(poly, Root.Bounds.x))).Min()).Min();
     }
-
-    public bool PointWithinDist(Vector2 point, float dist)
+    public bool PointWithinDist(Vector2 pointAbs, float dist)
     {
-        return Segments.Any(seg =>
-        {
-            return Enumerable.Range(0, seg.Count - 2).Any(i =>
-            {
-                return point.DistFromLineSegmentToPoint(seg[i], seg[i + 1]) <= dist;
-            });
-        });
+        return Segments.Any(seg => seg.Any(l => l.DistanceTo(Origin.GetOffsetTo(pointAbs, Root.Bounds.x)) < dist));
     }
 }

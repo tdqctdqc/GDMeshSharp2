@@ -14,7 +14,7 @@ public class LineSegment
         From = from;
         To = to;
     }
-
+    
     public LineSegment GetReverse()
     {
         return new LineSegment(To, From);
@@ -25,8 +25,32 @@ public class LineSegment
         return new LineSegment(From + oldOrigin - newOrigin, To + oldOrigin - newOrigin);
     }
 
+    public void Clamp(float mapWidth)
+    {
+        if (Mid.x > mapWidth / 2f)
+        {
+            From += Vector2.Left * mapWidth;
+            To += Vector2.Left * mapWidth;
+        }
+
+        if (Mid.x < -mapWidth / 2f)
+        {
+            From += Vector2.Right * mapWidth;
+            To += Vector2.Right * mapWidth;
+        }
+    }
     public bool PointsTo(LineSegment l)
     {
         return l.From == To;
+    }
+
+    public float DistanceTo(Vector2 pointRel)
+    {
+        return pointRel.DistToLine(From, To);
+    }
+
+    public float Length()
+    {
+        return From.DistanceTo(To);
     }
 }

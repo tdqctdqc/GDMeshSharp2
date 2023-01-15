@@ -45,7 +45,15 @@ public class GraphicView
     }
     public void Clear()
     {
-        
+        foreach (var keyValuePair in _overlays)
+        {
+            keyValuePair.Value.Free();
+        }
+
+        foreach (var keyValuePair in _overlayTokens)
+        {
+            keyValuePair.Value.Button.Free();
+        }
     }
     
 }

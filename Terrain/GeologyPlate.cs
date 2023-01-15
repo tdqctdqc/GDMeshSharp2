@@ -14,10 +14,9 @@ public class GeologyPlate : ISuper<GeologyCell>
     public Dictionary<GeologyCell, int> NeighboringCellsAdjCount { get; private set; }
     public BoundingBox BoundingBox { get; private set; }
     public HashSet<GeologyPlate> Neighbors { get; private set; }
-    public Vector2 Center { get; private set; }
+    public Vector2 Center => SeedPoly.Center;
     public GeologyPlate(GeologyCell seed, int id)
     {
-        Center = Vector2.Zero;
         Id = id;
         Seed = seed;
         Cells = new HashSet<GeologyCell> {};
@@ -29,7 +28,6 @@ public class GeologyPlate : ISuper<GeologyCell>
 
     public void AddCell(GeologyCell c)
     {
-        Center = (Center * Cells.Count + c.Center) / (Cells.Count + 1);
         Cells.Add(c);
         BoundingBox.Cover(c.BoundingBox);
         c.SetPlate(this);
@@ -61,16 +59,21 @@ public class GeologyPlate : ISuper<GeologyCell>
         var borderCellPolys = this
             .GetBorderElements()
             .SelectMany(c => c.PolyGeos);
-        var borderPolys = GenerationUtility.GetBorderElements(borderCellPolys, p => p.GeoNeighbors, p => p.Cell.Plate != this);
+        var borderPolys = GenerationUtility
+            .GetBorderElements(borderCellPolys, p => p.GeoNeighbors, p => p.Cell.Plate != this);
         return borderPolys;
     }
     
-    public List<List<Vector2>> GetOrderedBorderSegmentsWithPlate(GeologyPlate aPlate)
+    public List<Edge<GeologyPolygon>> GetOrderedBorderRelative(GeologyPlate aPlate)
     {
-        var borderPolys = GetBorderPolys().Where(p => p.GeoNeighbors.Any(n => n.Cell.Plate == aPlate));
-        var commonPolyBorders = GenerationUtility.GetOrderedBorderTransformed(borderPolys, c => c.GeoNeighbors,
-            c => c.Cell.Plate == aPlate, 
-            (c1, c2) => c1.GetEdge(c2).GetPointsAbs());
+        var borderCellPolys = this
+            .GetBorderElements()
+            .SelectMany(c => c.PolyGeos);
+        var borderPolys = GenerationUtility
+            .GetBorderElements(borderCellPolys, p => p.GeoNeighbors, n => n.Cell.Plate == aPlate);
+        var commonPolyBorders = GenerationUtility.GetOrderedBorderPairs(borderPolys, c => c.GeoNeighbors,
+            c => c.Cell.Plate == aPlate);
+        
         return commonPolyBorders;
     }
     

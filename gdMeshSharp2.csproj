@@ -4,6 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="DelaunatorNetStd" Version="1.0.4" />
+    <PackageReference Include="OptimizedPriorityQueue" Version="5.1.0" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Graph\Superset" />

@@ -32,19 +32,17 @@ public class GraphicLayerHolder : Control
 
     public void Clear()
     {
+        foreach (var keyValuePair in _views)
+        {
+            keyValuePair.Value.Clear();
+        }
         foreach (var keyValuePair in _viewTokens)
         {
             keyValuePair.Value.Free();
         }
         _viewTokens.Clear();
-
-        
-        foreach (var keyValuePair in _views)
-        {
-            keyValuePair.Value.Clear();
-        }
-        _viewTokens.Clear();
         _views.Clear();
+
         while (_viewButtonsContainer.GetChildCount() > 0)
         {
             _viewButtonsContainer.GetChild(0).Free();

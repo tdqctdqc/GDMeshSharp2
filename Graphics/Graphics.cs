@@ -12,90 +12,69 @@ public static class Graphics
         polySegmenter.Setup(polyGraphics, 10, p => p.Poly.Center);
         holder.AddView(polySegmenter, "polygons");
         node.AddChild(polySegmenter);
+        AddPolyViewMode(polyGraphics, g => g.Color, "Polys");
+        AddPolyViewMode(polyGraphics, g => g.Cell.Seed.Color, "Poly Cells");
+        AddPolyViewMode(polyGraphics, g => g.Cell.Plate.SeedPoly.Color, "Poly Plates");
+        AddPolyViewMode(polyGraphics, g => g.Cell.Plate.Mass.SeedPoly.Color, "Poly Masses");
+        AddPolyViewMode(polyGraphics, g => g.Cell.Plate.Mass.Continent.SeedPoly.Color, "Poly Continents");
+        AddPolyViewMode(polyGraphics, g => g.IsLand ? Colors.SaddleBrown : Colors.Blue, "Land/Sea");
+        AddPolyViewMode(polyGraphics, g => Colors.White.LinearInterpolate(Colors.Red, g.Roughness), "Poly Roughness");
+        // AddPolyViewMode(polyGraphics, g => LandformManager.GetLandformFromPolyRoughness(g).Color, "Poly Landforms");
+        
+        // var faultLineGraphics = worldData.FaultLines.Select(f => new FaultLineGraphic(f)).ToList();
+        // faultLineGraphics.ForEach(mg =>
+        // {
+        //     mg.Position = mg.Origin;
+        // });
+        // var faultLineNode = new GraphicsSegmenter<FaultLineGraphic>();
+        // faultLineNode.Setup(faultLineGraphics, 10, m => m.Origin);
+        // holder.AddOverlay("polygons", "fault lines", faultLineNode);
+        // node.AddChild(faultLineNode);
 
-        Root.ButtonContainer.AddButton(() =>
-        {
-            polyGraphics.ForEach(p =>
-            {
-                var g = p.Poly as GeologyPolygon;
-                var color = g.Color;
-                p.SetColor(color);
-            });
-        }, "Show Polys");
-        Root.ButtonContainer.AddButton(() =>
-        {
-            polyGraphics.ForEach(p =>
-            {
-                var g = p.Poly as GeologyPolygon;
-                var color = g.Cell.Seed.Color;
-                p.SetColor(color);
-            });
-        }, "Show Poly Cells");
-        
-        Root.ButtonContainer.AddButton(() =>
-        {
-            polyGraphics.ForEach(p =>
-            {
-                var g = p.Poly as GeologyPolygon;
-                var color = g.Cell.Plate.SeedPoly.Color;
-                p.SetColor(color);
-            });
-        }, "Show Poly Plates");
-        
-        Root.ButtonContainer.AddButton(() =>
-        {
-            polyGraphics.ForEach(p =>
-            {
-                var g = p.Poly as GeologyPolygon;
-                var color = g.Cell.Plate.Mass.SeedPoly.Color;
-                p.SetColor(color);
-            });
-        }, "Show Poly Masses");
-        Root.ButtonContainer.AddButton(() =>
-        {
-            polyGraphics.ForEach(p =>
-            {
-                var g = p.Poly as GeologyPolygon;
-                var color = g.Cell.Plate.Mass.Continent.SeedPoly.Color;
-                p.SetColor(color);
-            });
-        }, "Show Poly Continents");
-        Root.ButtonContainer.AddButton(() =>
-        {
-            polyGraphics.ForEach(p =>
-            {
-                var g = p.Poly as GeologyPolygon;
-                var color = g.IsLand ? Colors.SaddleBrown : Colors.Blue;
-                p.SetColor(color);
-            });
-        }, "Show Land/Sea");
-        var mtnGraphics = worldData.FaultLines.Select(f => f.GetFaultLineGraphic());
-        var mtnNode = new GraphicsSegmenter<Node2D>();
-        // mtnNode.Setup();
-        holder.AddOverlay("polygons", "mountain footprints", mtnNode);
-        node.AddChild(mtnNode);
+        var landformTris = GetLandformTrisGraphics(worldData);
+        holder.AddOverlay("polygons", "Landform Tris", landformTris);
+        node.AddChild(landformTris);
     }
 
-
-    public static Node2D GetFaultLineGraphic(this FaultLine f)
+    private static void AddPolyViewMode(List<PolygonGraphic> polyGraphics, Func<GeologyPolygon, Color> getColor, string name)
     {
-        var result = new Node2D();
-        f.Segments.ForEach(seg =>
+        Root.ButtonContainer.AddButton(() =>
         {
-            var segLines = MeshGenerator.GetLinesMesh(seg, 10f, false);
-            var segPoints = MeshGenerator.GetPointsMesh(seg, 20f);
-            result.AddChild(segLines);
-            result.AddChild(segPoints);
-        });
-        var color = Colors.Gray;//ColorsExt.GetRandomColor();
-        result.Modulate = color;
-        var tris = new List<Vector2>();
-        f.PolyFootprint.ForEach(p =>
-        {
-            tris.AddRange(p.GetTrisAbs());
-        });
-        var triMesh = MeshGenerator.GetMeshInstance(tris);
-        triMesh.Modulate = color;
-        return triMesh;
+            polyGraphics.ForEach(p =>
+            {
+                var g = p.Poly as GeologyPolygon;
+                var color = getColor(g);
+                p.SetColor(color);
+            });
+        }, "Show " + name);
     }
+
+    private static Node2D GetLandformTrisGraphics(WorldData data)
+    {
+        var els = new List<Node2D>();
+        for (var i = data.Landforms.LandByPriority.Count - 1; i >= 0; i--)
+        {
+            var landform = data.Landforms.LandByPriority[i];
+            var holder = data.Landforms.Holders[landform];
+            foreach (var kvp2 in holder.Tris)
+            {
+                if (kvp2.Value.Count == 0) continue;
+                var tris = new List<Vector2>();
+                kvp2.Value.ForEach(tri =>
+                {
+                    tris.Add(tri.A);
+                    tris.Add(tri.B);
+                    tris.Add(tri.C);
+                });
+                var mesh = MeshGenerator.GetMeshInstance(tris);
+                mesh.Position = kvp2.Key.Center;
+                mesh.Modulate = landform.Color;
+                els.Add(mesh);
+            }
+        }
+        var res = new GraphicsSegmenter<Node2D>();
+        res.Setup(els, 10, e => e.Position);
+        return res;
+    }
+    
 }

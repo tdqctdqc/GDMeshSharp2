@@ -81,14 +81,6 @@ public static class GenerationUtility
         return els.Where(e => getNeighbors(e).Any(n => checkForeign(n)));
     }
 
-    public static List<TResult> GetOrderedBorderTransformed<TSub, TResult>(
-        IEnumerable<TSub> borderSubs, Func<TSub, IEnumerable<TSub>> getSubNeighbors,
-        Func<TSub, bool> checkForeign,
-        Func<TSub, TSub, TResult> transform) where TSub : class
-    {
-        return GetOrderedBorderPairs(borderSubs, getSubNeighbors, checkForeign)
-            .Select(e => transform(e.Native, e.Foreign)).ToList();
-    }
     public static List<TSub> GetOrderedBorder<TSub>(
         IEnumerable<TSub> borderSubs, Func<TSub, IEnumerable<TSub>> getSubNeighbors,
         Func<TSub, bool> checkForeign) where TSub : class

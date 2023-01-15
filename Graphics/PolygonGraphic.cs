@@ -45,7 +45,7 @@ public class PolygonGraphic : Node2D
         
         for (var i = 0; i < poly.Neighbors.Count; i++)
         {
-            var edge = poly.GetEdge(poly.Neighbors[i]);
+            var edge = poly.GetPolyBorder(poly.Neighbors[i]);
             var offset = edge.GetOffsetToOtherPoly(poly);
             var centerArrow = MeshGenerator.GetArrowGraphic(Vector2.Zero, offset, 10f);
             AddChild(centerArrow);
@@ -54,8 +54,8 @@ public class PolygonGraphic : Node2D
 
             var next = (i + 1) % poly.Neighbors.Count;
             
-            var from = poly.GetEdge(poly.Neighbors[i]).GetPointsRel(poly).Avg();
-            var to = poly.GetEdge(poly.Neighbors[next]).GetPointsRel(poly).Avg();
+            var from = poly.GetPolyBorder(poly.Neighbors[i]).GetPointsRel(poly).Avg();
+            var to = poly.GetPolyBorder(poly.Neighbors[next]).GetPointsRel(poly).Avg();
             var arrow = MeshGenerator.GetArrowGraphic(from, to, 5f);
             arrow.Modulate = color;
             AddChild(arrow);

@@ -14,6 +14,7 @@ public class Root : Node
     public static CameraController Cam { get; private set; }
     public static ButtonContainer ButtonContainer { get; private set; }
     public static Vector2 Bounds { get; private set; }
+    public static WorldData WorldData { get; private set; }
     public override void _Ready()
     {
         Cam = (CameraController) FindNode("Camera2D");
@@ -49,18 +50,20 @@ public class Root : Node
     }
     private void Generate(int seed)
     {
+        Bounds = new Vector2(16000, 8000);
 
         _holder.Clear();
+        ButtonContainer.Clear();
         Random.Seed = (ulong) seed;//DateTime.Now.Millisecond;
         _node?.QueueFree();
         _node = new Node();
         AddChild(_node);
         MoveChild(_node, 0);
 
-        var worldData = WorldGenerator.Generate();
-        Cam.SetBounds(worldData.Dimensions);
-        Bounds = worldData.Dimensions;
-        Graphics.BuildGraphics(_node, _holder, worldData);
+        WorldData = WorldGenerator.Generate(Bounds);
+        Cam.SetBounds(WorldData.Dimensions);
+        Bounds = WorldData.Dimensions;
+        Graphics.BuildGraphics(_node, _holder, WorldData);
     }
 
 }

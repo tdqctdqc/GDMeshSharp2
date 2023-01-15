@@ -101,7 +101,7 @@ public class VoronoiGenerator
             for (var i = 0; i < right.Neighbors.Count; i++)
             {
                 var neighbor = right.Neighbors[i];
-                var border = right.GetEdge(neighbor);
+                var border = right.GetPolyBorder(neighbor);
                 var rightBorderPoints = border.GetPointsRel(right);
                 var nBorderPoints = border.GetPointsRel(neighbor);
                 var leftBorderPoints = rightBorderPoints.Select(v => v).Reverse().ToList();
@@ -143,12 +143,12 @@ public class VoronoiGenerator
         if(leftRightWrap)
         {
             var firstRightNew = firstRight.Neighbors.Except(firstRightNOld).ElementAt(0);
-            var firstRightCoords = firstRight.GetEdge(firstRightNew).GetPointsRel(firstRight);
-            var firstRightNCoords = firstRight.GetEdge(firstRightNew).GetPointsRel(firstRightNew);
+            var firstRightCoords = firstRight.GetPolyBorder(firstRightNew).GetPointsRel(firstRight);
+            var firstRightNCoords = firstRight.GetPolyBorder(firstRightNew).GetPointsRel(firstRightNew);
             
             var lastRightNew = lastRight.Neighbors.Except(lastRightNOld).ElementAt(0);
-            var lastRightCoords = lastRight.GetEdge(lastRightNew).GetPointsRel(lastRight);
-            var lastRightNCoords = lastRight.GetEdge(lastRightNew).GetPointsRel(lastRightNew);
+            var lastRightCoords = lastRight.GetPolyBorder(lastRightNew).GetPointsRel(lastRight);
+            var lastRightNCoords = lastRight.GetPolyBorder(lastRightNew).GetPointsRel(lastRightNew);
 
 
             var firstBorder = new PolygonBorder(firstLeft, firstRightCoords.GetLineSegments().ToList(), 

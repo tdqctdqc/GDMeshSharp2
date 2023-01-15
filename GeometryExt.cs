@@ -116,7 +116,7 @@ public static class GeometryExt
         var fp = point - from;
         return to - fp;
     }
-    public static float DistFromLineSegmentToPoint(this Vector2 point, Vector2 start, Vector2 end)
+    public static float DistToLine(this Vector2 point, Vector2 start, Vector2 end)
     {
         // vector AB
         var AB = new Vector2();
@@ -252,5 +252,25 @@ public static class GeometryExt
             .ToList();
         result.Add(pairs.Last().To);
         return result;
+    }
+    public static Vector2 GetMiddlePoint(this IEnumerable<LineSegment> pairs)
+    {
+        var totalLength = pairs.Select(p => p.From.DistanceTo(p.To)).Sum();
+        var lengthSoFar = 0f;
+        var iter = 0;
+        var count = pairs.Count();
+        while (iter < count)
+        {
+            var seg = pairs.ElementAt(iter);
+            if (lengthSoFar + seg.Length() > totalLength / 2f)
+            {
+                var portion = totalLength / 2f - lengthSoFar;
+                return seg.From.LinearInterpolate(seg.To, portion / seg.Length());
+            }
+            lengthSoFar += seg.Length();
+            iter++;
+        }
+
+        throw new Exception();
     }
 }

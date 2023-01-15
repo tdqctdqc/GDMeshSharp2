@@ -26,9 +26,15 @@ public class GeologyGenerator
         BuildMasses();
         BuildContinents();
         DoContinentFriction();
+        HandleIsthmusAndInlandSeas();
+        BuildLandformTris();
     }
 
-    
+    private void HandleIsthmusAndInlandSeas()
+    {
+        
+    }
+
 
     private void BuildCells()
     {
@@ -115,7 +121,6 @@ public class GeologyGenerator
             {
                 poly.SetAltitude(Root.Random.RandfRange(.8f * cont.Altitude, 1.2f * cont.Altitude));
                 //todo make this sample perlin
-                poly.SetIsLand(poly.Altitude > .5f);
             }
         });
     }
@@ -125,40 +130,39 @@ public class GeologyGenerator
         Data.Plates.ForEach(p => setFriction(p));
         Data.FaultLines.ForEach(f =>
         {
-            f.PolyFootprint.AddRange(getPolysInRangeOfFault(f));   
+            var inRange = getPolysInRangeOfFault(f);
+            f.PolyFootprint.AddRange(inRange);   
         });
         
+
+
         //find polys in range of fault
         //add altitude + roughness to them
         //union find for the ones that are land and eligible for hill, mtn, etc
         //draw meshes inside these 
-        Data.FaultLines.ForEach(f =>
+        
+        
+        
+        void setFriction(GeologyPlate hiPlate)
         {
-            
-        });
-        
-        
-        
-        void setFriction(GeologyPlate plate)
-        {
-            var neighbors = plate.Neighbors.ToList();
+            var neighbors = hiPlate.Neighbors.ToList();
             var count = neighbors.Count;
             for (var j = 0; j < count; j++)
             {
-                var aPlate = neighbors[j];
-                if (aPlate.Id < plate.Id 
-                    && aPlate.Mass.Continent != plate.Mass.Continent)
+                var loPlate = neighbors[j];
+                if (loPlate.Id < hiPlate.Id 
+                    && loPlate.Mass.Continent != hiPlate.Mass.Continent)
                 {
-                    var drift1 = plate.Mass.Continent.Drift;
-                    var drift2 = aPlate.Mass.Continent.Drift;
+                    var drift1 = hiPlate.Mass.Continent.Drift;
+                    var drift2 = loPlate.Mass.Continent.Drift;
 
-                    var axis = aPlate.Center - plate.Center;
+                    var axis = loPlate.Center - hiPlate.Center;
                     var driftStr = (drift1 - drift2).Length() / 2f;
-                    if (driftStr > .5f)
+                    if (driftStr > .75f)
                     {
-                        var borders = plate.GetOrderedBorderSegmentsWithPlate(aPlate);
-                        var range = new FaultLine(driftStr, borders, plate, aPlate);
-                        Data.FaultLines.Add(range);
+                        var borders = hiPlate.GetOrderedBorderRelative(loPlate);
+                        var fault = new FaultLine(driftStr, hiPlate, loPlate, borders);
+                        Data.FaultLines.Add(fault);
                     }
                 }
             }
@@ -166,8 +170,108 @@ public class GeologyGenerator
 
         IEnumerable<GeologyPolygon> getPolysInRangeOfFault(FaultLine fault)
         {
-            return fault.HighId.Cells.SelectMany(c => c.PolyGeos).Where(p => fault.PointWithinDist(p.Center, fault.Friction * 200f))
-                .Union(fault.LowId.Cells.SelectMany(c => c.PolyGeos).Where(p => fault.PointWithinDist(p.Center, fault.Friction * 200f)));
+            var faultRange = fault.Friction * 500f;
+            var polys = fault.HighId.Cells.SelectMany(c => c.PolyGeos)
+                .Union(fault.LowId.Cells.SelectMany(c => c.PolyGeos));
+            var frictionAltEffect = .25f;
+            var frictionRoughnessEffect = 1f;
+            var polysInRange = new List<GeologyPolygon>();
+            foreach (var poly in polys)
+            {
+                var dist = fault.GetDist(poly);
+                var distRatio = (faultRange - dist) / faultRange;
+                if (dist < faultRange)
+                {
+                    polysInRange.Add(poly);
+                    var altIncrement = fault.Friction * frictionAltEffect * distRatio;
+                    float erosion = 0f;
+                    if (poly.Altitude < .5f) erosion = poly.Altitude;
+                    poly.SetAltitude(poly.Altitude + altIncrement);
+                    var rand = Root.Random.RandfRange(-.2f, .2f);
+                    var newRoughness = Mathf.Clamp(fault.Friction * frictionRoughnessEffect * distRatio - erosion + rand, 0f,
+                        1f);
+                    poly.SetRoughness(newRoughness);
+                }
+            }
+
+            return polysInRange;
+        }
+    }
+
+    private void BuildLandformTris()
+    {
+        var affectedPolys = Data.FaultLines.SelectMany(f => f.PolyFootprint).Where(p => p.IsLand).ToList();
+
+        Data.Landforms.BuildTris(affectedPolys);
+        
+        
+        
+        
+        void BuildTris(Landform landform)
+        {
+            var unions = GetLandformUnions(landform, affectedPolys);
+            var hash = unions.SelectMany(u => u).ToHashSet();
+            var polyList = hash.ToList();
+            var polyTris = new Dictionary<GeologyPolygon, List<Triangle>>();
+            polyList.ForEach(p =>
+            {
+                polyTris.Add(p, new List<Triangle>());
+
+                if (landform == LandformManager.Hill)
+                {
+                    var tris = p.GeoNeighbors.SelectMany(n => p.GetPolyBorder(n).GetSegsRel(p)
+                        .Select(s => new Triangle(s.From, s.To, Vector2.Zero))).ToList();
+                    polyTris[p].AddRange(tris);
+                }
+                else if (landform == LandformManager.Mountain)
+                {
+                    p.GeoNeighbors.ForEach(n =>
+                    {
+                        var segs = p.GetPolyBorder(n)
+                            .GetSegsRel(p);
+                        if (hash.Contains(n))
+                        {
+                            segs.ForEach(seg =>
+                            {
+                                polyTris[p].Add(new Triangle(seg.From, seg.To, Vector2.Zero));
+                            });
+                        }
+                        else
+                        {
+                            var otherStrength = Mathf.Clamp(n.Roughness / landform.MinRoughness, 0f, .8f);
+                            var spike = segs.GetMiddlePoint() * otherStrength;
+                            var firstLeg = segs[0].From * .5f * otherStrength;
+                            var lastLeg = segs[segs.Count - 1].To * .5f * otherStrength;
+                            polyTris[p].Add(new Triangle(firstLeg, lastLeg, spike));
+                            polyTris[p].Add(new Triangle(firstLeg, lastLeg, Vector2.Zero));
+                        }
+                    });
+                }
+                else if (landform == LandformManager.Peak)
+                {
+                    var mtnNeighbors = p.GeoNeighbors.Where(n => n.Roughness > LandformManager.Mountain.MinRoughness);
+                    
+                    var tris = mtnNeighbors.SelectMany(n => p.GetPolyBorder(n).GetSegsRel(p)
+                        .Select(s => new Triangle(s.From * .5f, s.To * .5f, Vector2.Zero))).ToList();
+                    polyTris[p].AddRange(tris);
+                }
+            });
+            foreach (var keyValuePair in polyTris)
+            {
+                Data.Landforms.AddLandformTris(landform, keyValuePair.Key, keyValuePair.Value);
+            }
+        }
+        List<List<GeologyPolygon>> GetLandformUnions(Landform landform, List<GeologyPolygon> polys)
+        {
+            bool compare(GeologyPolygon p1, GeologyPolygon p2)
+            {
+                return p1.Roughness >= landform.MinRoughness == p2.Roughness >= landform.MinRoughness;
+            }
+            var unions = UnionFind<GeologyPolygon, float>.DoUnionFind(polys.ToList(), 
+                compare,
+                poly => poly.GeoNeighbors
+            );
+            return unions.Where(u => u[0].Roughness >= landform.MinRoughness).ToList();
         }
     }
 }

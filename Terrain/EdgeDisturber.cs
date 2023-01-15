@@ -19,8 +19,8 @@ public static class EdgeDisturber
                 var nPoly = poly.Neighbors[j];
                 if (poly.Id > nPoly.Id)
                 {
-                    DisturbEdge(poly, nPoly, noise);
                     // DisturbEdge(poly, nPoly, noise);
+                    DisturbEdge(poly, nPoly, noise);
                 }
             }
         }
@@ -28,7 +28,7 @@ public static class EdgeDisturber
 
     private static void DisturbEdge(Polygon highId, Polygon lowId, OpenSimplexNoise noise)
     {
-        var border = highId.GetEdge(lowId);
+        var border = highId.GetPolyBorder(lowId);
         var hiSegs = border.HighSegsRel;
         var loSegs = border.LowSegsRel;
         var axisHi = border.GetOffsetToOtherPoly(highId);

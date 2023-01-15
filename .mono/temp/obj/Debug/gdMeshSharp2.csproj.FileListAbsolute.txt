@@ -9,3 +9,4 @@ C:\Users\Tynan Dion\desktop\games\gdMeshSharp2\.mono\temp\bin\Debug\DelaunatorSh
 C:\Users\Tynan Dion\desktop\games\gdMeshSharp2\.mono\temp\obj\Debug\gdMeshSharp2.csproj.CopyComplete
 C:\Users\Tynan Dion\desktop\games\gdMeshSharp2\.mono\temp\obj\Debug\gdMeshSharp2.dll
 C:\Users\Tynan Dion\desktop\games\gdMeshSharp2\.mono\temp\obj\Debug\gdMeshSharp2.pdb
+C:\Users\Tynan Dion\desktop\games\gdMeshSharp2\.mono\temp\bin\Debug\PriorityQueue.dll

@@ -21,6 +21,51 @@ public static class MeshGenerator
         result.Modulate = Colors.Red;
         return result;
     }
+
+    public static MeshInstance2D GetLinesMesh(List<LineSegment> lines, Vector2 origin, float thickness, bool close)
+    {
+        var triPoints = new List<Vector2>();
+        for (int i = 0; i < lines.Count; i++)
+        {
+            var from = lines[i].From;
+            var to = lines[i].To;
+            var perpendicular = (from - to).Normalized().Rotated(Mathf.Pi / 2f);
+            var fromOut = from + perpendicular * .5f * thickness;
+            var fromIn = from - perpendicular * .5f * thickness;
+            var toOut = to + perpendicular * .5f * thickness;
+            var toIn = to - perpendicular * .5f *thickness;
+        
+            triPoints.Add(fromIn);
+            triPoints.Add(fromOut);
+            triPoints.Add(toOut);
+            triPoints.Add(toIn);
+            triPoints.Add(toOut);
+            triPoints.Add(fromIn);
+        }
+
+        if (close && lines.Count > 2)
+        {
+            var from = lines[lines.Count - 1].To;
+            var to = lines[0].From;
+            var perpendicular = (from - to).Normalized().Rotated(Mathf.Pi / 2f);
+            var fromOut = from + perpendicular * .5f * thickness;
+            var fromIn = from - perpendicular * .5f * thickness;
+            var toOut = to + perpendicular * .5f * thickness;
+            var toIn = to - perpendicular * .5f *thickness;
+        
+            triPoints.Add(fromIn);
+            triPoints.Add(fromOut);
+            triPoints.Add(toOut);
+            triPoints.Add(toIn);
+            triPoints.Add(toOut);
+            triPoints.Add(fromIn);
+        }
+
+        var meshInstance = new MeshInstance2D();
+        var mesh = GetArrayMesh(triPoints.ToArray());
+        meshInstance.Mesh = mesh;
+        return meshInstance;
+    }
     public static MeshInstance2D GetLinesMesh(List<Vector2> points,
         float thickness, bool close)
     {
@@ -237,7 +282,7 @@ public static class MeshGenerator
         return node;
     }
 
-    public static Node2D GetPointsMesh(List<Vector2> points, float markerSize)
+    public static Node2D GetPointsMesh(this List<Vector2> points, float markerSize)
     {
         var triPoints = PointsGenerator.GetSquareMarkerMesh(points, markerSize);
         return MeshGenerator.GetMeshInstance(triPoints);

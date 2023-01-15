@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public interface IGraphNode<TNode, TEdge>
 {
     IReadOnlyList<TNode> Neighbors { get; }
-    TEdge GetEdge(TNode neighbor);
+    TEdge GetPolyBorder(TNode neighbor);
     void AddNeighbor(TNode poly, TEdge edge);
     void RemoveNeighbor(TNode neighbor);
 }

@@ -7,7 +7,7 @@ public class GraphNode<TNode, TEdge> : IGraphNode<TNode, TEdge>
     public TNode Element {get; private set;}
     private Dictionary<TNode, GraphNode<TNode, TEdge>> _nodeDic;
     IReadOnlyList<TNode> IGraphNode<TNode, TEdge>.Neighbors => Neighbors;
-    TEdge IGraphNode<TNode, TEdge>.GetEdge(TNode neighbor) => _costs[neighbor];
+    TEdge IGraphNode<TNode, TEdge>.GetPolyBorder(TNode neighbor) => _costs[neighbor];
     
 
     public List<TNode> Neighbors { get; private set; }

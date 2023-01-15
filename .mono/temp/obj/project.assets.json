@@ -10,6 +10,15 @@
         "runtime": {
           "lib/netstandard2.0/DelaunatorSharpNetStd.dll": {}
         }
+      },
+      "OptimizedPriorityQueue/5.1.0": {
+        "type": "package",
+        "compile": {
+          "lib/net45/PriorityQueue.dll": {}
+        },
+        "runtime": {
+          "lib/net45/PriorityQueue.dll": {}
+        }
       }
     }
   },
@@ -25,11 +34,41 @@
         "delaunatornetstd.nuspec",
         "lib/netstandard2.0/DelaunatorSharpNetStd.dll"
       ]
+    },
+    "OptimizedPriorityQueue/5.1.0": {
+      "sha512": "0AnX6kAs0GiLrSqrHKe5mpQhJSHTmXeqLNucV2CxGATP/I9UzLMc1N4MtS/z8qB6mcgX61OjHdY3YbOmETGs+A==",
+      "type": "package",
+      "path": "optimizedpriorityqueue/5.1.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net20/PriorityQueue.dll",
+        "lib/net20/PriorityQueue.pdb",
+        "lib/net20/PriorityQueue.xml",
+        "lib/net35-unity full v3.5/PriorityQueue.dll",
+        "lib/net35-unity full v3.5/PriorityQueue.pdb",
+        "lib/net35-unity full v3.5/PriorityQueue.xml",
+        "lib/net35-unity subset v3.5/PriorityQueue.dll",
+        "lib/net35-unity subset v3.5/PriorityQueue.pdb",
+        "lib/net35-unity subset v3.5/PriorityQueue.xml",
+        "lib/net45/PriorityQueue.dll",
+        "lib/net45/PriorityQueue.pdb",
+        "lib/net45/PriorityQueue.xml",
+        "lib/netstandard1.0/PriorityQueue.dll",
+        "lib/netstandard1.0/PriorityQueue.pdb",
+        "lib/netstandard1.0/PriorityQueue.xml",
+        "lib/portable-net40+sl5+win8+wpa81+wp8/PriorityQueue.dll",
+        "lib/portable-net40+sl5+win8+wpa81+wp8/PriorityQueue.pdb",
+        "lib/portable-net40+sl5+win8+wpa81+wp8/PriorityQueue.xml",
+        "optimizedpriorityqueue.5.1.0.nupkg.sha512",
+        "optimizedpriorityqueue.nuspec"
+      ]
     }
   },
   "projectFileDependencyGroups": {
     ".NETFramework,Version=v4.7.2": [
-      "DelaunatorNetStd >= 1.0.4"
+      "DelaunatorNetStd >= 1.0.4",
+      "OptimizedPriorityQueue >= 5.1.0"
     ]
   },
   "packageFolders": {
@@ -78,6 +117,10 @@
           "DelaunatorNetStd": {
             "target": "Package",
             "version": "[1.0.4, )"
+          },
+          "OptimizedPriorityQueue": {
+            "target": "Package",
+            "version": "[5.1.0, )"
           }
         },
         "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.113\\RuntimeIdentifierGraph.json"

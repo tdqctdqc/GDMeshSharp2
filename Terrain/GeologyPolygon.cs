@@ -7,11 +7,12 @@ public class GeologyPolygon : Polygon
 {
     public GeologyCell Cell { get; private set; }
     public List<GeologyPolygon> GeoNeighbors { get; private set; }
-    public bool IsLand { get; private set; }
+    public bool IsLand => Altitude > .5f;
     public bool IsWater => IsLand == false;
     public float Altitude { get; private set; }
     public float Roughness { get; private set; }
-    public GeologyPolygon(int id, Vector2 center) : base(id, center)
+    public float Moisture { get; private set; }
+    public GeologyPolygon(int id, Vector2 center, float mapWidth) : base(id, center, mapWidth)
     {
         GeoNeighbors = new List<GeologyPolygon>();
     }
@@ -38,8 +39,14 @@ public class GeologyPolygon : Polygon
     {
         Altitude = altitude;
     }
-    public void SetIsLand(bool isLand)
+
+    public void SetRoughness(float roughness)
     {
-        IsLand = isLand;
+        Roughness = roughness;
+    }
+
+    public void SetMoisture(float moisture)
+    {
+        Moisture = moisture;
     }
 }

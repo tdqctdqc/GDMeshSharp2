@@ -47,10 +47,18 @@ public class CameraController : Camera2D
         if(Input.IsKeyPressed((int)KeyList.Z))
         {
             Zoom *= .9f * mult;
+            Zoom = new Vector2(
+                Mathf.Clamp(Zoom.x, .1f, 100f),
+                Mathf.Clamp(Zoom.y, .1f, 100f)
+            );
         }
         if(Input.IsKeyPressed((int)KeyList.X))
         {
             Zoom *= 1.1f * mult;
+            Zoom = new Vector2(
+                Mathf.Clamp(Zoom.x, .1f, 100f),
+                Mathf.Clamp(Zoom.y, .1f, 100f)
+            );
         }
 
         // if (Position.x < 0f)

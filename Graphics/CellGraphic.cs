@@ -61,7 +61,7 @@ public class CellGraphic : Node2D
                 iter++;
             }
 
-            var segments = edge.Foreign.GetEdge(edge.Native).GetSegsRel(edge.Foreign);
+            var segments = edge.Foreign.GetPolyBorder(edge.Native).GetSegsRel(edge.Foreign);
             foreach (var lineSegment in segments)
             {
                 var from = lineSegment.To * 1.1f + edge.Foreign.Center;

@@ -23,11 +23,11 @@ public class PolygonBorder
             HighId = poly1;
         }
 
-        HighSegsRel = GetSegments(segments, HighId);
-        LowSegsRel = GetSegments(segments, LowId);
+        HighSegsRel = ReceiveSegmentsAbs(segments, HighId);
+        LowSegsRel = ReceiveSegmentsAbs(segments, LowId);
     }
 
-    private List<LineSegment> GetSegments(List<LineSegment> abs, Polygon poly)
+    private List<LineSegment> ReceiveSegmentsAbs(List<LineSegment> abs, Polygon poly)
     {
         var res = new List<LineSegment>();
         
@@ -49,6 +49,7 @@ public class PolygonBorder
         return res;
     }
     
+    
     public PolygonBorder(Polygon poly1, List<LineSegment> poly1SegsRel, 
         Polygon poly2, List<LineSegment> poly2SegsRel)
     {
@@ -58,15 +59,15 @@ public class PolygonBorder
         {
             LowId = poly1;
             HighId = poly2;
-            HighSegsRel = GetSegments(abs2, HighId);
-            LowSegsRel = GetSegments(abs1, LowId);
+            HighSegsRel = ReceiveSegmentsAbs(abs2, HighId);
+            LowSegsRel = ReceiveSegmentsAbs(abs1, LowId);
         }
         else
         {
             LowId = poly2;
             HighId = poly1;
-            HighSegsRel = GetSegments(abs1, HighId);
-            LowSegsRel = GetSegments(abs2, LowId);
+            HighSegsRel = ReceiveSegmentsAbs(abs1, HighId);
+            LowSegsRel = ReceiveSegmentsAbs(abs2, LowId);
         }
     }
 
@@ -107,5 +108,7 @@ public class PolygonBorder
     {
         HighSegsRel = newSegmentsHiRel;
         LowSegsRel = newSegmentsLowRel;
+        // HighSegsRel.ForEach(s => s.Clamp(Root.Bounds.x));
+        // LowSegsRel.ForEach(s => s.Clamp(Root.Bounds.x));
     }
 }
