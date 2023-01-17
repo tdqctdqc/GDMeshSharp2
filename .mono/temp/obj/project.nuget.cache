@@ -1,11 +1,21 @@
 {
   "version": 2,
-  "dgSpecHash": "29febcdNHiZnOm2Px46ZlszRlHYpmnrv99P6wre6j59iORdMdq8CsHHBjfg/9JFj982nO83iUkQEDioTWj/AnA==",
+  "dgSpecHash": "KoWwNIUpshAMXHUzAdD3WhUnZJoH6PeBaA4oqqZqhUqU7TbGR7JQLBl3uB4KfgxKRyJVIzeuc8ahe4sjrQf94Q==",
   "success": true,
   "projectFilePath": "C:\\Users\\Tynan Dion\\Desktop\\games\\gdMeshSharp2\\gdMeshSharp2.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\delaunatornetstd\\1.0.4\\delaunatornetstd.1.0.4.nupkg.sha512",
-    "C:\\Users\\Tynan Dion\\.nuget\\packages\\optimizedpriorityqueue\\5.1.0\\optimizedpriorityqueue.5.1.0.nupkg.sha512"
+    "C:\\Users\\Tynan Dion\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\7.0.0\\microsoft.bcl.asyncinterfaces.7.0.0.nupkg.sha512",
+    "C:\\Users\\Tynan Dion\\.nuget\\packages\\mono.reflection\\2.0.0\\mono.reflection.2.0.0.nupkg.sha512",
+    "C:\\Users\\Tynan Dion\\.nuget\\packages\\optimizedpriorityqueue\\5.1.0\\optimizedpriorityqueue.5.1.0.nupkg.sha512",
+    "C:\\Users\\Tynan Dion\\.nuget\\packages\\system.buffers\\4.5.1\\system.buffers.4.5.1.nupkg.sha512",
+    "C:\\Users\\Tynan Dion\\.nuget\\packages\\system.memory\\4.5.5\\system.memory.4.5.5.nupkg.sha512",
+    "C:\\Users\\Tynan Dion\\.nuget\\packages\\system.numerics.vectors\\4.5.0\\system.numerics.vectors.4.5.0.nupkg.sha512",
+    "C:\\Users\\Tynan Dion\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\6.0.0\\system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512",
+    "C:\\Users\\Tynan Dion\\.nuget\\packages\\system.text.encodings.web\\7.0.0\\system.text.encodings.web.7.0.0.nupkg.sha512",
+    "C:\\Users\\Tynan Dion\\.nuget\\packages\\system.text.json\\7.0.1\\system.text.json.7.0.1.nupkg.sha512",
+    "C:\\Users\\Tynan Dion\\.nuget\\packages\\system.threading.tasks.extensions\\4.5.4\\system.threading.tasks.extensions.4.5.4.nupkg.sha512",
+    "C:\\Users\\Tynan Dion\\.nuget\\packages\\system.valuetuple\\4.5.0\\system.valuetuple.4.5.0.nupkg.sha512"
   ],
   "logs": []
 }
