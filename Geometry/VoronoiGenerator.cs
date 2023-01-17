@@ -66,7 +66,7 @@ public class VoronoiGenerator
                 var poly2 = polyDic[commonPoints.ElementAt(1)];
                 var borderPoints = new List<LineSegment> {new LineSegment(edge.P.GetIntV2(), edge.Q.GetIntV2()) };
                 
-                var border = new PolygonBorder(poly1, poly2, borderPoints);
+                var border = new GeoPolygonBorder(poly1, poly2, borderPoints);
                 poly1.AddNeighbor(poly2, border);
                 poly2.AddNeighbor(poly1, border);
             }
@@ -105,7 +105,7 @@ public class VoronoiGenerator
                 var rightBorderPoints = border.GetPointsRel(right);
                 var nBorderPoints = border.GetPointsRel(neighbor);
                 var leftBorderPoints = rightBorderPoints.Select(v => v).Reverse().ToList();
-                var newBorder = new PolygonBorder(left, leftBorderPoints.GetLineSegments().ToList(), 
+                var newBorder = new GeoPolygonBorder(left, leftBorderPoints.GetLineSegments().ToList(), 
                     neighbor, nBorderPoints.GetLineSegments().ToList());
                 left.AddNeighbor(neighbor, newBorder);
                 neighbor.AddNeighbor(left, newBorder);
@@ -151,13 +151,13 @@ public class VoronoiGenerator
             var lastRightNCoords = lastRight.GetPolyBorder(lastRightNew).GetPointsRel(lastRightNew);
 
 
-            var firstBorder = new PolygonBorder(firstLeft, firstRightCoords.GetLineSegments().ToList(), 
+            var firstBorder = new GeoPolygonBorder(firstLeft, firstRightCoords.GetLineSegments().ToList(), 
                 firstRightNew, firstRightNCoords.GetLineSegments().ToList());
             firstLeft.AddNeighbor(firstRightNew, firstBorder);
             firstRightNew.AddNeighbor(firstLeft, firstBorder);
             firstRightNew.RemoveNeighbor(firstRight);
             
-            var lastBorder = new PolygonBorder(lastLeft, lastRightCoords.GetLineSegments().ToList(),
+            var lastBorder = new GeoPolygonBorder(lastLeft, lastRightCoords.GetLineSegments().ToList(),
                 lastRightNew, lastRightNCoords.GetLineSegments().ToList());
             lastLeft.AddNeighbor(lastRightNew, lastBorder);
             lastRightNew.AddNeighbor(lastLeft, lastBorder);
@@ -222,7 +222,7 @@ public class VoronoiGenerator
             var shared = polyBorderPoints.Intersect(nextBorderPoints).ToList();
             if (shared.Count == 2)
             {
-                var border = new PolygonBorder(poly, shared.Select(p => p - poly.Center).GetLineSegments().ToList(), 
+                var border = new GeoPolygonBorder(poly, shared.Select(p => p - poly.Center).GetLineSegments().ToList(), 
                     next, shared.Select(p => p - next.Center).GetLineSegments().ToList());
                 poly.AddNeighbor(next, border);
                 next.AddNeighbor(poly, border);
@@ -274,7 +274,7 @@ public class VoronoiGenerator
                 var joinPoint = shared.ElementAt(0);
                 var newPoint = getNewPoint(joinPoint);
                 var borderPoints = new List<Vector2> {newPoint, joinPoint};
-                var border = new PolygonBorder(poly, borderPoints.Select(p => p - poly.Center).GetLineSegments().ToList(),
+                var border = new GeoPolygonBorder(poly, borderPoints.Select(p => p - poly.Center).GetLineSegments().ToList(),
                     next, borderPoints.Select(p => p - next.Center).GetLineSegments().ToList());
                 poly.AddNeighbor(next, border);
                 next.AddNeighbor(poly, border);
@@ -299,7 +299,7 @@ public class VoronoiGenerator
             var lastJoinPoint = joinPoint + shift;
             var newPoint = getNewPoint(joinPoint);
             var lastNewPoint = getLastNewPoint(joinPoint);
-            var border = new PolygonBorder(anchorpoly, 
+            var border = new GeoPolygonBorder(anchorpoly, 
                 new List<LineSegment> {new LineSegment(joinPoint - anchor, newPoint - anchor)},
                 last, new List<LineSegment> {new LineSegment(lastJoinPoint - last.Center, lastNewPoint - last.Center)});
             last.AddNeighbor(anchorpoly, border);

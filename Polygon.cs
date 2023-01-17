@@ -18,6 +18,10 @@ public class Polygon : IGraphNode<Polygon, PolygonBorder>
     public List<Vector2> NoNeighborBorders { get; private set; }
     public BoundingBox BoundingBox { get; private set; }
     public Color Color { get; private set; }
+    public bool HasNeighbor(Polygon p)
+    {
+        return _borderDic.ContainsKey(p);
+    }
     public Polygon(int id, Vector2 center, float mapWidth)
     {
         Id = id;

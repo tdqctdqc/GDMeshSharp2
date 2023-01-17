@@ -253,9 +253,55 @@ public static class GeometryExt
         result.Add(pairs.Last().To);
         return result;
     }
+    public static Vector2 GetPointAtRatio(this IEnumerable<LineSegment> pairs, float ratio)
+    {
+        var totalLength = pairs.GetLength();
+        var lengthSoFar = 0f;
+        var iter = 0;
+        var count = pairs.Count();
+        while (iter < count)
+        {
+            var seg = pairs.ElementAt(iter);
+            if (lengthSoFar + seg.Length() > totalLength * ratio)
+            {
+                var portion = totalLength * ratio - lengthSoFar;
+                return seg.From.LinearInterpolate(seg.To, portion / seg.Length());
+            }
+            lengthSoFar += seg.Length();
+            iter++;
+        }
+
+        throw new Exception();
+    }
+    
+    public static Vector2 GetPointAtLength(this IEnumerable<LineSegment> pairs, float length)
+    {
+        var totalLength = pairs.GetLength();
+        var lengthSoFar = 0f;
+        var iter = 0;
+        var count = pairs.Count();
+        while (iter < count)
+        {
+            var seg = pairs.ElementAt(iter);
+            if (lengthSoFar + seg.Length() > length)
+            {
+                var portion = totalLength - lengthSoFar;
+                return seg.From.LinearInterpolate(seg.To, portion / seg.Length());
+            }
+            lengthSoFar += seg.Length();
+            iter++;
+        }
+
+        throw new Exception();
+    }
+
+    public static float GetLength(this IEnumerable<LineSegment> pairs)
+    {
+        return pairs.Select(p => p.From.DistanceTo(p.To)).Sum();
+    }
     public static Vector2 GetMiddlePoint(this IEnumerable<LineSegment> pairs)
     {
-        var totalLength = pairs.Select(p => p.From.DistanceTo(p.To)).Sum();
+        var totalLength = pairs.GetLength();
         var lengthSoFar = 0f;
         var iter = 0;
         var count = pairs.Count();

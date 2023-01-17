@@ -5,9 +5,9 @@ using Godot;
 
 public class Landform : TerrainAspect
 {
-    public string Name { get; private set; }
+    public override  string Name { get; protected set; }
     public float MinRoughness { get; private set; }
-    public override bool Allowed(GeologyPolygon poly)
+    public override bool Allowed(GeoPolygon poly)
     {
         return poly.Roughness >= MinRoughness && poly.IsWater == (this == LandformManager.Water);
     }

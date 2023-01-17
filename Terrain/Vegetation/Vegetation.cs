@@ -7,7 +7,7 @@ public class Vegetation : TerrainAspect
 {
     public HashSet<Landform> AllowedLandforms { get; private set; }
     public float MinMoisture { get; private set; }
-    public string Name { get; private set; }
+    public override string Name { get; protected set; }
     public override ITriBuilder TriBuilder { get; protected set; }
     public override Color Color { get; protected set; }
 
@@ -20,9 +20,9 @@ public class Vegetation : TerrainAspect
         Name = name;
     }
 
-    public override bool Allowed(GeologyPolygon p)
+    public override bool Allowed(GeoPolygon p)
     {
-        var pLandform = Root.WorldData.Landforms.GetValueFromPoly(p);
+        var pLandform = Root.WorldData.Landforms.GetAspectFromPoly(p);
         return AllowedLandforms.Contains(pLandform) && p.Moisture >= MinMoisture;
     }
 }

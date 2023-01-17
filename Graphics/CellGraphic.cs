@@ -10,10 +10,10 @@ public class CellGraphic : Node2D
         
     }
 
-    public CellGraphic(GeologyCell geologyCell, Color? color = null)
+    public CellGraphic(GeoCell geoCell, Color? color = null)
     {
         var tris = new List<Vector2>();
-        foreach (var poly in geologyCell.PolyGeos)
+        foreach (var poly in geoCell.PolyGeos)
         {
             tris.AddRange(poly.GetTrisAbs());
         }
@@ -22,13 +22,13 @@ public class CellGraphic : Node2D
         if (color == null) color = ColorsExt.GetRandomColor();
         triMesh.Modulate = color.Value;
         AddChild(triMesh);
-        if(geologyCell.Seed.Id % 25 == 0) AddOuterBorder(geologyCell, color.Value);
+        if(geoCell.Seed.Id % 25 == 0) AddOuterBorder(geoCell, color.Value);
     }
 
-    private void AddInnerBorder(GeologyCell cell, Color color)
+    private void AddInnerBorder(GeoCell cell, Color color)
     {
         var borderPolyGeos = cell.PolyGeos
-            .Where(p => p.Neighbors.Any(n => ((GeologyPolygon) n).Cell != cell));
+            .Where(p => p.Neighbors.Any(n => ((GeoPolygon) n).Cell != cell));
         var iter = 0;
 
         foreach (var poly in borderPolyGeos)
@@ -47,9 +47,9 @@ public class CellGraphic : Node2D
         }
         
     }
-    private void AddOuterBorder(GeologyCell geologyCell, Color color)
+    private void AddOuterBorder(GeoCell geoCell, Color color)
     {
-        var edges = geologyCell.GetOrderedBorderPairs();
+        var edges = geoCell.GetOrderedBorderPairs();
         var iter = 0;
         var currOppCell = edges[0].Foreign.Cell;
         for (var i = 0; i < edges.Count; i++)

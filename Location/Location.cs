@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public interface ITriBuilder
+public abstract class Location
 {
-    List<Triangle> BuildTrisForPoly(GeoPolygon p);
+    
 }

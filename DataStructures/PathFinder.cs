@@ -78,7 +78,7 @@ public static class PathFinder<T>
 
         return null; 
     }
-    public static List<T> FindPathMultipleEndsNew(T start, List<T> ends, Func<T,List<T>> getNeighbors, 
+    public static List<T> FindPathMultipleEnds(T start, Func<T, bool> isEnd, Func<T,List<T>> getNeighbors, 
         Func<T,T,float> getEdgeCost)
     {
         int maxIters = 100_000;
@@ -92,7 +92,7 @@ public static class PathFinder<T>
         while (open.Count > 0 && iter < maxIters)
         {
             var current = open.Dequeue();
-            if (ends.Contains(current))
+            if (isEnd(current))
             {
                 return BuildPathBackwards(current, parents);
             }

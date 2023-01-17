@@ -3,30 +3,30 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public class GeologyPlate : ISuper<GeologyCell>
+public class GeoPlate : ISuper<GeoPlate, GeoCell>
 {
     public int Id { get; private set; }
-    public GeologyCell Seed { get; private set; }
-    public GeologyPolygon SeedPoly => Seed.Seed;
-    public GeologyMass Mass { get; private set; }
-    public HashSet<GeologyCell> Cells { get; private set; }
-    public HashSet<GeologyCell> NeighboringCells { get; private set; }
-    public Dictionary<GeologyCell, int> NeighboringCellsAdjCount { get; private set; }
+    public GeoCell Seed { get; private set; }
+    public GeoPolygon SeedPoly => Seed.Seed;
+    public GeoMass Mass { get; private set; }
+    public HashSet<GeoCell> Cells { get; private set; }
+    public HashSet<GeoCell> NeighboringCells { get; private set; }
+    public Dictionary<GeoCell, int> NeighboringCellsAdjCount { get; private set; }
     public BoundingBox BoundingBox { get; private set; }
-    public HashSet<GeologyPlate> Neighbors { get; private set; }
+    public HashSet<GeoPlate> Neighbors { get; private set; }
     public Vector2 Center => SeedPoly.Center;
-    public GeologyPlate(GeologyCell seed, int id)
+    public GeoPlate(GeoCell seed, int id)
     {
         Id = id;
         Seed = seed;
-        Cells = new HashSet<GeologyCell> {};
-        NeighboringCells = new HashSet<GeologyCell>();
-        NeighboringCellsAdjCount = new Dictionary<GeologyCell, int>();
+        Cells = new HashSet<GeoCell> {};
+        NeighboringCells = new HashSet<GeoCell>();
+        NeighboringCellsAdjCount = new Dictionary<GeoCell, int>();
         BoundingBox = new BoundingBox();
         AddCell(seed);
     }
 
-    public void AddCell(GeologyCell c)
+    public void AddCell(GeoCell c)
     {
         Cells.Add(c);
         BoundingBox.Cover(c.BoundingBox);
@@ -49,12 +49,12 @@ public class GeologyPlate : ISuper<GeologyCell>
         Neighbors = NeighboringCells.Select(t => t.Plate).ToHashSet();
     }
 
-    public void SetContinent(GeologyMass c)
+    public void SetContinent(GeoMass c)
     {
         if (Mass != null) throw new Exception();
         Mass = c;
     }
-    public IEnumerable<GeologyPolygon> GetBorderPolys()
+    public IEnumerable<GeoPolygon> GetBorderPolys()
     {
         var borderCellPolys = this
             .GetBorderElements()
@@ -64,7 +64,7 @@ public class GeologyPlate : ISuper<GeologyCell>
         return borderPolys;
     }
     
-    public List<BorderEdge<GeologyPolygon>> GetOrderedBorderRelative(GeologyPlate aPlate)
+    public List<BorderEdge<GeoPolygon>> GetOrderedBorderRelative(GeoPlate aPlate)
     {
         var borderCellPolys = this
             .GetBorderElements()
@@ -77,8 +77,8 @@ public class GeologyPlate : ISuper<GeologyCell>
         return commonPolyBorders;
     }
     
-    IReadOnlyCollection<ISuper<GeologyCell>> ISuper<GeologyCell>.Neighbors => Neighbors;
-    IReadOnlyCollection<GeologyCell> ISuper<GeologyCell>.GetSubNeighbors(GeologyCell cell) => cell.Neighbors;
-    ISuper<GeologyCell> ISuper<GeologyCell>.GetSubSuper(GeologyCell cell) => cell.Plate;
-    IReadOnlyCollection<GeologyCell> ISuper<GeologyCell>.Subs => Cells;
+    IReadOnlyCollection<GeoPlate> ISuper<GeoPlate, GeoCell>.Neighbors => Neighbors;
+    IReadOnlyCollection<GeoCell> ISuper<GeoPlate, GeoCell>.GetSubNeighbors(GeoCell cell) => cell.Neighbors;
+    GeoPlate ISuper<GeoPlate, GeoCell>.GetSubSuper(GeoCell cell) => cell.Plate;
+    IReadOnlyCollection<GeoCell> ISuper<GeoPlate, GeoCell>.Subs => Cells;
 }

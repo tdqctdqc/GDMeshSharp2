@@ -27,27 +27,7 @@ public class PolygonBorder
         LowSegsRel = ReceiveSegmentsAbs(segments, LowId);
     }
 
-    private List<LineSegment> ReceiveSegmentsAbs(List<LineSegment> abs, Polygon poly)
-    {
-        var res = new List<LineSegment>();
-        
-        var first = abs[0];
-        var leg1 = first.From - poly.Center;
-        var leg2 = first.To - poly.Center;
-        var leg1Angle = leg1.GetClockwiseAngleTo(leg2).RadToDegrees();
-        var leg2Angle = leg2.GetClockwiseAngleTo(leg1).RadToDegrees();
-        bool alter = leg1Angle < leg2Angle;
-        
-        for (var i = 0; i < abs.Count; i++)
-        {
-            var seg = abs[i];
-            var t = seg.To - poly.Center;
-            var f = seg.From - poly.Center;
-            res.Add(alter ?  new LineSegment(t, f) : new LineSegment(f, t));
-        }
-
-        return res;
-    }
+    
     
     
     public PolygonBorder(Polygon poly1, List<LineSegment> poly1SegsRel, 
@@ -70,7 +50,27 @@ public class PolygonBorder
             LowSegsRel = ReceiveSegmentsAbs(abs2, LowId);
         }
     }
+    private List<LineSegment> ReceiveSegmentsAbs(List<LineSegment> abs, Polygon poly)
+    {
+        var res = new List<LineSegment>();
+        
+        var first = abs[0];
+        var leg1 = first.From - poly.Center;
+        var leg2 = first.To - poly.Center;
+        var leg1Angle = leg1.GetClockwiseAngleTo(leg2).RadToDegrees();
+        var leg2Angle = leg2.GetClockwiseAngleTo(leg1).RadToDegrees();
+        bool alter = leg1Angle < leg2Angle;
+        
+        for (var i = 0; i < abs.Count; i++)
+        {
+            var seg = abs[i];
+            var t = seg.To - poly.Center;
+            var f = seg.From - poly.Center;
+            res.Add(alter ?  new LineSegment(t, f) : new LineSegment(f, t));
+        }
 
+        return res;
+    }
     public List<Vector2> GetPointsRel(Polygon p)
     {
         if (p == LowId) return LowSegsRel.GetPoints().ToList();

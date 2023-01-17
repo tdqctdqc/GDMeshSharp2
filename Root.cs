@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using DelaunatorNetStd;
 
@@ -59,11 +60,22 @@ public class Root : Node
         _node = new Node();
         AddChild(_node);
         MoveChild(_node, 0);
-
-        WorldData = WorldGenerator.Generate(Bounds);
+        var worldGen = new WorldGenerator(Bounds);
+        WorldData = worldGen.Data;
+        var sw = new Stopwatch();
+        sw.Start();
+        worldGen.Generate();
+        sw.Stop();
+        GD.Print("World gen time " + sw.ElapsedMilliseconds / 1000f);
+        sw.Reset();
         Cam.SetBounds(WorldData.Dimensions);
         Bounds = WorldData.Dimensions;
+        
+        sw.Start();
         Graphics.BuildGraphics(_node, _holder, WorldData);
+        sw.Stop();
+        GD.Print("Graphics gen time " + sw.ElapsedMilliseconds / 1000f);
+        sw.Reset();
     }
 
 }

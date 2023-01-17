@@ -5,9 +5,7 @@ using Godot;
 
 public class VegetationManager : TerrainAspectManager<Vegetation>
 {
-    public static Vegetation Swamp = new Vegetation(
-        new HashSet<Landform>{LandformManager.Plain}, 
-        .7f, Colors.DarkKhaki, "Swamp", new BlobTriBuilder());
+    public static Vegetation Swamp = new Swamp();
     
     public static Vegetation Forest = new Vegetation(
         new HashSet<Landform>{LandformManager.Hill, LandformManager.Plain}, 
@@ -15,23 +13,22 @@ public class VegetationManager : TerrainAspectManager<Vegetation>
     
     public static Vegetation Grassland = new Vegetation(
         new HashSet<Landform>{LandformManager.Hill, LandformManager.Plain}, 
-        .2f, Colors.Limegreen, "Grassland", new BlobTriBuilder());
+        .3f, Colors.Limegreen, "Grassland", new BlobTriBuilder());
     
     public static Vegetation Desert = new Vegetation(
         new HashSet<Landform>{LandformManager.Hill, LandformManager.Plain}, 
-        0f, Colors.Limegreen, "Desert", new BlobTriBuilder());
+        0f, Colors.Tan, "Desert", new BlobTriBuilder());
     
     public static Vegetation Barren = new Vegetation(
         new HashSet<Landform>{LandformManager.Mountain, LandformManager.Peak}, 
-        0f, Colors.Limegreen, "Barren", null);
+        0f, Colors.Black, "Barren", null);
 
 
     public VegetationManager() 
-        : base(Barren, Barren, new List<Vegetation>(), new List<Vegetation>{Swamp, Forest, Grassland})
+        : base(Barren, Barren, new List<Vegetation>{Swamp, Forest, Grassland, Desert})
     {
         
     }
-    protected override Func<Vegetation, float> _getMin { get; set; } = v => v.MinMoisture;
     
 
 }

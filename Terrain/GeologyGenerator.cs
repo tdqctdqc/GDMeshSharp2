@@ -28,6 +28,7 @@ public class GeologyGenerator
         DoContinentFriction();
         HandleIsthmusAndInlandSeas();
         BuildLandformTris();
+        Data.LandSea.SetLandmasses(Data);
     }
 
     private void HandleIsthmusAndInlandSeas()
@@ -43,7 +44,7 @@ public class GeologyGenerator
         var landRatio = .33f;
         Data.GeoPolygons.AddRange(Data.GeoPolygons);
         var cellSeeds = GenerationUtility.PickSeeds(Data.GeoPolygons, new int[] {numCells})[0];
-        var cells = cellSeeds.Select(p => new GeologyCell(p)).ToList();
+        var cells = cellSeeds.Select(p => new GeoCell(p)).ToList();
         Data.Cells.AddRange(cells);
         GD.Print("Num cells: " + cells.Count);
         var polysNotTaken =
@@ -59,7 +60,7 @@ public class GeologyGenerator
         var cellsPerPlate = 3;
         var numPlates = Data.Cells.Count / cellsPerPlate;
         var plateSeeds = GenerationUtility.PickSeeds(Data.Cells, new[] {numPlates})[0];
-        var plates = plateSeeds.Select(s => new GeologyPlate(s, _id.GetID())).ToList();
+        var plates = plateSeeds.Select(s => new GeoPlate(s, _id.GetID())).ToList();
         GD.Print("Num plates: " + plates.Count);
 
         Data.Plates.AddRange(plates);
@@ -77,7 +78,7 @@ public class GeologyGenerator
         var platesPerMass = 3;
         var numMasses = Data.Plates.Count / 3;
         var massSeeds = GenerationUtility.PickSeeds(Data.Plates, new int[] {numMasses})[0];
-        var masses = massSeeds.Select(s => new GeologyMass(s, _id.GetID())).ToList();
+        var masses = massSeeds.Select(s => new GeoMass(s, _id.GetID())).ToList();
         GD.Print("Num masses: " + masses.Count);
 
         var platesNotTaken = Data.Plates.Except(massSeeds);
@@ -93,8 +94,8 @@ public class GeologyGenerator
     {
         var massesPerCont = 3;
         var numMasses = Data.Masses.Count / 3;
-        var numLandmasses = numMasses / 3;
-        var numSeas = (numMasses * 2) / 3;
+        var numLandmasses = numMasses / 4;
+        var numSeas = numMasses * 3 / 4;
         if (numLandmasses + numSeas > Data.Masses.Count) throw new Exception();
         var seeds = GenerationUtility.PickSeeds(Data.Masses, new int[] {numLandmasses, numSeas});
         var landSeeds = seeds[0].ToHashSet();
@@ -143,7 +144,7 @@ public class GeologyGenerator
         
         
         
-        void setFriction(GeologyPlate hiPlate)
+        void setFriction(GeoPlate hiPlate)
         {
             var neighbors = hiPlate.Neighbors.ToList();
             var count = neighbors.Count;
@@ -168,14 +169,14 @@ public class GeologyGenerator
             }
         }
 
-        IEnumerable<GeologyPolygon> getPolysInRangeOfFault(FaultLine fault)
+        IEnumerable<GeoPolygon> getPolysInRangeOfFault(FaultLine fault)
         {
             var faultRange = fault.Friction * 500f;
             var polys = fault.HighId.Cells.SelectMany(c => c.PolyGeos)
                 .Union(fault.LowId.Cells.SelectMany(c => c.PolyGeos));
-            var frictionAltEffect = .25f;
+            var frictionAltEffect = .1f;
             var frictionRoughnessEffect = 1f;
-            var polysInRange = new List<GeologyPolygon>();
+            var polysInRange = new List<GeoPolygon>();
             foreach (var poly in polys)
             {
                 var dist = fault.GetDist(poly);
@@ -202,10 +203,5 @@ public class GeologyGenerator
     {
         var affectedPolys = Data.FaultLines.SelectMany(f => f.PolyFootprint).Where(p => p.IsLand).ToHashSet();
         Data.Landforms.BuildTris(affectedPolys);
-    }
-
-    private void BuildVegetationTris()
-    {
-        
     }
 }

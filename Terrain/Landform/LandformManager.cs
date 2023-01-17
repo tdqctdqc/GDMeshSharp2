@@ -13,13 +13,13 @@ public class LandformManager : TerrainAspectManager<Landform>
     public static Landform Plain  { get; private set; } = new Landform("Plain", 0f, Colors.SaddleBrown, new NoTriBuilder());
     public static Landform Water  { get; private set; } = new Landform("Water", 0f, Colors.Blue, new NoTriBuilder());
     public static Landform River { get; private set; } = new River();
-    public Dictionary<Edge<GeologyPolygon>, float> RiverSegments { get; private set; }
-    protected override Func<Landform, float> _getMin { get; set; } = l => l.MinRoughness;
+    public static Landform Urban { get; private set; } = new Urban();
+    public Dictionary<Edge<GeoPolygon>, float> RiverSegments { get; private set; }
     
 
 
     public LandformManager()
-        : base(Water, Plain, new List<Landform>{River}, new List<Landform>{Peak, Mountain, Hill})
+        : base(Water, Plain, new List<Landform>{Urban, River, Peak, Mountain, Hill})
     {
     }
 }

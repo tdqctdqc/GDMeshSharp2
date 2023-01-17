@@ -3,34 +3,34 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public class Continent : ISuper<GeologyMass>
+public class Continent : ISuper<Continent, GeoMass>
 {
     public int Id { get; private set; }
-    public GeologyMass Seed { get; private set; }
-    public GeologyPolygon SeedPoly => Seed.SeedPoly;
+    public GeoMass Seed { get; private set; }
+    public GeoPolygon SeedPoly => Seed.SeedPoly;
     public BoundingBox BoundingBox { get; private set; }
-    public HashSet<GeologyMass> Masses { get; private set; }
-    public HashSet<GeologyMass> NeighboringMasses { get; private set; }
-    public Dictionary<GeologyMass, int> NeighboringMassesAdjCount { get; private set; }
+    public HashSet<GeoMass> Masses { get; private set; }
+    public HashSet<GeoMass> NeighboringMasses { get; private set; }
+    public Dictionary<GeoMass, int> NeighboringMassesAdjCount { get; private set; }
     public HashSet<Continent> Neighbors { get; private set; }
     public Vector2 Drift { get; private set; }
     public Vector2 Center { get; private set; }
     public float Altitude { get; private set; }
-    public Continent(GeologyMass seed, int id, float altitude)
+    public Continent(GeoMass seed, int id, float altitude)
     {
         Altitude = altitude;
         Center = Vector2.Zero;
         Id = id;
         Seed = seed;
-        Masses = new HashSet<GeologyMass>();
-        NeighboringMasses = new HashSet<GeologyMass>();
-        NeighboringMassesAdjCount = new Dictionary<GeologyMass, int>();
+        Masses = new HashSet<GeoMass>();
+        NeighboringMasses = new HashSet<GeoMass>();
+        NeighboringMassesAdjCount = new Dictionary<GeoMass, int>();
         BoundingBox = new BoundingBox();
         Drift = Vector2.Left.Rotated(Root.Random.RandfRange(0f, 2f * Mathf.Pi));
         AddMass(seed);
     }
 
-    public void AddMass(GeologyMass c)
+    public void AddMass(GeoMass c)
     {
         Center = (Center * Masses.Count + c.Center) / (Masses.Count + 1);
         Masses.Add(c);
@@ -54,8 +54,8 @@ public class Continent : ISuper<GeologyMass>
         Neighbors = NeighboringMasses.Select(t => t.Continent).ToHashSet();
     }
     
-    IReadOnlyCollection<ISuper<GeologyMass>> ISuper<GeologyMass>.Neighbors => Neighbors;
-    IReadOnlyCollection<GeologyMass> ISuper<GeologyMass>.GetSubNeighbors(GeologyMass mass) => mass.Neighbors;
-    ISuper<GeologyMass> ISuper<GeologyMass>.GetSubSuper(GeologyMass mass) => mass.Continent;
-    IReadOnlyCollection<GeologyMass> ISuper<GeologyMass>.Subs => Masses;
+    IReadOnlyCollection<Continent> ISuper<Continent, GeoMass>.Neighbors => Neighbors;
+    IReadOnlyCollection<GeoMass> ISuper<Continent, GeoMass>.GetSubNeighbors(GeoMass mass) => mass.Neighbors;
+    Continent ISuper<Continent, GeoMass>.GetSubSuper(GeoMass mass) => mass.Continent;
+    IReadOnlyCollection<GeoMass> ISuper<Continent, GeoMass>.Subs => Masses;
 }
