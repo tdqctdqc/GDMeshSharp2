@@ -63,7 +63,7 @@ public class MoistureGenerator
                 if (p.IsWater) p.SetMoisture(1f);
                 else
                 {
-                    var moisture = massMoistures[m] + Root.Random.RandfRange(-.1f, .1f);
+                    var moisture = massMoistures[m] + Game.I.Random.RandfRange(-.1f, .1f);
                     
                     p.SetMoisture(Mathf.Clamp(moisture, 0f, 1f));
                 }
@@ -73,7 +73,7 @@ public class MoistureGenerator
 
     private void BuildVegetationTris()
     {
-        Data.Vegetation.BuildTris(Data.GeoPolygons.ToHashSet());
+        Data.Vegetation.BuildTris(Data.GeoPolygons.ToHashSet(), Data);
     }
 
     
@@ -138,7 +138,8 @@ public class MoistureGenerator
                 path[i].GetGeoPolyBorder(path[i + 1]).IncrementFlow(add);
             }
         }
-        Data.Landforms.BuildTrisForAspect(LandformManager.River, pathToSea.SelectMany(p => p.Value).Distinct().ToList());
+        Data.Landforms.BuildTrisForAspect(LandformManager.River, Data, 
+            pathToSea.SelectMany(p => p.Value).Distinct().ToList());
 
     }
 }

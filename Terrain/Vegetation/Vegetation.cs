@@ -20,9 +20,9 @@ public class Vegetation : TerrainAspect
         Name = name;
     }
 
-    public override bool Allowed(GeoPolygon p)
+    public override bool Allowed(GeoPolygon p, WorldData data)
     {
-        var pLandform = Root.WorldData.Landforms.GetAspectFromPoly(p);
+        var pLandform = data.Landforms.GetAspectFromPoly(p, data);
         return AllowedLandforms.Contains(pLandform) && p.Moisture >= MinMoisture;
     }
 }

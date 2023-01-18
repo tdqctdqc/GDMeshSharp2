@@ -19,12 +19,12 @@ public abstract class TerrainAspectManager<TAspect> where TAspect: TerrainAspect
         Holders = new Dictionary<TAspect, TerrainAspectHolder>();
         ByPriority.ForEach(a => Holders.Add(a, new TerrainAspectHolder()));
     }
-    public TAspect GetAspectFromPoly(GeoPolygon p)
+    public TAspect GetAspectFromPoly(GeoPolygon p, WorldData data)
     {
         for (var i = 0; i < ByPriority.Count; i++)
         {
             var val = ByPriority[i];
-            if (val.Allowed(p))
+            if (val.Allowed(p, data))
             {
                 if (val.Equals(VegetationManager.Desert))
                 {
@@ -55,32 +55,32 @@ public abstract class TerrainAspectManager<TAspect> where TAspect: TerrainAspect
     }
 
     
-    public Dictionary<TAspect, List<List<GeoPolygon>>> GetUnions(HashSet<GeoPolygon> polys)
+    public Dictionary<TAspect, List<List<GeoPolygon>>> GetUnions(HashSet<GeoPolygon> polys, WorldData data)
     {
         var result = new Dictionary<TAspect, List<List<GeoPolygon>>>();
         //todo need to allow overlaps
         for (var i = 0; i < ByPriority.Count; i++)
         {
             var aspect = ByPriority[i];
-            var union = GetAspectUnion(aspect);
-            result.Add(aspect, union.Where(u => aspect.Allowed(u[0])).ToList());
+            var union = GetAspectUnion(aspect, data);
+            result.Add(aspect, union.Where(u => aspect.Allowed(u[0], data)).ToList());
         }
         
         return result;
     }
 
-    private List<List<GeoPolygon>> GetAspectUnion(TAspect aspect)
+    private List<List<GeoPolygon>> GetAspectUnion(TAspect aspect, WorldData data)
     {
-        var polys = Root.WorldData.GeoPolygons.Where(p => aspect.Allowed(p));
+        var polys = data.GeoPolygons.Where(p => aspect.Allowed(p, data));
         return UnionFind<GeoPolygon, float>.DoUnionFind(polys.ToList(), 
             (p1, p2) => p1.HasNeighbor(p2),
             poly => poly.GeoNeighbors
         );
     }
     
-    public void BuildTris(HashSet<GeoPolygon> affectedPolys)
+    public void BuildTris(HashSet<GeoPolygon> affectedPolys, WorldData data)
     {
-        var aspectUnions = GetUnions(affectedPolys);
+        var aspectUnions = GetUnions(affectedPolys, data);
         foreach (var keyValuePair in aspectUnions)
         {
             var aspect = keyValuePair.Key;
@@ -89,19 +89,19 @@ public abstract class TerrainAspectManager<TAspect> where TAspect: TerrainAspect
             var unions = keyValuePair.Value;
             unions.SelectMany(u => u).ToList().ForEach(p =>
             {
-                var tris = aspect.TriBuilder.BuildTrisForPoly(p);
+                var tris = aspect.TriBuilder.BuildTrisForPoly(p, data);
                 AddTris(aspect, p, tris);
             });
         }
     }
-    public void BuildTrisForAspect(TAspect aspect, List<GeoPolygon> affectedPolys = null)
+    public void BuildTrisForAspect(TAspect aspect, WorldData data, List<GeoPolygon> affectedPolys = null)
     {
         if (aspect == LandDefault || aspect == WaterDefault) return;
-        if (affectedPolys == null) affectedPolys = Root.WorldData.GeoPolygons.Where(p => aspect.Allowed(p)).ToList();
+        if (affectedPolys == null) affectedPolys = data.GeoPolygons.Where(p => aspect.Allowed(p, data)).ToList();
         int triCount = 0;
         affectedPolys.ForEach(p =>
         {
-            var tris = aspect.TriBuilder.BuildTrisForPoly(p);
+            var tris = aspect.TriBuilder.BuildTrisForPoly(p, data);
             triCount += tris.Count;
             AddTris(aspect, p, tris);
         });

@@ -17,19 +17,6 @@ public class GraphicLayerHolder : Control
         _views = new Dictionary<string, GraphicView>();
     }
 
-    public Node2D GenerateView<T>(List<T> elements, Func<T, Node2D> getNode, string name)
-    {
-        var graphics = new Node2D();
-        for (var i = 0; i < elements.Count; i++)
-        {
-            var el = elements[i];
-            var graphic = getNode(el);
-            graphics.AddChild(graphic);
-        }
-        AddView(graphics, name);
-        return graphics;
-    }
-
     public void Clear()
     {
         foreach (var keyValuePair in _views)
@@ -62,8 +49,7 @@ public class GraphicLayerHolder : Control
             ? "Selected " + name
             : "Turn on " + name;
         _viewButtonsContainer.AddChild(button);
-        var token = new ButtonToken();
-        token.Setup(button, () => _views[name].Toggle(vis));
+        var token = ButtonToken.Get(button, () => _views[name].Toggle(vis));
         _viewTokens.Add(name, token);
     }
 

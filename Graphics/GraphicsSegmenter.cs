@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class GraphicsSegmenter<T> : Node2D where T : Node2D
+public class GraphicsSegmenter<T> : Node2D, IGraphicsSegmenter where T : Node2D
 {
     private Dictionary<int, List<T>> _segments;
     private Dictionary<int, Node2D> _segmentNodes;
@@ -15,9 +15,9 @@ public class GraphicsSegmenter<T> : Node2D where T : Node2D
         _segmentNodes = new Dictionary<int, Node2D>();
     }
     
-    public void Setup(List<T> elements, int numSegments, Func<T, Vector2> tPos)
+    public void Setup(List<T> elements, int numSegments, Func<T, Vector2> tPos, WorldData data)
     {
-        var dimX = Root.Bounds.x;
+        var dimX = data.Dimensions.x;
         _segWidth = dimX / numSegments;
         for (int i = 0; i < numSegments; i++)
         {
@@ -33,11 +33,6 @@ public class GraphicsSegmenter<T> : Node2D where T : Node2D
             _segments[segmentIndex].Add(e);
             _segmentNodes[segmentIndex].AddChild(e);
         });
-    }
-
-    public override void _Process(float delta)
-    {
-        Update(Root.Cam.XYRatio);
     }
 
     public void Update(float ratio)

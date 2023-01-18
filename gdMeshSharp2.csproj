@@ -10,5 +10,16 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Graph\Superset" />
+    <Folder Include="NetworkEngine" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Client\ExampleClient\**" />
+    <Compile Remove="Client\GameClient\ExampleUi\**" />
+    <Compile Remove="Client\GameClient\GameUi\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Remove="Client\ExampleClient\**" />
+    <EmbeddedResource Remove="Client\GameClient\ExampleUi\**" />
+    <EmbeddedResource Remove="Client\GameClient\GameUi\**" />
   </ItemGroup>
 </Project>

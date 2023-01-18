@@ -14,7 +14,7 @@ public class SpikeyTriBuilder : ITriBuilder
     }
 
     
-    public List<Triangle> BuildTrisForPoly(GeoPolygon p)
+    public List<Triangle> BuildTrisForPoly(GeoPolygon p, WorldData data)
     {
         var polyTris = new List<Triangle>();
         p.GeoNeighbors.ForEach(n =>

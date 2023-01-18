@@ -10,3 +10,13 @@ C:\Users\Tynan Dion\desktop\games\gdMeshSharp2\.mono\temp\obj\Debug\gdMeshSharp2
 C:\Users\Tynan Dion\desktop\games\gdMeshSharp2\.mono\temp\obj\Debug\gdMeshSharp2.dll
 C:\Users\Tynan Dion\desktop\games\gdMeshSharp2\.mono\temp\obj\Debug\gdMeshSharp2.pdb
 C:\Users\Tynan Dion\desktop\games\gdMeshSharp2\.mono\temp\bin\Debug\PriorityQueue.dll
+C:\Users\Tynan Dion\desktop\games\gdMeshSharp2\.mono\temp\bin\Debug\Microsoft.Bcl.AsyncInterfaces.dll
+C:\Users\Tynan Dion\desktop\games\gdMeshSharp2\.mono\temp\bin\Debug\Mono.Reflection.dll
+C:\Users\Tynan Dion\desktop\games\gdMeshSharp2\.mono\temp\bin\Debug\System.Buffers.dll
+C:\Users\Tynan Dion\desktop\games\gdMeshSharp2\.mono\temp\bin\Debug\System.Memory.dll
+C:\Users\Tynan Dion\desktop\games\gdMeshSharp2\.mono\temp\bin\Debug\System.Numerics.Vectors.dll
+C:\Users\Tynan Dion\desktop\games\gdMeshSharp2\.mono\temp\bin\Debug\System.Runtime.CompilerServices.Unsafe.dll
+C:\Users\Tynan Dion\desktop\games\gdMeshSharp2\.mono\temp\bin\Debug\System.Text.Encodings.Web.dll
+C:\Users\Tynan Dion\desktop\games\gdMeshSharp2\.mono\temp\bin\Debug\System.Text.Json.dll
+C:\Users\Tynan Dion\desktop\games\gdMeshSharp2\.mono\temp\bin\Debug\System.Threading.Tasks.Extensions.dll
+C:\Users\Tynan Dion\desktop\games\gdMeshSharp2\.mono\temp\bin\Debug\System.ValueTuple.dll

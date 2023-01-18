@@ -63,8 +63,8 @@ public static class TriangleUtility
     {
         var arc1 = t.B - t.A;
         var arc2 = t.C - t.A;
-        var totalArcRatio = Root.Random.RandfRange(minArcRatio, maxArcRatio);
-        var arc1Ratio = Root.Random.RandfRange(0f, totalArcRatio);
+        var totalArcRatio = Game.I.Random.RandfRange(minArcRatio, maxArcRatio);
+        var arc1Ratio = Game.I.Random.RandfRange(0f, totalArcRatio);
         var arc2Ratio = totalArcRatio - arc1Ratio;
         return t.A + arc1 * arc1Ratio + arc2 * arc2Ratio;
     }

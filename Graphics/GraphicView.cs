@@ -30,8 +30,7 @@ public class GraphicView
         _overlays.Add(name, overlay);
         var button = new Button();
         button.Text = "Hide " + name;
-        var token = new ButtonToken();
-        token.Setup(button, () => ToggleOverlay(name));
+        var token = ButtonToken.Get(button, () => ToggleOverlay(name));
         _overlayTokens.Add(name, token);
         overlayButtonsContainer.AddChild(button);
         

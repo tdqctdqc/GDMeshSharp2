@@ -5,7 +5,7 @@ using Godot;
 
 public class NoTriBuilder : ITriBuilder
 {
-    public List<Triangle> BuildTrisForPoly(GeoPolygon p)
+    public List<Triangle> BuildTrisForPoly(GeoPolygon p, WorldData data)
     {
         return null;
     }

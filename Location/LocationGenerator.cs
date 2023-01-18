@@ -63,7 +63,7 @@ public class LocationGenerator
                 Data.Locations.Settlements.Add(new Settlement(settlementPolys[i], settlementScores[i]));
             }
         });
-        Data.Landforms.BuildTrisForAspect(LandformManager.Urban);
+        Data.Landforms.BuildTrisForAspect(LandformManager.Urban, Data);
 
         float popScore(GeoPolygon p)
         {

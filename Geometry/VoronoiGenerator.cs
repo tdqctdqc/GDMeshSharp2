@@ -405,7 +405,7 @@ public class VoronoiGenerator
         var margin = lengthPer * marginRatio;
         for (int i = 1; i < count - 1; i++)
         {
-            var sample = Root.Random.RandfRange(lengthPer * i + margin, lengthPer * (i + 1) - margin);
+            var sample = Game.I.Random.RandfRange(lengthPer * i + margin, lengthPer * (i + 1) - margin);
             result.Add(sample);
         }
 

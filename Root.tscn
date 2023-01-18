@@ -1,55 +1,9 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://Root.cs" type="Script" id=1]
-[ext_resource path="res://CameraController.cs" type="Script" id=2]
-[ext_resource path="res://UI/ButtonContainer/ButtonContainer.tscn" type="PackedScene" id=3]
-[ext_resource path="res://Graphics/GraphicLayerHolder.tscn" type="PackedScene" id=4]
+[ext_resource path="res://Client/GeneratorClient/GeneratorClient.tscn" type="PackedScene" id=3]
 
 [node name="Root" type="Node"]
 script = ExtResource( 1 )
 
-[node name="Camera2D" type="Camera2D" parent="."]
-position = Vector2( 512, 302 )
-script = ExtResource( 2 )
-
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
-
-[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer"]
-margin_right = 364.0
-margin_bottom = 40.0
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="Seed" type="SpinBox" parent="CanvasLayer/HBoxContainer"]
-margin_right = 74.0
-margin_bottom = 40.0
-max_value = 10000.0
-
-[node name="Generate" type="Button" parent="CanvasLayer/HBoxContainer"]
-margin_left = 78.0
-margin_right = 149.0
-margin_bottom = 40.0
-text = "Generate"
-
-[node name="GenerateNext" type="Button" parent="CanvasLayer/HBoxContainer"]
-margin_left = 153.0
-margin_right = 258.0
-margin_bottom = 40.0
-text = "Generate Next"
-
-[node name="GenerateTest" type="Button" parent="CanvasLayer/HBoxContainer"]
-margin_left = 262.0
-margin_right = 364.0
-margin_bottom = 40.0
-text = "Generate Test"
-
-[node name="GraphicLayerHolder" parent="CanvasLayer" instance=ExtResource( 4 )]
-margin_top = 40.0
-margin_bottom = 40.0
-
-[node name="ButtonContainer" parent="CanvasLayer" instance=ExtResource( 3 )]
-anchor_left = 1.0
-anchor_right = 1.0
-margin_left = -181.0
-margin_right = 0.0
+[node name="CanvasLayer" parent="." instance=ExtResource( 3 )]

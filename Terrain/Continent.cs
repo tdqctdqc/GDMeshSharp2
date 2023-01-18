@@ -26,7 +26,7 @@ public class Continent : ISuper<Continent, GeoMass>
         NeighboringMasses = new HashSet<GeoMass>();
         NeighboringMassesAdjCount = new Dictionary<GeoMass, int>();
         BoundingBox = new BoundingBox();
-        Drift = Vector2.Left.Rotated(Root.Random.RandfRange(0f, 2f * Mathf.Pi));
+        Drift = Vector2.Left.Rotated(Game.I.Random.RandfRange(0f, 2f * Mathf.Pi));
         AddMass(seed);
     }
 

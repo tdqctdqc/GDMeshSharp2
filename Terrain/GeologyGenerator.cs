@@ -101,8 +101,8 @@ public class GeologyGenerator
         var landSeeds = seeds[0].ToHashSet();
         var waterSeeds = seeds[1].ToHashSet();
         var allSeeds = landSeeds.Union(waterSeeds);
-        var conts = landSeeds.Select(s => new Continent(s, _id.GetID(), Root.Random.RandfRange(.6f, .9f)))
-            .Union(waterSeeds.Select(s => new Continent(s, _id.GetID(), Root.Random.RandfRange(.1f, .45f))))
+        var conts = landSeeds.Select(s => new Continent(s, _id.GetID(), Game.I.Random.RandfRange(.6f, .9f)))
+            .Union(waterSeeds.Select(s => new Continent(s, _id.GetID(), Game.I.Random.RandfRange(.1f, .45f))))
             .ToList();
         GD.Print("Num conts: " + conts.Count);
 
@@ -120,7 +120,7 @@ public class GeologyGenerator
                 .SelectMany(c => c.PolyGeos);
             foreach (var poly in polys)
             {
-                poly.SetAltitude(Root.Random.RandfRange(.8f * cont.Altitude, 1.2f * cont.Altitude));
+                poly.SetAltitude(Game.I.Random.RandfRange(.8f * cont.Altitude, 1.2f * cont.Altitude));
                 //todo make this sample perlin
             }
         });
@@ -162,7 +162,7 @@ public class GeologyGenerator
                     if (driftStr > .75f)
                     {
                         var borders = hiPlate.GetOrderedBorderRelative(loPlate);
-                        var fault = new FaultLine(driftStr, hiPlate, loPlate, borders);
+                        var fault = new FaultLine(driftStr, hiPlate, loPlate, borders, Data);
                         Data.FaultLines.Add(fault);
                     }
                 }
@@ -179,7 +179,7 @@ public class GeologyGenerator
             var polysInRange = new List<GeoPolygon>();
             foreach (var poly in polys)
             {
-                var dist = fault.GetDist(poly);
+                var dist = fault.GetDist(poly, Data);
                 var distRatio = (faultRange - dist) / faultRange;
                 if (dist < faultRange)
                 {
@@ -188,7 +188,7 @@ public class GeologyGenerator
                     float erosion = 0f;
                     if (poly.Altitude < .5f) erosion = poly.Altitude;
                     poly.SetAltitude(poly.Altitude + altIncrement);
-                    var rand = Root.Random.RandfRange(-.2f, .2f);
+                    var rand = Game.I.Random.RandfRange(-.2f, .2f);
                     var newRoughness = Mathf.Clamp(fault.Friction * frictionRoughnessEffect * distRatio - erosion + rand, 0f,
                         1f);
                     poly.SetRoughness(newRoughness);
@@ -202,6 +202,6 @@ public class GeologyGenerator
     private void BuildLandformTris()
     {
         var affectedPolys = Data.FaultLines.SelectMany(f => f.PolyFootprint).Where(p => p.IsLand).ToHashSet();
-        Data.Landforms.BuildTris(affectedPolys);
+        Data.Landforms.BuildTris(affectedPolys, Data);
     }
 }

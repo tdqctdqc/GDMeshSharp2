@@ -13,7 +13,7 @@ public class FaultLineGraphic : Node2D
     {
         
     }
-    public FaultLineGraphic(FaultLine f)
+    public FaultLineGraphic(FaultLine f, WorldData data)
     {
         FaultLine = f;
         if (f.PolyFootprint.Count == 0) return;
@@ -23,7 +23,7 @@ public class FaultLineGraphic : Node2D
         var tris = new List<Vector2>();
         f.PolyFootprint.ForEach(p =>
         {
-            var offset = p.GetOffsetTo(Origin, Root.Bounds.x);
+            var offset = p.GetOffsetTo(Origin, data.Dimensions.x);
             var trisRel = p.GetTrisRel().Select(v => v - offset);
             tris.AddRange(trisRel);
         });

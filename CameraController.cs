@@ -4,17 +4,11 @@ using System;
 public class CameraController : Camera2D
 {
     private float _udScrollSpeed = 1000f;
-    private Vector2 _bounds;
     private float _lrScrollSpeed = .02f;
     public float XYRatio { get; private set; }
-    public override void _Ready()
-    {
-        Current = true;
-    }
 
     public void SetBounds(Vector2 bounds)
     {
-        _bounds = bounds;
     }
     public override void _Process(float delta)
     {
@@ -60,14 +54,5 @@ public class CameraController : Camera2D
                 Mathf.Clamp(Zoom.y, .1f, 100f)
             );
         }
-
-        // if (Position.x < 0f)
-        // {
-        //     Position += new Vector2(_bounds.x, 0f);
-        // }
-        // if (Position.x > _bounds.x)
-        // {
-        //     Position -= new Vector2(_bounds.x, 0f);
-        // }
     }
 }

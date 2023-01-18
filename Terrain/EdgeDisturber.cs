@@ -39,14 +39,14 @@ public static class EdgeDisturber
         var count = border.HighSegsRel.Count;
         for (int i = 0; i < count; i++)
         {
-            var angleDeviation = Root.Random.RandfRange(.5f - sample, .5f + sample);
-            var lengthDeviation = Root.Random.RandfRange(1f - sample, 1f);
+            var angleDeviation = Game.I.Random.RandfRange(.5f - sample, .5f + sample);
+            var lengthDeviation = Game.I.Random.RandfRange(1f - sample, 1f);
             var hiSeg = hiSegs[i];
             var loSeg = loSegs[count - 1 - i];
             Vector2 hiDevVector;
             Vector2 loDevVector;
 
-            if (Root.Random.Randf() > .5f)
+            if (Game.I.Random.Randf() > .5f)
             {
                 var temp = hiSeg.From.LinearInterpolate(hiSeg.To, angleDeviation);
                 hiDevVector = temp * lengthDeviation;
@@ -98,7 +98,7 @@ public static class EdgeDisturber
             sample *= sample;
             var splitPoint1 = T1.GetRandomPointInside(sample, 1f - sample);
             var splitPoint2 = T2.GetRandomPointInside(sample, 1f - sample);
-            var splitPoint = Root.Random.GetWeighted(splitPoint1, T1.GetArea(), splitPoint2, T2.GetArea());
+            var splitPoint = Game.I.Random.GetWeighted(splitPoint1, T1.GetArea(), splitPoint2, T2.GetArea());
             
             var left = new EdgeDisturbInfo(P1, P2, Start, splitPoint);
             var right = new EdgeDisturbInfo(P1, P2, End, splitPoint);

@@ -16,7 +16,7 @@ public class EdgeToTriBuilder : ITriBuilder
         _widthFromStrength = widthFromStrength;
     }
 
-    public List<Triangle> BuildTrisForPoly(GeoPolygon p)
+    public List<Triangle> BuildTrisForPoly(GeoPolygon p, WorldData data)
     {
         var tris = new List<Triangle>();
         p.GeoNeighbors.ForEach(n =>
@@ -26,7 +26,7 @@ public class EdgeToTriBuilder : ITriBuilder
             {
                 var segs = p.GetGeoPolyBorder(n).GetSegsRel(p);
                 var width = _widthFromStrength(strength);
-                var axis = p.GetOffsetTo(n, Root.Bounds.x);
+                var axis = p.GetOffsetTo(n, data.Dimensions.x);
                 var axisRot = axis.Rotated(Mathf.Pi / 2f).Normalized();
                 var bl = axisRot * width / 2f;
                 var br = -bl;
