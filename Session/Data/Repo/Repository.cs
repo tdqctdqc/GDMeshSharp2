@@ -25,7 +25,7 @@ public class Repository<T> : IRepo where T : Entity
     public void AddEntity(Entity e, StrongWriteKey key)
     {
         if (e is T t == false) throw new Exception();
-        _entitiesById.Add(t.Id.Value, t);
+        _entitiesById.Add(t.Id, t);
         _entities.Add(t);
         if(key is HostWriteKey)
         {
@@ -47,7 +47,7 @@ public class Repository<T> : IRepo where T : Entity
         {
             RemovingEntity?.Invoke(t, _weakKey);
         }
-        _entitiesById.Remove(t.Id.Value);
+        _entitiesById.Remove(t.Id);
         _entities.Remove(t);
     }
 

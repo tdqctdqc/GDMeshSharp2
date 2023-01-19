@@ -21,10 +21,10 @@ public class Data
     
     public void AddEntity(Entity e, Type domainType, StrongWriteKey key)
     {
-        Entities.Add(e.Id.Value, e);
+        Entities.Add(e.Id, e);
         var repo = _domains[domainType].Repos[e.GetType()];
         repo.AddEntity(e, key);
-        EntityRepos.Add(e.Id.Value, repo);
+        EntityRepos.Add(e.Id, repo);
         if (key is HostWriteKey hKey)
         {
             var creationUpdate = EntityCreationUpdate.Encode(e, domainType, hKey);
@@ -34,12 +34,12 @@ public class Data
 
     public void RemoveEntity(Entity e, StrongWriteKey key)
     {
-        EntityRepos[e.Id.Value].RemoveEntity(e, key);
-        Entities.Remove(e.Id.Value);
-        EntityRepos.Remove(e.Id.Value);
+        EntityRepos[e.Id].RemoveEntity(e, key);
+        Entities.Remove(e.Id);
+        EntityRepos.Remove(e.Id);
         if (key is HostWriteKey hKey)
         {
-            var deletionUpdate = new EntityDeletionUpdate(e.Id.Value);
+            var deletionUpdate = new EntityDeletionUpdate(e.Id);
             hKey.Server.QueueUpdate(deletionUpdate);
         }
     }

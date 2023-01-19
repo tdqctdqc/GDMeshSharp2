@@ -3,11 +3,11 @@ using System;
 
 public sealed class Player : Entity
 {
-    public EntityVar<Guid> UserId { get; private set; }
-    public EntityVar<string> Name { get; private set; }
+    public Guid UserId { get; private set; }
+    public string Name { get; private set; }
     public Player(int id, string name, CreateWriteKey key) : base(id, key)
     {
-        Name = EntityVar<string>.Construct(name, this, nameof(Name));
+        Name = name;
     }
     private static Player DeserializeConstructor(string json)
     {

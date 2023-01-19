@@ -26,7 +26,7 @@ public class EntityRefCollection<TRef> where TRef : Entity
 
     public static EntityRefCollection<TRef> Construct(ICollection<int> ids, Entity entity, string name)
     {
-        return new EntityRefCollection<TRef>(ids, name, entity.Id.Value);
+        return new EntityRefCollection<TRef>(ids, name, entity.Id);
     }
     
     public static string Serialize(EntityRefCollection<TRef> es)
