@@ -49,8 +49,6 @@ public class PolygonGraphic : Node2D
             var offset = edge.GetOffsetToOtherPoly(poly);
             var centerArrow = MeshGenerator.GetArrowGraphic(Vector2.Zero, offset, 10f);
             AddChild(centerArrow);
-            
-
 
             var next = (i + 1) % poly.Neighbors.Count;
             
@@ -63,7 +61,7 @@ public class PolygonGraphic : Node2D
     }
     private void AddBorderGraphic(Polygon poly)
     {
-        var borders = poly.NeighborBorders.ToList();
+        var borders = poly.GetNeighborBorders().ToList();
         var iter = 0;
         for (var i = 0; i < borders.Count; i++)
         {

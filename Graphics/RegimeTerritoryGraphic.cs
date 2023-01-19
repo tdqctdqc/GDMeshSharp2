@@ -15,7 +15,7 @@ public class RegimeTerritoryGraphic : Node2D
             var p = polys[i];
             var color = p.Regime != null ? new Color(p.Regime.PrimaryColor, .5f) : Colors.Transparent;
             
-            var polyTriPoints = p.GetTrisRel().Select(v => v + plate.SeedPoly.GetOffsetTo(p, data.Dimensions.x));
+            var polyTriPoints = p.GetTrisRel().Select(v => v + plate.GetSeedPoly().GetOffsetTo(p, data.Dimensions.x));
             tris.AddRange(polyTriPoints);
             for (int j = 0; j < polyTriPoints.Count() / 3; j++)
             {
@@ -23,7 +23,7 @@ public class RegimeTerritoryGraphic : Node2D
             }
         }
         var mesh = MeshGenerator.GetMeshInstance(tris.ToList(), colors);
-        mesh.Position = plate.SeedPoly.Center;
+        mesh.Position = plate.GetSeedPoly().Center;
         return mesh;
     }
 }

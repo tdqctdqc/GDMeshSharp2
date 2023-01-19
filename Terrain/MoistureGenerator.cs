@@ -28,7 +28,7 @@ public class MoistureGenerator
             var altMult = .5f + .5f * (1f - distFromEquator / (Data.Dimensions.y / 2f));
             var polyGeos = m.Plates.SelectMany(p => p.Cells).SelectMany(c => c.PolyGeos).ToList();
             var count = polyGeos.Count;
-            var waterCount = polyGeos.Where(g => g.IsWater).Count();
+            var waterCount = polyGeos.Where(g => g.IsWater()).Count();
             var score = altMult * waterCount / count;
             massMoistures.Add(m, score);
             
@@ -60,7 +60,7 @@ public class MoistureGenerator
             var polyGeos = m.Plates.SelectMany(p => p.Cells).SelectMany(c => c.PolyGeos).ToList();
             polyGeos.ForEach(p =>
             {
-                if (p.IsWater) p.SetMoisture(1f);
+                if (p.IsWater()) p.SetMoisture(1f);
                 else
                 {
                     var moisture = massMoistures[m] + Game.I.Random.RandfRange(-.1f, .1f);
@@ -86,9 +86,9 @@ public class MoistureGenerator
             
         polys.ForEach(p =>
         {
-            if (p.IsWater) return;
+            if (p.IsWater()) return;
             var path = PathFinder<GeoPolygon>.FindPathMultipleEnds(p,
-                n => n.IsWater || pathToSea.ContainsKey(n),
+                n => n.IsWater() || pathToSea.ContainsKey(n),
                 n => n.GeoNeighbors, (n, m) => n.Roughness + m.Roughness);
             path.Reverse();
             if (path.First() != p) throw new Exception();
@@ -112,7 +112,7 @@ public class MoistureGenerator
             while (path != null)
             {
                 var last = path[path.Count - 1];
-                if (last.IsWater)
+                if (last.IsWater())
                 {
                     path = null;
                 }

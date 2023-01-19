@@ -9,7 +9,7 @@ public class Landform : TerrainAspect
     public float MinRoughness { get; private set; }
     public override bool Allowed(GeoPolygon poly, WorldData data)
     {
-        return poly.Roughness >= MinRoughness && poly.IsWater == (this == LandformManager.Water);
+        return poly.Roughness >= MinRoughness && poly.IsWater() == (this == LandformManager.Water);
     }
 
     public override Color Color { get; protected set; }

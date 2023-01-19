@@ -5,9 +5,8 @@ using Godot;
 
 public class LineSegment
 {
-    public Vector2 From { get; set; }
-
-    public Vector2 To { get; set; }
+    public Vector2 From { get; private set; }
+    public Vector2 To { get; private set; }
     public Vector2 Mid => (From + To) / 2f;
     public LineSegment(Vector2 from, Vector2 to)
     {

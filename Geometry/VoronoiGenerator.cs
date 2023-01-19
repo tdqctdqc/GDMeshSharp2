@@ -211,11 +211,11 @@ public class VoronoiGenerator
         {
             var poly = polyDic[points[i]];
             var next = polyDic[points[(i + 1)]];
-            var polyBorderPoints = poly.NeighborBorders
+            var polyBorderPoints = poly.GetNeighborBorders()
                 .SelectMany(nb => nb.GetPointsAbs())
                 .Distinct().ToList();
             
-            var nextBorderPoints = next.NeighborBorders
+            var nextBorderPoints = next.GetNeighborBorders()
                 .SelectMany(nb => nb.GetPointsAbs())
                 .Distinct().ToList();
             
@@ -260,11 +260,11 @@ public class VoronoiGenerator
         {
             var poly = polyDic[points[i]];
             var next = polyDic[points[i + 1]];
-            var polyBorderPoints = poly.NeighborBorders
+            var polyBorderPoints = poly.GetNeighborBorders()
                 .SelectMany(nb => nb.GetPointsRel(poly))
                 .Select(p => p + poly.Center).Distinct().ToList();
             
-            var nextBorderPoints = next.NeighborBorders
+            var nextBorderPoints = next.GetNeighborBorders()
                 .SelectMany(nb => nb.GetPointsRel(next))
                 .Select(p => p + next.Center).Distinct().ToList();
             
@@ -286,11 +286,13 @@ public class VoronoiGenerator
         
         var anchorpoly = polyDic[anchor];
         var last = polyDic[points[points.Count - 1]];
-        var anchorBorderPoints = anchorpoly.NeighborBorders.SelectMany(nb => nb.GetPointsRel(anchorpoly))
+        var anchorBorderPoints = anchorpoly.GetNeighborBorders()
+            .SelectMany(nb => nb.GetPointsRel(anchorpoly))
             .Select(p => p + anchor);
         
         //todo
-        var lastBorderPoints = last.NeighborBorders.SelectMany(nb => nb.GetPointsRel(last))
+        var lastBorderPoints = last.GetNeighborBorders()
+            .SelectMany(nb => nb.GetPointsRel(last))
             .Select(p => p + last.Center - shift);
         var sharedLast = anchorBorderPoints.Intersect(lastBorderPoints);
         if (sharedLast.Count() == 1)
@@ -310,7 +312,7 @@ public class VoronoiGenerator
     private static void CloseOffCorner(Polygon poly)
     {
         var singlePoints = new HashSet<Vector2>();
-        var borderPoints = poly.NeighborBorders.SelectMany(nb => nb.GetPointsAbs());
+        var borderPoints = poly.GetNeighborBorders().SelectMany(nb => nb.GetPointsAbs());
         foreach (var borderPoint in borderPoints)
         {
             if (singlePoints.Contains(borderPoint)) singlePoints.Remove(borderPoint);
@@ -327,7 +329,7 @@ public class VoronoiGenerator
     private static void CloseOffEnd(Polygon poly)
     {
         var singlePoints = new HashSet<Vector2>();
-        var borderPoints = poly.NeighborBorders.SelectMany(nb => nb.GetPointsRel(poly)).ToList();
+        var borderPoints = poly.GetNeighborBorders().SelectMany(nb => nb.GetPointsRel(poly)).ToList();
         foreach (var borderPoint in borderPoints)
         {
             if (singlePoints.Contains(borderPoint)) singlePoints.Remove(borderPoint);

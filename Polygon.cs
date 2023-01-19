@@ -3,25 +3,21 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public class Polygon : IGraphNode<Polygon, PolygonBorder>
+public abstract class Polygon : IGraphNode<Polygon, PolygonBorder>
 {
     public int Id { get; private set; }
     public Vector2 Center { get; private set; }
-    IReadOnlyList<Polygon> IGraphNode<Polygon, PolygonBorder>.Neighbors 
-        => Neighbors;
-
-    public PolygonBorder GetPolyBorder(Polygon neighbor) 
-        => _borderDic[neighbor];
     public List<Polygon> Neighbors { get; protected set; }
-    public IEnumerable<PolygonBorder> NeighborBorders => Neighbors.Select(n => GetPolyBorder(n));
     protected Dictionary<Polygon, PolygonBorder> _borderDic;
     public List<Vector2> NoNeighborBorders { get; private set; }
-    public BoundingBox BoundingBox { get; private set; }
     public Color Color { get; private set; }
+    
     public bool HasNeighbor(Polygon p)
     {
         return _borderDic.ContainsKey(p);
     }
+    public PolygonBorder GetPolyBorder(Polygon neighbor) 
+        => _borderDic[neighbor];
     public Polygon(int id, Vector2 center, float mapWidth)
     {
         Id = id;
@@ -30,11 +26,11 @@ public class Polygon : IGraphNode<Polygon, PolygonBorder>
         if (Center.x < 0f) Center = new Vector2(Center.x + mapWidth, center.y);
         Neighbors = new List<Polygon>();
         NoNeighborBorders = new List<Vector2>();
-        BoundingBox = new BoundingBox();
         _borderDic = new Dictionary<Polygon, PolygonBorder>();
         Color = ColorsExt.GetRandomColor();
     }
-    
+    public IEnumerable<PolygonBorder> GetNeighborBorders() => Neighbors.Select(n => GetPolyBorder(n));
+
     public virtual void AddNeighbor(Polygon poly, PolygonBorder border)
     {
         if (Neighbors.Contains(poly)) return;
@@ -43,7 +39,7 @@ public class Polygon : IGraphNode<Polygon, PolygonBorder>
         var startN = Neighbors[0];
         for (int i = 0; i < Neighbors.Count; i++)
         {
-            if (startN.Neighbors.Where(n => Neighbors.Contains(n)).Count() > 1)
+            if (startN.Neighbors.Any(n => Neighbors.Contains(n)))
             {
                 startN = Neighbors[(i + 1) % Neighbors.Count];
             }
@@ -54,8 +50,6 @@ public class Polygon : IGraphNode<Polygon, PolygonBorder>
                 n => GetPolyBorder(n).GetOffsetToOtherPoly(this),
                 startN)
             .ToList();
-
-        border.GetPointsAbs().ForEach(BoundingBox.RegisterPoint);
     }
 
     public virtual void RemoveNeighbor(Polygon poly)
@@ -71,34 +65,38 @@ public class Polygon : IGraphNode<Polygon, PolygonBorder>
     {
         NoNeighborBorders.Add(from);
         NoNeighborBorders.Add(to);
-        BoundingBox.RegisterPoint(from);
-        BoundingBox.RegisterPoint(to);
     }
+    
+    IReadOnlyList<Polygon> IGraphNode<Polygon, PolygonBorder>.Neighbors 
+        => Neighbors;
+}
 
-    public List<Vector2> GetTrisAbs()
+public static class PolygonExt
+{
+    public static List<Vector2> GetTrisAbs(this Polygon p)
     {
         var tris = new List<Vector2>();
-        for (var i = 0; i < Neighbors.Count; i++)
+        for (var i = 0; i < p.Neighbors.Count; i++)
         {
-            var edge = GetPolyBorder(Neighbors[i]);
-            var segs = edge.GetSegsRel(this);
+            var edge = p.GetPolyBorder(p.Neighbors[i]);
+            var segs = edge.GetSegsRel(p);
             for (var j = 0; j < segs.Count; j++)
             {
-                tris.Add(Center);
-                tris.Add(segs[j].From + Center);
-                tris.Add(segs[j].To + Center);
+                tris.Add(p.Center);
+                tris.Add(segs[j].From + p.Center);
+                tris.Add(segs[j].To + p.Center);
             }
         }
 
         return tris;
     }
-    public List<Vector2> GetTrisRel()
+    public static List<Vector2> GetTrisRel(this Polygon p)
     {
         var tris = new List<Vector2>();
-        for (var i = 0; i < Neighbors.Count; i++)
+        for (var i = 0; i < p.Neighbors.Count; i++)
         {
-            var edge = GetPolyBorder(Neighbors[i]);
-            var segs = edge.GetSegsRel(this);
+            var edge = p.GetPolyBorder(p.Neighbors[i]);
+            var segs = edge.GetSegsRel(p);
             for (var j = 0; j < segs.Count; j++)
             {
                 tris.Add(Vector2.Zero);
@@ -110,9 +108,9 @@ public class Polygon : IGraphNode<Polygon, PolygonBorder>
         return tris;
     }
 
-    public Vector2 GetOffsetTo(Polygon p, float mapWidth)
+    public static Vector2 GetOffsetTo(this Polygon poly, Polygon p, float mapWidth)
     {
-        var off1 = p.Center - Center;
+        var off1 = p.Center - poly.Center;
         var off2 = (off1 + Vector2.Right * mapWidth);
         var off3 = (off1 + Vector2.Left * mapWidth);
         if (off1.Length() < off2.Length() && off1.Length() < off3.Length()) return off1;
@@ -120,9 +118,9 @@ public class Polygon : IGraphNode<Polygon, PolygonBorder>
         return off3;
     }
     
-    public Vector2 GetOffsetTo(Vector2 p, float mapWidth)
+    public static Vector2 GetOffsetTo(this Polygon poly, Vector2 p, float mapWidth)
     {
-        var off1 = p - Center;
+        var off1 = p - poly.Center;
         var off2 = (off1 + Vector2.Right * mapWidth);
         var off3 = (off1 + Vector2.Left * mapWidth);
         if (off1.Length() < off2.Length() && off1.Length() < off3.Length()) return off1;

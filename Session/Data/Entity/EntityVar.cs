@@ -4,12 +4,12 @@ using System.Text.Json;
 
 [EntityVariable]
 
-public class EntityStruct<TValue> where TValue: struct
+public class EntityVar<TValue> 
 {
     public string Name { get; private set; }
     public TValue Value { get; private set; }
     public int EntityId { get; private set; }
-    private EntityStruct(TValue value, int entityId, string name)
+    private EntityVar(TValue value, int entityId, string name)
     {
         //only want to call this for deserialization and from construct
         //TODO check that TValue doesnt have class fields or struct fields with class fields etc
@@ -17,9 +17,9 @@ public class EntityStruct<TValue> where TValue: struct
         Value = value;
         EntityId = entityId;
     }
-    public static EntityStruct<TValue> Construct(TValue value, Entity entity, string name)
+    public static EntityVar<TValue> Construct(TValue value, Entity entity, string name)
     {
-        return new EntityStruct<TValue>(value, entity.Id.Value, name);
+        return new EntityVar<TValue>(value, entity.Id.Value, name);
     }
     public void Update(HostWriteKey key, TValue newValue, HostServer server)
     {
@@ -28,7 +28,7 @@ public class EntityStruct<TValue> where TValue: struct
         var update = EntityVarUpdate.Encode<TValue>(Name, EntityId, newValue, key);
         server.QueueUpdate(update);
     }
-    public static void ReceiveUpdate(EntityStruct<TValue> str, ServerWriteKey key, string newValueJson)
+    public static void ReceiveUpdate(EntityVar<TValue> str, ServerWriteKey key, string newValueJson)
     {
         var value = JsonSerializer.Deserialize<TValue>(newValueJson);
         str.Value = value;
@@ -38,12 +38,12 @@ public class EntityStruct<TValue> where TValue: struct
     {
         Value = newValue;
     }
-    public static string Serialize(EntityStruct<TValue> es)
+    public static string Serialize(EntityVar<TValue> es)
     {
         return JsonSerializer.Serialize<TValue>(es.Value);
     }
 
-    public static EntityStruct<TValue> Deserialize(string json, string name, Entity entity)
+    public static EntityVar<TValue> Deserialize(string json, string name, Entity entity)
     {
         var value = JsonSerializer.Deserialize<TValue>(json);
         return Construct(value, entity, name);

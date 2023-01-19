@@ -10,7 +10,7 @@ public class FaultLine
     public GeoPlate HighId { get; private set; }
     public List<GeoPolygon> PolyFootprint { get; private set; }
     public float Friction { get; private set; }
-    public GeoPolygon Origin => HighId.SeedPoly;
+    public GeoPolygon Origin => HighId.GetSeedPoly();
     public List<BorderEdge<GeoPolygon>> Edges { get; private set; }
     public FaultLine(float friction, GeoPlate highId, 
         GeoPlate lowId, List<BorderEdge<GeoPolygon>> edgesHi,

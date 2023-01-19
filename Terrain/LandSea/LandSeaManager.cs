@@ -19,8 +19,8 @@ public class LandSeaManager
     {
         Landmasses = new List<HashSet<GeoPolygon>>();
         LandmassDic = new Dictionary<GeoPolygon, HashSet<GeoPolygon>>();
-        var landPolys = data.GeoPolygons.Where(p => p.IsLand);
-        var seaPolys = data.GeoPolygons.Where(p => p.IsWater);
+        var landPolys = data.GeoPolygons.Where(p => p.IsLand());
+        var seaPolys = data.GeoPolygons.Where(p => p.IsWater());
         var landmasses =
             UnionFind<GeoPolygon, float>.DoUnionFind(landPolys.ToList(), (p1, p2) => p1.HasNeighbor(p2), p1 => p1.GeoNeighbors);
         landmasses.ForEach(m =>
@@ -33,7 +33,7 @@ public class LandSeaManager
         //todo is union find only doing elements inside the input list?
         Seas = new List<HashSet<GeoPolygon>>();
         SeaDic = new Dictionary<GeoPolygon, HashSet<GeoPolygon>>();
-        var SeaPolys = data.GeoPolygons.Where(p => p.IsWater);
+        var SeaPolys = data.GeoPolygons.Where(p => p.IsWater());
         var seamasses =
             UnionFind<GeoPolygon, float>.DoUnionFind(seaPolys.ToList(), 
                 (p1, p2) => p1.HasNeighbor(p2), p1 => p1.GeoNeighbors);

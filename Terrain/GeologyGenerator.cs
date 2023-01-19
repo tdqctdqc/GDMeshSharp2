@@ -201,7 +201,7 @@ public class GeologyGenerator
 
     private void BuildLandformTris()
     {
-        var affectedPolys = Data.FaultLines.SelectMany(f => f.PolyFootprint).Where(p => p.IsLand).ToHashSet();
+        var affectedPolys = Data.FaultLines.SelectMany(f => f.PolyFootprint).Where(p => p.IsLand()).ToHashSet();
         Data.Landforms.BuildTris(affectedPolys, Data);
     }
 }

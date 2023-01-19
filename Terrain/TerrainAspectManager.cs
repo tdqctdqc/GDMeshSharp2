@@ -5,7 +5,7 @@ using Godot;
 
 public abstract class TerrainAspectManager<TAspect> where TAspect: TerrainAspect
 {
-    public List<TAspect> ByPriority { get; private set; }
+    public List<TAspect> ByPriority { get; private set; } 
     public TAspect LandDefault { get; protected set; } 
     public TAspect WaterDefault { get; protected set; } 
     public Dictionary<TAspect, TerrainAspectHolder> Holders { get; private set; }
@@ -26,14 +26,10 @@ public abstract class TerrainAspectManager<TAspect> where TAspect: TerrainAspect
             var val = ByPriority[i];
             if (val.Allowed(p, data))
             {
-                if (val.Equals(VegetationManager.Desert))
-                {
-                    GD.Print("got desert    ");
-                }
                 return val;
             }
         }
-        if (p.IsWater)
+        if (p.IsWater())
         {
             return WaterDefault;
         }
@@ -47,7 +43,7 @@ public abstract class TerrainAspectManager<TAspect> where TAspect: TerrainAspect
             if (Holders[ByPriority[i]].Contains(p, offsetFromPolyCenter)) 
                 return ByPriority[i];
         }
-        if (p.IsLand == false)
+        if (p.IsWater())
         {
             return WaterDefault;
         }

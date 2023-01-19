@@ -8,12 +8,10 @@ public class GeoMass : ISuper<GeoMass, GeoPlate>
     public int Id { get; private set; }
     public Continent Continent { get; private set; }
     public GeoPlate Seed { get; private set; }
-    public GeoPolygon SeedPoly => Seed.SeedPoly;
     public HashSet<GeoPlate> Plates { get; private set; }
     public HashSet<GeoPlate> NeighboringPlates { get; private set; }
     public Dictionary<GeoPlate, int> NeighboringPlatesAdjCount { get; private set; }
     public HashSet<GeoMass> Neighbors { get; private set; }
-    public BoundingBox BoundingBox { get; private set; }
     public Vector2 Center { get; private set; }
     public GeoMass(GeoPlate seed, int id)
     {
@@ -24,15 +22,13 @@ public class GeoMass : ISuper<GeoMass, GeoPlate>
         NeighboringPlates = new HashSet<GeoPlate>();
         NeighboringPlatesAdjCount = new Dictionary<GeoPlate, int>();
         Neighbors = new HashSet<GeoMass>();
-        BoundingBox = new BoundingBox();
         AddPlate(seed);
     }
-
+    public GeoPolygon GetSeedPoly() => Seed.GetSeedPoly();
     public void AddPlate(GeoPlate c)
     {
         Center = (Center * Plates.Count + c.Center) / (Plates.Count + 1);
         Plates.Add(c);
-        BoundingBox.Cover(c.BoundingBox);
         c.SetContinent(this);
         NeighboringPlates.Remove(c);
         NeighboringPlatesAdjCount.Remove(c);

@@ -24,7 +24,7 @@ public class LocationGenerator
         Data.Plates.ForEach(plate =>
         {
             var landPolys = plate.Cells.SelectMany(c => c.PolyGeos)
-                .Where(p => p.IsLand)
+                .Where(p => p.IsLand())
                 .Where(p => p.Roughness < LandformManager.Mountain.MinRoughness);
             if (landPolys.Count() == 0) return;
             var score = landPolys.Select(popScore).Sum();
@@ -89,7 +89,7 @@ public class LocationGenerator
 
             float edgeCost(GeoPolygon p1, GeoPolygon p2)
             {
-                if (p1.IsWater || p2.IsWater) return Mathf.Inf;
+                if (p1.IsWater() || p2.IsWater()) return Mathf.Inf;
                 return p1.Roughness + p2.Roughness;
             }
             foreach (var e in graph.Edges)

@@ -7,8 +7,6 @@ public class Continent : ISuper<Continent, GeoMass>
 {
     public int Id { get; private set; }
     public GeoMass Seed { get; private set; }
-    public GeoPolygon SeedPoly => Seed.SeedPoly;
-    public BoundingBox BoundingBox { get; private set; }
     public HashSet<GeoMass> Masses { get; private set; }
     public HashSet<GeoMass> NeighboringMasses { get; private set; }
     public Dictionary<GeoMass, int> NeighboringMassesAdjCount { get; private set; }
@@ -25,16 +23,15 @@ public class Continent : ISuper<Continent, GeoMass>
         Masses = new HashSet<GeoMass>();
         NeighboringMasses = new HashSet<GeoMass>();
         NeighboringMassesAdjCount = new Dictionary<GeoMass, int>();
-        BoundingBox = new BoundingBox();
         Drift = Vector2.Left.Rotated(Game.I.Random.RandfRange(0f, 2f * Mathf.Pi));
         AddMass(seed);
     }
+    public GeoPolygon GetSeedPoly() => Seed.GetSeedPoly();
 
     public void AddMass(GeoMass c)
     {
         Center = (Center * Masses.Count + c.Center) / (Masses.Count + 1);
         Masses.Add(c);
-        BoundingBox.Cover(c.BoundingBox);
         c.SetContinent(this);
         NeighboringMasses.Remove(c);
         NeighboringMassesAdjCount.Remove(c);

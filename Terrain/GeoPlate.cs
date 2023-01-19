@@ -7,14 +7,13 @@ public class GeoPlate : ISuper<GeoPlate, GeoCell>
 {
     public int Id { get; private set; }
     public GeoCell Seed { get; private set; }
-    public GeoPolygon SeedPoly => Seed.Seed;
+    public GeoPolygon GetSeedPoly() => Seed.Seed;
     public GeoMass Mass { get; private set; }
     public HashSet<GeoCell> Cells { get; private set; }
     public HashSet<GeoCell> NeighboringCells { get; private set; }
     public Dictionary<GeoCell, int> NeighboringCellsAdjCount { get; private set; }
-    public BoundingBox BoundingBox { get; private set; }
     public HashSet<GeoPlate> Neighbors { get; private set; }
-    public Vector2 Center => SeedPoly.Center;
+    public Vector2 Center => GetSeedPoly().Center;
     public GeoPlate(GeoCell seed, int id)
     {
         Id = id;
@@ -22,14 +21,12 @@ public class GeoPlate : ISuper<GeoPlate, GeoCell>
         Cells = new HashSet<GeoCell> {};
         NeighboringCells = new HashSet<GeoCell>();
         NeighboringCellsAdjCount = new Dictionary<GeoCell, int>();
-        BoundingBox = new BoundingBox();
         AddCell(seed);
     }
 
     public void AddCell(GeoCell c)
     {
         Cells.Add(c);
-        BoundingBox.Cover(c.BoundingBox);
         c.SetPlate(this);
         NeighboringCells.Remove(c);
         var border = c.Neighbors.Except(Cells);

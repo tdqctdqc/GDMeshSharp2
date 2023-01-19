@@ -33,7 +33,7 @@ public class CellGraphic : Node2D
 
         foreach (var poly in borderPolyGeos)
         {
-            var segments = poly.NeighborBorders.SelectMany(b => b.GetSegsRel(poly));
+            var segments = poly.GetNeighborBorders().SelectMany(b => b.GetSegsRel(poly));
             foreach (var lineSegment in segments)
             {
                 var point = lineSegment.From * .9f + poly.Center;

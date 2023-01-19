@@ -10,7 +10,6 @@ public class GeoCell : ISuper<GeoCell, GeoPolygon>
     public HashSet<GeoPolygon> PolyGeos { get; private set; }
     public HashSet<GeoPolygon> NeighboringPolyGeos { get; private set; }
     public List<GeoCell> Neighbors { get; private set; }
-    public BoundingBox BoundingBox { get; private set; }
     public Vector2 Center { get; private set; }
     public GeoCell(GeoPolygon seed)
     {
@@ -19,9 +18,7 @@ public class GeoCell : ISuper<GeoCell, GeoPolygon>
         PolyGeos = new HashSet<GeoPolygon> {};
         NeighboringPolyGeos = new HashSet<GeoPolygon>();
         Neighbors = new List<GeoCell>();
-        BoundingBox = new BoundingBox();
         AddPolygon(seed);
-        
     }
 
     public void SetPlate(GeoPlate plate)
@@ -36,7 +33,6 @@ public class GeoCell : ISuper<GeoCell, GeoPolygon>
         p.SetCell(this);
         NeighboringPolyGeos.Remove(p);
         var newBorder = p.GeoNeighbors.Except(PolyGeos);
-        BoundingBox.Cover(p.BoundingBox);
         foreach (var borderPoly in newBorder)
         {
             NeighboringPolyGeos.Add(borderPoly);

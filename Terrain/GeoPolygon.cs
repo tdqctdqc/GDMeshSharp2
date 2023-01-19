@@ -7,17 +7,19 @@ public class GeoPolygon : Polygon
 {
     public GeoCell Cell { get; private set; }
     public List<GeoPolygon> GeoNeighbors { get; private set; }
-    public List<GeoPolygonBorder> GeoBorders => Neighbors.Select(n => (GeoPolygonBorder)GetPolyBorder(n)).ToList();
-    public GeoPolygonBorder GetGeoPolyBorder(Polygon neighbor) 
-        => (GeoPolygonBorder)_borderDic[neighbor];
-    public bool IsLand => Altitude > .5f;
-    public bool IsWater => IsLand == false;
     public float Altitude { get; private set; }
     public float Roughness { get; private set; }
     public float Moisture { get; private set; }
     public float SettlementSize { get; private set; }
     public Regime Regime { get; private set; }
-
+    
+    
+    
+    
+    public bool IsLand() => Altitude > .5f;
+    public bool IsWater() => IsLand() == false;
+    public GeoPolygonBorder GetGeoPolyBorder(Polygon neighbor) 
+        => (GeoPolygonBorder)_borderDic[neighbor];
     public GeoPolygon(int id, Vector2 center, float mapWidth) : base(id, center, mapWidth)
     {
         GeoNeighbors = new List<GeoPolygon>();
