@@ -10,7 +10,8 @@ public class Repository<T> : IRepo where T : Entity
     private Dictionary<string, Action<int, WriteKey>> _entityValueUpdatedActions;
     public T this[int id] => _entitiesById[id];
     protected Dictionary<int, T> _entitiesById;
-    public IReadOnlyList<Entity> Entities => _entities;
+    IReadOnlyList<Entity> IRepo.Entities => _entities;
+    public IReadOnlyList<T> Entities => _entities;
     private List<T> _entities;
     private ClientWriteKey _weakKey;
 
@@ -21,6 +22,11 @@ public class Repository<T> : IRepo where T : Entity
         _entitiesById = new Dictionary<int, T>();
         _entities = new List<T>();
         _weakKey = new ClientWriteKey(data);
+    }
+
+    public void AddEntities(List<T> ts, StrongWriteKey key)
+    {
+        ts.ForEach(t => AddEntity(t, key));
     }
     public void AddEntity(Entity e, StrongWriteKey key)
     {

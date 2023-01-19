@@ -19,7 +19,8 @@ public class EdgeToTriBuilder : ITriBuilder
     public List<Triangle> BuildTrisForPoly(GenPolygon p, WorldData data)
     {
         var tris = new List<Triangle>();
-        p.GeoNeighbors.ForEach(n =>
+        
+        foreach (var n in p.GeoNeighbors.Refs)
         {
             var strength = _getEdgeStrength(p, n);
             if (strength >= _threshhold)
@@ -36,7 +37,7 @@ public class EdgeToTriBuilder : ITriBuilder
                 tris.Add(new Triangle(tl, br, bl));
                 tris.Add(new Triangle(tl, tr, br));
             }
-        });
+        }
         return tris;
     }
 }

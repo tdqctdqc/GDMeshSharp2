@@ -3,14 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public abstract class Polygon : IGraphNode<Polygon, PolygonBorder>
+public abstract class Polygon : Entity
 {
-    public int Id { get; private set; }
-    public Vector2 Center { get; private set; }
+    public Vector2 Center { get; protected set; }
     public List<Polygon> Neighbors { get; protected set; }
     protected Dictionary<Polygon, PolygonBorder> _borderDic;
-    public List<Vector2> NoNeighborBorders { get; private set; }
-    public Color Color { get; private set; }
+    public List<Vector2> NoNeighborBorders { get; protected set; }
+    public Color Color { get; protected set; }
     
     public bool HasNeighbor(Polygon p)
     {
@@ -18,9 +17,8 @@ public abstract class Polygon : IGraphNode<Polygon, PolygonBorder>
     }
     public PolygonBorder GetPolyBorder(Polygon neighbor) 
         => _borderDic[neighbor];
-    public Polygon(int id, Vector2 center, float mapWidth)
+    public Polygon(int id, Vector2 center, float mapWidth, CreateWriteKey key) : base(id, key)
     {
-        Id = id;
         Center = center;
         if (Center.x > mapWidth) Center = new Vector2(Center.x - mapWidth, center.y);
         if (Center.x < 0f) Center = new Vector2(Center.x + mapWidth, center.y);
@@ -31,7 +29,7 @@ public abstract class Polygon : IGraphNode<Polygon, PolygonBorder>
     }
     public IEnumerable<PolygonBorder> GetNeighborBorders() => Neighbors.Select(n => GetPolyBorder(n));
 
-    public virtual void AddNeighbor(Polygon poly, PolygonBorder border)
+    public virtual void AddNeighbor(Polygon poly, PolygonBorder border, CreateWriteKey key)
     {
         if (Neighbors.Contains(poly)) return;
         Neighbors.Add(poly);
@@ -52,7 +50,7 @@ public abstract class Polygon : IGraphNode<Polygon, PolygonBorder>
             .ToList();
     }
 
-    public virtual void RemoveNeighbor(Polygon poly)
+    public virtual void RemoveNeighbor(Polygon poly, CreateWriteKey key)
     {
         //only use in merging left-right wrap
         var index = Neighbors.IndexOf(poly);
@@ -67,8 +65,9 @@ public abstract class Polygon : IGraphNode<Polygon, PolygonBorder>
         NoNeighborBorders.Add(to);
     }
     
-    IReadOnlyList<Polygon> IGraphNode<Polygon, PolygonBorder>.Neighbors 
-        => Neighbors;
+    
+    
+    protected Polygon(string json) : base(json) { }
 }
 
 public static class PolygonExt
@@ -127,4 +126,5 @@ public static class PolygonExt
         if (off2.Length() < off1.Length() && off2.Length() < off3.Length()) return off2;
         return off3;
     }
+    
 }

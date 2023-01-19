@@ -67,10 +67,10 @@ public abstract class TerrainAspectManager<TAspect> where TAspect: TerrainAspect
 
     private List<List<GenPolygon>> GetAspectUnion(TAspect aspect, WorldData data)
     {
-        var polys = data.GeoPolygons.Where(p => aspect.Allowed(p, data));
+        var polys = data.PlanetDomain.GeoPolygons.Entities.Where(p => aspect.Allowed(p, data));
         return UnionFind<GenPolygon, float>.DoUnionFind(polys.ToList(), 
             (p1, p2) => p1.HasNeighbor(p2),
-            poly => poly.GeoNeighbors
+            poly => poly.GeoNeighbors.Refs
         );
     }
     
@@ -93,7 +93,7 @@ public abstract class TerrainAspectManager<TAspect> where TAspect: TerrainAspect
     public void BuildTrisForAspect(TAspect aspect, WorldData data, List<GenPolygon> affectedPolys = null)
     {
         if (aspect == LandDefault || aspect == WaterDefault) return;
-        if (affectedPolys == null) affectedPolys = data.GeoPolygons.Where(p => aspect.Allowed(p, data)).ToList();
+        if (affectedPolys == null) affectedPolys = data.PlanetDomain.GeoPolygons.Entities.Where(p => aspect.Allowed(p, data)).ToList();
         int triCount = 0;
         affectedPolys.ForEach(p =>
         {

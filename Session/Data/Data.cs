@@ -8,9 +8,9 @@ public class Data
     private Dictionary<Type, Domain> _domains;
     public Dictionary<int, Entity> Entities { get; private set; }
     public Dictionary<int, IRepo> EntityRepos { get; private set; }
-    public Entity this[int id] => Entities.ContainsKey(id) ? Entities[id] : null;
+    public Entity this[int id] => Entities[id];
     public BaseDomain BaseDomain => GetDomain<BaseDomain>();
-
+    
     public Data()
     {
         Entities = new Dictionary<int, Entity>();
@@ -48,6 +48,10 @@ public class Data
         return (T) _domains[typeof(T)];
     }
 
+    protected void AddDomain(Domain dom)
+    {
+        _domains.Add(dom.GetType(), dom);
+    }
     public Domain GetDomain(Type domainType)
     {
         return _domains[domainType];

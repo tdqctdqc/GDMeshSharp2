@@ -6,14 +6,15 @@ using Godot;
 public class MoistureGenerator
 {
     public WorldData Data { get; private set; }
-
+    private CreateWriteKey _key;
     public MoistureGenerator(WorldData data)
     {
         Data = data;
     }
 
-    public void Generate()
+    public void Generate(CreateWriteKey key)
     {
+        _key = key;
         SetPolyMoistures();
         BuildVegetationTris();
         BuildRivers();
@@ -31,7 +32,6 @@ public class MoistureGenerator
             var waterCount = polyGeos.Where(g => g.IsWater()).Count();
             var score = altMult * waterCount / count;
             massMoistures.Add(m, score);
-            
         });
 
 
@@ -45,7 +45,6 @@ public class MoistureGenerator
             Data.Masses.ForEach(m =>
             {
                 var oldScore = massMoistures[m];
-
                 var newScore = m.Neighbors.Select(n => massMoistures[n]).Average();
 
                 if (newScore > oldScore)
@@ -60,12 +59,12 @@ public class MoistureGenerator
             var polyGeos = m.Plates.SelectMany(p => p.Cells).SelectMany(c => c.PolyGeos).ToList();
             polyGeos.ForEach(p =>
             {
-                if (p.IsWater()) p.SetMoisture(1f);
+                if (p.IsWater()) p.Set(nameof(p.Moisture), 1f, _key);
                 else
                 {
                     var moisture = massMoistures[m] + Game.I.Random.RandfRange(-.1f, .1f);
                     
-                    p.SetMoisture(Mathf.Clamp(moisture, 0f, 1f));
+                    p.Set(nameof(p.Moisture), Mathf.Clamp(moisture, 0f, 1f), _key);
                 }
             });
         });
@@ -73,7 +72,7 @@ public class MoistureGenerator
 
     private void BuildVegetationTris()
     {
-        Data.Vegetation.BuildTris(Data.GeoPolygons.ToHashSet(), Data);
+        Data.Vegetation.BuildTris(Data.PlanetDomain.GeoPolygons.Entities.ToHashSet(), Data);
     }
 
     
@@ -82,14 +81,14 @@ public class MoistureGenerator
         var pathToSea = new Dictionary<GenPolygon, List<GenPolygon>>();
         var additional = new Dictionary<GenPolygon, float>();
         //todo check if double adding
-        var polys = Data.GeoPolygons.Distinct().ToList();
+        var polys = Data.PlanetDomain.GeoPolygons.Entities.Distinct().ToList();
             
         polys.ForEach(p =>
         {
             if (p.IsWater()) return;
             var path = PathFinder<GenPolygon>.FindPathMultipleEnds(p,
                 n => n.IsWater() || pathToSea.ContainsKey(n),
-                n => n.GeoNeighbors, (n, m) => n.Roughness + m.Roughness);
+                n => n.GeoNeighbors.Refs, (n, m) => n.Roughness + m.Roughness);
             path.Reverse();
             if (path.First() != p) throw new Exception();
             pathToSea.Add(p, path);

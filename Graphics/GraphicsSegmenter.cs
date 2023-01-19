@@ -28,7 +28,8 @@ public class GraphicsSegmenter<T> : Node2D, IGraphicsSegmenter where T : Node2D
         }
         elements.ForEach(e =>
         {
-            var segmentIndex = Mathf.FloorToInt(tPos(e).x / _segWidth);
+            var segmentIndex = Mathf.FloorToInt(tPos(e).x / _segWidth) % _segments.Count;
+            GD.Print(segmentIndex);
             e.Position = tPos(e) - new Vector2(segmentIndex * _segWidth, 0f);
             _segments[segmentIndex].Add(e);
             _segmentNodes[segmentIndex].AddChild(e);

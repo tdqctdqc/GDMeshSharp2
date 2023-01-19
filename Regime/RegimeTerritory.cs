@@ -12,17 +12,14 @@ public class RegimeTerritory : Super<RegimeTerritory, GenPolygon>
     }
     protected override IReadOnlyCollection<GenPolygon> GetSubNeighbors(GenPolygon sub)
     {
-        return sub.GeoNeighbors;
+        return sub.GeoNeighbors.Refs;
     }
-
     protected override RegimeTerritory GetSubSuper(GenPolygon sub)
     {
         return sub.RegimeGen != null ? sub.RegimeGen.Territory : null;
     }
-
-
     protected override void SetSubSuper(GenPolygon sub, RegimeTerritory super)
     {
-        sub.SetRegime(super.RegimeGen);
+        sub.Set(nameof(GenPolygon.RegimeGen), super.RegimeGen, new CreateWriteKey(null));
     }
 }

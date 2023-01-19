@@ -6,49 +6,33 @@ using System.Text.Json;
 
 public class EntityRefCollection<TRef> where TRef : Entity
 {
-    public string Name { get; private set; }
-    public int EntityId { get; private set; }
-    public IReadOnlyCollection<int> Ids => _col;
-    public IEnumerable<TRef> Refs(Data data) => GetEnumerable(data);
-    private HashSet<int> _col;
+    public HashSet<int> RefIds { get; private set; }
+    public IReadOnlyList<TRef> Refs => _refs;
 
-    public EntityRefCollection(ICollection<int> ids, string name, int entityId)
+    private List<TRef> _refs;
+    
+    public EntityRefCollection(IEnumerable<int> refIds, Data data)
     {
-        _col = ids.ToHashSet();
-        Name = name;
-        EntityId = entityId;
+        RefIds = refIds.ToHashSet();
+        _refs = RefIds.Select(id => (TRef) data[id]).ToList();
     }
-    private IEnumerable<TRef> GetEnumerable(Data data)
+    public void Add(int id, Data data)
     {
-        _col.RemoveWhere(id => (TRef) data[id] == null);
-        return _col.Select(id => (TRef) data[id]);
+        //todo need to make this procedure
+        RefIds.Add(id);
+        _refs.Add((TRef)data[id]);
     }
+    public void Remove(int id, Data data)
+    {
+        //todo need to make this procedure
+        RefIds.Remove(id);
+        _refs.Remove((TRef)data[id]);
 
-    public static EntityRefCollection<TRef> Construct(ICollection<int> ids, Entity entity, string name)
-    {
-        return new EntityRefCollection<TRef>(ids, name, entity.Id);
     }
-    
-    public static string Serialize(EntityRefCollection<TRef> es)
+    public void Set(IEnumerable<int> ids, Data data)
     {
-        return JsonSerializer.Serialize<HashSet<int>>(es._col);
-    }
-
-    public static EntityRefCollection<TRef> Deserialize(string json, string name, Entity entity)
-    {
-        var value = JsonSerializer.Deserialize<HashSet<int>>(json);
-        return Construct(value, entity, name);
-    }
-    
-    public static void ReceiveUpdate(EntityRefCollection<TRef> str, ServerWriteKey key, string newValueJson)
-    {
-        var value = JsonSerializer.Deserialize<HashSet<int>>(newValueJson);
-        str._col = value;
-        key.Data.EntityRepos[str.EntityId].RaiseValueChangedNotice(str.Name, str.EntityId, key);
-    }
-    
-    public void SetByProcedure(ProcedureWriteKey key, HashSet<int> newValue)
-    {
-        _col = newValue;
+        //todo need to make this procedure
+        RefIds = ids.ToHashSet();
+        _refs = RefIds.Select(id => (TRef) data[id]).ToList();
     }
 }

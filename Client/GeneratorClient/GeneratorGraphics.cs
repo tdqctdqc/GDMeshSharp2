@@ -35,7 +35,7 @@ public class GeneratorGraphics : Node2D
         var sw = new Stopwatch();
         sw.Start();
         
-        PolyGraphics = data.GeoPolygons.Select(p => new PolygonGraphic(p)).ToList();
+        PolyGraphics = data.PlanetDomain.GeoPolygons.Entities.Select(p => new PolygonGraphic(p)).ToList();
         
         var polySegmenter = new GraphicsSegmenter<PolygonGraphic>();
         _segmenters.Add(polySegmenter);

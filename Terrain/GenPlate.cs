@@ -57,7 +57,7 @@ public class GenPlate : ISuper<GenPlate, GenCell>
             .GetBorderElements()
             .SelectMany(c => c.PolyGeos);
         var borderPolys = GenerationUtility
-            .GetBorderElements(borderCellPolys, p => p.GeoNeighbors, p => p.Cell.Plate != this);
+            .GetBorderElements(borderCellPolys, p => p.GeoNeighbors.Refs, p => p.Cell.Plate != this);
         return borderPolys;
     }
     
@@ -67,8 +67,8 @@ public class GenPlate : ISuper<GenPlate, GenCell>
             .GetBorderElements()
             .SelectMany(c => c.PolyGeos);
         var borderPolys = GenerationUtility
-            .GetBorderElements(borderCellPolys, p => p.GeoNeighbors, n => n.Cell.Plate == aPlate);
-        var commonPolyBorders = GenerationUtility.GetOrderedBorderPairs(borderPolys, c => c.GeoNeighbors,
+            .GetBorderElements(borderCellPolys, p => p.GeoNeighbors.Refs, n => n.Cell.Plate == aPlate);
+        var commonPolyBorders = GenerationUtility.GetOrderedBorderPairs(borderPolys, c => c.GeoNeighbors.Refs,
             c => c.Cell.Plate == aPlate);
         
         return commonPolyBorders;

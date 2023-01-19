@@ -12,6 +12,7 @@ public class WorldGenerator
     }
     public WorldData Generate()
     {
+        var key = new CreateWriteKey(Data);
         var cellSize = 200f;
 
         var edgePointMargin = new Vector2(cellSize, cellSize);
@@ -23,17 +24,18 @@ public class WorldGenerator
         var polygons 
             = VoronoiGenerator.GetVoronoiPolygons<GenPolygon>
                 (points, Data.Dimensions, true, cellSize, 
-                    (i, center) => new GenPolygon(i, center, Data.Dimensions.x));
-        Data.GeoPolygons.AddRange(polygons);
+                    (i, center) => new GenPolygon(i, center, Data.Dimensions.x, key),
+                    key);
+        // Data.PlanetDomain.GeoPolygons.AddEntities(polygons, key);
         
         var geologyGenerator = new GeologyGenerator(Data);
-        geologyGenerator.GenerateTerrain();
+        geologyGenerator.GenerateTerrain(key);
 
         var moistureGenerator = new MoistureGenerator(Data);
-        moistureGenerator.Generate();
+        moistureGenerator.Generate(key);
 
         var locationGenerator = new LocationGenerator(Data);
-        locationGenerator.Generate();
+        locationGenerator.Generate(key);
 
         var regimeGen = new RegimeGenerator(Data);
         regimeGen.Generate();

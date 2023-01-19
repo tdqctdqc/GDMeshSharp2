@@ -72,7 +72,9 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
         };
         _fieldSerializers.Add(name, p => serialize(p));
         
+        
         var setter = prop.GetSetMethod(true);
+
         var setDelgType =   
             ReflectionExt.MakeCustomDelegateType(typeof(Action<,>), new[] {typeof(T), prop.PropertyType});
         var setterDelg = (Action<T, TProperty>) setter.MakeInstanceMethodDelegate(setDelgType);

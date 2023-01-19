@@ -8,14 +8,16 @@ public class GeologyGenerator
 {
     public WorldData Data { get; private set; }
     private IDDispenser _id;
+    private CreateWriteKey _key;
     public GeologyGenerator(WorldData data)
     {
         _id = new IDDispenser();
         Data = data;
     }
-    public void GenerateTerrain()
+    public void GenerateTerrain(CreateWriteKey key)
     {
-        EdgeDisturber.DisturbEdges(Data.GeoPolygons, Data.Dimensions);
+        _key = key;
+        EdgeDisturber.DisturbEdges(Data.PlanetDomain.GeoPolygons.Entities, Data.Dimensions);
         BuildGeology();
     }
 
@@ -40,18 +42,18 @@ public class GeologyGenerator
     private void BuildCells()
     {
         var polysPerCell = 3;
-        var numCells = Data.GeoPolygons.Count / polysPerCell;
+        var numCells = Data.PlanetDomain.GeoPolygons.Entities.Count / polysPerCell;
         var landRatio = .33f;
-        Data.GeoPolygons.AddRange(Data.GeoPolygons);
-        var cellSeeds = GenerationUtility.PickSeeds(Data.GeoPolygons, new int[] {numCells})[0];
-        var cells = cellSeeds.Select(p => new GenCell(p)).ToList();
+        // Data.GeoPolygons.AddRange(Data.GeoPolygons);
+        var cellSeeds = GenerationUtility.PickSeeds(Data.PlanetDomain.GeoPolygons.Entities, new int[] {numCells})[0];
+        var cells = cellSeeds.Select(p => new GenCell(p, _key)).ToList();
         Data.Cells.AddRange(cells);
         GD.Print("Num cells: " + cells.Count);
         var polysNotTaken =
-            Data.GeoPolygons.Except(cellSeeds);
+            Data.PlanetDomain.GeoPolygons.Entities.Except(cellSeeds);
         GenerationUtility.PickInTurn(polysNotTaken, cells, 
             cell => cell.NeighboringPolyGeos, 
-            (cell, terrain) => cell.AddPolygon(terrain));
+            (cell, terrain) => cell.AddPolygon(terrain, _key));
         cells.ForEach(c => c.SetNeighbors());
     }
 
@@ -120,7 +122,8 @@ public class GeologyGenerator
                 .SelectMany(c => c.PolyGeos);
             foreach (var poly in polys)
             {
-                poly.SetAltitude(Game.I.Random.RandfRange(.8f * cont.Altitude, 1.2f * cont.Altitude));
+                var altValue = Game.I.Random.RandfRange(.8f * cont.Altitude, 1.2f * cont.Altitude);
+                poly.Set(nameof(GenPolygon.Altitude), altValue, _key);
                 //todo make this sample perlin
             }
         });
@@ -187,11 +190,14 @@ public class GeologyGenerator
                     var altIncrement = fault.Friction * frictionAltEffect * distRatio;
                     float erosion = 0f;
                     if (poly.Altitude < .5f) erosion = poly.Altitude;
-                    poly.SetAltitude(poly.Altitude + altIncrement);
+                    poly.Set(nameof(poly.Altitude), poly.Altitude + altIncrement, _key);
+                    
+                    
+                    
                     var rand = Game.I.Random.RandfRange(-.2f, .2f);
                     var newRoughness = Mathf.Clamp(fault.Friction * frictionRoughnessEffect * distRatio - erosion + rand, 0f,
                         1f);
-                    poly.SetRoughness(newRoughness);
+                    poly.Set(nameof(poly.Roughness), newRoughness, _key);
                 }
             }
 

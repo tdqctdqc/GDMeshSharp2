@@ -6,14 +6,15 @@ using Godot;
 public class LocationGenerator 
 {
     public WorldData Data { get; private set; }
-
+    private CreateWriteKey _key;
     public LocationGenerator(WorldData data)
     {
         Data = data;
     }
 
-    public void Generate()
+    public void Generate(CreateWriteKey key)
     {
+        _key = key;
         GenerateCities();
         GenerateRoadNetwork();
     }
@@ -59,7 +60,9 @@ public class LocationGenerator
             var settlementPolys = landPolys.GetNRandomElements(settlementScores.Count);
             for (var i = 0; i < settlementPolys.Count; i++)
             {
-                settlementPolys[i].SetSettlementSize(settlementScores[i]);
+                settlementPolys[i].Set(nameof(GenPolygon.SettlementSize), settlementScores[i], _key);
+                    
+                    
                 Data.Locations.Settlements.Add(new Settlement(settlementPolys[i], settlementScores[i]));
             }
         });
@@ -95,7 +98,7 @@ public class LocationGenerator
             foreach (var e in graph.Edges)
             {
                 if (e.T1.GetOffsetTo(e.T2, Data.Dimensions.x).Length() > 1000f) continue;
-                var path = PathFinder<GenPolygon>.FindPath(e.T1, e.T2, p => p.GeoNeighbors,
+                var path = PathFinder<GenPolygon>.FindPath(e.T1, e.T2, p => p.GeoNeighbors.Refs,
                     edgeCost, (p1, p2) => p1.GetOffsetTo(p2, Data.Dimensions.x).Length());
                 for (var i = 0; i < path.Count - 1; i++)
                 {

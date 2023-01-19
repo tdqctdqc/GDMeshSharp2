@@ -17,7 +17,7 @@ public class SpikeyTriBuilder : ITriBuilder
     public List<Triangle> BuildTrisForPoly(GenPolygon p, WorldData data)
     {
         var polyTris = new List<Triangle>();
-        p.GeoNeighbors.ForEach(n =>
+        foreach (var n in p.GeoNeighbors.Refs)
         {
             var segs = p.GetPolyBorder(n)
                 .GetSegsRel(p);
@@ -37,7 +37,8 @@ public class SpikeyTriBuilder : ITriBuilder
                 polyTris.Add(new Triangle(firstLeg, lastLeg, spike));
                 polyTris.Add(new Triangle(firstLeg, lastLeg, Vector2.Zero));
             }
-        });
+        }
+
         return polyTris;
     }
 }

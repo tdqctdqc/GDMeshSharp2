@@ -20,6 +20,6 @@ public class River : Landform
 
     public override bool Allowed(GenPolygon p, WorldData data)
     {
-        return p.IsLand() && p.GeoNeighbors.Any(n => p.GetGeoPolyBorder(n).MoistureFlow > _threshold);
+        return p.IsLand() && p.GeoNeighbors.Refs.Any(n => p.GetGeoPolyBorder(n).MoistureFlow > _threshold);
     }
 }
