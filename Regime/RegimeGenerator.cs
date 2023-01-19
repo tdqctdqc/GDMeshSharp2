@@ -25,15 +25,15 @@ public class RegimeGenerator
         {
             var landmassRegimes = Mathf.CeilToInt(lm.Count / polysPerRegime);
             var seeds = lm.GetNRandomElements(landmassRegimes);
-            var regimes = new List<Regime>();
+            var regimes = new List<RegimeGen>();
             for (var i = 0; i < seeds.Count; i++)
             {
                 var prim = ColorsExt.GetRandomColor();
                 var sec = prim.Inverted();
-                var regime = new Regime(prim, sec, seeds[i]);
+                var regime = new RegimeGen(prim, sec, seeds[i]);
                 regimes.Add(regime);
             }
-            GenerationUtility.PickInTurn(lm.Where(p => p.Regime == null), 
+            GenerationUtility.PickInTurn(lm.Where(p => p.RegimeGen == null), 
                 regimes, r => r.Territory.NeighboringSubs, (r, p) => r.Territory.AddSub(p));
         });
     }

@@ -3,15 +3,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public class GeoPolygon : Polygon
+public class GenPolygon : Polygon
 {
-    public GeoCell Cell { get; private set; }
-    public List<GeoPolygon> GeoNeighbors { get; private set; }
+    public GenCell Cell { get; private set; }
+    public List<GenPolygon> GeoNeighbors { get; private set; }
     public float Altitude { get; private set; }
     public float Roughness { get; private set; }
     public float Moisture { get; private set; }
     public float SettlementSize { get; private set; }
-    public Regime Regime { get; private set; }
+    public RegimeGen RegimeGen { get; private set; }
     
     
     
@@ -20,13 +20,13 @@ public class GeoPolygon : Polygon
     public bool IsWater() => IsLand() == false;
     public GeoPolygonBorder GetGeoPolyBorder(Polygon neighbor) 
         => (GeoPolygonBorder)_borderDic[neighbor];
-    public GeoPolygon(int id, Vector2 center, float mapWidth) : base(id, center, mapWidth)
+    public GenPolygon(int id, Vector2 center, float mapWidth) : base(id, center, mapWidth)
     {
-        GeoNeighbors = new List<GeoPolygon>();
+        GeoNeighbors = new List<GenPolygon>();
     }
 
     
-    public void SetCell(GeoCell cell)
+    public void SetCell(GenCell cell)
     {
         if(Cell != null) throw new Exception();
         Cell = cell;
@@ -35,13 +35,13 @@ public class GeoPolygon : Polygon
     public override void AddNeighbor(Polygon poly, PolygonBorder border)
     {
         base.AddNeighbor(poly, border);
-        GeoNeighbors = Neighbors.Select(n => (GeoPolygon)n).ToList();
+        GeoNeighbors = Neighbors.Select(n => (GenPolygon)n).ToList();
     }
 
     public override void RemoveNeighbor(Polygon poly)
     {
         base.RemoveNeighbor(poly);
-        GeoNeighbors.Remove((GeoPolygon) poly);
+        GeoNeighbors.Remove((GenPolygon) poly);
     }
 
     public void SetAltitude(float altitude)
@@ -64,8 +64,8 @@ public class GeoPolygon : Polygon
         SettlementSize = size;
     }
 
-    public void SetRegime(Regime r)
+    public void SetRegime(RegimeGen r)
     {
-        Regime = r;
+        RegimeGen = r;
     }
 }

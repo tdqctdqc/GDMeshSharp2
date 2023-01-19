@@ -14,7 +14,7 @@ public class LandformManager : TerrainAspectManager<Landform>
     public static Landform Water  { get; private set; } = new Landform("Water", 0f, Colors.Blue, new NoTriBuilder());
     public static Landform River { get; private set; } = new River();
     public static Landform Urban { get; private set; } = new Urban();
-    public Dictionary<Edge<GeoPolygon>, float> RiverSegments { get; private set; }
+    public Dictionary<Edge<GenPolygon>, float> RiverSegments { get; private set; }
     
 
 

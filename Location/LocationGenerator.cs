@@ -65,7 +65,7 @@ public class LocationGenerator
         });
         Data.Landforms.BuildTrisForAspect(LandformManager.Urban, Data);
 
-        float popScore(GeoPolygon p)
+        float popScore(GenPolygon p)
         {
             return Mathf.Clamp(p.Moisture - p.Roughness * .3f, .2f, 1f);
         }
@@ -85,9 +85,9 @@ public class LocationGenerator
 
             var graph = GraphGenerator.GenerateDelaunayGraph(settlements.ToList(),
                 s => first.GetOffsetTo(s, Data.Dimensions.x),
-                (p1, p2) => new Edge<GeoPolygon>(p1, p2, (a, b) => a.Id > b.Id));
+                (p1, p2) => new Edge<GenPolygon>(p1, p2, (a, b) => a.Id > b.Id));
 
-            float edgeCost(GeoPolygon p1, GeoPolygon p2)
+            float edgeCost(GenPolygon p1, GenPolygon p2)
             {
                 if (p1.IsWater() || p2.IsWater()) return Mathf.Inf;
                 return p1.Roughness + p2.Roughness;
@@ -95,11 +95,11 @@ public class LocationGenerator
             foreach (var e in graph.Edges)
             {
                 if (e.T1.GetOffsetTo(e.T2, Data.Dimensions.x).Length() > 1000f) continue;
-                var path = PathFinder<GeoPolygon>.FindPath(e.T1, e.T2, p => p.GeoNeighbors,
+                var path = PathFinder<GenPolygon>.FindPath(e.T1, e.T2, p => p.GeoNeighbors,
                     edgeCost, (p1, p2) => p1.GetOffsetTo(p2, Data.Dimensions.x).Length());
                 for (var i = 0; i < path.Count - 1; i++)
                 {
-                    var edge = new Edge<GeoPolygon>(path[i], path[i + 1], (p, q) => p.Id > q.Id);
+                    var edge = new Edge<GenPolygon>(path[i], path[i + 1], (p, q) => p.Id > q.Id);
                     Data.Locations.Roads.Add(edge);
                 }
             }

@@ -5,10 +5,10 @@ using Godot;
 
 public class LandSeaManager
 {
-    public List<HashSet<GeoPolygon>> Landmasses { get; private set; }
-    public Dictionary<GeoPolygon, HashSet<GeoPolygon>> LandmassDic { get; private set; }
-    public List<HashSet<GeoPolygon>> Seas { get; private set; }
-    public Dictionary<GeoPolygon, HashSet<GeoPolygon>> SeaDic { get; private set; }
+    public List<HashSet<GenPolygon>> Landmasses { get; private set; }
+    public Dictionary<GenPolygon, HashSet<GenPolygon>> LandmassDic { get; private set; }
+    public List<HashSet<GenPolygon>> Seas { get; private set; }
+    public Dictionary<GenPolygon, HashSet<GenPolygon>> SeaDic { get; private set; }
 
     public LandSeaManager()
     {
@@ -17,12 +17,12 @@ public class LandSeaManager
 
     public void SetLandmasses(WorldData data)
     {
-        Landmasses = new List<HashSet<GeoPolygon>>();
-        LandmassDic = new Dictionary<GeoPolygon, HashSet<GeoPolygon>>();
+        Landmasses = new List<HashSet<GenPolygon>>();
+        LandmassDic = new Dictionary<GenPolygon, HashSet<GenPolygon>>();
         var landPolys = data.GeoPolygons.Where(p => p.IsLand());
         var seaPolys = data.GeoPolygons.Where(p => p.IsWater());
         var landmasses =
-            UnionFind<GeoPolygon, float>.DoUnionFind(landPolys.ToList(), (p1, p2) => p1.HasNeighbor(p2), p1 => p1.GeoNeighbors);
+            UnionFind<GenPolygon, float>.DoUnionFind(landPolys.ToList(), (p1, p2) => p1.HasNeighbor(p2), p1 => p1.GeoNeighbors);
         landmasses.ForEach(m =>
         {
             var hash = m.ToHashSet();
@@ -31,11 +31,11 @@ public class LandSeaManager
         });
         
         //todo is union find only doing elements inside the input list?
-        Seas = new List<HashSet<GeoPolygon>>();
-        SeaDic = new Dictionary<GeoPolygon, HashSet<GeoPolygon>>();
+        Seas = new List<HashSet<GenPolygon>>();
+        SeaDic = new Dictionary<GenPolygon, HashSet<GenPolygon>>();
         var SeaPolys = data.GeoPolygons.Where(p => p.IsWater());
         var seamasses =
-            UnionFind<GeoPolygon, float>.DoUnionFind(seaPolys.ToList(), 
+            UnionFind<GenPolygon, float>.DoUnionFind(seaPolys.ToList(), 
                 (p1, p2) => p1.HasNeighbor(p2), p1 => p1.GeoNeighbors);
         seamasses.ForEach(m =>
         {

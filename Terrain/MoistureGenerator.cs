@@ -20,7 +20,7 @@ public class MoistureGenerator
     }
     private void SetPolyMoistures()
     {
-        var massMoistures = new Dictionary<GeoMass, float>();
+        var massMoistures = new Dictionary<GenMass, float>();
         
         Data.Masses.ForEach(m =>
         {
@@ -79,15 +79,15 @@ public class MoistureGenerator
     
     private void BuildRivers()
     {
-        var pathToSea = new Dictionary<GeoPolygon, List<GeoPolygon>>();
-        var additional = new Dictionary<GeoPolygon, float>();
+        var pathToSea = new Dictionary<GenPolygon, List<GenPolygon>>();
+        var additional = new Dictionary<GenPolygon, float>();
         //todo check if double adding
         var polys = Data.GeoPolygons.Distinct().ToList();
             
         polys.ForEach(p =>
         {
             if (p.IsWater()) return;
-            var path = PathFinder<GeoPolygon>.FindPathMultipleEnds(p,
+            var path = PathFinder<GenPolygon>.FindPathMultipleEnds(p,
                 n => n.IsWater() || pathToSea.ContainsKey(n),
                 n => n.GeoNeighbors, (n, m) => n.Roughness + m.Roughness);
             path.Reverse();

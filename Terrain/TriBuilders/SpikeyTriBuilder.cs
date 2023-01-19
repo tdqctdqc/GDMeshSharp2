@@ -5,16 +5,16 @@ using Godot;
 
 public class SpikeyTriBuilder : ITriBuilder
 {
-    private Func<GeoPolygon, bool> _checkNeighborStrong;
-    private Func<GeoPolygon, float> _otherStrength;
-    public SpikeyTriBuilder(Func<GeoPolygon, bool> checkNeighborStrong, Func<GeoPolygon, float> otherStrength)
+    private Func<GenPolygon, bool> _checkNeighborStrong;
+    private Func<GenPolygon, float> _otherStrength;
+    public SpikeyTriBuilder(Func<GenPolygon, bool> checkNeighborStrong, Func<GenPolygon, float> otherStrength)
     {
         _checkNeighborStrong = checkNeighborStrong;
         _otherStrength = otherStrength;
     }
 
     
-    public List<Triangle> BuildTrisForPoly(GeoPolygon p, WorldData data)
+    public List<Triangle> BuildTrisForPoly(GenPolygon p, WorldData data)
     {
         var polyTris = new List<Triangle>();
         p.GeoNeighbors.ForEach(n =>

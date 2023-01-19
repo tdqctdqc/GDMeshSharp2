@@ -5,14 +5,14 @@ using Godot;
 
 public class CenterTriBuilder : ITriBuilder
 {
-    private Func<GeoPolygon, float> _getRatio;
+    private Func<GenPolygon, float> _getRatio;
 
-    public CenterTriBuilder(Func<GeoPolygon, float> getRatio)
+    public CenterTriBuilder(Func<GenPolygon, float> getRatio)
     {
         _getRatio = getRatio;
     }
 
-    public List<Triangle> BuildTrisForPoly(GeoPolygon p, WorldData data)
+    public List<Triangle> BuildTrisForPoly(GenPolygon p, WorldData data)
     {
         var ratio = _getRatio(p);
         var tris = new List<Triangle>();

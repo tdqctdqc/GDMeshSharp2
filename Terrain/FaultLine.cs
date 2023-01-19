@@ -6,20 +6,20 @@ using Godot;
 public class FaultLine 
 {
     public List<List<LineSegment>> Segments { get; private set; }
-    public GeoPlate LowId { get; private set; }
-    public GeoPlate HighId { get; private set; }
-    public List<GeoPolygon> PolyFootprint { get; private set; }
+    public GenPlate LowId { get; private set; }
+    public GenPlate HighId { get; private set; }
+    public List<GenPolygon> PolyFootprint { get; private set; }
     public float Friction { get; private set; }
-    public GeoPolygon Origin => HighId.GetSeedPoly();
-    public List<BorderEdge<GeoPolygon>> Edges { get; private set; }
-    public FaultLine(float friction, GeoPlate highId, 
-        GeoPlate lowId, List<BorderEdge<GeoPolygon>> edgesHi,
+    public GenPolygon Origin => HighId.GetSeedPoly();
+    public List<BorderEdge<GenPolygon>> Edges { get; private set; }
+    public FaultLine(float friction, GenPlate highId, 
+        GenPlate lowId, List<BorderEdge<GenPolygon>> edgesHi,
         WorldData data)
     {
         Friction = friction;
         HighId = highId;
         LowId = lowId;
-        PolyFootprint = new List<GeoPolygon>();
+        PolyFootprint = new List<GenPolygon>();
         Segments = edgesHi.Select(
             e => e.Native.GetPolyBorder(e.Foreign)
                 .GetSegsRel(e.Native)

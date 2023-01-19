@@ -3,26 +3,26 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class RegimeTerritory : Super<RegimeTerritory, GeoPolygon>
+public class RegimeTerritory : Super<RegimeTerritory, GenPolygon>
 {
-    public Regime Regime { get; private set; }
-    public RegimeTerritory(Regime regime) : base()
+    public RegimeGen RegimeGen { get; private set; }
+    public RegimeTerritory(RegimeGen regimeGen) : base()
     {
-        Regime = regime;
+        RegimeGen = regimeGen;
     }
-    protected override IReadOnlyCollection<GeoPolygon> GetSubNeighbors(GeoPolygon sub)
+    protected override IReadOnlyCollection<GenPolygon> GetSubNeighbors(GenPolygon sub)
     {
         return sub.GeoNeighbors;
     }
 
-    protected override RegimeTerritory GetSubSuper(GeoPolygon sub)
+    protected override RegimeTerritory GetSubSuper(GenPolygon sub)
     {
-        return sub.Regime != null ? sub.Regime.Territory : null;
+        return sub.RegimeGen != null ? sub.RegimeGen.Territory : null;
     }
 
 
-    protected override void SetSubSuper(GeoPolygon sub, RegimeTerritory super)
+    protected override void SetSubSuper(GenPolygon sub, RegimeTerritory super)
     {
-        sub.SetRegime(super.Regime);
+        sub.SetRegime(super.RegimeGen);
     }
 }

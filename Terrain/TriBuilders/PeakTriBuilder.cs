@@ -5,14 +5,14 @@ using Godot;
 
 public class PeakTriBuilder : ITriBuilder
 {
-    private Func<GeoPolygon, bool> _checkNeighborStrong;
+    private Func<GenPolygon, bool> _checkNeighborStrong;
 
-    public PeakTriBuilder(Func<GeoPolygon, bool> checkNeighborStrong)
+    public PeakTriBuilder(Func<GenPolygon, bool> checkNeighborStrong)
     {
         _checkNeighborStrong = checkNeighborStrong;
     }
 
-    public List<Triangle> BuildTrisForPoly(GeoPolygon p, WorldData data)
+    public List<Triangle> BuildTrisForPoly(GenPolygon p, WorldData data)
     {
         var strongNeighbors = p.GeoNeighbors.Where(n => _checkNeighborStrong(p));
                     

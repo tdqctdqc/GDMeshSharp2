@@ -7,7 +7,7 @@ public abstract class Entity
     public EntityId Id { get; private set; }
     public IEntityMeta GetMeta() => Serializer.GetEntityMeta(GetType());
     
-    protected Entity(int id, HostWriteKey key) : base()
+    protected Entity(int id, CreateWriteKey key) : base()
     {
         Id = EntityId.Construct(id);
     }

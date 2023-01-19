@@ -77,7 +77,7 @@ public class GeneratorClient : Node
         AddPolyViewMode(_graphics.PolyGraphics, g => g.Cell.Plate.GetSeedPoly().Color, "Poly Plates");
         AddPolyViewMode(_graphics.PolyGraphics, g => g.Cell.Plate.Mass.GetSeedPoly().Color, "Poly Masses");
         AddPolyViewMode(_graphics.PolyGraphics, g => g.Color, "Polys");
-        AddPolyViewMode(_graphics.PolyGraphics, g => g.Cell.Plate.Mass.Continent.GetSeedPoly().Color, "Poly Continents");
+        AddPolyViewMode(_graphics.PolyGraphics, g => g.Cell.Plate.Mass.GenContinent.GetSeedPoly().Color, "Poly Continents");
         AddPolyViewMode(_graphics.PolyGraphics, g => g.IsLand() ? Colors.SaddleBrown : Colors.Blue, "Land/Sea");
         AddPolyViewMode(_graphics.PolyGraphics, g => g.Cell.Seed.Color, "Poly Cells");
         AddPolyViewMode(_graphics.PolyGraphics, g => Colors.White.LinearInterpolate(Colors.Red, g.Roughness), "Poly Roughness");
@@ -86,13 +86,13 @@ public class GeneratorClient : Node
 
     }
     
-    private void AddPolyViewMode(List<PolygonGraphic> polyGraphics, Func<GeoPolygon, Color> getColor, string name)
+    private void AddPolyViewMode(List<PolygonGraphic> polyGraphics, Func<GenPolygon, Color> getColor, string name)
     {
         Buttons.AddButton(() =>
         {
             polyGraphics.ForEach(p =>
             {
-                var g = p.Poly as GeoPolygon;
+                var g = p.Poly as GenPolygon;
                 var color = getColor(g);
                 p.SetColor(color);
             });

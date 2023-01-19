@@ -6,10 +6,10 @@ using Godot;
 public class LocationManager
 {
     public List<Settlement> Settlements { get; private set; }
-    public HashSet<Edge<GeoPolygon>> Roads { get; private set; }
+    public HashSet<Edge<GenPolygon>> Roads { get; private set; }
     public LocationManager()
     {
         Settlements = new List<Settlement>();
-        Roads = new HashSet<Edge<GeoPolygon>>();
+        Roads = new HashSet<Edge<GenPolygon>>();
     }
 }

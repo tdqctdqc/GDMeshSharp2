@@ -44,7 +44,7 @@ public class GeologyGenerator
         var landRatio = .33f;
         Data.GeoPolygons.AddRange(Data.GeoPolygons);
         var cellSeeds = GenerationUtility.PickSeeds(Data.GeoPolygons, new int[] {numCells})[0];
-        var cells = cellSeeds.Select(p => new GeoCell(p)).ToList();
+        var cells = cellSeeds.Select(p => new GenCell(p)).ToList();
         Data.Cells.AddRange(cells);
         GD.Print("Num cells: " + cells.Count);
         var polysNotTaken =
@@ -60,7 +60,7 @@ public class GeologyGenerator
         var cellsPerPlate = 3;
         var numPlates = Data.Cells.Count / cellsPerPlate;
         var plateSeeds = GenerationUtility.PickSeeds(Data.Cells, new[] {numPlates})[0];
-        var plates = plateSeeds.Select(s => new GeoPlate(s, _id.GetID())).ToList();
+        var plates = plateSeeds.Select(s => new GenPlate(s, _id.GetID())).ToList();
         GD.Print("Num plates: " + plates.Count);
 
         Data.Plates.AddRange(plates);
@@ -78,7 +78,7 @@ public class GeologyGenerator
         var platesPerMass = 3;
         var numMasses = Data.Plates.Count / 3;
         var massSeeds = GenerationUtility.PickSeeds(Data.Plates, new int[] {numMasses})[0];
-        var masses = massSeeds.Select(s => new GeoMass(s, _id.GetID())).ToList();
+        var masses = massSeeds.Select(s => new GenMass(s, _id.GetID())).ToList();
         GD.Print("Num masses: " + masses.Count);
 
         var platesNotTaken = Data.Plates.Except(massSeeds);
@@ -101,8 +101,8 @@ public class GeologyGenerator
         var landSeeds = seeds[0].ToHashSet();
         var waterSeeds = seeds[1].ToHashSet();
         var allSeeds = landSeeds.Union(waterSeeds);
-        var conts = landSeeds.Select(s => new Continent(s, _id.GetID(), Game.I.Random.RandfRange(.6f, .9f)))
-            .Union(waterSeeds.Select(s => new Continent(s, _id.GetID(), Game.I.Random.RandfRange(.1f, .45f))))
+        var conts = landSeeds.Select(s => new GenContinent(s, _id.GetID(), Game.I.Random.RandfRange(.6f, .9f)))
+            .Union(waterSeeds.Select(s => new GenContinent(s, _id.GetID(), Game.I.Random.RandfRange(.1f, .45f))))
             .ToList();
         GD.Print("Num conts: " + conts.Count);
 
@@ -144,7 +144,7 @@ public class GeologyGenerator
         
         
         
-        void setFriction(GeoPlate hiPlate)
+        void setFriction(GenPlate hiPlate)
         {
             var neighbors = hiPlate.Neighbors.ToList();
             var count = neighbors.Count;
@@ -152,10 +152,10 @@ public class GeologyGenerator
             {
                 var loPlate = neighbors[j];
                 if (loPlate.Id < hiPlate.Id 
-                    && loPlate.Mass.Continent != hiPlate.Mass.Continent)
+                    && loPlate.Mass.GenContinent != hiPlate.Mass.GenContinent)
                 {
-                    var drift1 = hiPlate.Mass.Continent.Drift;
-                    var drift2 = loPlate.Mass.Continent.Drift;
+                    var drift1 = hiPlate.Mass.GenContinent.Drift;
+                    var drift2 = loPlate.Mass.GenContinent.Drift;
 
                     var axis = loPlate.Center - hiPlate.Center;
                     var driftStr = (drift1 - drift2).Length() / 2f;
@@ -169,14 +169,14 @@ public class GeologyGenerator
             }
         }
 
-        IEnumerable<GeoPolygon> getPolysInRangeOfFault(FaultLine fault)
+        IEnumerable<GenPolygon> getPolysInRangeOfFault(FaultLine fault)
         {
             var faultRange = fault.Friction * 500f;
             var polys = fault.HighId.Cells.SelectMany(c => c.PolyGeos)
                 .Union(fault.LowId.Cells.SelectMany(c => c.PolyGeos));
             var frictionAltEffect = .1f;
             var frictionRoughnessEffect = 1f;
-            var polysInRange = new List<GeoPolygon>();
+            var polysInRange = new List<GenPolygon>();
             foreach (var poly in polys)
             {
                 var dist = fault.GetDist(poly, Data);

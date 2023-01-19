@@ -5,18 +5,18 @@ using Godot;
 
 public class EdgeToTriBuilder : ITriBuilder
 {
-    private Func<GeoPolygon, GeoPolygon, float> _getEdgeStrength;
+    private Func<GenPolygon, GenPolygon, float> _getEdgeStrength;
     private float _threshhold;
     private Func<float, float> _widthFromStrength;
 
-    public EdgeToTriBuilder(Func<GeoPolygon, GeoPolygon, float> getEdgeStrength, float threshhold, Func<float, float> widthFromStrength)
+    public EdgeToTriBuilder(Func<GenPolygon, GenPolygon, float> getEdgeStrength, float threshhold, Func<float, float> widthFromStrength)
     {
         _getEdgeStrength = getEdgeStrength;
         _threshhold = threshhold;
         _widthFromStrength = widthFromStrength;
     }
 
-    public List<Triangle> BuildTrisForPoly(GeoPolygon p, WorldData data)
+    public List<Triangle> BuildTrisForPoly(GenPolygon p, WorldData data)
     {
         var tris = new List<Triangle>();
         p.GeoNeighbors.ForEach(n =>

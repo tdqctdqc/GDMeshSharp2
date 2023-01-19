@@ -21,9 +21,9 @@ public class WorldGenerator
                 (Data.Dimensions - edgePointMargin, cellSize, cellSize * .75f, false, true)
             .Select(v => v + edgePointMargin / 2f).ToList();
         var polygons 
-            = VoronoiGenerator.GetVoronoiPolygons<GeoPolygon>
+            = VoronoiGenerator.GetVoronoiPolygons<GenPolygon>
                 (points, Data.Dimensions, true, cellSize, 
-                    (i, center) => new GeoPolygon(i, center, Data.Dimensions.x));
+                    (i, center) => new GenPolygon(i, center, Data.Dimensions.x));
         Data.GeoPolygons.AddRange(polygons);
         
         var geologyGenerator = new GeologyGenerator(Data);
