@@ -9,7 +9,7 @@ public class Game : Node
 {
     public static Game I { get; private set; }
     public RandomNumberGenerator Random = new RandomNumberGenerator();
-    public ISession Session { get; private set; }
+    private ISession _session;
     public override void _Ready()
     {
         if (I != null)
@@ -30,7 +30,7 @@ public class Game : Node
     public void StartClientSession()
     {
         var session = new Session();
-        Session = session;
+        _session = session;
         session.Name = "Session";   
         session.StartAsClient();
         AddChild(session);
@@ -38,7 +38,7 @@ public class Game : Node
     public void StartHostSession(WorldData data)
     {
         var session = new Session();
-        Session = session;
+        _session = session;
         session.Name = "Session";   
         session.StartAsHost(data);
         AddChild(session);

@@ -14,13 +14,13 @@ public class Repository<T> : IRepo where T : Entity
     private List<T> _entities;
     private ClientWriteKey _weakKey;
 
-    public Repository(Domain domain)
+    public Repository(Domain domain, Data data)
     {
         Domain = domain;
         _entityValueUpdatedActions = new Dictionary<string, Action<int, WriteKey>>();
         _entitiesById = new Dictionary<int, T>();
         _entities = new List<T>();
-        _weakKey = new ClientWriteKey();
+        _weakKey = new ClientWriteKey(data);
     }
     public void AddEntity(Entity e, StrongWriteKey key)
     {

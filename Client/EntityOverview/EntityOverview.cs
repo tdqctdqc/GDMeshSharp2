@@ -3,22 +3,30 @@ using System;
 
 public class EntityOverview : WindowDialog
 {
-    public static EntityOverview Get() 
-        => (EntityOverview)((PackedScene)GD.Load("res://Client/EntityOverview/EntityOverview.tscn")).Instance();
-    private VBoxContainer _container; 
-    public override void _Ready()
+    public static EntityOverview Get(Data data) 
     {
-        _container = (VBoxContainer)FindNode("VBoxContainer");
-        Connect("about_to_show", this, nameof(Setup));
+        var overview = (EntityOverview) ((PackedScene) GD.Load("res://Client/EntityOverview/EntityOverview.tscn"))
+            .Instance();
+        overview.Setup(data);
+        return overview;
     }
-    private void Setup()
+    private VBoxContainer _container;
+    private Data _data;
+
+    private void Setup(Data data)
+    {
+        _data = data;
+        _container = (VBoxContainer)FindNode("VBoxContainer");
+        Connect("about_to_show", this, nameof(Draw));
+    }
+    private void Draw()
     {
         while (_container.GetChildCount() > 0)
         {
             _container.RemoveChild(_container.GetChild(0));
         }
 
-        foreach (var keyValuePair in Game.I.Session.Data.Entities)
+        foreach (var keyValuePair in _data.Entities)
         {
             var entity = keyValuePair.Value;
             var entityLabel = new Label();

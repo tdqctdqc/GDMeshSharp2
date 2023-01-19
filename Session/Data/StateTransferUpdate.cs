@@ -13,15 +13,15 @@ public class StateTransferUpdate : IUpdate
 
     public static StateTransferUpdate Encode(HostWriteKey key)
     {
-        return new StateTransferUpdate();
+        return new StateTransferUpdate(key);
     }
 
-    private StateTransferUpdate()
+    private StateTransferUpdate(HostWriteKey key)
     {
         DomainTypes = new List<Type>();
         EntityJsons = new List<string>();
         EntityTypes = new List<Type>();
-        foreach (var keyValuePair in Game.I.Session.Data.Domains)
+        foreach (var keyValuePair in key.Data.Domains)
         {
             var domainType = keyValuePair.Key;
             var domain = keyValuePair.Value;
@@ -66,7 +66,7 @@ public class StateTransferUpdate : IUpdate
             var domainType = domainTypes[i];
             var meta = Serializer.GetEntityMeta(entityTypes[i]);
             var entity = meta.Deserialize(entityJsons[i]);
-            Game.I.Session.Data.AddEntity(entity, domainType, key);
+            key.Data.AddEntity(entity, domainType, key);
         }
     }
 }

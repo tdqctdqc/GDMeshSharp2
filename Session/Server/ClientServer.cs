@@ -7,7 +7,7 @@ public class ClientServer : Node, IServer
     public int NetworkId { get; private set; }
     
 
-    private ServerWriteKey _key = new ServerWriteKey();
+    private ServerWriteKey _key;
     private NetworkedMultiplayerENet _network;
     private string _ip = "127.0.0.1";
     private int _port = 3306;
@@ -17,6 +17,11 @@ public class ClientServer : Node, IServer
         _network.CreateClient(_ip, _port);
         GetTree().NetworkPeer = _network;
         _network.Connect("connection_failed", this, nameof(OnConnectionFailed));
+    }
+
+    public void ReceiveDependencies(Data data)
+    {
+        _key = new ServerWriteKey(data);
     }
     [Remote] public void OnConnectionSucceeded()
     {

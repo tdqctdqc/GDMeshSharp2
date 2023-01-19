@@ -14,13 +14,13 @@ public class GameUi : Control
         
     }
 
-    public void Setup(bool host)
+    public void Setup(bool host, Data data)
     {
         _hostOrClient = (Label) FindNode("HostOrClient");
         _hostOrClient.Text = host ? "Host" : "Client";
         
         _entityOverviewBtn = ButtonToken.Get(this, "EntityOverviewBtn", () => _entityOverview.Popup_());
-        _entityOverview = EntityOverview.Get();
+        _entityOverview = EntityOverview.Get(data);
         
         AddChild(_entityOverview);
     }

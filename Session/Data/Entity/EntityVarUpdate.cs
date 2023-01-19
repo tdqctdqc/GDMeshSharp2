@@ -34,7 +34,7 @@ public sealed class EntityVarUpdate : IUpdate
     {
         var list = System.Text.Json.JsonSerializer.Deserialize<List<string>>(json);
         var update = new EntityVarUpdate(list[0], list[1].ToInt(), list[2]);
-        var entity = Game.I.Session.Data[update.EntityId];
+        var entity = key.Data[update.EntityId];
         var meta = entity.GetMeta();
         meta.UpdateEntityVar(update.FieldName, entity, key, update.NewVal);
     }

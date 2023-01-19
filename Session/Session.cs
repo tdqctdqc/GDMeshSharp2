@@ -14,8 +14,9 @@ public class Session : Node, ISession
         var hServer = new HostServer();
         var logic = new HostLogic();
         _logic = logic;
-        hServer.SetDependencies(logic);
-        logic.SetDependencies(hServer);
+        Data = new Data();
+        hServer.SetDependencies(logic, Data);
+        logic.SetDependencies(hServer, Data);
         StartServer(hServer);
         StartClient(hServer);
     }
@@ -25,6 +26,8 @@ public class Session : Node, ISession
         SetCredential(userCredential);
         var server = new ClientServer();
         _logic = new ClientLogic();
+        Data = new Data();
+
         StartServer(server);
         StartClient(server);
     }
@@ -42,13 +45,12 @@ public class Session : Node, ISession
     {
         ((Node)server).Name = "Server";
         AddChild((Node)server);
-        Data = new Data(server);
     }
     private void StartClient(IServer server)
     {
         var client = new GameClient();
         Client = client;
-        client.Setup(server);
+        client.Setup(Data, server);
         AddChild((Node)Client);
     }
     public override void _UnhandledInput(InputEvent e)

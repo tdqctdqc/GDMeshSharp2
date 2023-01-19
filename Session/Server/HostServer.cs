@@ -7,7 +7,7 @@ public class HostServer : Node, IServer
 {
     public int NetworkId => 1;
 
-    private HostWriteKey _key = new HostWriteKey();
+    private HostWriteKey _key;
     public static HostServer ForTest;
     private HostLogic _logic;
     private List<IUpdate> _queuedUpdates;
@@ -46,9 +46,10 @@ public class HostServer : Node, IServer
         }
     }
 
-    public void SetDependencies(HostLogic logic)
+    public void SetDependencies(HostLogic logic, Data data)
     {
         _logic = logic;
+        _key = new HostWriteKey(this, data);
     }
 
     public void QueueUpdate(IUpdate u)
@@ -70,7 +71,7 @@ public class HostServer : Node, IServer
         _clients.Add(id);
         GD.Print("peer " + id + " connected");
         RpcId(id, nameof(ClientServer.OnConnectionSucceeded));
-        var stateTransfer = StateTransferUpdate.Encode(new HostWriteKey());
+        var stateTransfer = StateTransferUpdate.Encode(_key);
         var updateJsons = new List<string> {stateTransfer.Serialize()};
         var updateJsonsString = System.Text.Json.JsonSerializer.Serialize(updateJsons);
         var updateTypes = new List<string> {StateTransferUpdate.UpdateType};

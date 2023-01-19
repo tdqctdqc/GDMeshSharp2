@@ -9,7 +9,7 @@ public class EntityRefCollection<TRef> where TRef : Entity
     public string Name { get; private set; }
     public int EntityId { get; private set; }
     public IReadOnlyCollection<int> Ids => _col;
-    public IEnumerable<TRef> Refs => GetEnumerable();
+    public IEnumerable<TRef> Refs(Data data) => GetEnumerable(data);
     private HashSet<int> _col;
 
     public EntityRefCollection(ICollection<int> ids, string name, int entityId)
@@ -18,10 +18,10 @@ public class EntityRefCollection<TRef> where TRef : Entity
         Name = name;
         EntityId = entityId;
     }
-    private IEnumerable<TRef> GetEnumerable()
+    private IEnumerable<TRef> GetEnumerable(Data data)
     {
-        _col.RemoveWhere(id => (TRef) Game.I.Session.Data[id] == null);
-        return _col.Select(id => (TRef)Game.I.Session.Data[id]);
+        _col.RemoveWhere(id => (TRef) data[id] == null);
+        return _col.Select(id => (TRef) data[id]);
     }
 
     public static EntityRefCollection<TRef> Construct(ICollection<int> ids, Entity entity, string name)
@@ -44,7 +44,7 @@ public class EntityRefCollection<TRef> where TRef : Entity
     {
         var value = JsonSerializer.Deserialize<HashSet<int>>(newValueJson);
         str._col = value;
-        Game.I.Session.Data.EntityRepos[str.EntityId].RaiseValueChangedNotice(str.Name, str.EntityId, key);
+        key.Data.EntityRepos[str.EntityId].RaiseValueChangedNotice(str.Name, str.EntityId, key);
     }
     
     public void SetByProcedure(ProcedureWriteKey key, HashSet<int> newValue)

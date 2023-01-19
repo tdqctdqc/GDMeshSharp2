@@ -13,16 +13,16 @@ public class GameClient : Node, IClient
         
     }
 
-    public void Setup(IServer server)
+    public void Setup(Data data, IServer server)
     {
         GraphicsNode = new Node2D();
         AddChild(GraphicsNode);
 
         _server = server;
-        _entityOverview = EntityOverview.Get();
+        _entityOverview = EntityOverview.Get(data);
         AddChild(_entityOverview);
         _ui = GameUi.Get();
-        _ui.Setup(server is HostServer);
+        _ui.Setup(server is HostServer, data);
         AddChild(_ui);
 
         Cam = new CameraController();

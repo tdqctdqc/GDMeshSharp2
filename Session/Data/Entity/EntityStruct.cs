@@ -24,7 +24,7 @@ public class EntityStruct<TValue> where TValue: struct
     public void Update(HostWriteKey key, TValue newValue, HostServer server)
     {
         Value = newValue;
-        Game.I.Session.Data.EntityRepos[EntityId].RaiseValueChangedNotice(Name, EntityId, key);
+        key.Data.EntityRepos[EntityId].RaiseValueChangedNotice(Name, EntityId, key);
         var update = EntityVarUpdate.Encode<TValue>(Name, EntityId, newValue, key);
         server.QueueUpdate(update);
     }
@@ -32,7 +32,7 @@ public class EntityStruct<TValue> where TValue: struct
     {
         var value = JsonSerializer.Deserialize<TValue>(newValueJson);
         str.Value = value;
-        Game.I.Session.Data.EntityRepos[str.EntityId].RaiseValueChangedNotice(str.Name, str.EntityId, key);
+        key.Data.EntityRepos[str.EntityId].RaiseValueChangedNotice(str.Name, str.EntityId, key);
     }
     public void SetByProcedure(ProcedureWriteKey key, TValue newValue)
     {

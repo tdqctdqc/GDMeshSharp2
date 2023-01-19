@@ -8,17 +8,15 @@ public class Data
     private Dictionary<Type, Domain> _domains;
     public Dictionary<int, Entity> Entities { get; private set; }
     public Dictionary<int, IRepo> EntityRepos { get; private set; }
-    private IServer _server;
     public Entity this[int id] => Entities.ContainsKey(id) ? Entities[id] : null;
     public BaseDomain BaseDomain => GetDomain<BaseDomain>();
 
-    public Data(IServer server)
+    public Data()
     {
         Entities = new Dictionary<int, Entity>();
         EntityRepos = new Dictionary<int, IRepo>();
         _domains = new Dictionary<Type, Domain>();
-        _domains.Add(typeof(BaseDomain), new BaseDomain());
-        _server = server;
+        _domains.Add(typeof(BaseDomain), new BaseDomain(this));
     }
     
     public void AddEntity(Entity e, Type domainType, StrongWriteKey key)
@@ -30,7 +28,7 @@ public class Data
         if (key is HostWriteKey hKey)
         {
             var creationUpdate = EntityCreationUpdate.Encode(e, domainType, hKey);
-            ((HostServer)_server).QueueUpdate(creationUpdate);
+            hKey.Server.QueueUpdate(creationUpdate);
         }
     }
 
@@ -42,7 +40,7 @@ public class Data
         if (key is HostWriteKey hKey)
         {
             var deletionUpdate = new EntityDeletionUpdate(e.Id.Value);
-            ((HostServer)_server).QueueUpdate(deletionUpdate);
+            hKey.Server.QueueUpdate(deletionUpdate);
         }
     }
     public T GetDomain<T>() where T : Domain

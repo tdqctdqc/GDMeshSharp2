@@ -1,37 +1,40 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 
 [EntityVariable]
 [EntityRef]
 public class EntityRef<TRef> where TRef : Entity
 {
     public string Name { get; private set; }
-    public int HostId { get; private set; }
+    public int EntityId { get; private set; }
     public int RefId { get; private set; }
-    public TRef ReferedEntity => (TRef) Game.I.Session.Data[RefId];
-    public EntityRef(int refId, int hostId, string name)
+    public TRef Entity(Data data) => (TRef) data[RefId];
+    public EntityRef(int refId, int entityId, string name)
     {
-        //only want to call this for deserialization and from construct
         Name = name;
         RefId = refId;
-        HostId = hostId;
+        EntityId = entityId;
     }
 
-    public static EntityRef<TRef> Construct(TRef refer, Entity host, string name)
+    public static EntityRef<TRef> Construct(int refId, int entityId, string name)
     {
-        return new EntityRef<TRef>(refer.Id.Value, host.Id.Value, name);
+        return new EntityRef<TRef>(refId, entityId, name);
     }
     public void Update(HostWriteKey key, int newValue, HostServer server)
     {
         RefId = newValue;
-        Game.I.Session.Data.EntityRepos[HostId].RaiseValueChangedNotice(Name, HostId, key);
-        var update = EntityVarUpdate.Encode<int>(Name, HostId, newValue, key);
+        key.Data.EntityRepos[EntityId].RaiseValueChangedNotice(Name, EntityId, key);
+        var update = EntityVarUpdate.Encode<int>(Name, EntityId, newValue, key);
         server.QueueUpdate(update);
     }
     public static void ReceiveUpdate(EntityRef<TRef> str, ServerWriteKey key, string newValueJson)
     {
-        str.RefId = System.Text.Json.JsonSerializer.Deserialize<int>(newValueJson);
-        Game.I.Session.Data.EntityRepos[str.HostId].RaiseValueChangedNotice(str.Name, str.HostId, key);
+        var list = System.Text.Json.JsonSerializer.Deserialize<List<int>>(newValueJson);
+
+        str.RefId = list[0];
+        str.EntityId = list[1];
+        key.Data.EntityRepos[str.EntityId].RaiseValueChangedNotice(str.Name, str.EntityId, key);
     }
     public void SetByProcedure(ProcedureWriteKey key, int newRefId)
     {
@@ -39,12 +42,13 @@ public class EntityRef<TRef> where TRef : Entity
     }
     public static string Serialize(EntityRef<TRef> es)
     {
-        return System.Text.Json.JsonSerializer.Serialize<int>(es.RefId);
+        return System.Text.Json.JsonSerializer.Serialize<List<int>>( new List<int>{es.EntityId, es.RefId});
     }
     public static EntityRef<TRef> Deserialize(string json, string name, Entity entity)
     {
-        var refId = System.Text.Json.JsonSerializer.Deserialize<int>(json);
-        var referedEntity = (TRef) Game.I.Session.Data[refId];
-        return Construct(referedEntity, entity, name);
+        var list = System.Text.Json.JsonSerializer.Deserialize<List<int>>(json);
+        var hostId = list[0];
+        var refId = list[1];
+        return Construct(refId, hostId, name);
     }
 }

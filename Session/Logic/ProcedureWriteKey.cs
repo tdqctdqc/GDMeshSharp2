@@ -3,4 +3,7 @@ using System;
 
 public class ProcedureWriteKey : WriteKey
 {
+    public ProcedureWriteKey(Data data) : base(data)
+    {
+    }
 }

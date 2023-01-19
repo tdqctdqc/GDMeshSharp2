@@ -21,14 +21,14 @@ public class EntityString
     public void Update(HostWriteKey key, string newValue, HostServer server)
     {
         Value = newValue;
-        Game.I.Session.Data.EntityRepos[EntityId].RaiseValueChangedNotice(Name, EntityId, key);
+        key.Data.EntityRepos[EntityId].RaiseValueChangedNotice(Name, EntityId, key);
         var update = EntityVarUpdate.Encode<string>(Name, EntityId, newValue, key);
         server.QueueUpdate(update);
     }
     public static void ReceiveUpdate(EntityString str, ServerWriteKey key, string newValueJson)
     {
         str.Value = System.Text.Json.JsonSerializer.Deserialize<string>(newValueJson);
-        Game.I.Session.Data.EntityRepos[str.EntityId].RaiseValueChangedNotice(str.Name, str.EntityId, key);
+        key.Data.EntityRepos[str.EntityId].RaiseValueChangedNotice(str.Name, str.EntityId, key);
     }
     public void ProcedureSet(ProcedureWriteKey key, string newValue)
     {

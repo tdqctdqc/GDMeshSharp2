@@ -19,6 +19,6 @@ public class EntityDeletionUpdate : IUpdate
 
     public static void DeserializeAndEnact(string json, ServerWriteKey key)
     {
-        Game.I.Session.Data.RemoveEntity(Game.I.Session.Data[json.ToInt()], key);
+        key.Data.RemoveEntity(key.Data[json.ToInt()], key);
     }
 }
