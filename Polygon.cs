@@ -17,7 +17,7 @@ public abstract class Polygon : Entity
     }
     public PolygonBorder GetPolyBorder(Polygon neighbor) 
         => _borderDic[neighbor];
-    public Polygon(int id, Vector2 center, float mapWidth, CreateWriteKey key) : base(id, key)
+    public Polygon(int id, Vector2 center, float mapWidth, GenWriteKey key) : base(id, key)
     {
         Center = center;
         if (Center.x > mapWidth) Center = new Vector2(Center.x - mapWidth, center.y);
@@ -29,7 +29,7 @@ public abstract class Polygon : Entity
     }
     public IEnumerable<PolygonBorder> GetNeighborBorders() => Neighbors.Select(n => GetPolyBorder(n));
 
-    public virtual void AddNeighbor(Polygon poly, PolygonBorder border, CreateWriteKey key)
+    public virtual void AddNeighbor(Polygon poly, PolygonBorder border, GenWriteKey key)
     {
         if (Neighbors.Contains(poly)) return;
         Neighbors.Add(poly);
@@ -50,7 +50,7 @@ public abstract class Polygon : Entity
             .ToList();
     }
 
-    public virtual void RemoveNeighbor(Polygon poly, CreateWriteKey key)
+    public virtual void RemoveNeighbor(Polygon poly, GenWriteKey key)
     {
         //only use in merging left-right wrap
         var index = Neighbors.IndexOf(poly);

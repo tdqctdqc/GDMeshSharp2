@@ -8,13 +8,13 @@ public class WorldGenerator
     public WorldData Data { get; private set; }
     private IDDispenser _id;
     private Vector2 _dim;
-    private CreateWriteKey _key;
+    private GenWriteKey _key;
     public WorldGenerator(Vector2 dim)
     {
         _dim = dim;
         _id = new IDDispenser();
         Data = new WorldData(_dim);
-        _key = new CreateWriteKey(Data);
+        _key = new GenWriteKey(Data);
     }
     public WorldData Generate()
     {

@@ -29,7 +29,7 @@ public class GenPlate : ISuper<GenPlate, GenCell>
         Cells.Add(c);
         c.SetPlate(this);
         NeighboringCells.Remove(c);
-        var border = c.Neighbors.Refs.Except(Cells);
+        var border = c.Neighbors.Except(Cells);
         foreach (var cell in border)
         {
             NeighboringCells.Add(cell);
@@ -51,31 +51,23 @@ public class GenPlate : ISuper<GenPlate, GenCell>
         if (Mass != null) throw new Exception();
         Mass = c;
     }
-    public IEnumerable<GenPolygon> GetBorderPolys()
-    {
-        var borderCellPolys = this
-            .GetBorderElements()
-            .SelectMany(c => c.PolyGeos.Refs);
-        var borderPolys = GenerationUtility
-            .GetBorderElements(borderCellPolys, p => p.GeoNeighbors.Refs, p => p.Cell.Ref.Plate != this);
-        return borderPolys;
-    }
     
-    public List<BorderEdge<GenPolygon>> GetOrderedBorderRelative(GenPlate aPlate)
+    public List<BorderEdge<GenPolygon>> GetOrderedBorderRelative(GenPlate aPlate, WorldData data)
     {
+        var polyCells = data.GenAuxData.PolyCells;
         var borderCellPolys = this
             .GetBorderElements()
-            .SelectMany(c => c.PolyGeos.Refs);
+            .SelectMany(c => c.PolyGeos);
         var borderPolys = GenerationUtility
-            .GetBorderElements(borderCellPolys, p => p.GeoNeighbors.Refs, n => n.Cell.Ref.Plate == aPlate);
+            .GetBorderElements(borderCellPolys, p => p.GeoNeighbors.Refs, n => polyCells[n].Plate == aPlate);
         var commonPolyBorders = GenerationUtility.GetOrderedBorderPairs(borderPolys, c => c.GeoNeighbors.Refs,
-            c => c.Cell.Ref.Plate == aPlate);
+            p => polyCells[p].Plate == aPlate);
         
         return commonPolyBorders;
     }
     
     IReadOnlyCollection<GenPlate> ISuper<GenPlate, GenCell>.Neighbors => Neighbors;
-    IReadOnlyCollection<GenCell> ISuper<GenPlate, GenCell>.GetSubNeighbors(GenCell cell) => cell.Neighbors.Refs;
+    IReadOnlyCollection<GenCell> ISuper<GenPlate, GenCell>.GetSubNeighbors(GenCell cell) => cell.Neighbors;
     GenPlate ISuper<GenPlate, GenCell>.GetSubSuper(GenCell cell) => cell.Plate;
     IReadOnlyCollection<GenCell> ISuper<GenPlate, GenCell>.Subs => Cells;
 }

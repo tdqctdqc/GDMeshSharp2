@@ -16,7 +16,7 @@ public class RegimeTerritory : Super<RegimeTerritory, GenPolygon>
     }
     protected override RegimeTerritory GetSubSuper(GenPolygon sub)
     {
-        return sub.Regime != null ? sub.Regime.Territory : null;
+        return sub.Regime != null ? sub.Regime.Ref.Territory : null;
     }
     protected override void SetSubSuper(GenPolygon sub, RegimeTerritory super)
     {

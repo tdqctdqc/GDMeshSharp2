@@ -29,7 +29,7 @@ public class MoistureGenerator
         {
             var distFromEquator = Mathf.Abs(Data.Dimensions.y / 2f - m.Center.y);
             var altMult = .5f + .5f * (1f - distFromEquator / (Data.Dimensions.y / 2f));
-            var polyGeos = m.Plates.SelectMany(p => p.Cells).SelectMany(c => c.PolyGeos.Refs).ToList();
+            var polyGeos = m.Plates.SelectMany(p => p.Cells).SelectMany(c => c.PolyGeos).ToList();
             var count = polyGeos.Count;
             var waterCount = polyGeos.Where(g => g.IsWater()).Count();
             var score = altMult * waterCount / count;
@@ -58,7 +58,7 @@ public class MoistureGenerator
 
         Data.GenAuxData.Masses.ForEach(m =>
         {
-            var polyGeos = m.Plates.SelectMany(p => p.Cells).SelectMany(c => c.PolyGeos.Refs).ToList();
+            var polyGeos = m.Plates.SelectMany(p => p.Cells).SelectMany(c => c.PolyGeos).ToList();
             polyGeos.ForEach(p =>
             {
                 if (p.IsWater()) p.Set(nameof(p.Moisture), 1f, _key);

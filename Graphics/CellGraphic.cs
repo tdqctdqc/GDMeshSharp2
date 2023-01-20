@@ -10,10 +10,10 @@ public class CellGraphic : Node2D
         
     }
 
-    public CellGraphic(GenCell genCell, Color? color = null)
+    public CellGraphic(GenCell genCell, Dictionary<GenPolygon, GenCell> polyCells, Color? color = null)
     {
         var tris = new List<Vector2>();
-        foreach (var poly in genCell.PolyGeos.Refs)
+        foreach (var poly in genCell.PolyGeos)
         {
             tris.AddRange(poly.GetTrisAbs());
         }
@@ -22,13 +22,13 @@ public class CellGraphic : Node2D
         if (color == null) color = ColorsExt.GetRandomColor();
         triMesh.Modulate = color.Value;
         AddChild(triMesh);
-        if(genCell.Seed.Id % 25 == 0) AddOuterBorder(genCell, color.Value);
+        if(genCell.Seed.Id % 25 == 0) AddOuterBorder(genCell, color.Value, polyCells);
     }
 
-    private void AddInnerBorder(GenCell cell, Color color)
+    private void AddInnerBorder(GenCell cell, Color color, Dictionary<GenPolygon, GenCell> polyCells)
     {
-        var borderPolyGeos = cell.PolyGeos.Refs
-            .Where(p => p.Neighbors.Any(n => ((GenPolygon) n).Cell.Ref != cell));
+        var borderPolyGeos = cell.PolyGeos
+            .Where(p => p.Neighbors.Any(n => polyCells[((GenPolygon) n)] != cell));
         var iter = 0;
 
         foreach (var poly in borderPolyGeos)
@@ -47,17 +47,17 @@ public class CellGraphic : Node2D
         }
         
     }
-    private void AddOuterBorder(GenCell genCell, Color color)
+    private void AddOuterBorder(GenCell genCell, Color color, Dictionary<GenPolygon, GenCell> polyCells)
     {
         var edges = genCell.GetOrderedBorderPairs();
         var iter = 0;
-        var currOppCell = edges[0].Foreign.Cell;
+        var currOppCell = polyCells[edges[0].Foreign];
         for (var i = 0; i < edges.Count; i++)
         {
             var edge = edges[i];
-            if (currOppCell != edges[i].Foreign.Cell)
+            if (currOppCell != polyCells[edges[i].Foreign])
             {
-                currOppCell = edges[i].Foreign.Cell;
+                currOppCell = polyCells[edges[i].Foreign];
                 iter++;
             }
 

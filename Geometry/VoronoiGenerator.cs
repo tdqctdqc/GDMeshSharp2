@@ -10,7 +10,7 @@ public class VoronoiGenerator
     public static List<TPolygon> GetVoronoiPolygons<TPolygon>(List<Vector2> points, Vector2 dimensions, 
         bool leftRightWrap, float polySize,
         Func<int, Vector2, TPolygon> constructor,
-        CreateWriteKey key)
+        GenWriteKey key)
         where TPolygon : Polygon
     {
         _dimensions = dimensions;
@@ -56,7 +56,7 @@ public class VoronoiGenerator
         return polygons.ToList();
     }
     
-    private static void AddEdges(Delaunator d, Dictionary<int, Polygon> polyDic, CreateWriteKey key)
+    private static void AddEdges(Delaunator d, Dictionary<int, Polygon> polyDic, GenWriteKey key)
     {
         d.ForEachVoronoiEdge(edge =>
         {
@@ -76,7 +76,7 @@ public class VoronoiGenerator
         });
     }
     private static HashSet<Polygon> MergeLeftRightPolys(IEnumerable<Polygon> polygons, Dictionary<Polygon, Polygon> lrPolyPairs, 
-        Dictionary<Vector2, Polygon> polyDic, CreateWriteKey key)
+        Dictionary<Vector2, Polygon> polyDic, GenWriteKey key)
     {
         var firstLeft = polyDic[Vector2.Zero];
         var lastLeft = polyDic[new Vector2(0f, _dimensions.y)];
@@ -122,7 +122,7 @@ public class VoronoiGenerator
 
     private static void ConnectEdgePolys(Dictionary<Vector2, Polygon> polyDic,
         List<Vector2> leftPoints, List<Vector2> rightPoints, List<Vector2> topPoints, 
-        List<Vector2> bottomPoints, bool leftRightWrap, CreateWriteKey key)
+        List<Vector2> bottomPoints, bool leftRightWrap, GenWriteKey key)
     {
         var topLeft = leftPoints[0];
         var topRight = rightPoints[0];
@@ -208,7 +208,7 @@ public class VoronoiGenerator
     }
 
     private static void LinkMergeEdgePolys(List<Vector2> points,
-        Dictionary<Vector2, Polygon> polyDic, bool lr, CreateWriteKey key)
+        Dictionary<Vector2, Polygon> polyDic, bool lr, GenWriteKey key)
     {
         for (var i = 0; i < points.Count - 1; i++)
         {
@@ -240,7 +240,7 @@ public class VoronoiGenerator
     }
     private static void LinkEdgePolys(List<Vector2> points, 
         Dictionary<Vector2, Polygon> polyDic, Vector2 anchor, float dim, bool lr,
-        CreateWriteKey key)
+        GenWriteKey key)
     {
         if(points[0] != anchor) points.Insert(0, anchor);
 
