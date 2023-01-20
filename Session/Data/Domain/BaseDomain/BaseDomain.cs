@@ -8,6 +8,6 @@ public class BaseDomain : Domain
     public BaseDomain(Data data) : base()
     {
         Players = new Repository<Player>(this, data);
-        _repos.Add(typeof(Player), Players);
+        AddRepo(Players);
     }
 }

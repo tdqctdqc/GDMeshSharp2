@@ -7,9 +7,11 @@ public class MoistureGenerator
 {
     public WorldData Data { get; private set; }
     private CreateWriteKey _key;
-    public MoistureGenerator(WorldData data)
+    private IDDispenser _id;
+    public MoistureGenerator(WorldData data, IDDispenser id)
     {
         Data = data;
+        _id = id;
     }
 
     public void Generate(CreateWriteKey key)
@@ -23,7 +25,7 @@ public class MoistureGenerator
     {
         var massMoistures = new Dictionary<GenMass, float>();
         
-        Data.Masses.ForEach(m =>
+        Data.GenAuxData.Masses.ForEach(m =>
         {
             var distFromEquator = Mathf.Abs(Data.Dimensions.y / 2f - m.Center.y);
             var altMult = .5f + .5f * (1f - distFromEquator / (Data.Dimensions.y / 2f));
@@ -42,7 +44,7 @@ public class MoistureGenerator
 
         void diffuse()
         {
-            Data.Masses.ForEach(m =>
+            Data.GenAuxData.Masses.ForEach(m =>
             {
                 var oldScore = massMoistures[m];
                 var newScore = m.Neighbors.Select(n => massMoistures[n]).Average();
@@ -54,7 +56,7 @@ public class MoistureGenerator
             });
         }
 
-        Data.Masses.ForEach(m =>
+        Data.GenAuxData.Masses.ForEach(m =>
         {
             var polyGeos = m.Plates.SelectMany(p => p.Cells).SelectMany(c => c.PolyGeos.Refs).ToList();
             polyGeos.ForEach(p =>
@@ -72,6 +74,7 @@ public class MoistureGenerator
 
     private void BuildVegetationTris()
     {
+        Data.Vegetation.BuildTriHolders(_id, Data, _key);
         Data.Vegetation.BuildTris(Data.PlanetDomain.GeoPolygons.Entities.ToHashSet(), Data);
     }
 

@@ -7,14 +7,16 @@ public class LocationGenerator
 {
     public WorldData Data { get; private set; }
     private CreateWriteKey _key;
+    private IDDispenser _id;
     public LocationGenerator(WorldData data)
     {
         Data = data;
     }
 
-    public void Generate(CreateWriteKey key)
+    public void Generate(CreateWriteKey key, IDDispenser id)
     {
         _key = key;
+        _id = id;
         GenerateCities();
         GenerateRoadNetwork();
     }
@@ -22,7 +24,7 @@ public class LocationGenerator
     private void GenerateCities()
     {
         var minScoreForSettlement = 2f;
-        Data.Plates.ForEach(plate =>
+        Data.GenAuxData.Plates.ForEach(plate =>
         {
             var landPolys = plate.Cells.SelectMany(c => c.PolyGeos.Refs)
                 .Where(p => p.IsLand())
@@ -61,9 +63,10 @@ public class LocationGenerator
             for (var i = 0; i < settlementPolys.Count; i++)
             {
                 settlementPolys[i].Set(nameof(GenPolygon.SettlementSize), settlementScores[i], _key);
-                    
-                    
-                Data.Locations.Settlements.Add(new Settlement(settlementPolys[i], settlementScores[i]));
+
+                var settlement = new Settlement(_id.GetID(), _key, settlementPolys[i], settlementScores[i]);
+                
+                Data.AddEntity(settlement, typeof(SocietyDomain), _key);
             }
         });
         Data.Landforms.BuildTrisForAspect(LandformManager.Urban, Data);
@@ -102,8 +105,8 @@ public class LocationGenerator
                     edgeCost, (p1, p2) => p1.GetOffsetTo(p2, Data.Dimensions.x).Length());
                 for (var i = 0; i < path.Count - 1; i++)
                 {
-                    var edge = new Edge<GenPolygon>(path[i], path[i + 1], (p, q) => p.Id > q.Id);
-                    Data.Locations.Roads.Add(edge);
+                    var road = new RoadSegment(_id.GetID(), _key, path[i], path[i + 1]);
+                    Data.AddEntity(road, typeof(SocietyDomain), _key);
                 }
             }
         });

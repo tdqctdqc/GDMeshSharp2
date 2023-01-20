@@ -59,13 +59,13 @@ public class GeneratorGraphics : Node2D
         AddChild(roadGraphics);
 
         var regimeGraphicsSegments = new GraphicsSegmenter<Node2D>();
-        var plateRegimeGraphics = data.Plates.Select(p => RegimeTerritoryGraphic.Get(p, data)).ToList();
+        var plateRegimeGraphics = data.GenAuxData.Plates.Select(p => RegimeTerritoryGraphic.Get(p, data)).ToList();
         regimeGraphicsSegments.Setup(plateRegimeGraphics, 10, n => n.Position, data);
         _segmenters.Add(regimeGraphicsSegments);
         client.Holder.AddOverlay("polygons", "Regimes", regimeGraphicsSegments);
         AddChild(regimeGraphicsSegments);
         
-        var faultLineGraphics = data.FaultLines.Select(f => new FaultLineGraphic(f, data)).ToList();
+        var faultLineGraphics = data.GenAuxData.FaultLines.Select(f => new FaultLineGraphic(f, data)).ToList();
         
         var faultLineNode = new GraphicsSegmenter<FaultLineGraphic>();
         _segmenters.Add(faultLineNode);

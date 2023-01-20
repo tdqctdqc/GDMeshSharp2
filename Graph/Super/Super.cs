@@ -24,8 +24,7 @@ public abstract class Super<TSuper, TSub> : ISuper<TSuper, TSub> where TSuper : 
         Subs.Add(sub);
         if(GetSubSuper(sub) is Super<TSuper, TSub> sup) sup.RemoveSub(sub);
         SetSubSuper(sub, this as TSuper);
-        
-        
+
         NeighboringSubs.Remove(sub);
         var border = GetSubNeighbors(sub).Except(Subs);
         foreach (var cell in border)

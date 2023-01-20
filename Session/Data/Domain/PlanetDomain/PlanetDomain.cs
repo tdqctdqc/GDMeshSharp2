@@ -13,9 +13,9 @@ public class PlanetDomain : Domain
         GeoPolygons = new Repository<GenPolygon>(this, data);
         Cells = new Repository<GenCell>(this, data);
         TerrainTris = new TerrainTriRepo(this, data);
-        _repos.Add(typeof(GenPolygon), GeoPolygons);
-        _repos.Add(typeof(GenCell), Cells);
-        _repos.Add(typeof(TerrainTriHolder), TerrainTris);
+        AddRepo(GeoPolygons);
+        AddRepo(Cells);
+        AddRepo(TerrainTris);
     }
     
 }

@@ -14,8 +14,8 @@ public class LandformManager : TerrainAspectManager<Landform>
     public static Landform Water  { get; private set; } = new Landform("Water", 0f, Colors.Blue, new NoTriBuilder());
     public static Landform River { get; private set; } = new River();
     public static Landform Urban { get; private set; } = new Urban();
-    public LandformManager(CreateWriteKey key, IDDispenser id, Data data)
-        : base(id, key, Water, Plain, new List<Landform>{Urban, River, Peak, Mountain, Hill}, data)
+    public LandformManager()
+        : base(Water, Plain, new List<Landform>{Urban, River, Peak, Mountain, Hill})
     {
         
     }

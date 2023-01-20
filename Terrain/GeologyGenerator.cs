@@ -65,7 +65,7 @@ public class GeologyGenerator
         var plates = plateSeeds.Select(s => new GenPlate(s, _id.GetID())).ToList();
         GD.Print("Num plates: " + plates.Count);
 
-        Data.Plates.AddRange(plates);
+        Data.GenAuxData.Plates.AddRange(plates);
         var cellsNotTaken = Data.PlanetDomain.Cells.Entities.Except(plateSeeds);
         GenerationUtility.PickInTurnHeuristic(cellsNotTaken, plates, 
             plate => plate.NeighboringCells,
@@ -78,28 +78,28 @@ public class GeologyGenerator
     private void BuildMasses()
     {
         var platesPerMass = 3;
-        var numMasses = Data.Plates.Count / 3;
-        var massSeeds = GenerationUtility.PickSeeds(Data.Plates, new int[] {numMasses})[0];
+        var numMasses = Data.GenAuxData.Plates.Count / 3;
+        var massSeeds = GenerationUtility.PickSeeds(Data.GenAuxData.Plates, new int[] {numMasses})[0];
         var masses = massSeeds.Select(s => new GenMass(s, _id.GetID())).ToList();
         GD.Print("Num masses: " + masses.Count);
 
-        var platesNotTaken = Data.Plates.Except(massSeeds);
+        var platesNotTaken = Data.GenAuxData.Plates.Except(massSeeds);
         GenerationUtility.PickInTurnHeuristic(platesNotTaken, masses,
             mass => mass.NeighboringPlates,
             (mass, plate) => mass.AddPlate(plate),
             (plate, mass) => mass.NeighboringPlatesAdjCount[plate]);
-        Data.Masses.AddRange(masses);
+        Data.GenAuxData.Masses.AddRange(masses);
         masses.ForEach(m => m.SetNeighbors());
     }
 
     private void BuildContinents()
     {
         var massesPerCont = 3;
-        var numMasses = Data.Masses.Count / 3;
+        var numMasses = Data.GenAuxData.Masses.Count / 3;
         var numLandmasses = numMasses / 4;
         var numSeas = numMasses * 3 / 4;
-        if (numLandmasses + numSeas > Data.Masses.Count) throw new Exception();
-        var seeds = GenerationUtility.PickSeeds(Data.Masses, new int[] {numLandmasses, numSeas});
+        if (numLandmasses + numSeas > Data.GenAuxData.Masses.Count) throw new Exception();
+        var seeds = GenerationUtility.PickSeeds(Data.GenAuxData.Masses, new int[] {numLandmasses, numSeas});
         var landSeeds = seeds[0].ToHashSet();
         var waterSeeds = seeds[1].ToHashSet();
         var allSeeds = landSeeds.Union(waterSeeds);
@@ -108,12 +108,12 @@ public class GeologyGenerator
             .ToList();
         GD.Print("Num conts: " + conts.Count);
 
-        GenerationUtility.PickInTurn(Data.Masses.Except(allSeeds), conts,
+        GenerationUtility.PickInTurn(Data.GenAuxData.Masses.Except(allSeeds), conts,
             cont => cont.NeighboringMasses,
             (cont, mass) => cont.AddMass(mass));
-        Data.Continents.AddRange(conts);
+        Data.GenAuxData.Continents.AddRange(conts);
         conts.ForEach(c => c.SetNeighbors());
-        Data.Continents.ForEach(cont =>
+        Data.GenAuxData.Continents.ForEach(cont =>
         {
             var isLand = landSeeds.Contains(cont.Seed);
             var polys = cont.Masses
@@ -131,8 +131,8 @@ public class GeologyGenerator
 
     private void DoContinentFriction()
     {
-        Data.Plates.ForEach(p => setFriction(p));
-        Data.FaultLines.ForEach(f =>
+        Data.GenAuxData.Plates.ForEach(p => setFriction(p));
+        Data.GenAuxData.FaultLines.ForEach(f =>
         {
             var inRange = getPolysInRangeOfFault(f);
             f.PolyFootprint.AddRange(inRange);   
@@ -166,7 +166,7 @@ public class GeologyGenerator
                     {
                         var borders = hiPlate.GetOrderedBorderRelative(loPlate);
                         var fault = new FaultLine(driftStr, hiPlate, loPlate, borders, Data);
-                        Data.FaultLines.Add(fault);
+                        Data.GenAuxData.FaultLines.Add(fault);
                     }
                 }
             }
@@ -204,10 +204,10 @@ public class GeologyGenerator
             return polysInRange;
         }
     }
-
     private void BuildLandformTris()
-    {
-        var affectedPolys = Data.FaultLines.SelectMany(f => f.PolyFootprint).Where(p => p.IsLand()).ToHashSet();
+    {   
+        Data.Landforms.BuildTriHolders(_id, Data, _key);
+        var affectedPolys = Data.GenAuxData.FaultLines.SelectMany(f => f.PolyFootprint).Where(p => p.IsLand()).ToHashSet();
         Data.Landforms.BuildTris(affectedPolys, Data);
     }
 }

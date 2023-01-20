@@ -37,20 +37,16 @@ public class WorldGenerator
                     _key
                 );
         
-        Data.Setup(_key, _id);
-
-        // Data.PlanetDomain.GeoPolygons.AddEntities(polygons, key);
-        
         var geologyGenerator = new GeologyGenerator(Data, _id);
         geologyGenerator.GenerateTerrain(_key);
 
-        var moistureGenerator = new MoistureGenerator(Data);
+        var moistureGenerator = new MoistureGenerator(Data, _id);
         moistureGenerator.Generate(_key);
 
         var locationGenerator = new LocationGenerator(Data);
-        locationGenerator.Generate(_key);
+        locationGenerator.Generate(_key, _id);
 
-        var regimeGen = new RegimeGenerator(Data);
+        var regimeGen = new RegimeGenerator(Data, _id, _key);
         regimeGen.Generate();
         
         return Data;

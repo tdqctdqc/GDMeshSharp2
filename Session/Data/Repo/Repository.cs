@@ -14,7 +14,7 @@ public class Repository<T> : IRepo where T : Entity
     public IReadOnlyList<T> Entities => _entities;
     private List<T> _entities;
     private ClientWriteKey _weakKey;
-
+    
     public Repository(Domain domain, Data data)
     {
         Domain = domain;

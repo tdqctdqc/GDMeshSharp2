@@ -29,6 +29,8 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
     }
     public EntityMeta()
     {
+        GD.Print("handling entity type " + typeof(T).ToString());
+
         var entityType = typeof(T);
         //bc with generic parameters it will not capture all the classes
         if (entityType.ContainsGenericParameters) 
@@ -36,8 +38,7 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
         
         //don't want concrete entity classes having descendents 
         if (entityType.IsSealed == false) 
-            throw new Exception();
-        GD.Print("handling entity type " + typeof(T).ToString());
+             throw new Exception();
         var properties = entityType.GetProperties(BindingFlags.Instance | BindingFlags.Public);
         _fieldNames = properties.Select(p => p.Name).ToList();
         _fieldNames.Remove("Id");

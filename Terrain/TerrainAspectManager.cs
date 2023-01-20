@@ -11,15 +11,19 @@ public abstract class TerrainAspectManager<TAspect>
     public TAspect WaterDefault { get; protected set; } 
     // public Dictionary<TAspect, TerrainAspectHolder> Holders { get; private set; }
 
-    public TerrainAspectManager(IDDispenser id, CreateWriteKey key, TAspect waterDefault, 
-        TAspect landDefault, List<TAspect> byPriority, Data data)
+    public TerrainAspectManager(TAspect waterDefault, 
+        TAspect landDefault, List<TAspect> byPriority)
     {
         WaterDefault = waterDefault;
         LandDefault = landDefault;
         ByPriority = byPriority;
+    }
+
+    public void BuildTriHolders(IDDispenser id, Data data, CreateWriteKey key)
+    {
         add(WaterDefault);
         add(LandDefault);
-        byPriority.ForEach(add);
+        ByPriority.ForEach(add);
 
         void add(TerrainAspect aspect)
         {

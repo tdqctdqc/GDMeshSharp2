@@ -3,14 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class Settlement : Location
+public sealed class Settlement : Location
 {
     public GenPolygon Poly { get; private set; }
     public float Size { get; private set; }
 
-    public Settlement(GenPolygon poly, float size)
+    public Settlement(int id, CreateWriteKey key, GenPolygon poly, float size) : base(id, key)
     {
         Poly = poly;
         Size = size;
     }
+    
+    
+    private static Settlement DeserializeConstructor(string json)
+    {
+        return new Settlement(json);
+    }
+    private Settlement(string json) : base(json) { }
 }

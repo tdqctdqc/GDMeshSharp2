@@ -21,6 +21,5 @@ public class RegimeTerritory : Super<RegimeTerritory, GenPolygon>
     protected override void SetSubSuper(GenPolygon sub, RegimeTerritory super)
     {
         //todo fix!!
-        sub.Set(nameof(GenPolygon.Regime), super.Regime, new CreateWriteKey(null));
     }
 }

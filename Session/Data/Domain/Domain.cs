@@ -21,4 +21,9 @@ public abstract class Domain
         return _repos[entityType];
     }
 
+    protected void AddRepo<T>(Repository<T> repo) where T : Entity
+    {
+        _repos.Add(typeof(T), repo);
+    }
+
 }

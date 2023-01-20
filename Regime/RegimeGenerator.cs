@@ -6,9 +6,12 @@ using Godot;
 public class RegimeGenerator
 {
     private WorldData _data;
-
-    public RegimeGenerator(WorldData data)
+    private IDDispenser _id;
+    private CreateWriteKey _key;
+    public RegimeGenerator(WorldData data, IDDispenser id, CreateWriteKey key)
     {
+        _id = id;
+        _key = key;
         _data = data;
     }
 
@@ -25,16 +28,19 @@ public class RegimeGenerator
         {
             var landmassRegimes = Mathf.CeilToInt(lm.Count / polysPerRegime);
             var seeds = lm.GetNRandomElements(landmassRegimes);
-            var regimes = new List<Regime>();
             for (var i = 0; i < seeds.Count; i++)
             {
                 var prim = ColorsExt.GetRandomColor();
                 var sec = prim.Inverted();
-                var regime = new Regime(prim, sec, seeds[i]);
-                regimes.Add(regime);
+                var regime = new Regime(_id.GetID(), _key, prim, sec, seeds[i]);
+                _data.AddEntity(regime, typeof(SocietyDomain), _key);
             }
             GenerationUtility.PickInTurn(lm.Where(p => p.Regime == null), 
-                regimes, r => r.Territory.NeighboringSubs, (r, p) => r.Territory.AddSub(p));
+                _data.SocietyDomain.Regimes.Entities, r => r.Territory.NeighboringSubs, (r, p) =>
+                {
+                    r.Territory.AddSub(p);
+                    p.Set(nameof(GenPolygon.Regime), r, _key);
+                });
         });
     }
 }

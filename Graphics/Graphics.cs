@@ -50,13 +50,13 @@ public static class Graphics
     {
         var segmenter = new GraphicsSegmenter<Node2D>();
         var result = new List<Node2D>();
-        data.Locations.Roads.ToList().ForEach(r =>
+        foreach (var r in data.SocietyDomain.Roads.Entities)
         {
-            var mesh = MeshGenerator.GetLineMesh(Vector2.Zero, r.T1.GetOffsetTo(r.T2, data.Dimensions.x), 10f);
-            mesh.Position = r.T1.Center;
+            var mesh = MeshGenerator.GetLineMesh(Vector2.Zero, r.P1.Ref.GetOffsetTo(r.P2.Ref, data.Dimensions.x), 10f);
+            mesh.Position = r.P1.Ref.Center;
             mesh.Modulate = Colors.Gray;
             result.Add(mesh);
-        });
+        }
         segmenter.Setup(result, 10, n => n.Position, data);
         return segmenter;
     }
