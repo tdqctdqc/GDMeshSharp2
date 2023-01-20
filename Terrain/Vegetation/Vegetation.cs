@@ -11,7 +11,8 @@ public class Vegetation : TerrainAspect
     public override ITriBuilder TriBuilder { get; protected set; }
     public override Color Color { get; protected set; }
 
-    public Vegetation(HashSet<Landform> allowedLandforms, float minMoisture, Color color, string name, ITriBuilder triBuilder)
+    public Vegetation(HashSet<Landform> allowedLandforms, float minMoisture, 
+        Color color, string name, ITriBuilder triBuilder)
     {
         TriBuilder = triBuilder;
         AllowedLandforms = allowedLandforms;

@@ -9,9 +9,9 @@ public class GeologyGenerator
     public WorldData Data { get; private set; }
     private IDDispenser _id;
     private CreateWriteKey _key;
-    public GeologyGenerator(WorldData data)
+    public GeologyGenerator(WorldData data, IDDispenser id)
     {
-        _id = new IDDispenser();
+        _id = id;
         Data = data;
     }
     public void GenerateTerrain(CreateWriteKey key)
@@ -46,27 +46,27 @@ public class GeologyGenerator
         var landRatio = .33f;
         // Data.GeoPolygons.AddRange(Data.GeoPolygons);
         var cellSeeds = GenerationUtility.PickSeeds(Data.PlanetDomain.GeoPolygons.Entities, new int[] {numCells})[0];
-        var cells = cellSeeds.Select(p => new GenCell(p, _key)).ToList();
-        Data.Cells.AddRange(cells);
+        var cells = cellSeeds.Select(p => new GenCell(_id.GetID(), p, _key)).ToList();
+        Data.AddEntities(cells, typeof(PlanetDomain), _key);
         GD.Print("Num cells: " + cells.Count);
         var polysNotTaken =
             Data.PlanetDomain.GeoPolygons.Entities.Except(cellSeeds);
         GenerationUtility.PickInTurn(polysNotTaken, cells, 
-            cell => cell.NeighboringPolyGeos, 
+            cell => cell.NeighboringPolyGeos.Refs, 
             (cell, terrain) => cell.AddPolygon(terrain, _key));
-        cells.ForEach(c => c.SetNeighbors());
+        cells.ForEach(c => c.SetNeighbors(_key));
     }
 
     private void BuildPlates()
     {
         var cellsPerPlate = 3;
-        var numPlates = Data.Cells.Count / cellsPerPlate;
-        var plateSeeds = GenerationUtility.PickSeeds(Data.Cells, new[] {numPlates})[0];
+        var numPlates = Data.PlanetDomain.Cells.Entities.Count / cellsPerPlate;
+        var plateSeeds = GenerationUtility.PickSeeds(Data.PlanetDomain.Cells.Entities, new[] {numPlates})[0];
         var plates = plateSeeds.Select(s => new GenPlate(s, _id.GetID())).ToList();
         GD.Print("Num plates: " + plates.Count);
 
         Data.Plates.AddRange(plates);
-        var cellsNotTaken = Data.Cells.Except(plateSeeds);
+        var cellsNotTaken = Data.PlanetDomain.Cells.Entities.Except(plateSeeds);
         GenerationUtility.PickInTurnHeuristic(cellsNotTaken, plates, 
             plate => plate.NeighboringCells,
             (plate, cell) => plate.AddCell(cell),
@@ -119,7 +119,7 @@ public class GeologyGenerator
             var polys = cont.Masses
                 .SelectMany(m => m.Plates)
                 .SelectMany(p => p.Cells)
-                .SelectMany(c => c.PolyGeos);
+                .SelectMany(c => c.PolyGeos.Refs);
             foreach (var poly in polys)
             {
                 var altValue = Game.I.Random.RandfRange(.8f * cont.Altitude, 1.2f * cont.Altitude);
@@ -175,8 +175,8 @@ public class GeologyGenerator
         IEnumerable<GenPolygon> getPolysInRangeOfFault(FaultLine fault)
         {
             var faultRange = fault.Friction * 500f;
-            var polys = fault.HighId.Cells.SelectMany(c => c.PolyGeos)
-                .Union(fault.LowId.Cells.SelectMany(c => c.PolyGeos));
+            var polys = fault.HighId.Cells.SelectMany(c => c.PolyGeos.Refs)
+                .Union(fault.LowId.Cells.SelectMany(c => c.PolyGeos.Refs));
             var frictionAltEffect = .1f;
             var frictionRoughnessEffect = 1f;
             var polysInRange = new List<GenPolygon>();

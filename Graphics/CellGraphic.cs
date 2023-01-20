@@ -13,7 +13,7 @@ public class CellGraphic : Node2D
     public CellGraphic(GenCell genCell, Color? color = null)
     {
         var tris = new List<Vector2>();
-        foreach (var poly in genCell.PolyGeos)
+        foreach (var poly in genCell.PolyGeos.Refs)
         {
             tris.AddRange(poly.GetTrisAbs());
         }
@@ -27,8 +27,8 @@ public class CellGraphic : Node2D
 
     private void AddInnerBorder(GenCell cell, Color color)
     {
-        var borderPolyGeos = cell.PolyGeos
-            .Where(p => p.Neighbors.Any(n => ((GenPolygon) n).Cell != cell));
+        var borderPolyGeos = cell.PolyGeos.Refs
+            .Where(p => p.Neighbors.Any(n => ((GenPolygon) n).Cell.Ref != cell));
         var iter = 0;
 
         foreach (var poly in borderPolyGeos)

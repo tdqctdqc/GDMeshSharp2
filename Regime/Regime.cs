@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class RegimeGen 
+public class Regime 
 {
     public Color PrimaryColor { get; private set; }
     public Color SecondaryColor { get; private set; }
     public RegimeTerritory Territory { get; private set; }
-
-    public RegimeGen(Color primaryColor, Color secondaryColor, GenPolygon seed)
+    
+    public Regime(Color primaryColor, Color secondaryColor, GenPolygon seed)
     {
         PrimaryColor = primaryColor;
         SecondaryColor = secondaryColor;

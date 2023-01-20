@@ -24,7 +24,7 @@ public class LocationGenerator
         var minScoreForSettlement = 2f;
         Data.Plates.ForEach(plate =>
         {
-            var landPolys = plate.Cells.SelectMany(c => c.PolyGeos)
+            var landPolys = plate.Cells.SelectMany(c => c.PolyGeos.Refs)
                 .Where(p => p.IsLand())
                 .Where(p => p.Roughness < LandformManager.Mountain.MinRoughness);
             if (landPolys.Count() == 0) return;

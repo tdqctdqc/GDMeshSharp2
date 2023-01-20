@@ -5,14 +5,13 @@ using System.Linq;
 
 public sealed class GenPolygon : Polygon
 {
-    public GenCell Cell { get; private set; }
+    public EntityRef<GenCell> Cell { get; private set; }
     public EntityRefCollection<GenPolygon> GeoNeighbors { get; private set; }
     public float Altitude { get; private set; }
     public float Roughness { get; private set; }
     public float Moisture { get; private set; }
     public float SettlementSize { get; private set; }
-    public RegimeGen RegimeGen { get; private set; }
-    
+    public Regime Regime { get; private set; }
     public bool IsLand() => Altitude > .5f;
     public bool IsWater() => IsLand() == false;
     public GeoPolygonBorder GetGeoPolyBorder(Polygon neighbor) 

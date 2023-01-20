@@ -24,10 +24,7 @@ public class Repository<T> : IRepo where T : Entity
         _weakKey = new ClientWriteKey(data);
     }
 
-    public void AddEntities(List<T> ts, StrongWriteKey key)
-    {
-        ts.ForEach(t => AddEntity(t, key));
-    }
+    
     public void AddEntity(Entity e, StrongWriteKey key)
     {
         if (e is T t == false) throw new Exception();

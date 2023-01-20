@@ -74,12 +74,12 @@ public class GeneratorClient : Node
         Buttons.Clear();
         _graphics.Setup(_data, this);
         
-        AddPolyViewMode(_graphics.PolyGraphics, g => g.Cell.Plate.GetSeedPoly().Color, "Poly Plates");
-        AddPolyViewMode(_graphics.PolyGraphics, g => g.Cell.Plate.Mass.GetSeedPoly().Color, "Poly Masses");
+        AddPolyViewMode(_graphics.PolyGraphics, g => g.Cell.Ref.Plate.GetSeedPoly().Color, "Poly Plates");
+        AddPolyViewMode(_graphics.PolyGraphics, g => g.Cell.Ref.Plate.Mass.GetSeedPoly().Color, "Poly Masses");
         AddPolyViewMode(_graphics.PolyGraphics, g => g.Color, "Polys");
-        AddPolyViewMode(_graphics.PolyGraphics, g => g.Cell.Plate.Mass.GenContinent.GetSeedPoly().Color, "Poly Continents");
+        AddPolyViewMode(_graphics.PolyGraphics, g => g.Cell.Ref.Plate.Mass.GenContinent.GetSeedPoly().Color, "Poly Continents");
         AddPolyViewMode(_graphics.PolyGraphics, g => g.IsLand() ? Colors.SaddleBrown : Colors.Blue, "Land/Sea");
-        AddPolyViewMode(_graphics.PolyGraphics, g => g.Cell.Seed.Color, "Poly Cells");
+        AddPolyViewMode(_graphics.PolyGraphics, g => g.Cell.Ref.Seed.Color, "Poly Cells");
         AddPolyViewMode(_graphics.PolyGraphics, g => Colors.White.LinearInterpolate(Colors.Red, g.Roughness), "Poly Roughness");
         AddPolyViewMode(_graphics.PolyGraphics, g => Colors.White.LinearInterpolate(Colors.Blue, g.Moisture), "Poly Moisture");
         AddPolyViewMode(_graphics.PolyGraphics, g => _data.Landforms.GetAspectFromPoly(g, _data).Color, "Poly Landforms");

@@ -3,21 +3,30 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public abstract class TerrainAspectManager<TAspect> where TAspect: TerrainAspect
+public abstract class TerrainAspectManager<TAspect> 
+    where TAspect : TerrainAspect
 {
-    public List<TAspect> ByPriority { get; private set; } 
+    public List<TAspect> ByPriority { get; private set; }
     public TAspect LandDefault { get; protected set; } 
     public TAspect WaterDefault { get; protected set; } 
-    public Dictionary<TAspect, TerrainAspectHolder> Holders { get; private set; }
+    // public Dictionary<TAspect, TerrainAspectHolder> Holders { get; private set; }
 
-    public TerrainAspectManager(TAspect waterDefault, TAspect landDefault, List<TAspect> byPriority)
+    public TerrainAspectManager(IDDispenser id, CreateWriteKey key, TAspect waterDefault, 
+        TAspect landDefault, List<TAspect> byPriority, Data data)
     {
         WaterDefault = waterDefault;
         LandDefault = landDefault;
-        
         ByPriority = byPriority;
-        Holders = new Dictionary<TAspect, TerrainAspectHolder>();
-        ByPriority.ForEach(a => Holders.Add(a, new TerrainAspectHolder()));
+        add(WaterDefault);
+        add(LandDefault);
+        byPriority.ForEach(add);
+
+        void add(TerrainAspect aspect)
+        {
+            if (data.GetDomain<PlanetDomain>().TerrainTris.ByName.ContainsKey(aspect.Name)) return;
+            var triHolder = new TerrainTriHolder(aspect, id.GetID(), key);
+            data.AddEntity(triHolder, typeof(PlanetDomain), key);
+        }
     }
     public TAspect GetAspectFromPoly(GenPolygon p, WorldData data)
     {
@@ -36,11 +45,13 @@ public abstract class TerrainAspectManager<TAspect> where TAspect: TerrainAspect
         return LandDefault;
     }
 
-    public TAspect GetAspectAtPoint(GenPolygon p, Vector2 offsetFromPolyCenter)
+    public TAspect GetAspectAtPoint(GenPolygon p, Vector2 offsetFromPolyCenter, Data data)
     {
+        var tris = data.GetDomain<PlanetDomain>().TerrainTris;
+
         for (int i = 0; i < ByPriority.Count; i++)
         {
-            if (Holders[ByPriority[i]].Contains(p, offsetFromPolyCenter)) 
+            if (tris.GetTris(ByPriority[i]).Contains(p, offsetFromPolyCenter)) 
                 return ByPriority[i];
         }
         if (p.IsWater())
@@ -86,7 +97,7 @@ public abstract class TerrainAspectManager<TAspect> where TAspect: TerrainAspect
             unions.SelectMany(u => u).ToList().ForEach(p =>
             {
                 var tris = aspect.TriBuilder.BuildTrisForPoly(p, data);
-                AddTris(aspect, p, tris);
+                AddTris(aspect, p, tris, data);
             });
         }
     }
@@ -99,12 +110,12 @@ public abstract class TerrainAspectManager<TAspect> where TAspect: TerrainAspect
         {
             var tris = aspect.TriBuilder.BuildTrisForPoly(p, data);
             triCount += tris.Count;
-            AddTris(aspect, p, tris);
+            AddTris(aspect, p, tris, data);
         });
     }
-    public void AddTris(TAspect aspect, GenPolygon p, List<Triangle> trisRel)
+    public void AddTris(TAspect aspect, GenPolygon p, List<Triangle> trisRel, Data data)
     {
         if (trisRel == null || trisRel.Count == 0) return;
-        Holders[aspect].AddTris(p, trisRel);
+        data.GetDomain<PlanetDomain>().TerrainTris.GetTris(aspect).AddTris(p, trisRel);
     }
 }

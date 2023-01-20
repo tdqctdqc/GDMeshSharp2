@@ -24,8 +24,8 @@ public class VegetationManager : TerrainAspectManager<Vegetation>
         0f, Colors.Black, "Barren", null);
 
 
-    public VegetationManager() 
-        : base(Barren, Barren, new List<Vegetation>{Swamp, Forest, Grassland, Desert})
+    public VegetationManager(CreateWriteKey key, IDDispenser id, Data data) 
+        : base(id, key, Barren, Barren, new List<Vegetation>{Swamp, Forest, Grassland, Desert}, data)
     {
         
     }

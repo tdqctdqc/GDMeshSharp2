@@ -8,7 +8,6 @@ public class WorldData : Data
     public Vector2 Dimensions { get; private set; }
     public List<GenMass> Masses { get; private set; }
     public List<GenPlate> Plates { get; private set; }
-    public List<GenCell> Cells { get; private set; }
     public List<GenContinent> Continents { get; private set; }
     public List<FaultLine> FaultLines { get; private set; }
     public LandformManager Landforms { get; private set; }
@@ -22,12 +21,14 @@ public class WorldData : Data
         AddDomain(PlanetDomain);
         Masses = new List<GenMass>();
         Plates = new List<GenPlate>();
-        Cells = new List<GenCell>();
         Continents = new List<GenContinent>();
         FaultLines = new List<FaultLine>();
-        Landforms = new LandformManager();
-        Vegetation = new VegetationManager();
         Locations = new LocationManager();
         LandSea = new LandSeaManager();
+    }
+    public void Setup(CreateWriteKey key, IDDispenser id)
+    {
+        Landforms = new LandformManager(key, id, this);
+        Vegetation = new VegetationManager(key, id, this);
     }
 }

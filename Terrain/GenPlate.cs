@@ -29,7 +29,7 @@ public class GenPlate : ISuper<GenPlate, GenCell>
         Cells.Add(c);
         c.SetPlate(this);
         NeighboringCells.Remove(c);
-        var border = c.Neighbors.Except(Cells);
+        var border = c.Neighbors.Refs.Except(Cells);
         foreach (var cell in border)
         {
             NeighboringCells.Add(cell);
@@ -55,9 +55,9 @@ public class GenPlate : ISuper<GenPlate, GenCell>
     {
         var borderCellPolys = this
             .GetBorderElements()
-            .SelectMany(c => c.PolyGeos);
+            .SelectMany(c => c.PolyGeos.Refs);
         var borderPolys = GenerationUtility
-            .GetBorderElements(borderCellPolys, p => p.GeoNeighbors.Refs, p => p.Cell.Plate != this);
+            .GetBorderElements(borderCellPolys, p => p.GeoNeighbors.Refs, p => p.Cell.Ref.Plate != this);
         return borderPolys;
     }
     
@@ -65,17 +65,17 @@ public class GenPlate : ISuper<GenPlate, GenCell>
     {
         var borderCellPolys = this
             .GetBorderElements()
-            .SelectMany(c => c.PolyGeos);
+            .SelectMany(c => c.PolyGeos.Refs);
         var borderPolys = GenerationUtility
-            .GetBorderElements(borderCellPolys, p => p.GeoNeighbors.Refs, n => n.Cell.Plate == aPlate);
+            .GetBorderElements(borderCellPolys, p => p.GeoNeighbors.Refs, n => n.Cell.Ref.Plate == aPlate);
         var commonPolyBorders = GenerationUtility.GetOrderedBorderPairs(borderPolys, c => c.GeoNeighbors.Refs,
-            c => c.Cell.Plate == aPlate);
+            c => c.Cell.Ref.Plate == aPlate);
         
         return commonPolyBorders;
     }
     
     IReadOnlyCollection<GenPlate> ISuper<GenPlate, GenCell>.Neighbors => Neighbors;
-    IReadOnlyCollection<GenCell> ISuper<GenPlate, GenCell>.GetSubNeighbors(GenCell cell) => cell.Neighbors;
+    IReadOnlyCollection<GenCell> ISuper<GenPlate, GenCell>.GetSubNeighbors(GenCell cell) => cell.Neighbors.Refs;
     GenPlate ISuper<GenPlate, GenCell>.GetSubSuper(GenCell cell) => cell.Plate;
     IReadOnlyCollection<GenCell> ISuper<GenPlate, GenCell>.Subs => Cells;
 }

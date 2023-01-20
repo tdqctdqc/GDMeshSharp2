@@ -18,9 +18,19 @@ public class Data
         _domains = new Dictionary<Type, Domain>();
         _domains.Add(typeof(BaseDomain), new BaseDomain(this));
     }
-    
+    public void AddEntities(IReadOnlyList<Entity> ts, Type domainType, StrongWriteKey key)
+    {
+        foreach (var entity in ts)
+        {
+            AddEntity(entity, domainType, key);
+        }
+    }
     public void AddEntity(Entity e, Type domainType, StrongWriteKey key)
     {
+        if (Entities.ContainsKey(e.Id))
+        {
+            GD.Print($"trying to overwrite ${Entities[e.Id].GetType().ToString()} with {e.GetType().ToString()}");
+        }
         Entities.Add(e.Id, e);
         var repo = _domains[domainType].Repos[e.GetType()];
         repo.AddEntity(e, key);

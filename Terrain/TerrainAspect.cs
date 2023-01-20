@@ -10,5 +10,10 @@ public abstract class TerrainAspect
     public abstract ITriBuilder TriBuilder { get; protected set; }
     public abstract bool Allowed(GenPolygon poly, WorldData data);
     public abstract Color Color { get; protected set; }
-    // public abstract bool Passes(GeologyPolygon p);
+    // public TerrainTriHolder TriHolder { get; private set; }
+
+    public TerrainAspect()
+    {
+        // TriHolder = new TerrainTriHolder();
+    }
 }

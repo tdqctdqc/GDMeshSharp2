@@ -5,10 +5,10 @@ using Godot;
 
 public class RegimeTerritory : Super<RegimeTerritory, GenPolygon>
 {
-    public RegimeGen RegimeGen { get; private set; }
-    public RegimeTerritory(RegimeGen regimeGen) : base()
+    public Regime Regime { get; private set; }
+    public RegimeTerritory(Regime regime) : base()
     {
-        RegimeGen = regimeGen;
+        Regime = regime;
     }
     protected override IReadOnlyCollection<GenPolygon> GetSubNeighbors(GenPolygon sub)
     {
@@ -16,10 +16,11 @@ public class RegimeTerritory : Super<RegimeTerritory, GenPolygon>
     }
     protected override RegimeTerritory GetSubSuper(GenPolygon sub)
     {
-        return sub.RegimeGen != null ? sub.RegimeGen.Territory : null;
+        return sub.Regime != null ? sub.Regime.Territory : null;
     }
     protected override void SetSubSuper(GenPolygon sub, RegimeTerritory super)
     {
-        sub.Set(nameof(GenPolygon.RegimeGen), super.RegimeGen, new CreateWriteKey(null));
+        //todo fix!!
+        sub.Set(nameof(GenPolygon.Regime), super.Regime, new CreateWriteKey(null));
     }
 }
