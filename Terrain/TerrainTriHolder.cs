@@ -7,7 +7,7 @@ public sealed class TerrainTriHolder : Entity
 {
     public Dictionary<int, List<Triangle>> Tris { get; private set; }
     public string TerrainAspectName { get; private set; }
-    public bool Contains(Polygon p, Vector2 offsetFromPolyCenter)
+    public bool Contains(MapPolygon p, Vector2 offsetFromPolyCenter)
     {
         return Tris[p.Id].Any(t => t.PointInsideTriangle(offsetFromPolyCenter));
     }
@@ -22,17 +22,23 @@ public sealed class TerrainTriHolder : Entity
         TerrainAspectName = aspect.Name;
         Tris = tris;
     }
-    public void AddTri(Polygon p, Triangle tri)
+    public void AddTri(MapPolygon p, Triangle tri)
     {
         //todo make procedure
         if(Tris.ContainsKey(p.Id) == false) Tris.Add(p.Id, new List<Triangle>());
         Tris[p.Id].Add(tri);
     }
-    public void AddTris(Polygon p, List<Triangle> tris)
+    public void AddTris(MapPolygon p, List<Triangle> tris)
     {
         //todo make procedure
         if(Tris.ContainsKey(p.Id) == false) Tris.Add(p.Id, new List<Triangle>());
         Tris[p.Id].AddRange(tris);
+    }
+
+    public List<Triangle> GetPolyTris(MapPolygon p)
+    {
+        if (Tris.ContainsKey(p.Id)) return Tris[p.Id];
+        return null;
     }
     private static TerrainTriHolder DeserializeConstructor(string json)
     {

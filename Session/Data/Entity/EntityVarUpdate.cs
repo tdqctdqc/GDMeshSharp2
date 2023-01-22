@@ -13,7 +13,7 @@ public sealed class EntityVarUpdate : IUpdate
     public static EntityVarUpdate Encode<TValue>(string fieldName, int entityId, TValue newVal, HostWriteKey key)
     {
         return new EntityVarUpdate(fieldName, entityId,
-            System.Text.Json.JsonSerializer.Serialize<TValue>(newVal));
+            Serializer.Serialize<TValue>(newVal));
     }
     private EntityVarUpdate(string fieldName, int entityId, string newVal)
     {
@@ -32,7 +32,7 @@ public sealed class EntityVarUpdate : IUpdate
     }
     public static void DeserializeAndEnact(string json, ServerWriteKey key)
     {
-        var list = System.Text.Json.JsonSerializer.Deserialize<List<string>>(json);
+        var list = Serializer.Deserialize<List<string>>(json);
         var update = new EntityVarUpdate(list[0], list[1].ToInt(), list[2]);
         var entity = key.Data[update.EntityId];
         var meta = entity.GetMeta();

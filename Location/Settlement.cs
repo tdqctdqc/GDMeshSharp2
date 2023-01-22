@@ -5,10 +5,10 @@ using Godot;
 
 public sealed class Settlement : Location
 {
-    public GenPolygon Poly { get; private set; }
+    public MapPolygon Poly { get; private set; }
     public float Size { get; private set; }
 
-    public Settlement(int id, CreateWriteKey key, GenPolygon poly, float size) : base(id, key)
+    public Settlement(int id, CreateWriteKey key, MapPolygon poly, float size) : base(id, key)
     {
         Poly = poly;
         Size = size;

@@ -1,12 +1,10 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://Client/GameClient/GameUi.cs" type="Script" id=1]
+[ext_resource path="res://Client/MapDisplayOptionsUi/MapDisplayOptionsUi.tscn" type="PackedScene" id=2]
 
-[node name="Ui" type="Control"]
+[node name="Ui" type="CanvasLayer"]
 script = ExtResource( 1 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
 margin_right = 208.0
@@ -26,3 +24,9 @@ margin_top = 13.0
 margin_right = 207.0
 margin_bottom = 27.0
 text = "Host Or Client"
+
+[node name="MapDisplayOptionsUi" parent="." instance=ExtResource( 2 )]
+margin_left = 5.0
+margin_top = 61.0
+margin_right = 238.0
+margin_bottom = 661.0

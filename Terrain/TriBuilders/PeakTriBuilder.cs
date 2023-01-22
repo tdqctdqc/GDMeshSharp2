@@ -5,18 +5,18 @@ using Godot;
 
 public class PeakTriBuilder : ITriBuilder
 {
-    private Func<GenPolygon, bool> _checkNeighborStrong;
+    private Func<MapPolygon, bool> _checkNeighborStrong;
 
-    public PeakTriBuilder(Func<GenPolygon, bool> checkNeighborStrong)
+    public PeakTriBuilder(Func<MapPolygon, bool> checkNeighborStrong)
     {
         _checkNeighborStrong = checkNeighborStrong;
     }
 
-    public List<Triangle> BuildTrisForPoly(GenPolygon p, WorldData data)
+    public List<Triangle> BuildTrisForPoly(MapPolygon p, WorldData data)
     {
-        var strongNeighbors = p.GeoNeighbors.Refs.Where(n => _checkNeighborStrong(p));
+        var strongNeighbors = p.Neighbors.Refs().Where(n => _checkNeighborStrong(p));
                     
-        var tris = strongNeighbors.SelectMany(n => p.GetPolyBorder(n).GetSegsRel(p)
+        var tris = strongNeighbors.SelectMany(n => p.GetBorder(n, data).GetSegsRel(p)
             .Select(s => new Triangle(s.From * .5f, s.To * .5f, Vector2.Zero))).ToList();
         return tris;
     }

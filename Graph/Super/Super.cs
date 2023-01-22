@@ -11,13 +11,13 @@ public abstract class Super<TSuper, TSub> : ISuper<TSuper, TSub> where TSuper : 
     protected abstract IReadOnlyCollection<TSub> GetSubNeighbors(TSub sub);
     protected abstract TSuper GetSubSuper(TSub sub);
     protected abstract void SetSubSuper(TSub sub, TSuper super);
-    public Dictionary<TSub, int> NeighboringSubsAdjCount { get; private set; }
+    // public Dictionary<TSub, int> NeighboringSubsAdjCount { get; private set; }
 
     public Super()
     {
         Subs = new HashSet<TSub>();
         NeighboringSubs = new HashSet<TSub>();
-        NeighboringSubsAdjCount = new Dictionary<TSub, int>();
+        // NeighboringSubsAdjCount = new Dictionary<TSub, int>();
     }
     public void AddSub(TSub sub)
     {
@@ -30,18 +30,26 @@ public abstract class Super<TSuper, TSub> : ISuper<TSuper, TSub> where TSuper : 
         foreach (var cell in border)
         {
             NeighboringSubs.Add(cell);
-            if (NeighboringSubsAdjCount.ContainsKey(cell) == false)
-            {
-                NeighboringSubsAdjCount.Add(cell, 0);
-            }
-            NeighboringSubsAdjCount[cell]++;
+            // if (NeighboringSubsAdjCount.ContainsKey(cell) == false)
+            // {
+            //     NeighboringSubsAdjCount.Add(cell, 0);
+            // }
+            // NeighboringSubsAdjCount[cell]++;
         }
     }
     
     
     protected void RemoveSub(TSub sub)
     {
-        throw new NotImplementedException();
+        Subs.Remove(sub);
+        var ns = GetSubNeighbors(sub);
+        foreach (var n in ns)
+        {
+            if (GetSubNeighbors(n).Any(nn => Subs.Contains(nn)) == false)
+            {
+                NeighboringSubs.Remove(n);
+            }
+        }
     }
     public void SetNeighbors()
     {
@@ -50,7 +58,6 @@ public abstract class Super<TSuper, TSub> : ISuper<TSuper, TSub> where TSuper : 
     
     TSuper ISuper<TSuper, TSub>.GetSubSuper(TSub sub) => GetSubSuper(sub);
     IReadOnlyCollection<TSub> ISuper<TSuper, TSub>.GetSubNeighbors(TSub sub) => GetSubNeighbors(sub);
-
     IReadOnlyCollection<TSuper> ISuper<TSuper, TSub>.Neighbors => Neighbors;
     IReadOnlyCollection<TSub> ISuper<TSuper, TSub>.Subs => Subs;
 }

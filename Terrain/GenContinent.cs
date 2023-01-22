@@ -26,7 +26,7 @@ public class GenContinent : ISuper<GenContinent, GenMass>
         Drift = Vector2.Left.Rotated(Game.I.Random.RandfRange(0f, 2f * Mathf.Pi));
         AddMass(seed);
     }
-    public GenPolygon GetSeedPoly() => Seed.GetSeedPoly();
+    public MapPolygon GetSeedPoly() => Seed.GetSeedPoly();
 
     public void AddMass(GenMass c)
     {

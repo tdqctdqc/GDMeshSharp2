@@ -60,9 +60,9 @@ public class HostServer : Node, IServer
 
     private void BroadcastUpdates()
     {
-        var updatesJson = System.Text.Json.JsonSerializer.Serialize(_queuedUpdates.Select(u => u.Serialize()));
-        var updateTypesJson = System.Text.Json.JsonSerializer.Serialize(_queuedUpdateTypes);
-        Rpc(nameof(ClientServer.ReceiveUpdates), updatesJson, updateTypesJson);
+        var updatesJson = Serializer.Serialize(_queuedUpdates.Select(u => u.Serialize()));
+        var updateTypesJson = Serializer.Serialize(_queuedUpdateTypes);
+        Rpc(nameof(RemoteServer.ReceiveUpdates), updatesJson, updateTypesJson);
         _queuedUpdates.Clear();
         _queuedUpdateTypes.Clear();
     }
@@ -70,14 +70,18 @@ public class HostServer : Node, IServer
     {
         _clients.Add(id);
         GD.Print("peer " + id + " connected");
-        RpcId(id, nameof(ClientServer.OnConnectionSucceeded));
+        RpcId(id, nameof(RemoteServer.OnConnectionSucceeded));
+        
+        
         var stateTransfer = StateTransferUpdate.Encode(_key);
         var updateJsons = new List<string> {stateTransfer.Serialize()};
-        var updateJsonsString = System.Text.Json.JsonSerializer.Serialize(updateJsons);
+        var updateJsonsString = Serializer.Serialize(updateJsons);
         var updateTypes = new List<string> {StateTransferUpdate.UpdateType};
-        var updateTypesString = System.Text.Json.JsonSerializer.Serialize(updateTypes);
+        var updateTypesString = Serializer.Serialize(updateTypes);
         
-        RpcId(id, nameof(ClientServer.ReceiveUpdates), updateJsonsString, updateTypesString);
+        GD.Print("sending state transfer");
+        RpcId(id, nameof(RemoteServer.ReceiveStateTransfer), new object[]{stateTransfer.Serialize()});
+        
     }
     private void PeerDisconnected(int id)
     {

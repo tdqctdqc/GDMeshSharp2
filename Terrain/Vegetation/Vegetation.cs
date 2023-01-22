@@ -21,7 +21,7 @@ public class Vegetation : TerrainAspect
         Name = name;
     }
 
-    public override bool Allowed(GenPolygon p, WorldData data)
+    public override bool Allowed(MapPolygon p, WorldData data)
     {
         var pLandform = data.Landforms.GetAspectFromPoly(p, data);
         return AllowedLandforms.Contains(pLandform) && p.Moisture >= MinMoisture;

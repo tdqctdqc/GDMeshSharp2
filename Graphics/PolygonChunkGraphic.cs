@@ -3,19 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class RegimeTerritoryGraphic : Node2D
+public class PolygonChunkGraphic : Node2D
 {
-    public static Node2D Get(GenPlate plate, WorldData data)
+    public void Setup(List<MapPolygon> polys, Data data, Func<MapPolygon, Color> getColor)
     {
-        var polys = plate.Cells.SelectMany(c => c.PolyGeos).ToList();
+        var first = polys.First();
         var tris = new List<Vector2>();
         var colors = new List<Color>();
         for (var i = 0; i < polys.Count; i++)
         {
             var p = polys[i];
-            var color = p.Regime != null ? new Color(p.Regime.Ref.PrimaryColor, .5f) : Colors.Transparent;
-            
-            var polyTriPoints = p.GetTrisRel().Select(v => v + plate.GetSeedPoly().GetOffsetTo(p, data.Dimensions.x));
+            var color = getColor(p);
+            var polyTriPoints = p.GetTrisRel(data).Select(v => v + first.GetOffsetTo(p, data.Planet.Width));
             tris.AddRange(polyTriPoints);
             for (int j = 0; j < polyTriPoints.Count() / 3; j++)
             {
@@ -23,7 +22,6 @@ public class RegimeTerritoryGraphic : Node2D
             }
         }
         var mesh = MeshGenerator.GetMeshInstance(tris.ToList(), colors);
-        mesh.Position = plate.GetSeedPoly().Center;
-        return mesh;
+        AddChild(mesh);
     }
 }

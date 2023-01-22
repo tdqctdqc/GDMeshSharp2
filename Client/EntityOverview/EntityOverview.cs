@@ -1,5 +1,7 @@
 using Godot;
 using System;
+using System.Diagnostics;
+using System.Linq;
 
 public class EntityOverview : WindowDialog
 {
@@ -26,12 +28,22 @@ public class EntityOverview : WindowDialog
             _container.RemoveChild(_container.GetChild(0));
         }
 
+        var sw = new Stopwatch();
+        sw.Start();
+
         foreach (var keyValuePair in _data.Entities)
         {
             var entity = keyValuePair.Value;
+            var json = entity.GetMeta().Serialize(entity);
+            if (entity is MapPolygon || entity is MapPolygonBorder) continue;
+            // if (sw.ElapsedMilliseconds > 2000)
+            // {
+            //     break;
+            // }
             var entityLabel = new Label();
-            entityLabel.Text = entity.GetType().Name + " " + entity.GetMeta().Serialize(entity);
+            entityLabel.Text = entity.GetType().Name + " " + json;
             _container.AddChild(entityLabel);
         }
+        sw.Stop();
     }
 }

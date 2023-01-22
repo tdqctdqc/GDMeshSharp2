@@ -27,12 +27,12 @@ public abstract class TerrainAspectManager<TAspect>
 
         void add(TerrainAspect aspect)
         {
-            if (data.GetDomain<PlanetDomain>().TerrainTris.ByName.ContainsKey(aspect.Name)) return;
+            if (data.Planet.TerrainTris.ByName.ContainsKey(aspect.Name)) return;
             var triHolder = new TerrainTriHolder(aspect, id.GetID(), key);
             data.AddEntity(triHolder, typeof(PlanetDomain), key);
         }
     }
-    public TAspect GetAspectFromPoly(GenPolygon p, WorldData data)
+    public TAspect GetAspectFromPoly(MapPolygon p, WorldData data)
     {
         for (var i = 0; i < ByPriority.Count; i++)
         {
@@ -49,9 +49,9 @@ public abstract class TerrainAspectManager<TAspect>
         return LandDefault;
     }
 
-    public TAspect GetAspectAtPoint(GenPolygon p, Vector2 offsetFromPolyCenter, Data data)
+    public TAspect GetAspectAtPoint(MapPolygon p, Vector2 offsetFromPolyCenter, Data data)
     {
-        var tris = data.GetDomain<PlanetDomain>().TerrainTris;
+        var tris = data.Planet.TerrainTris;
 
         for (int i = 0; i < ByPriority.Count; i++)
         {
@@ -66,9 +66,9 @@ public abstract class TerrainAspectManager<TAspect>
     }
 
     
-    public Dictionary<TAspect, List<List<GenPolygon>>> GetUnions(HashSet<GenPolygon> polys, WorldData data)
+    public Dictionary<TAspect, List<List<MapPolygon>>> GetUnions(HashSet<MapPolygon> polys, WorldData data)
     {
-        var result = new Dictionary<TAspect, List<List<GenPolygon>>>();
+        var result = new Dictionary<TAspect, List<List<MapPolygon>>>();
         //todo need to allow overlaps
         for (var i = 0; i < ByPriority.Count; i++)
         {
@@ -80,16 +80,16 @@ public abstract class TerrainAspectManager<TAspect>
         return result;
     }
 
-    private List<List<GenPolygon>> GetAspectUnion(TAspect aspect, WorldData data)
+    private List<List<MapPolygon>> GetAspectUnion(TAspect aspect, WorldData data)
     {
-        var polys = data.PlanetDomain.GeoPolygons.Entities.Where(p => aspect.Allowed(p, data));
-        return UnionFind<GenPolygon, float>.DoUnionFind(polys.ToList(), 
+        var polys = data.Planet.Polygons.Entities.Where(p => aspect.Allowed(p, data));
+        return UnionFind<MapPolygon, float>.DoUnionFind(polys.ToList(), 
             (p1, p2) => p1.HasNeighbor(p2),
-            poly => poly.GeoNeighbors.Refs
+            poly => poly.Neighbors.Refs()
         );
     }
     
-    public void BuildTris(HashSet<GenPolygon> affectedPolys, WorldData data)
+    public void BuildTris(HashSet<MapPolygon> affectedPolys, WorldData data)
     {
         var aspectUnions = GetUnions(affectedPolys, data);
         foreach (var keyValuePair in aspectUnions)
@@ -105,10 +105,10 @@ public abstract class TerrainAspectManager<TAspect>
             });
         }
     }
-    public void BuildTrisForAspect(TAspect aspect, WorldData data, List<GenPolygon> affectedPolys = null)
+    public void BuildTrisForAspect(TAspect aspect, WorldData data, List<MapPolygon> affectedPolys = null)
     {
         if (aspect == LandDefault || aspect == WaterDefault) return;
-        if (affectedPolys == null) affectedPolys = data.PlanetDomain.GeoPolygons.Entities.Where(p => aspect.Allowed(p, data)).ToList();
+        if (affectedPolys == null) affectedPolys = data.Planet.Polygons.Entities.Where(p => aspect.Allowed(p, data)).ToList();
         int triCount = 0;
         affectedPolys.ForEach(p =>
         {
@@ -117,9 +117,9 @@ public abstract class TerrainAspectManager<TAspect>
             AddTris(aspect, p, tris, data);
         });
     }
-    public void AddTris(TAspect aspect, GenPolygon p, List<Triangle> trisRel, Data data)
+    public void AddTris(TAspect aspect, MapPolygon p, List<Triangle> trisRel, Data data)
     {
         if (trisRel == null || trisRel.Count == 0) return;
-        data.GetDomain<PlanetDomain>().TerrainTris.GetTris(aspect).AddTris(p, trisRel);
+        data.Planet.TerrainTris.GetTris(aspect).AddTris(p, trisRel);
     }
 }

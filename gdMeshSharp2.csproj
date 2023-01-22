@@ -10,7 +10,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Graph\Superset" />
-    <Folder Include="NetworkEngine" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Client\ExampleClient\**" />

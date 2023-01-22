@@ -7,12 +7,16 @@ using DelaunatorNetStd;
 public class VoronoiGenerator
 {
     private static Vector2 _dimensions;
-    public static List<TPolygon> GetVoronoiPolygons<TPolygon>(List<Vector2> points, Vector2 dimensions, 
+    private static IDDispenser _id;
+    private static Data _data;
+    public static List<MapPolygon> GetVoronoiPolygons(List<Vector2> points, Vector2 dimensions, 
         bool leftRightWrap, float polySize,
-        Func<int, Vector2, TPolygon> constructor,
+        Func<int, Vector2, MapPolygon> constructor,
+        IDDispenser id,
         GenWriteKey key)
-        where TPolygon : Polygon
     {
+        _data = key.Data;
+        _id = id;
         _dimensions = dimensions;
         var edgePoints = AddBoundaryPoints(points, dimensions, polySize, leftRightWrap);
         var leftRightPoints = edgePoints.leftEdgePoints.Union(edgePoints.rightEdgePoints);
@@ -20,11 +24,11 @@ public class VoronoiGenerator
         var delaunayPoints = points.Select(p => new DelaunayTriangulator.DelaunatorPoint(p)).ToList();
         var d = new Delaunator(delaunayPoints.ToArray());
         var voronoiCells = d.GetVoronoiCells().ToList();
-        var polyIndexDic = new Dictionary<int, Polygon>();
-        var polyCenterDic = new Dictionary<Vector2, Polygon>();
-        var polygons = new HashSet<TPolygon>();
-        var lrByAltitude = new Dictionary<float, Polygon>();
-        var lrPolyPairs = new Dictionary<Polygon, Polygon>();
+        var polyIndexDic = new Dictionary<int, MapPolygon>();
+        var polyCenterDic = new Dictionary<Vector2, MapPolygon>();
+        var polygons = new HashSet<MapPolygon>();
+        var lrByAltitude = new Dictionary<float, MapPolygon>();
+        var lrPolyPairs = new Dictionary<MapPolygon, MapPolygon>();
         for (var i = 0; i < voronoiCells.Count; i++)
         {
             var voronoiCell = voronoiCells[i];
@@ -56,7 +60,7 @@ public class VoronoiGenerator
         return polygons.ToList();
     }
     
-    private static void AddEdges(Delaunator d, Dictionary<int, Polygon> polyDic, GenWriteKey key)
+    private static void AddEdges(Delaunator d, Dictionary<int, MapPolygon> polyDic, GenWriteKey key)
     {
         d.ForEachVoronoiEdge(edge =>
         {
@@ -69,20 +73,21 @@ public class VoronoiGenerator
                 var poly2 = polyDic[commonPoints.ElementAt(1)];
                 var borderPoints = new List<LineSegment> {new LineSegment(edge.P.GetIntV2(), edge.Q.GetIntV2()) };
                 
-                var border = new GeoPolygonBorder(poly1, poly2, borderPoints);
+                var border = new MapPolygonBorder(_id.GetID(), poly1, poly2, borderPoints, key);
+                _data.AddEntity(border, typeof(PlanetDomain), key);
                 poly1.AddNeighbor(poly2, border, key);
                 poly2.AddNeighbor(poly1, border, key);
             }
         });
     }
-    private static HashSet<Polygon> MergeLeftRightPolys(IEnumerable<Polygon> polygons, Dictionary<Polygon, Polygon> lrPolyPairs, 
-        Dictionary<Vector2, Polygon> polyDic, GenWriteKey key)
+    private static HashSet<MapPolygon> MergeLeftRightPolys(IEnumerable<MapPolygon> polygons, Dictionary<MapPolygon, MapPolygon> lrPolyPairs, 
+        Dictionary<Vector2, MapPolygon> polyDic, GenWriteKey key)
     {
         var firstLeft = polyDic[Vector2.Zero];
         var lastLeft = polyDic[new Vector2(0f, _dimensions.y)];
         var firstRight = polyDic[new Vector2(_dimensions.x, 0f)];
         var lastRight = polyDic[new Vector2(_dimensions.x, _dimensions.y)];
-        var rights = new HashSet<Polygon>();
+        var rights = new HashSet<MapPolygon>();
         bindPair(firstLeft, firstRight);
         foreach (var keyValuePair in lrPolyPairs)
         {
@@ -91,7 +96,7 @@ public class VoronoiGenerator
             bindPair(poly1, poly2);
         }
 
-        void bindPair(Polygon poly1, Polygon poly2)
+        void bindPair(MapPolygon poly1, MapPolygon poly2)
         {
             var left = poly1.Center.x < poly2.Center.x
                 ? poly1
@@ -103,13 +108,13 @@ public class VoronoiGenerator
             var rightN = right.Neighbors.Count;
             for (var i = 0; i < right.Neighbors.Count; i++)
             {
-                var neighbor = right.Neighbors[i];
-                var border = right.GetPolyBorder(neighbor);
-                var rightBorderPoints = border.GetPointsRel(right);
-                var nBorderPoints = border.GetPointsRel(neighbor);
+                var neighbor = right.Neighbors.Refs().ElementAt(i);
+                var oldBorder = right.GetBorder(neighbor, _data);
+                var rightBorderPoints = oldBorder.GetPointsRel(right);
+                var nBorderPoints = oldBorder.GetPointsRel(neighbor);
                 var leftBorderPoints = rightBorderPoints.Select(v => v).Reverse().ToList();
-                var newBorder = new GeoPolygonBorder(left, leftBorderPoints.GetLineSegments().ToList(), 
-                    neighbor, nBorderPoints.GetLineSegments().ToList());
+                var newBorder = MapPolygonBorder.ConstructEdgeCase(_id.GetID(), left, leftBorderPoints.GetLineSegments().ToList(), 
+                    neighbor, nBorderPoints.GetLineSegments().ToList(), key);
                 left.AddNeighbor(neighbor, newBorder, key);
                 neighbor.AddNeighbor(left, newBorder, key);
                 neighbor.RemoveNeighbor(right, key);
@@ -120,7 +125,7 @@ public class VoronoiGenerator
         return rights;
     }
 
-    private static void ConnectEdgePolys(Dictionary<Vector2, Polygon> polyDic,
+    private static void ConnectEdgePolys(Dictionary<Vector2, MapPolygon> polyDic,
         List<Vector2> leftPoints, List<Vector2> rightPoints, List<Vector2> topPoints, 
         List<Vector2> bottomPoints, bool leftRightWrap, GenWriteKey key)
     {
@@ -135,8 +140,8 @@ public class VoronoiGenerator
         var lastRight = polyDic[new Vector2(_dimensions.x, _dimensions.y)];
         var lastLeft = polyDic[new Vector2(0f, _dimensions.y)];
         
-        var firstRightNOld = firstRight.Neighbors.ToList();
-        var lastRightNOld = lastRight.Neighbors.ToList();
+        var firstRightNOld = firstRight.Neighbors.Refs().ToList();
+        var lastRightNOld = lastRight.Neighbors.Refs().ToList();
         
         topPoints.Add(rightPoints[0]);
         bottomPoints.Add(rightPoints.Last());
@@ -145,23 +150,23 @@ public class VoronoiGenerator
 
         if(leftRightWrap)
         {
-            var firstRightNew = firstRight.Neighbors.Except(firstRightNOld).ElementAt(0);
-            var firstRightCoords = firstRight.GetPolyBorder(firstRightNew).GetPointsRel(firstRight);
-            var firstRightNCoords = firstRight.GetPolyBorder(firstRightNew).GetPointsRel(firstRightNew);
+            var firstRightNew = firstRight.Neighbors.Refs().Except(firstRightNOld).ElementAt(0);
+            var firstRightCoords = firstRight.GetBorder(firstRightNew, _data).GetPointsRel(firstRight);
+            var firstRightNCoords = firstRight.GetBorder(firstRightNew, _data).GetPointsRel(firstRightNew);
             
-            var lastRightNew = lastRight.Neighbors.Except(lastRightNOld).ElementAt(0);
-            var lastRightCoords = lastRight.GetPolyBorder(lastRightNew).GetPointsRel(lastRight);
-            var lastRightNCoords = lastRight.GetPolyBorder(lastRightNew).GetPointsRel(lastRightNew);
+            var lastRightNew = lastRight.Neighbors.Refs().Except(lastRightNOld).ElementAt(0);
+            var lastRightCoords = lastRight.GetBorder(lastRightNew, _data).GetPointsRel(lastRight);
+            var lastRightNCoords = lastRight.GetBorder(lastRightNew, _data).GetPointsRel(lastRightNew);
 
 
-            var firstBorder = new GeoPolygonBorder(firstLeft, firstRightCoords.GetLineSegments().ToList(), 
-                firstRightNew, firstRightNCoords.GetLineSegments().ToList());
+            var firstBorder = MapPolygonBorder.ConstructEdgeCase(_id.GetID(), firstLeft, firstRightCoords.GetLineSegments().ToList(), 
+                firstRightNew, firstRightNCoords.GetLineSegments().ToList(), key);
             firstLeft.AddNeighbor(firstRightNew, firstBorder, key);
             firstRightNew.AddNeighbor(firstLeft, firstBorder, key);
             firstRightNew.RemoveNeighbor(firstRight, key);
             
-            var lastBorder = new GeoPolygonBorder(lastLeft, lastRightCoords.GetLineSegments().ToList(),
-                lastRightNew, lastRightNCoords.GetLineSegments().ToList());
+            var lastBorder = MapPolygonBorder.ConstructEdgeCase(_id.GetID(), lastLeft, lastRightCoords.GetLineSegments().ToList(),
+                lastRightNew, lastRightNCoords.GetLineSegments().ToList(), key);
             lastLeft.AddNeighbor(lastRightNew, lastBorder, key);
             lastRightNew.AddNeighbor(lastLeft, lastBorder, key);
             lastRightNew.RemoveNeighbor(lastRight, key);
@@ -208,25 +213,25 @@ public class VoronoiGenerator
     }
 
     private static void LinkMergeEdgePolys(List<Vector2> points,
-        Dictionary<Vector2, Polygon> polyDic, bool lr, GenWriteKey key)
+        Dictionary<Vector2, MapPolygon> polyDic, bool lr, GenWriteKey key)
     {
         for (var i = 0; i < points.Count - 1; i++)
         {
             var poly = polyDic[points[i]];
             var next = polyDic[points[(i + 1)]];
-            var polyBorderPoints = poly.GetNeighborBorders()
+            var polyBorderPoints = poly.GetNeighborBorders(_data)
                 .SelectMany(nb => nb.GetPointsAbs())
                 .Distinct().ToList();
             
-            var nextBorderPoints = next.GetNeighborBorders()
+            var nextBorderPoints = next.GetNeighborBorders(_data)
                 .SelectMany(nb => nb.GetPointsAbs())
                 .Distinct().ToList();
             
             var shared = polyBorderPoints.Intersect(nextBorderPoints).ToList();
             if (shared.Count == 2)
             {
-                var border = new GeoPolygonBorder(poly, shared.Select(p => p - poly.Center).GetLineSegments().ToList(), 
-                    next, shared.Select(p => p - next.Center).GetLineSegments().ToList());
+                var border = MapPolygonBorder.ConstructEdgeCase(_id.GetID(), poly, shared.Select(p => p - poly.Center).GetLineSegments().ToList(), 
+                    next, shared.Select(p => p - next.Center).GetLineSegments().ToList(), key);
                 poly.AddNeighbor(next, border, key);
                 next.AddNeighbor(poly, border, key);
             }
@@ -239,7 +244,7 @@ public class VoronoiGenerator
         
     }
     private static void LinkEdgePolys(List<Vector2> points, 
-        Dictionary<Vector2, Polygon> polyDic, Vector2 anchor, float dim, bool lr,
+        Dictionary<Vector2, MapPolygon> polyDic, Vector2 anchor, float dim, bool lr,
         GenWriteKey key)
     {
         if(points[0] != anchor) points.Insert(0, anchor);
@@ -264,11 +269,11 @@ public class VoronoiGenerator
         {
             var poly = polyDic[points[i]];
             var next = polyDic[points[i + 1]];
-            var polyBorderPoints = poly.GetNeighborBorders()
+            var polyBorderPoints = poly.GetNeighborBorders(_data)
                 .SelectMany(nb => nb.GetPointsRel(poly))
                 .Select(p => p + poly.Center).Distinct().ToList();
             
-            var nextBorderPoints = next.GetNeighborBorders()
+            var nextBorderPoints = next.GetNeighborBorders(_data)
                 .SelectMany(nb => nb.GetPointsRel(next))
                 .Select(p => p + next.Center).Distinct().ToList();
             
@@ -278,8 +283,8 @@ public class VoronoiGenerator
                 var joinPoint = shared.ElementAt(0);
                 var newPoint = getNewPoint(joinPoint);
                 var borderPoints = new List<Vector2> {newPoint, joinPoint};
-                var border = new GeoPolygonBorder(poly, borderPoints.Select(p => p - poly.Center).GetLineSegments().ToList(),
-                    next, borderPoints.Select(p => p - next.Center).GetLineSegments().ToList());
+                var border = MapPolygonBorder.ConstructEdgeCase(_id.GetID(), poly, borderPoints.Select(p => p - poly.Center).GetLineSegments().ToList(),
+                    next, borderPoints.Select(p => p - next.Center).GetLineSegments().ToList(), key);
                 poly.AddNeighbor(next, border, key);
                 next.AddNeighbor(poly, border, key);
             }
@@ -290,12 +295,12 @@ public class VoronoiGenerator
         
         var anchorpoly = polyDic[anchor];
         var last = polyDic[points[points.Count - 1]];
-        var anchorBorderPoints = anchorpoly.GetNeighborBorders()
+        var anchorBorderPoints = anchorpoly.GetNeighborBorders(_data)
             .SelectMany(nb => nb.GetPointsRel(anchorpoly))
             .Select(p => p + anchor);
         
         //todo
-        var lastBorderPoints = last.GetNeighborBorders()
+        var lastBorderPoints = last.GetNeighborBorders(_data)
             .SelectMany(nb => nb.GetPointsRel(last))
             .Select(p => p + last.Center - shift);
         var sharedLast = anchorBorderPoints.Intersect(lastBorderPoints);
@@ -305,18 +310,18 @@ public class VoronoiGenerator
             var lastJoinPoint = joinPoint + shift;
             var newPoint = getNewPoint(joinPoint);
             var lastNewPoint = getLastNewPoint(joinPoint);
-            var border = new GeoPolygonBorder(anchorpoly, 
+            var border = MapPolygonBorder.ConstructEdgeCase(_id.GetID(), anchorpoly, 
                 new List<LineSegment> {new LineSegment(joinPoint - anchor, newPoint - anchor)},
-                last, new List<LineSegment> {new LineSegment(lastJoinPoint - last.Center, lastNewPoint - last.Center)});
+                last, new List<LineSegment> {new LineSegment(lastJoinPoint - last.Center, lastNewPoint - last.Center)}, key);
             last.AddNeighbor(anchorpoly, border, key);
             anchorpoly.AddNeighbor(last, border, key);
         }
     }
 
-    private static void CloseOffCorner(Polygon poly)
+    private static void CloseOffCorner(MapPolygon poly)
     {
         var singlePoints = new HashSet<Vector2>();
-        var borderPoints = poly.GetNeighborBorders().SelectMany(nb => nb.GetPointsAbs());
+        var borderPoints = poly.GetNeighborBorders(_data).SelectMany(nb => nb.GetPointsAbs());
         foreach (var borderPoint in borderPoints)
         {
             if (singlePoints.Contains(borderPoint)) singlePoints.Remove(borderPoint);
@@ -330,10 +335,10 @@ public class VoronoiGenerator
         }
         else throw new Exception();
     }
-    private static void CloseOffEnd(Polygon poly)
+    private static void CloseOffEnd(MapPolygon poly)
     {
         var singlePoints = new HashSet<Vector2>();
-        var borderPoints = poly.GetNeighborBorders().SelectMany(nb => nb.GetPointsRel(poly)).ToList();
+        var borderPoints = poly.GetNeighborBorders(_data).SelectMany(nb => nb.GetPointsRel(poly)).ToList();
         foreach (var borderPoint in borderPoints)
         {
             if (singlePoints.Contains(borderPoint)) singlePoints.Remove(borderPoint);

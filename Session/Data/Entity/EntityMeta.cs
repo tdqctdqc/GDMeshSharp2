@@ -14,21 +14,20 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
     public IReadOnlyDictionary<string, Type> FieldTypes => _fieldTypes;
     private Dictionary<string, Type> _fieldTypes;
     
-    //args are val, name, entityId
-    
     private Dictionary<string, Func<object, string>> _fieldSerializers; 
     private Dictionary<string, Func<T, object>> _fieldGetters; 
-    private Dictionary<string, Action<T, string>> _fieldUpdaters;
+    private Dictionary<string, Action<T, string>> _fieldDeserializeAndSetters;
     private Dictionary<string, Action<T, object>> _fieldSetters;
     private Func<string, T> _deserializer;
-
-    public void ForReference()
+    private JsonSerializerOptions _options;
+    public void ForReference(JsonSerializerOptions options)
     {
         return;
-        new EntityMeta<T>();
+        new EntityMeta<T>(options);
     }
-    public EntityMeta()
+    public EntityMeta(JsonSerializerOptions options)
     {
+        _options = options;
         GD.Print("handling entity type " + typeof(T).ToString());
 
         var entityType = typeof(T);
@@ -44,7 +43,7 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
         _fieldNames.Remove("Id");
         _fieldNames.Insert(0, "Id");
         _fieldGetters = new Dictionary<string, Func<T, object>>();
-        _fieldUpdaters = new Dictionary<string, Action<T, string>>();
+        _fieldDeserializeAndSetters = new Dictionary<string, Action<T, string>>();
         _fieldSerializers = new Dictionary<string, Func<object, string>>();
         _fieldSetters = new Dictionary<string, Action<T, object>>();
         
@@ -67,11 +66,7 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
         var getterDelg = (Func<T, TProperty>)getMi.MakeInstanceMethodDelegate(getDelType);
         _fieldGetters.Add(name, t => getterDelg(t));
         
-        Func<object, string> serialize = p =>
-        {
-            return JsonSerializer.Serialize<TProperty>((TProperty)p);
-        };
-        _fieldSerializers.Add(name, p => serialize(p));
+        _fieldSerializers.Add(name, p => Serializer.Serialize<TProperty>((TProperty)p));
         
         
         var setter = prop.GetSetMethod(true);
@@ -80,9 +75,9 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
             ReflectionExt.MakeCustomDelegateType(typeof(Action<,>), new[] {typeof(T), prop.PropertyType});
         var setterDelg = (Action<T, TProperty>) setter.MakeInstanceMethodDelegate(setDelgType);
         _fieldSetters.Add(name, (t, o) => setterDelg(t, (TProperty)o));
-        Func<string, TProperty> deserialize = (json) => JsonSerializer.Deserialize<TProperty>(json);
+        Func<string, TProperty> deserialize = (json) => Serializer.Deserialize<TProperty>(json);
         
-        _fieldUpdaters.Add(name, (entity, json) =>
+        _fieldDeserializeAndSetters.Add(name, (entity, json) =>
         {
             setterDelg(entity, deserialize(json));
         });
@@ -111,27 +106,36 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
             var json = _fieldSerializers[fieldName](field);
             jsonArray.Add(json);
         }
-
-        return jsonArray.ToJsonString();
+        
+        return jsonArray.ToJsonString(_options);
     }
     public void Initialize(Entity entity, string json)
     {
         var t = (T) entity;
-        var valJsons = System.Text.Json.JsonSerializer.Deserialize<List<string>>(json);
+        var valJsons = Serializer.Deserialize<List<string>>(json);
         
         for (int i = 0; i < valJsons.Count; i++)
         {
             var fieldName = _fieldNames[i];
-            _fieldUpdaters[fieldName].Invoke(t, valJsons[i]);
+            _fieldDeserializeAndSetters[fieldName].Invoke(t, valJsons[i]);
         }
     }
     public void UpdateEntityVar(string fieldName, Entity t, ServerWriteKey key, string newValueJson)
     {
-        _fieldUpdaters[fieldName]((T) t, newValueJson);
+        _fieldDeserializeAndSetters[fieldName]((T) t, newValueJson);
     }
 
     public void UpdateEntityVar<TValue>(string fieldName, Entity t, CreateWriteKey key, TValue newValue)
     {
         _fieldSetters[fieldName]((T) t, newValue);
+    }
+    public void SyncEntityRefs(Entity t, ServerWriteKey key)
+    {
+        foreach (var keyValuePair in _fieldGetters)
+        {
+            var field = keyValuePair.Value.Invoke((T)t);
+            if(field is IEntityRef r) r.SyncRef(key);
+            else if (field is IEntityRefCollection c) c.SyncRefs(key);
+        }
     }
 }

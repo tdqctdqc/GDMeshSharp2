@@ -23,8 +23,8 @@ public class FaultLineGraphic : Node2D
         var tris = new List<Vector2>();
         f.PolyFootprint.ForEach(p =>
         {
-            var offset = p.GetOffsetTo(Origin, data.Dimensions.x);
-            var trisRel = p.GetTrisRel().Select(v => v - offset);
+            var offset = p.GetOffsetTo(Origin, data.Planet.Width);
+            var trisRel = p.GetTrisRel(data).Select(v => v - offset);
             tris.AddRange(trisRel);
         });
         _footprint = MeshGenerator.GetMeshInstance(tris);

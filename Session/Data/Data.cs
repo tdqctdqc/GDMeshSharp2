@@ -9,14 +9,25 @@ public class Data
     public Dictionary<int, Entity> Entities { get; private set; }
     public Dictionary<int, IRepo> EntityRepos { get; private set; }
     public Entity this[int id] => Entities[id];
-    public BaseDomain BaseDomain => GetDomain<BaseDomain>();
-    
+    public BaseDomain BaseDomain { get; private set; }
+    public PlanetDomain Planet { get; private set; }
+    public SocietyDomain Society { get; private set; }
+    public LandformManager Landforms { get; private set; }
+    public VegetationManager Vegetation { get; private set; }
+
     public Data()
     {
+        Landforms = new LandformManager();
+        Vegetation = new VegetationManager();
         Entities = new Dictionary<int, Entity>();
         EntityRepos = new Dictionary<int, IRepo>();
         _domains = new Dictionary<Type, Domain>();
-        _domains.Add(typeof(BaseDomain), new BaseDomain(this));
+        BaseDomain = new BaseDomain(this);
+        AddDomain(BaseDomain);
+        Planet = new PlanetDomain(this);
+        AddDomain(Planet);
+        Society = new SocietyDomain(this);
+        AddDomain(Society);
     }
     public void AddEntities(IReadOnlyList<Entity> ts, Type domainType, StrongWriteKey key)
     {

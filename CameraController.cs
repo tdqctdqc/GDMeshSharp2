@@ -7,9 +7,6 @@ public class CameraController : Camera2D
     private float _lrScrollSpeed = .02f;
     public float XYRatio { get; private set; }
 
-    public void SetBounds(Vector2 bounds)
-    {
-    }
     public override void _Process(float delta)
     {
         var mult = 1f;

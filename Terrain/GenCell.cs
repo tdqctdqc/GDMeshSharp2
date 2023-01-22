@@ -3,38 +3,37 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public sealed class GenCell : ISuper<GenCell, GenPolygon>
+public sealed class GenCell : ISuper<GenCell, MapPolygon>
 {
-    public GenPolygon Seed { get; private set; }
+    public MapPolygon Seed { get; private set; }
     public GenPlate Plate { get; private set; }
-    public HashSet<GenPolygon> PolyGeos { get; private set; }
-    public HashSet<GenPolygon> NeighboringPolyGeos { get; private set; }
+    public HashSet<MapPolygon> PolyGeos { get; private set; }
+    public HashSet<MapPolygon> NeighboringPolyGeos { get; private set; }
     public List<GenCell> Neighbors { get; private set; }
     public Vector2 Center { get; private set; }
-    private IReadOnlyDictionary<GenPolygon, GenCell> _polyCells;
-    public GenCell(GenPolygon seed, GenWriteKey key, WorldData data)
+    private IReadOnlyDictionary<MapPolygon, GenCell> _polyCells;
+    public GenCell(MapPolygon seed, GenWriteKey key, WorldData data)
     {
         _polyCells = data.GenAuxData.PolyCells;
         Center = Vector2.Zero;
         Seed = seed;
-        PolyGeos = new HashSet<GenPolygon>();
-        NeighboringPolyGeos = new HashSet<GenPolygon>();
+        PolyGeos = new HashSet<MapPolygon>();
+        NeighboringPolyGeos = new HashSet<MapPolygon>();
         Neighbors = new List<GenCell>();
         AddPolygon(seed, key);
     }
 
-    public void SetPlate(GenPlate plate)
+    public void SetPlate(GenPlate plate, GenWriteKey key)
     {
-        if(Plate != null) throw new Exception();
         Plate = plate;
     }
-    public void AddPolygon(GenPolygon p, GenWriteKey key)
+    public void AddPolygon(MapPolygon p, GenWriteKey key)
     {
         Center = (Center * PolyGeos.Count + p.Center) / (PolyGeos.Count + 1);
         PolyGeos.Add(p);
         key.WorldData.GenAuxData.PolyCells[p] = this;
         NeighboringPolyGeos.Remove(p);
-        var newBorder = p.GeoNeighbors.Refs.Except(PolyGeos);
+        var newBorder = p.Neighbors.Refs().Except(PolyGeos);
         foreach (var borderPoly in newBorder)
         {
             NeighboringPolyGeos.Add(borderPoly);
@@ -45,14 +44,14 @@ public sealed class GenCell : ISuper<GenCell, GenPolygon>
     public void SetNeighbors(GenWriteKey key)
     {
         Neighbors = NeighboringPolyGeos
-            .Select(t => key.WorldData.GenAuxData.PolyCells[t]).ToList();
+            .Select(t => key.WorldData.GenAuxData.PolyCells[t]).Distinct().ToList();
     }
     
     
     
     
-    IReadOnlyCollection<GenCell> ISuper<GenCell, GenPolygon>.Neighbors => Neighbors;
-    IReadOnlyCollection<GenPolygon> ISuper<GenCell, GenPolygon>.GetSubNeighbors(GenPolygon poly) => poly.GeoNeighbors.Refs;
-    GenCell ISuper<GenCell, GenPolygon>.GetSubSuper(GenPolygon poly) => _polyCells[poly];
-    IReadOnlyCollection<GenPolygon> ISuper<GenCell, GenPolygon>.Subs => PolyGeos;
+    IReadOnlyCollection<GenCell> ISuper<GenCell, MapPolygon>.Neighbors => Neighbors;
+    IReadOnlyCollection<MapPolygon> ISuper<GenCell, MapPolygon>.GetSubNeighbors(MapPolygon poly) => poly.Neighbors.Refs();
+    GenCell ISuper<GenCell, MapPolygon>.GetSubSuper(MapPolygon poly) => _polyCells[poly];
+    IReadOnlyCollection<MapPolygon> ISuper<GenCell, MapPolygon>.Subs => PolyGeos;
 }

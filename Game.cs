@@ -32,7 +32,7 @@ public class Game : Node
         var session = new Session();
         _session = session;
         session.Name = "Session";   
-        session.StartAsClient();
+        session.StartAsRemote();
         AddChild(session);
     }
     public void StartHostSession(WorldData data)

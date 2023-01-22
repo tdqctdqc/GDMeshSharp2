@@ -1,20 +1,23 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 
-public class GameUi : Control
+public class GameUi : CanvasLayer
 {
     public static GameUi Get() 
         => (GameUi) ((PackedScene) GD.Load("res://Client/GameClient/GameUi.tscn")).Instance();
     
     private ButtonToken _entityOverviewBtn, _generate;
     private EntityOverview _entityOverview;
+    private MapDisplayOptionsUi _mapOptions;
     private Label _hostOrClient;
+    
     public override void _Ready()
     {
         
     }
 
-    public void Setup(bool host, Data data)
+    public void Setup(bool host, Data data, GameGraphics graphics)
     {
         _hostOrClient = (Label) FindNode("HostOrClient");
         _hostOrClient.Text = host ? "Host" : "Client";
@@ -23,5 +26,8 @@ public class GameUi : Control
         _entityOverview = EntityOverview.Get(data);
         
         AddChild(_entityOverview);
+
+        _mapOptions = (MapDisplayOptionsUi) FindNode("MapDisplayOptionsUi");
+        _mapOptions.Setup(graphics);
     }
 }

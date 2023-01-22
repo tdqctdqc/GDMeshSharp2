@@ -2,10 +2,10 @@ using Godot;
 using System;
 using System.Collections.Generic;
 
-public class ClientServer : Node, IServer
+public class RemoteServer : Node, IServer
 {
     public int NetworkId { get; private set; }
-    
+    public Action ReceivedStateTransfer { get; set; }
 
     private ServerWriteKey _key;
     private NetworkedMultiplayerENet _network;
@@ -35,8 +35,8 @@ public class ClientServer : Node, IServer
     }
     [Remote] public void ReceiveUpdates(string updatesJson, string updateTypesJson)
     {
-        var updatesJsonsList = System.Text.Json.JsonSerializer.Deserialize<List<string>>(updatesJson);
-        var updateTypes = System.Text.Json.JsonSerializer.Deserialize<List<string>>(updateTypesJson);
+        var updatesJsonsList = Serializer.Deserialize<List<string>>(updatesJson);
+        var updateTypes = Serializer.Deserialize<List<string>>(updateTypesJson);
 
         for (int i = 0; i < updatesJsonsList.Count; i++)
         {
@@ -49,15 +49,22 @@ public class ClientServer : Node, IServer
             {
                 EntityCreationUpdate.DeserializeAndEnact(updatesJsonsList[i], _key);
             }
-            else if (updateType == StateTransferUpdate.UpdateType)
-            {
-                StateTransferUpdate.DeserializeAndEnact(updatesJsonsList[i], _key);
-            }
+            // else if (updateType == StateTransferUpdate.UpdateType)
+            // {
+            //     StateTransferUpdate.DeserializeAndEnact(updatesJsonsList[i], _key);
+            //     ReceivedStateTransfer?.Invoke();
+            // }
             else if (updateType == ProcedureUpdate.UpdateType)
             {
                 ProcedureUpdate.DeserializeAndEnact(updatesJsonsList[i], _key);
             }
         }
+    }
+
+    [Remote] public void ReceiveStateTransfer(string stateTransferJson)
+    {
+        GD.Print("got state transfer");
+        StateTransferUpdate.DeserializeAndEnact(stateTransferJson, _key);
     }
     public void ReceiveCommand(string commandType, string commandJson)
     {

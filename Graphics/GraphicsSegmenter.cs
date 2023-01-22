@@ -15,9 +15,9 @@ public class GraphicsSegmenter<T> : Node2D, IGraphicsSegmenter where T : Node2D
         _segmentNodes = new Dictionary<int, Node2D>();
     }
     
-    public void Setup(List<T> elements, int numSegments, Func<T, Vector2> tPos, WorldData data)
+    public void Setup(List<T> elements, int numSegments, Func<T, Vector2> tPos, Data data)
     {
-        var dimX = data.Dimensions.x;
+        var dimX = data.Planet.Width;
         _segWidth = dimX / numSegments;
         for (int i = 0; i < numSegments; i++)
         {

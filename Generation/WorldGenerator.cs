@@ -13,7 +13,7 @@ public class WorldGenerator
     {
         _dim = dim;
         _id = new IDDispenser();
-        Data = new WorldData(_dim);
+        Data = new WorldData();
         _key = new GenWriteKey(Data);
     }
     public WorldData Generate()
@@ -22,21 +22,23 @@ public class WorldGenerator
         var edgePointMargin = new Vector2(cellSize, cellSize);
         var points = PointsGenerator
             .GenerateConstrainedSemiRegularPoints
-                (Data.Dimensions - edgePointMargin, cellSize, cellSize * .75f, false, true)
+                (_dim - edgePointMargin, cellSize, cellSize * .75f, false, true)
             .Select(v => v + edgePointMargin / 2f).ToList();
 
         var polygons 
-            = VoronoiGenerator.GetVoronoiPolygons<GenPolygon>
+            = VoronoiGenerator.GetVoronoiPolygons
                 (
-                    points, Data.Dimensions, true, cellSize,
+                    points, _dim, true, cellSize,
                     (i, center) =>
                     {
                         _id.SetMin(i);
-                        return new GenPolygon(i, center, Data.Dimensions.x, _key);
+                        return new MapPolygon(i, center, _dim.x, _key);
                     },
+                    _id,
                     _key
                 );
-        
+        var planetInfo = new PlanetInfo(_dim, _id.GetID(), _key);
+        Data.AddEntity(planetInfo, typeof(PlanetDomain), _key);
         var geologyGenerator = new GeologyGenerator(Data, _id);
         geologyGenerator.GenerateTerrain(_key);
 

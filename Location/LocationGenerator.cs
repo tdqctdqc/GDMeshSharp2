@@ -62,7 +62,7 @@ public class LocationGenerator
             var settlementPolys = landPolys.GetNRandomElements(settlementScores.Count);
             for (var i = 0; i < settlementPolys.Count; i++)
             {
-                settlementPolys[i].Set(nameof(GenPolygon.SettlementSize), settlementScores[i], _key);
+                settlementPolys[i].Set(nameof(MapPolygon.SettlementSize), settlementScores[i], _key);
 
                 var settlement = new Settlement(_id.GetID(), _key, settlementPolys[i], settlementScores[i]);
                 
@@ -71,7 +71,7 @@ public class LocationGenerator
         });
         Data.Landforms.BuildTrisForAspect(LandformManager.Urban, Data);
 
-        float popScore(GenPolygon p)
+        float popScore(MapPolygon p)
         {
             return Mathf.Clamp(p.Moisture - p.Roughness * .3f, .2f, 1f);
         }
@@ -86,26 +86,28 @@ public class LocationGenerator
             var settlements = lm.Where(p => p.SettlementSize > 0f);
             if (settlements.Count() == 0) return;
             var first = settlements.First();
-            var points = settlements.Select(s => first.GetOffsetTo(s, Data.Dimensions.x)).ToList();
+            var points = settlements.Select(s => first.GetOffsetTo(s, Data.Planet.Width)).ToList();
             if (points.Count < 3) return;
 
             var graph = GraphGenerator.GenerateDelaunayGraph(settlements.ToList(),
-                s => first.GetOffsetTo(s, Data.Dimensions.x),
-                (p1, p2) => new Edge<GenPolygon>(p1, p2, (a, b) => a.Id > b.Id));
+                s => first.GetOffsetTo(s, Data.Planet.Width),
+                (p1, p2) => new Edge<MapPolygon>(p1, p2, (a, b) => a.Id > b.Id));
 
-            float edgeCost(GenPolygon p1, GenPolygon p2)
+            float edgeCost(MapPolygon p1, MapPolygon p2)
             {
                 if (p1.IsWater() || p2.IsWater()) return Mathf.Inf;
                 return p1.Roughness + p2.Roughness;
             }
             foreach (var e in graph.Edges)
             {
-                if (e.T1.GetOffsetTo(e.T2, Data.Dimensions.x).Length() > 1000f) continue;
-                var path = PathFinder<GenPolygon>.FindPath(e.T1, e.T2, p => p.GeoNeighbors.Refs,
-                    edgeCost, (p1, p2) => p1.GetOffsetTo(p2, Data.Dimensions.x).Length());
+                if (e.T1.GetOffsetTo(e.T2, Data.Planet.Width).Length() > 1000f) continue;
+                var path = PathFinder<MapPolygon>.FindPath(e.T1, e.T2, p => p.Neighbors.Refs(),
+                    edgeCost, (p1, p2) => p1.GetOffsetTo(p2, Data.Planet.Width).Length());
                 for (var i = 0; i < path.Count - 1; i++)
                 {
-                    var road = new RoadSegment(_id.GetID(), _key, path[i], path[i + 1]);
+                    var border = path[i].GetBorder(path[i + 1], Data);
+                    if(Data.Society.Roads.ByBorderId.ContainsKey(border.Id)) continue;
+                    var road = new RoadSegment(_id.GetID(), _key, border);
                     Data.AddEntity(road, typeof(SocietyDomain), _key);
                 }
             }

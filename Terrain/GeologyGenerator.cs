@@ -17,7 +17,7 @@ public class GeologyGenerator
     public void GenerateTerrain(GenWriteKey key)
     {
         _key = key;
-        EdgeDisturber.DisturbEdges(Data.PlanetDomain.GeoPolygons.Entities, Data.Dimensions);
+        EdgeDisturber.DisturbEdges(Data.Planet.Polygons.Entities, Data.Planet.PlanetInfo.Value.Dimensions, key);
         BuildGeology();
     }
 
@@ -42,19 +42,47 @@ public class GeologyGenerator
     private void BuildCells()
     {
         var polysPerCell = 3;
-        var numCells = Data.PlanetDomain.GeoPolygons.Entities.Count / polysPerCell;
-        var landRatio = .33f;
+        var numCells = Data.Planet.Polygons.Entities.Count / polysPerCell;
         // Data.GeoPolygons.AddRange(Data.GeoPolygons);
-        var cellSeeds = GenerationUtility.PickSeeds(Data.PlanetDomain.GeoPolygons.Entities, new int[] {numCells})[0];
+        var cellSeeds = GenerationUtility.PickSeeds(Data.Planet.Polygons.Entities, new int[] {numCells})[0];
         var cells = cellSeeds.Select(p => new GenCell(p, _key, Data)).ToList();
+        for (var i = 0; i < cellSeeds.Count; i++)
+        {
+            var cell = cells[i];
+            Data.GenAuxData.PolyCells[cellSeeds[i]] = cells[i];
+        }
         Data.GenAuxData.Cells.AddRange(cells);
         GD.Print("Num cells: " + cells.Count);
         var polysNotTaken =
-            Data.PlanetDomain.GeoPolygons.Entities.Except(cellSeeds);
-        GenerationUtility.PickInTurn(polysNotTaken, cells, 
+            Data.Planet.Polygons.Entities.Except(cellSeeds);
+        var record = polysNotTaken.ToHashSet();
+        var remainder = GenerationUtility.PickInTurn(polysNotTaken, cells, 
             cell => cell.NeighboringPolyGeos, 
-            (cell, terrain) => cell.AddPolygon(terrain, _key));
+            (cell, poly) => cell.AddPolygon(poly, _key));
+        
+        
+        //todo fix
+        foreach (var r in remainder)
+        {
+            foreach (var rNeighbor in r.Neighbors.Refs())
+            {
+                if(Data.GenAuxData.PolyCells[rNeighbor] is GenCell c)
+                {
+                    Data.GenAuxData.PolyCells[r] = c;
+                    break;
+                }
+            }
+        }
         cells.ForEach(c => c.SetNeighbors(_key));
+        foreach (var p in Data.Planet.Polygons.Entities)
+        {
+            if (Data.GenAuxData.PolyCells.ContainsKey(p) == false)
+            {
+                GD.Print(cellSeeds.Contains(p));
+                GD.Print(record.Contains(p));
+                throw new Exception();
+            }
+        }
     }
 
     private void BuildPlates()
@@ -62,17 +90,39 @@ public class GeologyGenerator
         var cellsPerPlate = 3;
         var numPlates = Data.GenAuxData.Cells.Count / cellsPerPlate;
         var plateSeeds = GenerationUtility.PickSeeds(Data.GenAuxData.Cells, new[] {numPlates})[0];
-        var plates = plateSeeds.Select(s => new GenPlate(s, _id.GetID())).ToList();
+        var plates = plateSeeds.Select(s => new GenPlate(s, _id.GetID(), _key)).ToList();
         GD.Print("Num plates: " + plates.Count);
-
+        
         Data.GenAuxData.Plates.AddRange(plates);
         var cellsNotTaken = Data.GenAuxData.Cells.Except(plateSeeds);
-        GenerationUtility.PickInTurnHeuristic(cellsNotTaken, plates, 
+        var remainder = GenerationUtility.PickInTurnHeuristic(cellsNotTaken, plates, 
             plate => plate.NeighboringCells,
-            (plate, cell) => plate.AddCell(cell),
+            (plate, cell) => plate.AddCell(cell, _key),
             ((cell, plate) => plate.NeighboringCellsAdjCount[cell]));
+        plates.ForEach(p =>
+        {
+            p.SetNeighbors();
+        });
         
-        plates.ForEach(p => p.SetNeighbors());
+        //todo fix this
+        foreach (var r in remainder)
+        {
+            foreach (var rNeighbor in r.Neighbors)
+            {
+                if(rNeighbor.Plate is GenPlate p)
+                {
+                    r.SetPlate(p, _key);
+                    break;
+                }
+            }
+        }
+        foreach (var poly in Data.Planet.Polygons.Entities)
+        {
+            var cell = Data.GenAuxData.PolyCells[poly];
+            var plate = cell.Plate;
+            var plateId = plate.Id;
+            poly.SetPlateId(plateId, _key);
+        }
     }
 
     private void BuildMasses()
@@ -84,10 +134,22 @@ public class GeologyGenerator
         GD.Print("Num masses: " + masses.Count);
 
         var platesNotTaken = Data.GenAuxData.Plates.Except(massSeeds);
-        GenerationUtility.PickInTurnHeuristic(platesNotTaken, masses,
+        var remainder = GenerationUtility.PickInTurnHeuristic(platesNotTaken, masses,
             mass => mass.NeighboringPlates,
             (mass, plate) => mass.AddPlate(plate),
             (plate, mass) => mass.NeighboringPlatesAdjCount[plate]);
+        
+        foreach (var r in remainder)
+        {
+            foreach (var rNeighbor in r.Neighbors)
+            {
+                if(rNeighbor.Mass is GenMass c)
+                {
+                    r.SetMass(c);
+                    break;
+                }
+            }
+        }
         Data.GenAuxData.Masses.AddRange(masses);
         masses.ForEach(m => m.SetNeighbors());
     }
@@ -108,9 +170,22 @@ public class GeologyGenerator
             .ToList();
         GD.Print("Num conts: " + conts.Count);
 
-        GenerationUtility.PickInTurn(Data.GenAuxData.Masses.Except(allSeeds), conts,
+        var remainder = GenerationUtility.PickInTurn(Data.GenAuxData.Masses.Except(allSeeds), conts,
             cont => cont.NeighboringMasses,
             (cont, mass) => cont.AddMass(mass));
+        foreach (var r in remainder)
+        {
+            foreach (var rNeighbor in r.Neighbors)
+            {
+                if(rNeighbor.GenContinent is GenContinent c)
+                {
+                    r.SetContinent(c);
+                    break;
+                }
+            }
+        }
+        
+        
         Data.GenAuxData.Continents.AddRange(conts);
         conts.ForEach(c => c.SetNeighbors());
         Data.GenAuxData.Continents.ForEach(cont =>
@@ -123,7 +198,7 @@ public class GeologyGenerator
             foreach (var poly in polys)
             {
                 var altValue = Game.I.Random.RandfRange(.8f * cont.Altitude, 1.2f * cont.Altitude);
-                poly.Set(nameof(GenPolygon.Altitude), altValue, _key);
+                poly.Set(nameof(MapPolygon.Altitude), altValue, _key);
                 //todo make this sample perlin
             }
         });
@@ -172,14 +247,14 @@ public class GeologyGenerator
             }
         }
 
-        IEnumerable<GenPolygon> getPolysInRangeOfFault(FaultLine fault)
+        IEnumerable<MapPolygon> getPolysInRangeOfFault(FaultLine fault)
         {
             var faultRange = fault.Friction * 500f;
             var polys = fault.HighId.Cells.SelectMany(c => c.PolyGeos)
                 .Union(fault.LowId.Cells.SelectMany(c => c.PolyGeos));
             var frictionAltEffect = .1f;
             var frictionRoughnessEffect = 1f;
-            var polysInRange = new List<GenPolygon>();
+            var polysInRange = new List<MapPolygon>();
             foreach (var poly in polys)
             {
                 var dist = fault.GetDist(poly, Data);

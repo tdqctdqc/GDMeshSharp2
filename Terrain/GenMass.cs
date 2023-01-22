@@ -24,12 +24,12 @@ public class GenMass : ISuper<GenMass, GenPlate>
         Neighbors = new HashSet<GenMass>();
         AddPlate(seed);
     }
-    public GenPolygon GetSeedPoly() => Seed.GetSeedPoly();
+    public MapPolygon GetSeedPoly() => Seed.GetSeedPoly();
     public void AddPlate(GenPlate c)
     {
         Center = (Center * Plates.Count + c.Center) / (Plates.Count + 1);
         Plates.Add(c);
-        c.SetContinent(this);
+        c.SetMass(this);
         NeighboringPlates.Remove(c);
         NeighboringPlatesAdjCount.Remove(c);
         var border = c.Neighbors.Except(Plates);

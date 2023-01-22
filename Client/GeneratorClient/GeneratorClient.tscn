@@ -1,8 +1,7 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://Client/GeneratorClient/GeneratorClient.cs" type="Script" id=1]
-[ext_resource path="res://Graphics/GraphicLayerHolder.tscn" type="PackedScene" id=2]
-[ext_resource path="res://UI/ButtonContainer/ButtonContainer.tscn" type="PackedScene" id=3]
+[ext_resource path="res://Client/MapDisplayOptionsUi/MapDisplayOptionsUi.tscn" type="PackedScene" id=2]
 [ext_resource path="res://Client/GeneratorClient/GeneratorGraphics.cs" type="Script" id=4]
 
 [node name="GeneratorClient" type="Node"]
@@ -49,16 +48,6 @@ margin_right = 414.0
 margin_bottom = 40.0
 text = "Done"
 
-[node name="ButtonContainer" parent="Control" instance=ExtResource( 3 )]
-margin_left = 1.0
-margin_top = 45.0
-margin_right = 158.0
-margin_bottom = 645.0
-
-[node name="GraphicLayerHolder" parent="Control" instance=ExtResource( 2 )]
-anchor_left = 1.0
-anchor_top = 0.0
-anchor_right = 1.0
-anchor_bottom = 0.0
-margin_left = -200.0
-margin_right = 0.0
+[node name="MapDisplayOptionsUi" parent="Control" instance=ExtResource( 2 )]
+margin_top = 49.0
+margin_bottom = 249.0

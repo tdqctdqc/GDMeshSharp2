@@ -7,27 +7,27 @@ public class GenPlate : ISuper<GenPlate, GenCell>
 {
     public int Id { get; private set; }
     public GenCell Seed { get; private set; }
-    public GenPolygon GetSeedPoly() => Seed.Seed;
+    public MapPolygon GetSeedPoly() => Seed.Seed;
     public GenMass Mass { get; private set; }
     public HashSet<GenCell> Cells { get; private set; }
     public HashSet<GenCell> NeighboringCells { get; private set; }
     public Dictionary<GenCell, int> NeighboringCellsAdjCount { get; private set; }
     public HashSet<GenPlate> Neighbors { get; private set; }
     public Vector2 Center => GetSeedPoly().Center;
-    public GenPlate(GenCell seed, int id)
+    public GenPlate(GenCell seed, int id, GenWriteKey key)
     {
         Id = id;
         Seed = seed;
         Cells = new HashSet<GenCell> {};
         NeighboringCells = new HashSet<GenCell>();
         NeighboringCellsAdjCount = new Dictionary<GenCell, int>();
-        AddCell(seed);
+        AddCell(seed, key);
     }
 
-    public void AddCell(GenCell c)
+    public void AddCell(GenCell c, GenWriteKey key)
     {
         Cells.Add(c);
-        c.SetPlate(this);
+        c.SetPlate(this, key);
         NeighboringCells.Remove(c);
         var border = c.Neighbors.Except(Cells);
         foreach (var cell in border)
@@ -46,21 +46,21 @@ public class GenPlate : ISuper<GenPlate, GenCell>
         Neighbors = NeighboringCells.Select(t => t.Plate).ToHashSet();
     }
 
-    public void SetContinent(GenMass c)
+    public void SetMass(GenMass c)
     {
         if (Mass != null) throw new Exception();
         Mass = c;
     }
     
-    public List<BorderEdge<GenPolygon>> GetOrderedBorderRelative(GenPlate aPlate, WorldData data)
+    public List<BorderEdge<MapPolygon>> GetOrderedBorderRelative(GenPlate aPlate, WorldData data)
     {
         var polyCells = data.GenAuxData.PolyCells;
         var borderCellPolys = this
             .GetBorderElements()
             .SelectMany(c => c.PolyGeos);
         var borderPolys = GenerationUtility
-            .GetBorderElements(borderCellPolys, p => p.GeoNeighbors.Refs, n => polyCells[n].Plate == aPlate);
-        var commonPolyBorders = GenerationUtility.GetOrderedBorderPairs(borderPolys, c => c.GeoNeighbors.Refs,
+            .GetBorderElements(borderCellPolys, p => p.Neighbors.Refs(), n => polyCells[n].Plate == aPlate);
+        var commonPolyBorders = GenerationUtility.GetOrderedBorderPairs(borderPolys, c => c.Neighbors.Refs(),
             p => polyCells[p].Plate == aPlate);
         
         return commonPolyBorders;

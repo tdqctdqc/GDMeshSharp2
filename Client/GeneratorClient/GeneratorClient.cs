@@ -10,12 +10,12 @@ public class GeneratorClient : Node
     private ButtonToken _generate, _generateNext, _generateTest, _done;
     private SpinBox _seed;
     private GeneratorGraphics _graphics;
-    public GraphicLayerHolder Holder { get; private set; }
-    public ButtonContainer Buttons { get; private set; }
+    public CameraController Cam { get; private set; }
     private WorldData _data;
     public static GeneratorClient Get()
         => (GeneratorClient) ((PackedScene) GD.Load("res://Client/GeneratorClient/GeneratorClient.tscn")).Instance();
 
+    private MapDisplayOptionsUi _mapOptions;
 
     public void Done()
     {
@@ -27,10 +27,9 @@ public class GeneratorClient : Node
     }
     public void Setup()
     {
-        Holder = (GraphicLayerHolder)FindNode("GraphicLayerHolder");
-        Holder.Setup();
-
-        Buttons = (ButtonContainer) FindNode("ButtonContainer");
+        Cam = new CameraController();
+        AddChild(Cam);
+        Cam.Current = true;
         _seed = (SpinBox) FindNode("Seed");
         
         _generate = ButtonToken.Get(this, "Generate", () => PressedGenerate());
@@ -38,7 +37,9 @@ public class GeneratorClient : Node
         _generateTest = ButtonToken.Get(this, "GenerateTest", () => PressedGenerateTest());
         _done = ButtonToken.Get(this, "Done", Done);
         _graphics = (GeneratorGraphics) FindNode("Graphics");
-        
+        _mapOptions = (MapDisplayOptionsUi) FindNode("MapDisplayOptionsUi");
+        _mapOptions.Setup(_graphics);
+
     }
     private void PressedGenerateTest()
     {
@@ -70,28 +71,7 @@ public class GeneratorClient : Node
         var worldGen = new WorldGenerator(bounds);
         _data = worldGen.Data;
         worldGen.Generate();
-        Holder.Clear();
-        Buttons.Clear();
-        _graphics.Setup(_data, this);
-        
-        AddPolyViewMode(_graphics.PolyGraphics, g => g.Color, "Polys");
-        AddPolyViewMode(_graphics.PolyGraphics, g => g.IsLand() ? Colors.SaddleBrown : Colors.Blue, "Land/Sea");
-        AddPolyViewMode(_graphics.PolyGraphics, g => Colors.White.LinearInterpolate(Colors.Red, g.Roughness), "Poly Roughness");
-        AddPolyViewMode(_graphics.PolyGraphics, g => Colors.White.LinearInterpolate(Colors.Blue, g.Moisture), "Poly Moisture");
-        AddPolyViewMode(_graphics.PolyGraphics, g => _data.Landforms.GetAspectFromPoly(g, _data).Color, "Poly Landforms");
-
-    }
-    
-    private void AddPolyViewMode(List<PolygonGraphic> polyGraphics, Func<GenPolygon, Color> getColor, string name)
-    {
-        Buttons.AddButton(() =>
-        {
-            polyGraphics.ForEach(p =>
-            {
-                var g = p.Poly as GenPolygon;
-                var color = getColor(g);
-                p.SetColor(color);
-            });
-        }, "Show " + name);
+        _graphics.Setup(_data, Cam);
+        _graphics.SetupGenerator(_data, this);
     }
 }

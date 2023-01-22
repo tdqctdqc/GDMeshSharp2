@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class Edge<T>
+public struct Edge<T>
 {
     public T T1 { get; private set; }
     public T T2 { get; private set; }

@@ -11,15 +11,15 @@ public class River : Landform
     public River()
         : base("River", 0f, Colors.Blue,
             new EdgeToTriBuilder(
-                (p1, p2) => p1.GetGeoPolyBorder(p2).MoistureFlow,
+                (p1, p2, d) => p1.GetBorder(p2, d).MoistureFlow,
                 _threshold,
                 s => Mathf.Pow(s, .5f)  + 5f))
     {
         
     }
 
-    public override bool Allowed(GenPolygon p, WorldData data)
+    public override bool Allowed(MapPolygon p, WorldData data)
     {
-        return p.IsLand() && p.GeoNeighbors.Refs.Any(n => p.GetGeoPolyBorder(n).MoistureFlow > _threshold);
+        return p.IsLand() && p.Neighbors.Refs().Any(n => p.GetBorder(n, data).MoistureFlow > _threshold);
     }
 }

@@ -7,15 +7,15 @@ public sealed class Regime : Entity
 {
     public Color PrimaryColor { get; private set; }
     public Color SecondaryColor { get; private set; }
-    public RegimeTerritory Territory { get; private set; }
-    
-    public Regime(int id, CreateWriteKey key, Color primaryColor, Color secondaryColor, GenPolygon seed)
+    // public RegimeTerritory Territory { get; private set; }
+    public EntityRefCollection<MapPolygon> Polygons { get; private set; }
+    public Regime(int id, CreateWriteKey key, Color primaryColor, Color secondaryColor, MapPolygon seed)
     : base(id, key)
     {
         PrimaryColor = primaryColor;
         SecondaryColor = secondaryColor;
-        Territory = new RegimeTerritory(this);
-        Territory.AddSub(seed);
+        Polygons = new EntityRefCollection<MapPolygon>();
+        Polygons.AddRef(seed, key.Data);
     }
     private Regime(string json) : base(json) {}
     private static Regime DeserializeConstructor(string json)

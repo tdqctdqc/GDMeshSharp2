@@ -7,8 +7,8 @@ public class RegimeGenerator
 {
     private WorldData _data;
     private IDDispenser _id;
-    private CreateWriteKey _key;
-    public RegimeGenerator(WorldData data, IDDispenser id, CreateWriteKey key)
+    private GenWriteKey _key;
+    public RegimeGenerator(WorldData data, IDDispenser id, GenWriteKey key)
     {
         _id = id;
         _key = key;
@@ -35,12 +35,16 @@ public class RegimeGenerator
                 var regime = new Regime(_id.GetID(), _key, prim, sec, seeds[i]);
                 _data.AddEntity(regime, typeof(SocietyDomain), _key);
             }
-            GenerationUtility.PickInTurn(lm.Where(p => p.Regime == null), 
-                _data.SocietyDomain.Regimes.Entities, r => r.Territory.NeighboringSubs, (r, p) =>
+            var remainder = GenerationUtility.PickInTurn(
+                lm.Where(p => p.Regime == null), 
+                _data.Society.Regimes.Entities, 
+                r => r.Polygons.Refs().SelectMany(n => n.Neighbors.Refs()), 
+                (r, p) =>
                 {
-                    r.Territory.AddSub(p);
-                    p.Set(nameof(GenPolygon.Regime), r, _key);
-                });
+                    r.Polygons.AddRef(p, _key.Data);
+                    p.SetRegime(r, _key);
+                }
+            );
         });
     }
 }

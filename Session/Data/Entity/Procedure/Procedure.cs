@@ -13,13 +13,13 @@ public class ExampleProcedure : Procedure
     {
         var args = new ProcArgs(intField, stringField);
         Enact(key, args);
-        var update = new ProcedureUpdate(nameof(ExampleProcedure), JsonSerializer.Serialize(args));
+        var update = new ProcedureUpdate(nameof(ExampleProcedure), Serializer.Serialize(args));
         server.QueueUpdate(update);
     }
 
     public static void ReceiveFromServer(ServerWriteKey key, string json)
     {
-        var args = JsonSerializer.Deserialize<ProcArgs>(json);
+        var args = Serializer.Deserialize<ProcArgs>(json);
         Enact(key, args);
     }
     private static void Enact(WriteKey key, ProcArgs args)

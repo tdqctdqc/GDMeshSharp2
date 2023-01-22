@@ -5,8 +5,10 @@ using System.Linq;
 
 public static class EdgeDisturber
 {
-    public static void DisturbEdges(IReadOnlyList<Polygon> polys, Vector2 dimensions)
+    private static GenWriteKey _key;
+    public static void DisturbEdges(IReadOnlyList<MapPolygon> polys, Vector2 dimensions, GenWriteKey key)
     {
+        _key = key;
         var noise = new OpenSimplexNoise();
         noise.Period = dimensions.x;
         noise.Octaves = 2;
@@ -16,7 +18,7 @@ public static class EdgeDisturber
             var poly = polys[i];
             for (var j = 0; j < poly.Neighbors.Count; j++)
             {
-                var nPoly = poly.Neighbors[j];
+                var nPoly = poly.Neighbors.Refs().ElementAt(j);
                 if (poly.Id > nPoly.Id)
                 {
                     // DisturbEdge(poly, nPoly, noise);
@@ -26,9 +28,9 @@ public static class EdgeDisturber
         }
     }
 
-    private static void DisturbEdge(Polygon highId, Polygon lowId, OpenSimplexNoise noise)
+    private static void DisturbEdge(MapPolygon highId, MapPolygon lowId, OpenSimplexNoise noise)
     {
-        var border = highId.GetPolyBorder(lowId);
+        var border = highId.GetBorder(lowId, _key.Data);
         var hiSegs = border.HighSegsRel;
         var loSegs = border.LowSegsRel;
         var axisHi = border.GetOffsetToOtherPoly(highId);
@@ -50,13 +52,13 @@ public static class EdgeDisturber
             {
                 var temp = hiSeg.From.LinearInterpolate(hiSeg.To, angleDeviation);
                 hiDevVector = temp * lengthDeviation;
-                loDevVector = loSeg.Mid + (hiDevVector - hiSeg.Mid);
+                loDevVector = loSeg.Mid() + (hiDevVector - hiSeg.Mid());
             }
             else
             {
                 var temp = loSeg.To.LinearInterpolate(loSeg.From, angleDeviation);
                 loDevVector = temp * lengthDeviation;
-                hiDevVector = hiSeg.Mid + (loDevVector - loSeg.Mid);
+                hiDevVector = hiSeg.Mid() + (loDevVector - loSeg.Mid());
             }
             
             newSegsHi.Add(new LineSegment(hiSeg.From, hiDevVector));
@@ -65,7 +67,7 @@ public static class EdgeDisturber
             newSegsLow.Add(new LineSegment(loDevVector, loSeg.To));
         }
         
-        border.ReplacePoints(newSegsHi, newSegsLow);
+        border.ReplacePoints(newSegsHi, newSegsLow, _key);
     }
 
     private class EdgeDisturbInfo

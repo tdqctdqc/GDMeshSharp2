@@ -5,17 +5,17 @@ using Godot;
 
 public class PolygonGraphic : Node2D
 {
-    public Polygon Poly { get; private set; }
+    public MapPolygon Poly { get; private set; }
     private Node2D _triMesh;
     public PolygonGraphic()
     {
         
     }
 
-    public PolygonGraphic(Polygon poly, bool border = false)
+    public PolygonGraphic(MapPolygon poly, Data data, bool border = false)
     {
         Poly = poly;
-        var tris = poly.GetTrisRel();
+        var tris = poly.GetTrisRel(data);
         // Position = poly.Center;
         _triMesh = MeshGenerator.GetMeshInstance(tris);
         _triMesh.Modulate = new Color(Poly.Color, .5f);
@@ -40,45 +40,7 @@ public class PolygonGraphic : Node2D
     {
         _triMesh.Modulate = Poly.Color;
     }
-    private void AddBorderPolysGraphic(Polygon poly, Color color)
-    {
-        
-        for (var i = 0; i < poly.Neighbors.Count; i++)
-        {
-            var edge = poly.GetPolyBorder(poly.Neighbors[i]);
-            var offset = edge.GetOffsetToOtherPoly(poly);
-            var centerArrow = MeshGenerator.GetArrowGraphic(Vector2.Zero, offset, 10f);
-            AddChild(centerArrow);
-
-            var next = (i + 1) % poly.Neighbors.Count;
-            
-            var from = poly.GetPolyBorder(poly.Neighbors[i]).GetPointsRel(poly).Avg();
-            var to = poly.GetPolyBorder(poly.Neighbors[next]).GetPointsRel(poly).Avg();
-            var arrow = MeshGenerator.GetArrowGraphic(from, to, 5f);
-            arrow.Modulate = color;
-            AddChild(arrow);
-        }
-    }
-    private void AddBorderGraphic(Polygon poly)
-    {
-        var borders = poly.GetNeighborBorders().ToList();
-        var iter = 0;
-        for (var i = 0; i < borders.Count; i++)
-        {
-            var border = borders[i].GetSegsRel(poly);
-            for (var j = 0; j < border.Count; j++)
-            {
-                var seg = border[j];
-                var from = seg.From * .9f;
-                var to = seg.To * .9f;
-                if (from == to) continue;
-                var arrow = MeshGenerator.GetArrowGraphic(from, to, 5f);
-                arrow.Modulate = ColorsExt.GetRainbowColor(iter);
-                iter++;
-                AddChild(arrow);
-            }
-        }
-    }
+    
 
     private void AddLabel()
     {

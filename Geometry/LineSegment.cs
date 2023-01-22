@@ -7,7 +7,7 @@ public class LineSegment
 {
     public Vector2 From { get; private set; }
     public Vector2 To { get; private set; }
-    public Vector2 Mid => (From + To) / 2f;
+    public Vector2 Mid() => (From + To) / 2f;
     public LineSegment(Vector2 from, Vector2 to)
     {
         From = from;
@@ -26,13 +26,13 @@ public class LineSegment
 
     public void Clamp(float mapWidth)
     {
-        if (Mid.x > mapWidth / 2f)
+        if (Mid().x > mapWidth / 2f)
         {
             From += Vector2.Left * mapWidth;
             To += Vector2.Left * mapWidth;
         }
 
-        if (Mid.x < -mapWidth / 2f)
+        if (Mid().x < -mapWidth / 2f)
         {
             From += Vector2.Right * mapWidth;
             To += Vector2.Right * mapWidth;

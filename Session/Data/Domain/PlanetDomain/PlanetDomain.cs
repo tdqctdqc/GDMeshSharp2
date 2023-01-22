@@ -5,14 +5,22 @@ using Godot;
 
 public class PlanetDomain : Domain
 {
-    public Repository<GenPolygon> GeoPolygons { get; private set; }
+    public MapPolygonRepository Polygons { get; private set; }
+    public MapPolygonBorderRepository PolyBorders { get; private set; }
     public TerrainTriRepo TerrainTris { get; private set; }
+    public SingletonRepo<PlanetInfo> PlanetInfo { get; private set; }
+    public float Width => PlanetInfo.Value.Dimensions.x;
+    public float Height => PlanetInfo.Value.Dimensions.y;
     public PlanetDomain(Data data) : base()
     {
-        GeoPolygons = new Repository<GenPolygon>(this, data);
+        Polygons = new MapPolygonRepository(this, data);
         TerrainTris = new TerrainTriRepo(this, data);
-        AddRepo(GeoPolygons);
+        PolyBorders = new MapPolygonBorderRepository(this, data);
+        PlanetInfo = new SingletonRepo<PlanetInfo>(this, data);
+        AddRepo(Polygons);
         AddRepo(TerrainTris);
+        AddRepo(PolyBorders);
+        AddRepo(PlanetInfo);
     }
     
 }

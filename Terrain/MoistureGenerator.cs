@@ -6,7 +6,7 @@ using Godot;
 public class MoistureGenerator
 {
     public WorldData Data { get; private set; }
-    private CreateWriteKey _key;
+    private GenWriteKey _key;
     private IDDispenser _id;
     public MoistureGenerator(WorldData data, IDDispenser id)
     {
@@ -14,7 +14,7 @@ public class MoistureGenerator
         _id = id;
     }
 
-    public void Generate(CreateWriteKey key)
+    public void Generate(GenWriteKey key)
     {
         _key = key;
         SetPolyMoistures();
@@ -27,8 +27,8 @@ public class MoistureGenerator
         
         Data.GenAuxData.Masses.ForEach(m =>
         {
-            var distFromEquator = Mathf.Abs(Data.Dimensions.y / 2f - m.Center.y);
-            var altMult = .5f + .5f * (1f - distFromEquator / (Data.Dimensions.y / 2f));
+            var distFromEquator = Mathf.Abs(Data.Planet.Height / 2f - m.Center.y);
+            var altMult = .5f + .5f * (1f - distFromEquator / (Data.Planet.Height / 2f));
             var polyGeos = m.Plates.SelectMany(p => p.Cells).SelectMany(c => c.PolyGeos).ToList();
             var count = polyGeos.Count;
             var waterCount = polyGeos.Where(g => g.IsWater()).Count();
@@ -75,23 +75,23 @@ public class MoistureGenerator
     private void BuildVegetationTris()
     {
         Data.Vegetation.BuildTriHolders(_id, Data, _key);
-        Data.Vegetation.BuildTris(Data.PlanetDomain.GeoPolygons.Entities.ToHashSet(), Data);
+        Data.Vegetation.BuildTris(Data.Planet.Polygons.Entities.ToHashSet(), Data);
     }
 
     
     private void BuildRivers()
     {
-        var pathToSea = new Dictionary<GenPolygon, List<GenPolygon>>();
-        var additional = new Dictionary<GenPolygon, float>();
+        var pathToSea = new Dictionary<MapPolygon, List<MapPolygon>>();
+        var additional = new Dictionary<MapPolygon, float>();
         //todo check if double adding
-        var polys = Data.PlanetDomain.GeoPolygons.Entities.Distinct().ToList();
+        var polys = Data.Planet.Polygons.Entities.Distinct().ToList();
             
         polys.ForEach(p =>
         {
             if (p.IsWater()) return;
-            var path = PathFinder<GenPolygon>.FindPathMultipleEnds(p,
+            var path = PathFinder<MapPolygon>.FindPathMultipleEnds(p,
                 n => n.IsWater() || pathToSea.ContainsKey(n),
-                n => n.GeoNeighbors.Refs, (n, m) => n.Roughness + m.Roughness);
+                n => n.Neighbors.Refs(), (n, m) => n.Roughness + m.Roughness);
             path.Reverse();
             if (path.First() != p) throw new Exception();
             pathToSea.Add(p, path);
@@ -109,7 +109,7 @@ public class MoistureGenerator
             for (var i = 0; i < path.Count - 1; i++)
             {
                 water += path[i].Moisture;
-                path[i].GetGeoPolyBorder(path[i + 1]).IncrementFlow(water);
+                path[i].GetBorder(path[i + 1], Data).IncrementFlow(water, _key);
             }
             while (path != null)
             {
@@ -137,7 +137,7 @@ public class MoistureGenerator
             var path = pathToSea[origin];
             for (var i = 0; i < path.Count - 1; i++)
             {
-                path[i].GetGeoPolyBorder(path[i + 1]).IncrementFlow(add);
+                path[i].GetBorder(path[i + 1], Data).IncrementFlow(add, _key);
             }
         }
         Data.Landforms.BuildTrisForAspect(LandformManager.River, Data, 

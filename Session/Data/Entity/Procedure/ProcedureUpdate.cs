@@ -16,12 +16,12 @@ public class ProcedureUpdate : IUpdate
     }
     public string Serialize()
     {
-        return JsonSerializer.Serialize(this);
+        return Serializer.Serialize(this);
     }
 
     public static void DeserializeAndEnact(string json, ServerWriteKey key)
     {
-        var update = JsonSerializer.Deserialize<ProcedureUpdate>(json);
+        var update = Serializer.Deserialize<ProcedureUpdate>(json);
         ProcedureMeta.TriggerProcedure(update.ProcedureName, update.ArgsJson, key);
     }
 }

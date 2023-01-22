@@ -42,24 +42,24 @@ public class StateTransferUpdate : IUpdate
     public string Serialize()
     {
         var jsonArray = new System.Text.Json.Nodes.JsonArray();
-        var domainTypes = System.Text.Json.JsonSerializer.Serialize<List<string>>(DomainTypes.Select(dt => dt.Name).ToList());
+        var domainTypes = Serializer.Serialize<List<string>>(DomainTypes.Select(dt => dt.Name).ToList());
         jsonArray.Add(domainTypes);
-        var entityJsons = System.Text.Json.JsonSerializer.Serialize<List<string>>(EntityJsons);
+        var entityJsons = Serializer.Serialize<List<string>>(EntityJsons);
         jsonArray.Add(entityJsons);
-        var entityTypes = System.Text.Json.JsonSerializer.Serialize<List<string>>(EntityTypes.Select(et => et.Name).ToList());
+        var entityTypes = Serializer.Serialize<List<string>>(EntityTypes.Select(et => et.Name).ToList());
         jsonArray.Add(entityTypes);
         return jsonArray.ToJsonString();
     }
 
     public static void DeserializeAndEnact(string json, ServerWriteKey key)
     {
-        var list = System.Text.Json.JsonSerializer.Deserialize<List<string>>(json);
-        var domainTypesJsons = System.Text.Json.JsonSerializer.Deserialize<List<string>>(list[0]);
+        var list = Serializer.Deserialize<List<string>>(json);
+        var domainTypesJsons = Serializer.Deserialize<List<string>>(list[0]);
         var domainTypes = domainTypesJsons.Select(dj => Serializer.DomainTypes[dj]).ToList();
-        var entityJsons = System.Text.Json.JsonSerializer.Deserialize<List<string>>(list[1]);
-        var entityTypeJsons = System.Text.Json.JsonSerializer.Deserialize<List<string>>(list[2]);
+        var entityJsons = Serializer.Deserialize<List<string>>(list[1]);
+        var entityTypeJsons = Serializer.Deserialize<List<string>>(list[2]);
         var entityTypes = entityTypeJsons.Select(ej => Serializer.EntityTypes[ej]).ToList();
-        
+        var newEntities = new List<Entity>();
         
         for (var i = 0; i < domainTypes.Count; i++)
         {
@@ -67,6 +67,12 @@ public class StateTransferUpdate : IUpdate
             var meta = Serializer.GetEntityMeta(entityTypes[i]);
             var entity = meta.Deserialize(entityJsons[i]);
             key.Data.AddEntity(entity, domainType, key);
+            newEntities.Add(entity);
         }
+        
+        newEntities.ForEach(e =>
+        {
+            e.GetMeta().SyncEntityRefs(e, key);
+        });
     }
 }

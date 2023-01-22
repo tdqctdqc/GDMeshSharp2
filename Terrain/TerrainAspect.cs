@@ -8,7 +8,7 @@ public abstract class TerrainAspect
 {
     public abstract string Name { get; protected set; }
     public abstract ITriBuilder TriBuilder { get; protected set; }
-    public abstract bool Allowed(GenPolygon poly, WorldData data);
+    public abstract bool Allowed(MapPolygon poly, WorldData data);
     public abstract Color Color { get; protected set; }
     // public TerrainTriHolder TriHolder { get; private set; }
 

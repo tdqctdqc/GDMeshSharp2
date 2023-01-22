@@ -5,21 +5,21 @@ using Godot;
 
 public class SpikeyTriBuilder : ITriBuilder
 {
-    private Func<GenPolygon, bool> _checkNeighborStrong;
-    private Func<GenPolygon, float> _otherStrength;
-    public SpikeyTriBuilder(Func<GenPolygon, bool> checkNeighborStrong, Func<GenPolygon, float> otherStrength)
+    private Func<MapPolygon, bool> _checkNeighborStrong;
+    private Func<MapPolygon, float> _otherStrength;
+    public SpikeyTriBuilder(Func<MapPolygon, bool> checkNeighborStrong, Func<MapPolygon, float> otherStrength)
     {
         _checkNeighborStrong = checkNeighborStrong;
         _otherStrength = otherStrength;
     }
 
     
-    public List<Triangle> BuildTrisForPoly(GenPolygon p, WorldData data)
+    public List<Triangle> BuildTrisForPoly(MapPolygon p, WorldData data)
     {
         var polyTris = new List<Triangle>();
-        foreach (var n in p.GeoNeighbors.Refs)
+        foreach (var n in p.Neighbors.Refs())
         {
-            var segs = p.GetPolyBorder(n)
+            var segs = p.GetBorder(n, data)
                 .GetSegsRel(p);
             if (_checkNeighborStrong(n))
             {

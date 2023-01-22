@@ -8,7 +8,7 @@ using Priority_Queue;
 public static class PathFinder<T>
 {
     public static List<T> FindPath(T start, T end, 
-        Func<T, IReadOnlyList<T>> getNeighbors, 
+        Func<T, IReadOnlyCollection<T>> getNeighbors, 
         Func<T,T,float> getEdgeCost, 
         Func<T,T,float> heuristicFunc,
         int maxIter = Int32.MaxValue)
@@ -25,7 +25,7 @@ public static class PathFinder<T>
         int iter = 0;
         bool hasLast = false;
         T current = default;
-        IReadOnlyList<T> neighbors = null;
+        IReadOnlyCollection<T> neighbors = null;
         bool currentHasParent = false;
         T currentParent = default;
         while(open.Count > 0 && iter < maxIter)
@@ -78,7 +78,7 @@ public static class PathFinder<T>
 
         return null; 
     }
-    public static List<T> FindPathMultipleEnds(T start, Func<T, bool> isEnd, Func<T, IReadOnlyList<T>> getNeighbors, 
+    public static List<T> FindPathMultipleEnds(T start, Func<T, bool> isEnd, Func<T, IReadOnlyCollection<T>> getNeighbors, 
         Func<T,T,float> getEdgeCost)
     {
         int maxIters = 100_000;

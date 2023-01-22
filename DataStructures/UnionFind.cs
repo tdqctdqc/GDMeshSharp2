@@ -15,7 +15,7 @@ public class UnionFind<T, V>
         _ranks = new Dictionary<T, int>();
         _compare = compare;
     }
-    public void AddElement(T x, IReadOnlyList<T> neighbors)
+    public void AddElement(T x, IReadOnlyCollection<T> neighbors)
     {
         MakeSet(x);
         foreach (var neighbor in neighbors)
@@ -31,9 +31,9 @@ public class UnionFind<T, V>
         }
     }
 
-    public static List<List<T>> DoUnionFind(List<T> elements, 
+    public static List<List<T>> DoUnionFind(IReadOnlyCollection<T> elements, 
         Func<T,T,bool> compare, 
-        Func<T, IReadOnlyList<T>> neighborFunc)
+        Func<T, IReadOnlyCollection<T>> neighborFunc)
     {
         var unionFind = new UnionFind<T, V>(compare);
         foreach (var element in elements)

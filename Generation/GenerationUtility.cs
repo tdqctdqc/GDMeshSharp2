@@ -18,7 +18,7 @@ public static class GenerationUtility
         }
         return result;
     }
-    public static void PickInTurn<TPicker, TPicked>(IEnumerable<TPicked> notTakenSource, IEnumerable<TPicker> openPickersSource,
+    public static HashSet<TPicked> PickInTurn<TPicker, TPicked>(IEnumerable<TPicked> notTakenSource, IEnumerable<TPicker> openPickersSource,
         Func<TPicker, IEnumerable<TPicked>> getAdjacent, Action<TPicker, TPicked> pick)
     {
         var notTaken = new HashSet<TPicked>(notTakenSource);
@@ -36,8 +36,10 @@ public static class GenerationUtility
             notTaken.Remove(take);
             pick(cell, take);
         }
+
+        return notTaken;
     }
-    public static void PickInTurnHeuristic<TPicker, TPicked>(IEnumerable<TPicked> notTakenSource, 
+    public static HashSet<TPicked> PickInTurnHeuristic<TPicker, TPicked>(IEnumerable<TPicked> notTakenSource, 
         IEnumerable<TPicker> openPickersSource,
         Func<TPicker, IEnumerable<TPicked>> getAdjacent, Action<TPicker, TPicked> pick,
         Func<TPicked, TPicker, float> heuristic)
@@ -57,6 +59,8 @@ public static class GenerationUtility
             notTaken.Remove(take);
             pick(picker, take);
         }
+
+        return notTaken;
     }
 
     public static IEnumerable<T> OrderByClockwise<T>(this IEnumerable<T> elements, 
