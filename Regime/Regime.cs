@@ -14,7 +14,7 @@ public sealed class Regime : Entity
     {
         PrimaryColor = primaryColor;
         SecondaryColor = secondaryColor;
-        Polygons = new EntityRefCollection<MapPolygon>();
+        Polygons = new EntityRefCollection<MapPolygon>(new int[0]);
         Polygons.AddRef(seed, key.Data);
     }
     private Regime(string json) : base(json) {}

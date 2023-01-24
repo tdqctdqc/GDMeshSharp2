@@ -13,7 +13,7 @@ public class TerrainChunkGraphic : Node2D
         for (var i = 0; i < polys.Count; i++)
         {
             var p = polys[i];
-            var offset = first.GetOffsetTo(p, data.Planet.Width);
+            var offset = first.GetOffsetTo(p, data);
             for (var j = manager.ByPriority.Count - 1; j >= 0; j--)
             {
                 var aspect = manager.ByPriority[j];

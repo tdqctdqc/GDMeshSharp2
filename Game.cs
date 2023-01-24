@@ -10,6 +10,7 @@ public class Game : Node
     public static Game I { get; private set; }
     public RandomNumberGenerator Random = new RandomNumberGenerator();
     private ISession _session;
+    public RefFulfiller RefFulfiller => _session.Data.RefFulfiller;
     public override void _Ready()
     {
         if (I != null)
@@ -19,6 +20,7 @@ public class Game : Node
         I = this;
 
         Serializer.Setup();
+        
     }
 
     public void OpenGenerator()

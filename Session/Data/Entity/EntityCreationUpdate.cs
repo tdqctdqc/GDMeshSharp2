@@ -38,6 +38,5 @@ public class EntityCreationUpdate : IUpdate
         var entityMeta = Serializer.GetEntityMeta(entityType);
         var entity = entityMeta.Deserialize(entityJson);
         key.Data.AddEntity(entity, domainType, key);
-        entityMeta.SyncEntityRefs(entity, key);
     }
 }

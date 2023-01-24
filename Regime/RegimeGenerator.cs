@@ -36,7 +36,7 @@ public class RegimeGenerator
                 _data.AddEntity(regime, typeof(SocietyDomain), _key);
             }
             var remainder = GenerationUtility.PickInTurn(
-                lm.Where(p => p.Regime == null), 
+                lm.Where(p => p.Regime.Empty()), 
                 _data.Society.Regimes.Entities, 
                 r => r.Polygons.Refs().SelectMany(n => n.Neighbors.Refs()), 
                 (r, p) =>

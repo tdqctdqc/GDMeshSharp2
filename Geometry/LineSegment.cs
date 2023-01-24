@@ -53,3 +53,18 @@ public class LineSegment
         return From.DistanceTo(To);
     }
 }
+
+public static class LineSegmentExt
+{
+    public static IEnumerable<LineSegment> ChangeOrigin(this IEnumerable<LineSegment> segs, Vector2 oldOrigin, Vector2 newOrigin)
+    {
+        return segs.Select(l => l.ChangeOrigin(oldOrigin, newOrigin));
+    }
+    public static IEnumerable<LineSegment> ChangeOrigin(this IEnumerable<LineSegment> segs, 
+        MapPolygon oldOrigin, MapPolygon newOrigin, Data data)
+    {
+        var offset = newOrigin.GetOffsetTo(oldOrigin, data);
+        return segs.Select(l => new LineSegment(l.From + offset,
+            l.To + offset));
+    }
+}

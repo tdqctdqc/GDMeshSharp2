@@ -33,6 +33,13 @@ public class Serializer
         var metaTypes = typeof(EntityMeta<>);
         foreach (var entityType in entityTypes)
         {
+            var refConverterType = typeof(EntityRefJsonConverter<>).MakeGenericType(entityType);
+            var refColConverterType = typeof(EntityRefColJsonConverter<>).MakeGenericType(entityType);
+            var refConverter = (JsonConverter)refConverterType.GetConstructors()[0].Invoke(null);
+            var refColConverter = (JsonConverter)refColConverterType.GetConstructors()[0].Invoke(null);
+            _options.Converters.Add(refConverter);
+            _options.Converters.Add(refColConverter);
+
             EntityTypes.Add(entityType.Name, entityType);
             var genericMeta = metaTypes.MakeGenericType(entityType);
             var constructor = genericMeta.GetConstructors()[0];
@@ -84,5 +91,57 @@ public class Vector2JsonConverter : JsonConverter<Vector2>
         writer.WriteNumber("x", value.x);
         writer.WriteNumber("y", value.y);
         writer.WriteEndObject();
+    }
+}
+
+public class EntityRefJsonConverter<TEntity> : JsonConverter<EntityRef<TEntity>> where TEntity : Entity
+{
+    public override EntityRef<TEntity> Read(ref Utf8JsonReader reader, Type typeToConvert, 
+        JsonSerializerOptions options)
+    {
+        reader.Read();
+        int id = reader.GetInt32();
+        reader.Read();
+        return new EntityRef<TEntity>(id);
+    }
+
+    public override void Write(Utf8JsonWriter writer, EntityRef<TEntity> value, JsonSerializerOptions options)
+    {
+        writer.WriteStartArray();
+        writer.WriteNumberValue(value.RefId);
+        writer.WriteEndArray();
+    }
+}
+
+public class EntityRefColJsonConverter<TEntity> : JsonConverter<EntityRefCollection<TEntity>> where TEntity : Entity
+{
+    public override EntityRefCollection<TEntity> Read(ref Utf8JsonReader reader, Type typeToConvert, 
+        JsonSerializerOptions options)
+    {
+        reader.Read();
+        var refIds = new List<int>();
+        int count = reader.GetInt32();
+        reader.Read();
+
+        for (int i = 0; i < count; i++)
+        {
+            var read = reader.GetInt32();
+            reader.Read();
+            refIds.Add(read);
+        }
+        reader.Read();
+        GD.Print(refIds.ToArray());
+        return new EntityRefCollection<TEntity>(refIds);
+    }
+
+    public override void Write(Utf8JsonWriter writer, EntityRefCollection<TEntity> value, JsonSerializerOptions options)
+    {
+        writer.WriteStartArray();
+        writer.WriteNumberValue(value.Count);
+        foreach (var i in value)
+        {
+            writer.WriteNumberValue(i);
+        }
+        writer.WriteEndArray();
     }
 }

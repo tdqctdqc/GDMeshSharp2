@@ -3,20 +3,24 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public abstract class TerrainAspectManager<TAspect> 
+public abstract class TerrainAspectManager<TAspect> : IModelRepo<TAspect>
     where TAspect : TerrainAspect
 {
+    public Dictionary<string, TAspect> ByName { get; private set; }
     public List<TAspect> ByPriority { get; private set; }
     public TAspect LandDefault { get; protected set; } 
-    public TAspect WaterDefault { get; protected set; } 
-    // public Dictionary<TAspect, TerrainAspectHolder> Holders { get; private set; }
-
+    public TAspect WaterDefault { get; protected set; }
+    Dictionary<string, TAspect> IModelRepo<TAspect>.Models => ByName;
     public TerrainAspectManager(TAspect waterDefault, 
         TAspect landDefault, List<TAspect> byPriority)
     {
         WaterDefault = waterDefault;
         LandDefault = landDefault;
         ByPriority = byPriority;
+        ByName = new Dictionary<string, TAspect>();
+        ByName.Add(waterDefault.Name, waterDefault);
+        ByName.Add(landDefault.Name, landDefault);
+        ByPriority.ForEach(ta => ByName.Add(ta.Name, ta));
     }
 
     public void BuildTriHolders(IDDispenser id, Data data, CreateWriteKey key)

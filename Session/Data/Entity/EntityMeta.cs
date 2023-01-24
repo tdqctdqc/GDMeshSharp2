@@ -129,13 +129,4 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
     {
         _fieldSetters[fieldName]((T) t, newValue);
     }
-    public void SyncEntityRefs(Entity t, ServerWriteKey key)
-    {
-        foreach (var keyValuePair in _fieldGetters)
-        {
-            var field = keyValuePair.Value.Invoke((T)t);
-            if(field is IEntityRef r) r.SyncRef(key);
-            else if (field is IEntityRefCollection c) c.SyncRefs(key);
-        }
-    }
 }

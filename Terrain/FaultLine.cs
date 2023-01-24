@@ -32,10 +32,10 @@ public class FaultLine
 
     public float GetDist(MapPolygon poly, WorldData data)
     {
-        return Segments.Select(seg => seg.Select(l => l.DistanceTo(Origin.GetOffsetTo(poly, data.Planet.Width))).Min()).Min();
+        return Segments.Select(seg => seg.Select(l => l.DistanceTo(Origin.GetOffsetTo(poly, data))).Min()).Min();
     }
     public bool PointWithinDist(Vector2 pointAbs, float dist, WorldData data)
     {
-        return Segments.Any(seg => seg.Any(l => l.DistanceTo(Origin.GetOffsetTo(pointAbs, data.Planet.Width)) < dist));
+        return Segments.Any(seg => seg.Any(l => l.DistanceTo(Origin.GetOffsetTo(pointAbs, data)) < dist));
     }
 }

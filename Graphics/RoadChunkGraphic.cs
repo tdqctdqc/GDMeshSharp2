@@ -19,8 +19,8 @@ public class RoadChunkGraphic : Node2D
                     var border = p.GetBorder(n, data);
                     if (data.Society.Roads.ByBorderId.ContainsKey(border.Id))
                     {
-                        froms.Add(first.GetOffsetTo(p.Center, data.Planet.Width));
-                        tos.Add(first.GetOffsetTo(n.Center, data.Planet.Width));
+                        froms.Add(first.GetOffsetTo(p.Center, data));
+                        tos.Add(first.GetOffsetTo(n.Center, data));
                     }
                 }
             }

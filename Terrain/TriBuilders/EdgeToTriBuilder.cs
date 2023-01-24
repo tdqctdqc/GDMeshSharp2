@@ -27,7 +27,7 @@ public class EdgeToTriBuilder : ITriBuilder
             {
                 var segs = p.GetBorder(n, data).GetSegsRel(p);
                 var width = _widthFromStrength(strength);
-                var axis = p.GetOffsetTo(n, data.Planet.Width);
+                var axis = p.GetOffsetTo(n, data);
                 var axisRot = axis.Rotated(Mathf.Pi / 2f).Normalized();
                 var bl = axisRot * width / 2f;
                 var br = -bl;

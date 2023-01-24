@@ -28,6 +28,7 @@ public sealed class MapPolygon : Entity
         Neighbors = EntityRefCollection<MapPolygon>.Construct(new int[0], key);
         NoNeighborBorders = new List<Vector2>();
         Color = ColorsExt.GetRandomColor();
+        Regime = new EntityRef<Regime>(-1);
     }
     public bool HasNeighbor(MapPolygon p)
     {
@@ -69,7 +70,7 @@ public sealed class MapPolygon : Entity
 
     public void SetRegime(Regime r, GenWriteKey key)
     {
-        Regime = EntityRef<Regime>.Construct(r, key);
+        Regime.Set(r.Id, key);
     }
     public void AddNoNeighborBorder(Vector2 from, Vector2 to)
     {
@@ -118,25 +119,22 @@ public static class MapPolygonExt
 
         return tris;
     }
-
-    public static Vector2 GetOffsetTo(this MapPolygon poly, MapPolygon p, float mapWidth)
+    public static Vector2 GetOffsetTo(this MapPolygon poly, MapPolygon p, Data data)
     {
         var off1 = p.Center - poly.Center;
-        var off2 = (off1 + Vector2.Right * mapWidth);
-        var off3 = (off1 + Vector2.Left * mapWidth);
+        var off2 = (off1 + Vector2.Right * data.Planet.Width);
+        var off3 = (off1 + Vector2.Left * data.Planet.Width);
         if (off1.Length() < off2.Length() && off1.Length() < off3.Length()) return off1;
         if (off2.Length() < off1.Length() && off2.Length() < off3.Length()) return off2;
         return off3;
     }
-    
-    public static Vector2 GetOffsetTo(this MapPolygon poly, Vector2 p, float mapWidth)
+    public static Vector2 GetOffsetTo(this MapPolygon poly, Vector2 p, Data data)
     {
         var off1 = p - poly.Center;
-        var off2 = (off1 + Vector2.Right * mapWidth);
-        var off3 = (off1 + Vector2.Left * mapWidth);
+        var off2 = (off1 + Vector2.Right * data.Planet.Width);
+        var off3 = (off1 + Vector2.Left * data.Planet.Width);
         if (off1.Length() < off2.Length() && off1.Length() < off3.Length()) return off1;
         if (off2.Length() < off1.Length() && off2.Length() < off3.Length()) return off2;
         return off3;
     }
-    
 }

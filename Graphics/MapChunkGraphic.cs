@@ -16,23 +16,25 @@ public class MapChunkGraphic : Node2D
         var first = chunk.First();
         Polys = new PolygonChunkGraphic();
         Polys.Setup(chunk, data, p => p.IsLand() 
-        ? Colors.SaddleBrown 
-        : Colors.Blue);
+            ? Colors.SaddleBrown 
+            : Colors.Blue);
         AddChild(Polys);
 
         Landform = new TerrainChunkGraphic();
-        Landform.Setup(chunk, data, data.Landforms);
+        Landform.Setup(chunk, data, data.Models.Landforms);
         AddChild(Landform);
         
         Vegetation = new TerrainChunkGraphic();
-        Vegetation.Setup(chunk, data, data.Vegetation);
+        Vegetation.Setup(chunk, data, data.Models.Vegetation);
         AddChild(Vegetation);
         
         Regimes = new PolygonChunkGraphic();
-        Regimes.Setup(chunk, data, 
-            p => p.Regime != null 
-            ? new Color(p.Regime.Ref().PrimaryColor, .5f) 
-            : Colors.Transparent);
+        Regimes.SetupWithBorder(chunk, 
+            data, 
+            p => p.Regime.Ref().PrimaryColor,
+            (p1, p2) => p1.Regime.RefId == p2.Regime.RefId,
+            p => p.Regime.Empty(),
+            .25f, 1f, 25f);
         AddChild(Regimes);
 
         Roads = new RoadChunkGraphic();

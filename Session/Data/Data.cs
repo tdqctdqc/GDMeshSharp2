@@ -1,9 +1,12 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Data
 {
+    public Models Models { get; private set; }
+    public RefFulfiller RefFulfiller { get; private set; }
     public IReadOnlyDictionary<Type, Domain> Domains => _domains;
     private Dictionary<Type, Domain> _domains;
     public Dictionary<int, Entity> Entities { get; private set; }
@@ -12,13 +15,12 @@ public class Data
     public BaseDomain BaseDomain { get; private set; }
     public PlanetDomain Planet { get; private set; }
     public SocietyDomain Society { get; private set; }
-    public LandformManager Landforms { get; private set; }
-    public VegetationManager Vegetation { get; private set; }
+    
 
     public Data()
     {
-        Landforms = new LandformManager();
-        Vegetation = new VegetationManager();
+        RefFulfiller = new RefFulfiller(this);
+        Models = new Models();
         Entities = new Dictionary<int, Entity>();
         EntityRepos = new Dictionary<int, IRepo>();
         _domains = new Dictionary<Type, Domain>();
@@ -78,6 +80,10 @@ public class Data
         return _domains[domainType];
     }
 
+    public Domain GetDomain(string domainType)
+    {
+        return _domains.First(e => e.Key.Name == domainType).Value;
+    }
     public T GetEntity<T>(int id) where T : Entity
     {
         return (T) Entities[id];

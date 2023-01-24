@@ -23,7 +23,7 @@ public class Vegetation : TerrainAspect
 
     public override bool Allowed(MapPolygon p, WorldData data)
     {
-        var pLandform = data.Landforms.GetAspectFromPoly(p, data);
+        var pLandform = data.Models.Landforms.GetAspectFromPoly(p, data);
         return AllowedLandforms.Contains(pLandform) && p.Moisture >= MinMoisture;
     }
 }

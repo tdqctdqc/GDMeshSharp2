@@ -17,29 +17,17 @@ public class FaultLineGraphic : Node2D
     {
         FaultLine = f;
         if (f.PolyFootprint.Count == 0) return;
+
+        var mb = new MeshBuilder(Colors.White);
         _segments = new Node2D();
-        
-        
-        var tris = new List<Vector2>();
-        f.PolyFootprint.ForEach(p =>
-        {
-            var offset = p.GetOffsetTo(Origin, data.Planet.Width);
-            var trisRel = p.GetTrisRel(data).Select(v => v - offset);
-            tris.AddRange(trisRel);
-        });
-        _footprint = MeshGenerator.GetMeshInstance(tris);
-        _footprint.Modulate = new Color(Colors.Gray, .5f);
-        AddChild(_footprint);
-        
+        var footprintCol = new Color(Colors.Gray, .5f);
+        mb.AddPolysRelative(FaultLine.Origin, f.PolyFootprint, p => footprintCol,
+            data);
         
         f.Segments.ForEach(segs =>
         {
-            var segLines = MeshGenerator.GetLinesMesh(segs, Vector2.Zero, 20f, false);
-            var segMarkers = MeshGenerator.GetPointsMesh(segs.Select(s => s.From).ToList(), 50f);
-            _segments.AddChild(segLines);
-            _segments.AddChild(segMarkers);
+            mb.AddLines(segs, 20f, Colors.Red);
         });
-        _segments.Modulate = Colors.Red;
-        AddChild(_segments);
+        AddChild(mb.GetMeshInstance());
     }
 }

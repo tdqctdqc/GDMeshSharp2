@@ -5,25 +5,31 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-public class EntityRefCollection<TRef> : HashSet<int>, IEntityRefCollection where TRef : Entity
+public class EntityRefCollection<TRef> : HashSet<int>, IRef where TRef : Entity
 {
-    public IReadOnlyCollection<TRef> Refs() => _refs;
-    private List<int> _idList;
     private HashSet<TRef> _refs;
-    
     public static EntityRefCollection<TRef> Construct(IEnumerable<int> refIds, CreateWriteKey key)
     {
-        var col = new EntityRefCollection<TRef>();
-        foreach (var refId in refIds)
-        {
-            col.AddRef(refId, key.Data);
-        }
+        var col = new EntityRefCollection<TRef>(refIds);
         col._refs = col.Select(id => (TRef) key.Data[id]).ToHashSet();
         return col;
     }
-    public EntityRefCollection()
+    public EntityRefCollection(IEnumerable<int> refIds)
     {
+        foreach (var refId in refIds)
+        {
+            Add(refId);
+        }
         _refs = new HashSet<TRef>();
+    }
+
+    public IReadOnlyCollection<TRef> Refs()
+    {
+        if (_refs == null)
+        {
+            Game.I.RefFulfiller.Fulfill(this);
+        }
+        return _refs;
     }
 
     public bool Contains(TRef entity)
@@ -79,7 +85,7 @@ public class EntityRefCollection<TRef> : HashSet<int>, IEntityRefCollection wher
         _refs = refs.ToHashSet();
     }
     
-    public void SyncRefs(ServerWriteKey key)
+    public void SyncRef(Data data)
     {
         _refs.Clear();
         foreach (var id in this)
@@ -87,12 +93,12 @@ public class EntityRefCollection<TRef> : HashSet<int>, IEntityRefCollection wher
             TRef refer;
             try
             {
-                refer = (TRef) key.Data[id];
+                refer = (TRef) data[id];
                 _refs.Add(refer);
             }
             catch (Exception e)
             {
-                GD.Print(key.Data[id].GetType().ToString() + " supposed to be " + typeof(TRef).ToString());
+                GD.Print(data[id].GetType().ToString() + " supposed to be " + typeof(TRef).ToString());
                 throw;
             }
         }

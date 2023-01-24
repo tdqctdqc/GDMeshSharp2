@@ -69,7 +69,7 @@ public class LocationGenerator
                 Data.AddEntity(settlement, typeof(SocietyDomain), _key);
             }
         });
-        Data.Landforms.BuildTrisForAspect(LandformManager.Urban, Data);
+        Data.Models.Landforms.BuildTrisForAspect(LandformManager.Urban, Data);
 
         float popScore(MapPolygon p)
         {
@@ -86,11 +86,11 @@ public class LocationGenerator
             var settlements = lm.Where(p => p.SettlementSize > 0f);
             if (settlements.Count() == 0) return;
             var first = settlements.First();
-            var points = settlements.Select(s => first.GetOffsetTo(s, Data.Planet.Width)).ToList();
+            var points = settlements.Select(s => first.GetOffsetTo(s, Data)).ToList();
             if (points.Count < 3) return;
 
             var graph = GraphGenerator.GenerateDelaunayGraph(settlements.ToList(),
-                s => first.GetOffsetTo(s, Data.Planet.Width),
+                s => first.GetOffsetTo(s, Data),
                 (p1, p2) => new Edge<MapPolygon>(p1, p2, (a, b) => a.Id > b.Id));
 
             float edgeCost(MapPolygon p1, MapPolygon p2)
@@ -100,9 +100,9 @@ public class LocationGenerator
             }
             foreach (var e in graph.Edges)
             {
-                if (e.T1.GetOffsetTo(e.T2, Data.Planet.Width).Length() > 1000f) continue;
+                if (e.T1.GetOffsetTo(e.T2, Data).Length() > 1000f) continue;
                 var path = PathFinder<MapPolygon>.FindPath(e.T1, e.T2, p => p.Neighbors.Refs(),
-                    edgeCost, (p1, p2) => p1.GetOffsetTo(p2, Data.Planet.Width).Length());
+                    edgeCost, (p1, p2) => p1.GetOffsetTo(p2, Data).Length());
                 for (var i = 0; i < path.Count - 1; i++)
                 {
                     var border = path[i].GetBorder(path[i + 1], Data);

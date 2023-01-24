@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public interface IEntityRefCollection
+public interface IRef
 {
-    void SyncRefs(ServerWriteKey key);
+    void SyncRef(Data data);
 }

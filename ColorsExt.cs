@@ -11,6 +11,8 @@ public static class ColorsExt
     public static List<Color> Rainbow
         = GetRainbow();
 
+    public static Color Transparent = new Color(0f, 0f, 0f, 0f);
+
     private static RandomNumberGenerator _rand = new RandomNumberGenerator();
     private static List<Color> GetRainbow()
     {

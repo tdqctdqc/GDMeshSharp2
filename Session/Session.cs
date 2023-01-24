@@ -20,13 +20,13 @@ public class Session : Node, ISession
         hServer.SetDependencies(logic, Data);
         logic.SetDependencies(hServer, Data);
         
-        var sw = new Stopwatch();
-        sw.Start();
-        var stateTransfer = StateTransferUpdate.Encode(new HostWriteKey(hServer, data)).Serialize();
-        sw.Stop();
-        GD.Print("state transfer building time " + sw.Elapsed.Seconds);
-        GD.Print("state transfer size " + System.Text.ASCIIEncoding.Unicode.GetByteCount(stateTransfer) / 1_000_000f);
-        
+        // var sw = new Stopwatch();
+        // sw.Start();
+        // var stateTransfer = StateTransferUpdate.Encode(new HostWriteKey(hServer, data)).Serialize();
+        // sw.Stop();
+        // GD.Print("state transfer building time " + sw.Elapsed.Seconds);
+        // GD.Print("state transfer size " + System.Text.ASCIIEncoding.Unicode.GetByteCount(stateTransfer) / 1_000_000f);
+        //
         StartServer(hServer);
         StartClient(hServer);
     }
@@ -42,6 +42,7 @@ public class Session : Node, ISession
 
         StartServer(server);
         StartClient(server);
+
     }
 
     private void SetCredential(UserCredential userCredential)

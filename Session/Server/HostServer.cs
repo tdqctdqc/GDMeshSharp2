@@ -81,7 +81,6 @@ public class HostServer : Node, IServer
         
         GD.Print("sending state transfer");
         RpcId(id, nameof(RemoteServer.ReceiveStateTransfer), new object[]{stateTransfer.Serialize()});
-        
     }
     private void PeerDisconnected(int id)
     {

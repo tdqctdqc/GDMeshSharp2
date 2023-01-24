@@ -74,8 +74,8 @@ public class MoistureGenerator
 
     private void BuildVegetationTris()
     {
-        Data.Vegetation.BuildTriHolders(_id, Data, _key);
-        Data.Vegetation.BuildTris(Data.Planet.Polygons.Entities.ToHashSet(), Data);
+        Data.Models.Vegetation.BuildTriHolders(_id, Data, _key);
+        Data.Models.Vegetation.BuildTris(Data.Planet.Polygons.Entities.ToHashSet(), Data);
     }
 
     
@@ -140,7 +140,7 @@ public class MoistureGenerator
                 path[i].GetBorder(path[i + 1], Data).IncrementFlow(add, _key);
             }
         }
-        Data.Landforms.BuildTrisForAspect(LandformManager.River, Data, 
+        Data.Models.Landforms.BuildTrisForAspect(LandformManager.River, Data, 
             pathToSea.SelectMany(p => p.Value).Distinct().ToList());
 
     }
