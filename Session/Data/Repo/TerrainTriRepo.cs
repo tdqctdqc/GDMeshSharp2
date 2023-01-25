@@ -13,11 +13,11 @@ public class TerrainTriRepo : Repository<TerrainTriHolder>
         ByName = new Dictionary<string, TerrainTriHolder>();
         AddedEntity += (holder, key) =>
         {
-            ByName.Add(holder.TerrainAspectName, holder);
+            ByName.Add(holder.TerrainAspect.ModelName, holder);
         };
         RemovingEntity += (holder, key) =>
         {
-            ByName.Remove(holder.TerrainAspectName);
+            ByName.Remove(holder.TerrainAspect.ModelName);
         };
     }
 }

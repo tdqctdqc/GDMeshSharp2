@@ -9,7 +9,7 @@ public sealed class RoadSegment : Entity
 
     public RoadSegment(int id, CreateWriteKey key, MapPolygonBorder border) : base(id, key)
     {
-        Border = EntityRef<MapPolygonBorder>.Construct(border, key);
+        Border = new EntityRef<MapPolygonBorder>(border, key);
     }
 
     public RoadSegment(string json) : base(json) { }

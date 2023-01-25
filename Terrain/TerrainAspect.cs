@@ -4,7 +4,7 @@ using System.Linq;
 using System.Security.Policy;
 using Godot;
 
-public abstract class TerrainAspect
+public abstract class TerrainAspect : IModel
 {
     public abstract string Name { get; protected set; }
     public abstract ITriBuilder TriBuilder { get; protected set; }

@@ -2,16 +2,15 @@ using Godot;
 using System;
 using System.Collections.Generic;
 
-public class EntityRef<TRef> : IRef where TRef : Entity
+public class EntityRef<TRef> : IRef<int> where TRef : Entity
 {
     public int RefId { get; private set; }
     private TRef _ref;
     
-    public static EntityRef<TRef> Construct(TRef entity, CreateWriteKey key)
+    public EntityRef(TRef entity, CreateWriteKey key)
     {
-        var refer = new EntityRef<TRef>(entity.Id);
-        refer._ref = entity;
-        return refer;
+        RefId = entity.Id;
+        _ref = entity;
     }
     public EntityRef(int refId)
     {
@@ -50,4 +49,9 @@ public class EntityRef<TRef> : IRef where TRef : Entity
             throw;
         }
     }
+    public static EntityRef<TRef> DeserializeConstructor(int t, ServerWriteKey key)
+    {
+        return new EntityRef<TRef>(t);
+    }
+    int IRef<int>.GetUnderlying() => RefId;
 }

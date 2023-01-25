@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-public class EntityRefCollection<TRef> : HashSet<int>, IRef where TRef : Entity
+public class EntityRefCollection<TRef> : HashSet<int>, IRef<HashSet<int>> where TRef : Entity
 {
     private HashSet<TRef> _refs;
     public static EntityRefCollection<TRef> Construct(IEnumerable<int> refIds, CreateWriteKey key)
@@ -60,30 +60,6 @@ public class EntityRefCollection<TRef> : HashSet<int>, IRef where TRef : Entity
         Remove(id);
         _refs.Remove((TRef)data[id]);
     }
-    public void Set(IEnumerable<int> ids, Data data, CreateWriteKey key)
-    {
-        //todo need to make this procedure
-        Clear();
-        foreach (var id in ids)
-        {
-            Add(id);
-        }
-        _refs = this.Select(id => (TRef) data[id]).ToHashSet();
-    }
-    public void Set(IEnumerable<TRef> refs, Data data, CreateWriteKey key)
-    {
-        //todo need to make this procedure
-        Clear();
-        foreach (var entity in refs)
-        {
-            if (data[entity.Id].GetType() != entity.GetType())
-            {
-                GD.Print($"{data[entity.Id].GetType()} should be {entity.GetType()}");
-            }
-            Add(entity.Id);
-        }
-        _refs = refs.ToHashSet();
-    }
     
     public void SyncRef(Data data)
     {
@@ -103,4 +79,10 @@ public class EntityRefCollection<TRef> : HashSet<int>, IRef where TRef : Entity
             }
         }
     }
+
+    public static EntityRefCollection<TRef> DeserializeConstructor(HashSet<int> col)
+    {
+        return new EntityRefCollection<TRef>(col);
+    }
+    HashSet<int> IRef<HashSet<int>>.GetUnderlying() => this;
 }

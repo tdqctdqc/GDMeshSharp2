@@ -6,7 +6,7 @@ using Godot;
 public sealed class TerrainTriHolder : Entity
 {
     public Dictionary<int, List<Triangle>> Tris { get; private set; }
-    public string TerrainAspectName { get; private set; }
+    public ModelRef<TerrainAspect> TerrainAspect { get; private set; }
     public bool Contains(MapPolygon p, Vector2 offsetFromPolyCenter)
     {
         return Tris[p.Id].Any(t => t.PointInsideTriangle(offsetFromPolyCenter));
@@ -14,13 +14,8 @@ public sealed class TerrainTriHolder : Entity
 
     public TerrainTriHolder(TerrainAspect aspect, int id, CreateWriteKey key) : base(id, key)
     {
-        TerrainAspectName = aspect.Name;
+        TerrainAspect = new ModelRef<TerrainAspect>(aspect.Name);
         Tris = new Dictionary<int, List<Triangle>>();
-    }
-    public TerrainTriHolder(TerrainAspect aspect, Dictionary<int, List<Triangle>> tris, int id, CreateWriteKey key) : base(id, key)
-    {
-        TerrainAspectName = aspect.Name;
-        Tris = tris;
     }
     public void AddTri(MapPolygon p, Triangle tri)
     {

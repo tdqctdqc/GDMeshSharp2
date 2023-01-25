@@ -6,11 +6,13 @@ using Godot;
 public class Models
 {
     private Dictionary<Type, IModelRepo> _repos;
+    private Dictionary<string, object> _models;
     public LandformManager Landforms { get; private set; }
     public VegetationManager Vegetation { get; private set; }
     public Models()
     {
         _repos = new Dictionary<Type, IModelRepo>();
+        _models = new Dictionary<string, object>();
         Landforms = new LandformManager();
         AddRepo(Landforms);
         Vegetation = new VegetationManager();
@@ -19,12 +21,15 @@ public class Models
 
     public T GetModel<T>(string name)
     {
-        var repo = (IModelRepo<T>) _repos[typeof(T)];
-        return repo.Models[name];
+        return (T)_models[name];
     }
 
     private void AddRepo<T>(IModelRepo<T> repo)
     {
         _repos.Add(typeof(T), repo);
+        foreach (var keyValuePair in repo.Models)
+        {
+            _models.Add(keyValuePair.Key, keyValuePair.Value);
+        }
     }
 }

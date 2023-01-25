@@ -15,13 +15,13 @@ public sealed class MapPolygonBorder : Entity
     {
         if (poly1.Id < poly2.Id)
         {
-            LowId = EntityRef<MapPolygon>.Construct(poly1, key);
-            HighId = EntityRef<MapPolygon>.Construct(poly2, key);
+            LowId = new EntityRef<MapPolygon>(poly1, key);
+            HighId = new EntityRef<MapPolygon>(poly2, key);
         }
         else
         {
-            LowId = EntityRef<MapPolygon>.Construct(poly2, key);
-            HighId = EntityRef<MapPolygon>.Construct(poly1, key);
+            LowId = new EntityRef<MapPolygon>(poly2, key);
+            HighId = new EntityRef<MapPolygon>(poly1, key);
         }
 
         HighSegsRel = OrderAndRelativizeSegments(segments, HighId.Ref());
@@ -44,15 +44,15 @@ public sealed class MapPolygonBorder : Entity
         List<LineSegment> abs2 = poly2SegsRel.Select(p => p.ChangeOrigin(poly2.Center, Vector2.Zero)).ToList();
         if (poly1.Id < poly2.Id)
         {
-            LowId = EntityRef<MapPolygon>.Construct(poly1, key);
-            HighId = EntityRef<MapPolygon>.Construct(poly2, key);
+            LowId = new EntityRef<MapPolygon>(poly1, key);
+            HighId = new EntityRef<MapPolygon>(poly2, key);
             HighSegsRel = OrderAndRelativizeSegments(abs2, HighId.Ref());
             LowSegsRel = OrderAndRelativizeSegments(abs1, LowId.Ref());
         }
         else
         {
-            LowId = EntityRef<MapPolygon>.Construct(poly2, key);
-            HighId = EntityRef<MapPolygon>.Construct(poly1, key);
+            LowId = new EntityRef<MapPolygon>(poly2, key);
+            HighId = new EntityRef<MapPolygon>(poly1, key);
             HighSegsRel = OrderAndRelativizeSegments(abs1, HighId.Ref());
             LowSegsRel = OrderAndRelativizeSegments(abs2, LowId.Ref());
         }

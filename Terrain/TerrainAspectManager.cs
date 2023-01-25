@@ -19,7 +19,7 @@ public abstract class TerrainAspectManager<TAspect> : IModelRepo<TAspect>
         ByPriority = byPriority;
         ByName = new Dictionary<string, TAspect>();
         ByName.Add(waterDefault.Name, waterDefault);
-        ByName.Add(landDefault.Name, landDefault);
+        if(landDefault != waterDefault) ByName.Add(landDefault.Name, landDefault);
         ByPriority.ForEach(ta => ByName.Add(ta.Name, ta));
     }
 

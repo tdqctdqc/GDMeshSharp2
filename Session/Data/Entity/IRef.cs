@@ -7,3 +7,9 @@ public interface IRef
 {
     void SyncRef(Data data);
 }
+
+public interface IRef<TUnderlying> : IRef
+{
+    TUnderlying GetUnderlying();
+}
+
