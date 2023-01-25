@@ -3,39 +3,35 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-public sealed class EntityVarUpdate : IUpdate
+public sealed class EntityVarUpdate : Update
 {
-    string IUpdate.UpdateType => UpdateType;
-    public static string UpdateType = "Var";
     public string FieldName { get; private set; }
     public int EntityId { get; private set; }
-    public string NewVal { get; private set; }
-    public static EntityVarUpdate Encode<TValue>(string fieldName, int entityId, TValue newVal, HostWriteKey key)
+    public object NewVal { get; private set; }
+    public static void Send<TValue>(string fieldName, int entityId, TValue newVal, HostWriteKey key)
     {
-        return new EntityVarUpdate(fieldName, entityId,
-            Serializer.Serialize<TValue>(newVal));
+        var u = new EntityVarUpdate(fieldName, entityId,
+            newVal, key);
+        key.Server.QueueUpdate(u);        
     }
-    private EntityVarUpdate(string fieldName, int entityId, string newVal)
+    private EntityVarUpdate(string fieldName, int entityId, object newVal, HostWriteKey key) : base(key)
     {
         FieldName = fieldName;
         EntityId = entityId;
         NewVal = newVal;
     }
 
-    public string Serialize()
+    public override void Enact(ServerWriteKey key)
     {
-        var jsonArray = new System.Text.Json.Nodes.JsonArray();
-        jsonArray.Add(FieldName);
-        jsonArray.Add(EntityId.ToString());
-        jsonArray.Add(NewVal);
-        return jsonArray.ToJsonString();
-    }
-    public static void DeserializeAndEnact(string json, ServerWriteKey key)
-    {
-        var list = Serializer.Deserialize<List<string>>(json);
-        var update = new EntityVarUpdate(list[0], list[1].ToInt(), list[2]);
-        var entity = key.Data[update.EntityId];
+        var entity = key.Data[EntityId];
         var meta = entity.GetMeta();
-        meta.UpdateEntityVar(update.FieldName, entity, key, update.NewVal);
+        meta.UpdateEntityVar(FieldName, entity, key, NewVal);
     }
+
+    private static EntityVarUpdate DeserializeConstructor(object[] args)
+    {
+        return new EntityVarUpdate(args);
+    }
+
+    private EntityVarUpdate(object[] args) : base(args) { }
 }

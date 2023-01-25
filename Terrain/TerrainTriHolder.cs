@@ -35,9 +35,9 @@ public sealed class TerrainTriHolder : Entity
         if (Tris.ContainsKey(p.Id)) return Tris[p.Id];
         return null;
     }
-    private static TerrainTriHolder DeserializeConstructor(string json)
+    private static TerrainTriHolder DeserializeConstructor(object[] args)
     {
-        return new TerrainTriHolder(json);
+        return new TerrainTriHolder(args);
     }
-    private TerrainTriHolder(string json) : base(json) { }
+    private TerrainTriHolder(object[] args) : base(args) { }
 }

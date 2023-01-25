@@ -8,8 +8,8 @@ public abstract class Location : Entity
     protected Location(int id, CreateWriteKey key) : base(id, key)
     {
     }
-
-    protected Location(string json) : base(json)
+    
+    protected Location(object[] args) : base(args)
     {
     }
     

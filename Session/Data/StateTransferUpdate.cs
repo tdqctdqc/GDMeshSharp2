@@ -3,51 +3,44 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public class StateTransferUpdate : IUpdate
+public class StateTransferUpdate : Update
 {
-    string IUpdate.UpdateType => UpdateType;
-    public static string UpdateType = "StateTransfer";
-    public Dictionary<string, Dictionary<string, List<string>>> Data { get; private set; }
+    public Dictionary<string, Dictionary<string, List<object[]>>> Data { get; private set; }
 
-    public static StateTransferUpdate Encode(HostWriteKey key)
+    public static void Send(HostWriteKey key, int remoteId)
     {
-        return new StateTransferUpdate(key);
+        var u = new StateTransferUpdate(key);
+        key.Server.QueueUpdate(u);
     }
 
-    private StateTransferUpdate(HostWriteKey key)
+    private StateTransferUpdate(HostWriteKey key) : base(key)
     {
-        Data = new Dictionary<string, Dictionary<string, List<string>>>();
+        Data = new Dictionary<string, Dictionary<string, List<object[]>>>();
         foreach (var keyValuePair in key.Data.Domains)
         {
             var domainType = keyValuePair.Key;
             var domain = keyValuePair.Value;
-            var dic = new Dictionary<string, List<string>>();
+            var dic = new Dictionary<string, List<object[]>>();
             Data.Add(domainType.Name, dic);
             
             foreach (var kvp in domain.Repos)
             {
                 var entityType = kvp.Key;
-                var meta = Serializer.GetEntityMeta(entityType);
+                var meta = Game.I.Serializer.GetEntityMeta(entityType);
                 var repo = kvp.Value;
-                var eJsons = new List<string>();                    
-                dic.Add(entityType.Name, eJsons);
+                var eArgs = new List<object[]>();                    
+                dic.Add(entityType.Name, eArgs);
 
                 foreach (var entity in repo.Entities)
                 {
-                    eJsons.Add(meta.Serialize(entity));
+                    eArgs.Add(meta.Serialize(entity));
                 }
             }
         }
     }
-    public string Serialize()
+    public override void Enact(ServerWriteKey key)
     {
-        return Serializer.Serialize(Data);
-    }
-
-    public static void DeserializeAndEnact(string json, ServerWriteKey key)
-    {
-        var deserialized = Serializer.Deserialize<Dictionary<string, Dictionary<string, List<string>>>>(json);
-        foreach (var keyValuePair in deserialized)
+        foreach (var keyValuePair in Data)
         {
             var domainName = keyValuePair.Key;
             var domain = key.Data.GetDomain(domainName);
@@ -55,16 +48,21 @@ public class StateTransferUpdate : IUpdate
             foreach (var domainEntityType in domainEntityTypes)
             {
                 var entityTypeName = domainEntityType.Key;
-                var entityType = Serializer.EntityTypes[entityTypeName];
                 var entityJsons = domainEntityType.Value;
-                var meta = Serializer.GetEntityMeta(entityType);
+                var meta = Game.I.Serializer.GetEntityMeta(entityTypeName);
                 entityJsons.ForEach(eJson =>
                 {
                     var entity = meta.Deserialize(eJson);
                     key.Data.AddEntity(entity, domain.GetType(), key);
                 });
-                
             }
         }
     }
+
+    private static StateTransferUpdate DeserializeConstructor(object[] args)
+    {
+        return new StateTransferUpdate(args);
+    }
+
+    private StateTransferUpdate(object[] args) : base(args) {}
 }

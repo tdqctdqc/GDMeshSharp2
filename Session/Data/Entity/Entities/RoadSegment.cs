@@ -12,9 +12,9 @@ public sealed class RoadSegment : Entity
         Border = new EntityRef<MapPolygonBorder>(border, key);
     }
 
-    public RoadSegment(string json) : base(json) { }
-    private static RoadSegment DeserializeConstructor(string json)
+    public RoadSegment(object[] args) : base(args) { }
+    private static RoadSegment DeserializeConstructor(object[] args)
     {
-        return new RoadSegment(json);
+        return new RoadSegment(args);
     }
 }

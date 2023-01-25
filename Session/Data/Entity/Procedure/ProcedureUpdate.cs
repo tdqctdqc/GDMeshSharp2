@@ -2,26 +2,30 @@ using Godot;
 using System;
 using System.Text.Json;
 
-public class ProcedureUpdate : IUpdate
+public class ProcedureUpdate : Update
 {
-    string IUpdate.UpdateType => UpdateType;
-    public static string UpdateType = "Procedure";
     public string ProcedureName { get; private set; }
-    public string ArgsJson { get; private set; }
+    public object[] ProcedureArgs { get; private set; }
 
-    public ProcedureUpdate(string procedureName, string argsJson)
+    public ProcedureUpdate(string procedureName, object[] procedureArgs, HostWriteKey key) : base(key)
     {
+        ProcedureArgs = procedureArgs;
         ProcedureName = procedureName;
-        ArgsJson = argsJson;
     }
     public string Serialize()
     {
-        return Serializer.Serialize(this);
+        return Game.I.Serializer.Serialize(this);
+    }
+    public override void Enact(ServerWriteKey key)
+    {
+        var meta = Game.I.Serializer.GetProcedureMeta(ProcedureName);
+        var proc = meta.Deserialize(ProcedureArgs);
+        proc.Enact(key);
     }
 
-    public static void DeserializeAndEnact(string json, ServerWriteKey key)
+    private static ProcedureUpdate DeserializeConstructor(object[] args)
     {
-        var update = Serializer.Deserialize<ProcedureUpdate>(json);
-        ProcedureMeta.TriggerProcedure(update.ProcedureName, update.ArgsJson, key);
+        return new ProcedureUpdate(args);
     }
+    private ProcedureUpdate(object[] args) : base(args) {}
 }

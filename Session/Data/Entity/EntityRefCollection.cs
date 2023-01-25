@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-public class EntityRefCollection<TRef> : HashSet<int>, IRef<HashSet<int>> where TRef : Entity
+[RefAttribute] public class EntityRefCollection<TRef> : HashSet<int>, IRef<HashSet<int>> where TRef : Entity
 {
     private HashSet<TRef> _refs;
     public static EntityRefCollection<TRef> Construct(IEnumerable<int> refIds, CreateWriteKey key)
@@ -84,5 +84,13 @@ public class EntityRefCollection<TRef> : HashSet<int>, IRef<HashSet<int>> where 
     {
         return new EntityRefCollection<TRef>(col);
     }
-    HashSet<int> IRef<HashSet<int>>.GetUnderlying() => this;
+    public HashSet<int> GetUnderlying() => this;
+    public void Set(HashSet<int> underlying, StrongWriteKey key)
+    {
+        Clear();
+        foreach (var i in underlying)
+        {
+            Add(i);
+        }
+    }
 }

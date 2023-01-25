@@ -2,7 +2,7 @@ using Godot;
 using System;
 using System.Collections.Generic;
 
-public class EntityRef<TRef> : IRef<int> where TRef : Entity
+[RefAttribute] public class EntityRef<TRef> : IRef<int> where TRef : Entity
 {
     public int RefId { get; private set; }
     private TRef _ref;
@@ -18,10 +18,9 @@ public class EntityRef<TRef> : IRef<int> where TRef : Entity
         _ref = null;
     }
 
-    public void Set(int id, CreateWriteKey key)
+    public void Set(int id, StrongWriteKey key)
     {
         RefId = id;
-        _ref = (TRef)key.Data[RefId];
     }
     public TRef Ref()
     {
@@ -49,9 +48,9 @@ public class EntityRef<TRef> : IRef<int> where TRef : Entity
             throw;
         }
     }
-    public static EntityRef<TRef> DeserializeConstructor(int t, ServerWriteKey key)
+    public static EntityRef<TRef> DeserializeConstructor(int t)
     {
         return new EntityRef<TRef>(t);
     }
-    int IRef<int>.GetUnderlying() => RefId;
+    public int GetUnderlying() => RefId;
 }

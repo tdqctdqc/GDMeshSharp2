@@ -15,9 +15,9 @@ public sealed class Settlement : Location
     }
     
     
-    private static Settlement DeserializeConstructor(string json)
+    private static Settlement DeserializeConstructor(object[] args)
     {
-        return new Settlement(json);
+        return new Settlement(args);
     }
-    private Settlement(string json) : base(json) { }
+    private Settlement(object[] args) : base(args) { }
 }

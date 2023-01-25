@@ -11,14 +11,17 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
 {
     public IReadOnlyList<string> FieldNames => _fieldNames;
     private List<string> _fieldNames;
-    public IReadOnlyDictionary<string, Type> FieldTypes => _fieldTypes;
-    private Dictionary<string, Type> _fieldTypes;
+    public IReadOnlyList<Type> FieldTypes => _fieldTypes;
+    private List<Type> _fieldTypes;
     
-    private Dictionary<string, Func<object, string>> _fieldSerializers; 
+    private Dictionary<string, Func<object, object>> _fieldSerializers; 
     private Dictionary<string, Func<T, object>> _fieldGetters; 
-    private Dictionary<string, Action<T, string>> _fieldDeserializeAndSetters;
+    // private Dictionary<string, Action<T, string>> _fieldDeserializeAndSetters;
     private Dictionary<string, Action<T, object>> _fieldSetters;
-    private Func<string, T> _deserializer;
+    private Dictionary<string, Action<T, object>> _refFieldSetters;
+    private Dictionary<string, Action<T, object, StrongWriteKey>> _refUnderlyingSetters;
+    private Dictionary<string, Type> _refUnderlyingTypes;
+    private Func<object[], T> _deserializer;
     private JsonSerializerOptions _options;
     public void ForReference(JsonSerializerOptions options)
     {
@@ -40,12 +43,14 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
              throw new Exception();
         var properties = entityType.GetProperties(BindingFlags.Instance | BindingFlags.Public);
         _fieldNames = properties.Select(p => p.Name).ToList();
-        _fieldNames.Remove("Id");
-        _fieldNames.Insert(0, "Id");
+        _fieldTypes = properties.Select(p => p.PropertyType).ToList();
         _fieldGetters = new Dictionary<string, Func<T, object>>();
-        _fieldDeserializeAndSetters = new Dictionary<string, Action<T, string>>();
-        _fieldSerializers = new Dictionary<string, Func<object, string>>();
+        // _fieldDeserializeAndSetters = new Dictionary<string, Action<T, string>>();
+        _fieldSerializers = new Dictionary<string, Func<object, object>>();
         _fieldSetters = new Dictionary<string, Action<T, object>>();
+        _refUnderlyingTypes = new Dictionary<string, Type>();
+        _refUnderlyingSetters = new Dictionary<string, Action<T, object, StrongWriteKey>>();
+        _refFieldSetters = new Dictionary<string, Action<T, object>>();
         
         var makeFuncsMi = typeof(EntityMeta<T>).GetMethod(nameof(MakeFuncs),
             BindingFlags.Instance | BindingFlags.NonPublic);
@@ -60,27 +65,68 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
     private void MakeFuncs<TProperty>(PropertyInfo prop)
     {
         var name = prop.Name;
+        var type = prop.PropertyType;
         var getMi = prop.GetGetMethod();
-        var getDelType =
-            ReflectionExt.MakeCustomDelegateType(typeof(Func<,>), new[] {typeof(T), prop.PropertyType});
-        var getterDelg = (Func<T, TProperty>)getMi.MakeInstanceMethodDelegate(getDelType);
+        var getterDelg = getMi.MakeInstanceMethodDelegate<Func<T, TProperty>>();
         _fieldGetters.Add(name, t => getterDelg(t));
+
+        if (type.HasAttribute<RefAttribute>())
+        {
+            var underlyingType = type.GetMethod(nameof(IRef<int>.GetUnderlying)).ReturnType;
+            var mi = GetType().GetMethod(nameof(SetupRefType), BindingFlags.Instance | BindingFlags.NonPublic);
+            var genericMi = mi.MakeGenericMethod(new Type[]{typeof(TProperty), underlyingType} );
+            genericMi.Invoke(this, new []{prop} );
+        }
+        else
+        {
+            var mi = GetType().GetMethod(nameof(SetupVarType), BindingFlags.Instance | BindingFlags.NonPublic);
+            var genericMi = mi.MakeGenericMethod(new[] {typeof(TProperty)});
+            genericMi.Invoke(this, new []{prop});
+        }
+    }
+    private void SetupVarType<TProperty>(PropertyInfo prop)
+    {
+        var name = prop.Name;
+        _fieldSerializers.Add(name, p => (TProperty)p);
+        var setter = prop.GetSetMethod(true);
+        var setterDelg = setter.MakeInstanceMethodDelegate<Action<T, TProperty>>();
+        _fieldSetters.Add(name, (t, o) => setterDelg(t, (TProperty)o));
         
-        _fieldSerializers.Add(name, p => Serializer.Serialize<TProperty>((TProperty)p));
-        
+        // Func<string, TProperty> deserialize = (json) => Game.I.Serializer.Deserialize<TProperty>(json);
+        // _fieldDeserializeAndSetters.Add(name, (entity, json) =>
+        // {
+        //     setterDelg(entity, deserialize(json));
+        // });
+    }
+    private void SetupRefType<TProperty, TUnderlying>(PropertyInfo prop) where TProperty : IRef<TUnderlying>
+    {
+        _refUnderlyingTypes[prop.Name] = typeof(TUnderlying);
+        var name = prop.Name;
+        var setUnderlyingMi = typeof(TProperty).GetMethod(nameof(IRef<int>.Set));
+        var setUnderlyingDel = setUnderlyingMi.MakeInstanceMethodDelegate<Action<TProperty, TUnderlying, StrongWriteKey>>();
+        _refUnderlyingSetters[name] = (t, o, k) => 
+            setUnderlyingDel((TProperty)_fieldGetters[name](t), (TUnderlying)o, k);
         
         var setter = prop.GetSetMethod(true);
+        var setterDelg = setter.MakeInstanceMethodDelegate<Action<T, TProperty>>();
 
-        var setDelgType =   
-            ReflectionExt.MakeCustomDelegateType(typeof(Action<,>), new[] {typeof(T), prop.PropertyType});
-        var setterDelg = (Action<T, TProperty>) setter.MakeInstanceMethodDelegate(setDelgType);
-        _fieldSetters.Add(name, (t, o) => setterDelg(t, (TProperty)o));
-        Func<string, TProperty> deserialize = (json) => Serializer.Deserialize<TProperty>(json);
+        var deserializeConstructorMi = prop.PropertyType.GetMethod(nameof(EntityRef<Player>.DeserializeConstructor),
+            BindingFlags.Static | BindingFlags.Public);
+        var deserializeConstructorDel = deserializeConstructorMi.MakeInstanceMethodDelegate<Func<TUnderlying, TProperty>>();
         
-        _fieldDeserializeAndSetters.Add(name, (entity, json) =>
-        {
-            setterDelg(entity, deserialize(json));
-        });
+        _refFieldSetters.Add(name, (t, o) => setterDelg(t, deserializeConstructorDel((TUnderlying)o)));
+
+        var getUnderlyingMi = typeof(TProperty).GetMethod(nameof(IRef<int>.GetUnderlying));
+        var getUnderlyingDel = getUnderlyingMi.MakeInstanceMethodDelegate<Func<TProperty, TUnderlying>>();
+        
+        _fieldSerializers.Add(name, p => getUnderlyingDel((TProperty) p));
+        // Func<string, TUnderlying> deserialize = (json) => Game.I.Serializer.Deserialize<TUnderlying>(json);
+        // _fieldDeserializeAndSetters.Add(name, (entity, json) =>
+        // {
+        //     var underlying = deserialize(json);
+        //     var p = deserializeConstructorDel(underlying);
+        //     setterDelg(entity, p);
+        // });
     }
     private void SetConstructor(Type serializableType)
     {
@@ -88,45 +134,53 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
             .Where(m => m.Name == "DeserializeConstructor")
             .Where(m => m.ReturnType == serializableType)
             .First();
-        _deserializer = constructor.MakeStaticMethodDelegate<Func<string, T>>();
+        _deserializer = constructor.MakeStaticMethodDelegate<Func<object[], T>>();
     }
-    public Entity Deserialize(string json)
+    public Entity Deserialize(object[] args)
     {
-        return _deserializer(json);
+        return _deserializer(args);
     }
 
-    public string Serialize(Entity entity)
+    public object[] Serialize(Entity entity)
     {
         var t = (T) entity;
+        var args = new object[_fieldNames.Count];
         var jsonArray = new System.Text.Json.Nodes.JsonArray();
         for (int i = 0; i < _fieldNames.Count; i++)
         {
             var fieldName = _fieldNames[i];
-            var field = _fieldGetters[fieldName](t);
-            var json = _fieldSerializers[fieldName](field);
-            jsonArray.Add(json);
+            var arg = _fieldGetters[fieldName]((T) entity);
+            args[i] = arg;
         }
-        
-        return jsonArray.ToJsonString(_options);
+
+        return args;
     }
-    public void Initialize(Entity entity, string json)
+    public void Initialize(Entity entity, object[] args)
     {
         var t = (T) entity;
-        var valJsons = Serializer.Deserialize<List<string>>(json);
         
-        for (int i = 0; i < valJsons.Count; i++)
+        for (int i = 0; i < args.Length; i++)
         {
             var fieldName = _fieldNames[i];
-            _fieldDeserializeAndSetters[fieldName].Invoke(t, valJsons[i]);
+            _fieldSetters[fieldName].Invoke(t, args[i]);
         }
     }
-    public void UpdateEntityVar(string fieldName, Entity t, ServerWriteKey key, string newValueJson)
+    public void UpdateEntityVar(string fieldName, Entity t, ServerWriteKey key, object newValue)
     {
-        _fieldDeserializeAndSetters[fieldName]((T) t, newValueJson);
+        _fieldSetters[fieldName]((T) t, newValue);
     }
-
     public void UpdateEntityVar<TValue>(string fieldName, Entity t, CreateWriteKey key, TValue newValue)
     {
         _fieldSetters[fieldName]((T) t, newValue);
+    }
+    public void UpdateEntityRefVar(string fieldName, Entity t, ServerWriteKey key, object newValue)
+    {
+        //generally use procedures instead
+        _refUnderlyingSetters[fieldName].Invoke((T)t, newValue, key);
+    }
+    public void UpdateEntityRefVar<TUnderlying>(string fieldName, Entity t, CreateWriteKey key, TUnderlying newValue)
+    {
+        var refer = (IRef<TUnderlying>)_fieldGetters[fieldName]((T) t);
+        refer.Set(newValue, key);
     }
 }

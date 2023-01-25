@@ -70,18 +70,18 @@ public sealed class MapPolygon : Entity
 
     public void SetRegime(Regime r, GenWriteKey key)
     {
-        Regime.Set(r.Id, key);
+        GetMeta().UpdateEntityRefVar<int>(nameof(Regime), this, key, r.Id);
     }
     public void AddNoNeighborBorder(Vector2 from, Vector2 to)
     {
         NoNeighborBorders.Add(from);
         NoNeighborBorders.Add(to);
     }
-    private static MapPolygon DeserializeConstructor(string json)
+    private static MapPolygon DeserializeConstructor(object[] args)
     {
-        return new MapPolygon(json);
+        return new MapPolygon(args);
     }
-    private MapPolygon(string json) : base(json) { }
+    private MapPolygon(object[] args) : base(args) { }
 }
 public static class MapPolygonExt
 {

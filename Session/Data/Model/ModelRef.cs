@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class ModelRef<T> : IRef<string> where T : IModel
+[RefAttribute] public class ModelRef<T> : IRef<string> where T : IModel
 {
     public string ModelName { get; private set; }
     private T _ref;
@@ -27,9 +27,13 @@ public class ModelRef<T> : IRef<string> where T : IModel
     {
         _ref = data.Models.GetModel<T>(ModelName);
     }
-    public static ModelRef<T> DeserializeConstructor(string t, ServerWriteKey key)
+    public static ModelRef<T> DeserializeConstructor(string t)
     {
         return new ModelRef<T>(t);
     }
-    string IRef<string>.GetUnderlying() => ModelName;
+    public string GetUnderlying() => ModelName;
+    public void Set(string underlying, StrongWriteKey key)
+    {
+        ModelName = underlying;
+    }
 }

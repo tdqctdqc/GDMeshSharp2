@@ -10,8 +10,7 @@ public class HostServer : Node, IServer
     private HostWriteKey _key;
     public static HostServer ForTest;
     private HostLogic _logic;
-    private List<IUpdate> _queuedUpdates;
-    private List<string> _queuedUpdateTypes;
+    private List<object[]> _queuedUpdates;
     private List<Tuple<string, string>> _queuedCommands;
     private List<int> _clients;
     private NetworkedMultiplayerENet _network; 
@@ -25,8 +24,7 @@ public class HostServer : Node, IServer
     {
         ForTest = this;
         _clients = new List<int>();
-        _queuedUpdates = new List<IUpdate>();
-        _queuedUpdateTypes = new List<string>();
+        _queuedUpdates = new List<object[]>();
         _queuedCommands = new List<Tuple<string, string>>();
         _network = new NetworkedMultiplayerENet();
         _network.CreateServer(_port, _maxPlayers);
@@ -52,35 +50,22 @@ public class HostServer : Node, IServer
         _key = new HostWriteKey(this, data);
     }
 
-    public void QueueUpdate(IUpdate u)
+    public void QueueUpdate(Update u)
     {
-        _queuedUpdates.Add(u);
-        _queuedUpdateTypes.Add(u.UpdateType);
+        _queuedUpdates.Add(u.GetMeta().GetArgs(u));
     }
 
     private void BroadcastUpdates()
     {
-        var updatesJson = Serializer.Serialize(_queuedUpdates.Select(u => u.Serialize()));
-        var updateTypesJson = Serializer.Serialize(_queuedUpdateTypes);
-        Rpc(nameof(RemoteServer.ReceiveUpdates), updatesJson, updateTypesJson);
+        // Rpc(nameof(RemoteServer.ReceiveUpdates), updatesJson, updateTypesJson);
         _queuedUpdates.Clear();
-        _queuedUpdateTypes.Clear();
     }
     private void PeerConnected(int id)
     {
         _clients.Add(id);
         GD.Print("peer " + id + " connected");
         RpcId(id, nameof(RemoteServer.OnConnectionSucceeded));
-        
-        
-        var stateTransfer = StateTransferUpdate.Encode(_key);
-        var updateJsons = new List<string> {stateTransfer.Serialize()};
-        var updateJsonsString = Serializer.Serialize(updateJsons);
-        var updateTypes = new List<string> {StateTransferUpdate.UpdateType};
-        var updateTypesString = Serializer.Serialize(updateTypes);
-        
-        GD.Print("sending state transfer");
-        RpcId(id, nameof(RemoteServer.ReceiveStateTransfer), new object[]{stateTransfer.Serialize()});
+        StateTransferUpdate.Send(_key, id);
     }
     private void PeerDisconnected(int id)
     {

@@ -9,9 +9,9 @@ public sealed class Player : Entity
     {
         Name = name;
     }
-    private static Player DeserializeConstructor(string json)
+    private static Player DeserializeConstructor(object[] args)
     {
-        return new Player(json);
+        return new Player(args);
     }
-    private Player(string json) : base(json) { }
+    private Player(object[] args) : base(args) { }
 }

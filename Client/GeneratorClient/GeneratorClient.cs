@@ -11,7 +11,7 @@ public class GeneratorClient : Node
     private SpinBox _seed;
     private GeneratorGraphics _graphics;
     public CameraController Cam { get; private set; }
-    private WorldData _data;
+    public WorldData Data { get; private set; }
     public static GeneratorClient Get()
         => (GeneratorClient) ((PackedScene) GD.Load("res://Client/GeneratorClient/GeneratorClient.tscn")).Instance();
 
@@ -19,9 +19,9 @@ public class GeneratorClient : Node
 
     public void Done()
     {
-        if (_data != null)
+        if (Data != null)
         {
-            Game.I.StartHostSession(_data);
+            Game.I.StartHostSession(Data);
             QueueFree();
         }
     }
@@ -69,9 +69,9 @@ public class GeneratorClient : Node
         AddChild(_node);
         MoveChild(_node, 0);
         var worldGen = new WorldGenerator(bounds);
-        _data = worldGen.Data;
+        Data = worldGen.Data;
         worldGen.Generate();
-        _graphics.Setup(_data, Cam);
-        _graphics.SetupGenerator(_data, this);
+        _graphics.Setup(Data, Cam);
+        _graphics.SetupGenerator(Data, this);
     }
 }

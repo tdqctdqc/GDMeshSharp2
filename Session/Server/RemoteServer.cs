@@ -33,38 +33,23 @@ public class RemoteServer : Node, IServer
     {
         GD.Print("connection failed");
     }
-    [Remote] public void ReceiveUpdates(string updatesJson, string updateTypesJson)
+    [Remote] public void ReceiveUpdates(object[][] updates)
     {
-        var updatesJsonsList = Serializer.Deserialize<List<string>>(updatesJson);
-        var updateTypes = Serializer.Deserialize<List<string>>(updateTypesJson);
-
-        for (int i = 0; i < updatesJsonsList.Count; i++)
+        for (int i = 0; i < updates.Length; i++)
         {
-            var updateType = updateTypes[i];
-            if (updateType == EntityVarUpdate.UpdateType)
-            {
-                EntityVarUpdate.DeserializeAndEnact(updatesJsonsList[i], _key);
-            }
-            else if (updateType == EntityCreationUpdate.UpdateType)
-            {
-                EntityCreationUpdate.DeserializeAndEnact(updatesJsonsList[i], _key);
-            }
-            // else if (updateType == StateTransferUpdate.UpdateType)
-            // {
-            //     StateTransferUpdate.DeserializeAndEnact(updatesJsonsList[i], _key);
-            //     ReceivedStateTransfer?.Invoke();
-            // }
-            else if (updateType == ProcedureUpdate.UpdateType)
-            {
-                ProcedureUpdate.DeserializeAndEnact(updatesJsonsList[i], _key);
-            }
+            var updateArgs = updates[i];
+            var updateTypeName = (string)updateArgs[0];
+            var updateMeta = Game.I.Serializer.GetUpdateMeta(updateTypeName);
+            var update = updateMeta.Deserialize(updateArgs);
+            update.Enact(_key);
         }
     }
 
-    [Remote] public void ReceiveStateTransfer(string stateTransferJson)
+    [Remote] public void ReceiveStateTransfer(object[] stateTransferArgs)
     {
-        GD.Print("got state transfer");
-        StateTransferUpdate.DeserializeAndEnact(stateTransferJson, _key);
+        var meta = Game.I.Serializer.GetUpdateMeta<StateTransferUpdate>();
+        var update = meta.Deserialize(stateTransferArgs);
+        update.Enact(_key);
     }
     public void ReceiveCommand(string commandType, string commandJson)
     {

@@ -1,24 +1,28 @@
 using Godot;
 using System;
 
-public class EntityDeletionUpdate : IUpdate
+public class EntityDeletionUpdate : Update
 {
-    string IUpdate.UpdateType => UpdateType;
-    public static string UpdateType => "EntityDeletion";
     public int EntityId { get; private set; }
 
-    public EntityDeletionUpdate(int entityId)
+    public static void Send(int entityId, HostWriteKey key)
+    {
+        var u = new EntityDeletionUpdate(entityId, key);
+        key.Server.QueueUpdate(u);
+    }
+    public EntityDeletionUpdate(int entityId, HostWriteKey key) : base(key)
     {
         EntityId = entityId;
     }
 
-    public string Serialize()
+    public override void Enact(ServerWriteKey key)
     {
-        return EntityId.ToString();
+        key.Data.RemoveEntity(key.Data[EntityId], key);
     }
 
-    public static void DeserializeAndEnact(string json, ServerWriteKey key)
+    private static EntityDeletionUpdate DeserializeConstructor(object[] args)
     {
-        key.Data.RemoveEntity(key.Data[json.ToInt()], key);
+        return new EntityDeletionUpdate(args);
     }
+    private EntityDeletionUpdate(object[] args) : base(args) { }
 }

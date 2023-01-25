@@ -6,10 +6,17 @@ using Godot;
 public interface IRef
 {
     void SyncRef(Data data);
+
 }
 
 public interface IRef<TUnderlying> : IRef
 {
     TUnderlying GetUnderlying();
+    void Set(TUnderlying underlying, StrongWriteKey key);
+}
+
+public class RefAttribute : Attribute
+{
+    
 }
 

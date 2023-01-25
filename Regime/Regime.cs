@@ -17,9 +17,9 @@ public sealed class Regime : Entity
         Polygons = new EntityRefCollection<MapPolygon>(new int[0]);
         Polygons.AddRef(seed, key.Data);
     }
-    private Regime(string json) : base(json) {}
-    private static Regime DeserializeConstructor(string json)
+    private Regime(object[] args) : base(args) {}
+    private static Regime DeserializeConstructor(object[] args)
     {
-        return new Regime(json);
+        return new Regime(args);
     }
 }

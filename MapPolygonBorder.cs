@@ -95,11 +95,11 @@ public sealed class MapPolygonBorder : Entity
         MoistureFlow += increment;
     }
     
-    private static MapPolygonBorder DeserializeConstructor(string json)
+    private static MapPolygonBorder DeserializeConstructor(object[] args)
     {
-        return new MapPolygonBorder(json);
+        return new MapPolygonBorder(args);
     }
-    private MapPolygonBorder(string json) : base(json) { }
+    private MapPolygonBorder(object[] args) : base(args) { }
 }
 
 public static class PolyBorderExt

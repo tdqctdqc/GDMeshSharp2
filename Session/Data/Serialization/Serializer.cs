@@ -10,25 +10,68 @@ using System.Text.Json.Serialization;
 
 public class Serializer
 {
-    public static Dictionary<string, Type> EntityTypes { get; private set; }
-    public static Dictionary<string, Type> DomainTypes { get; private set; }
-    private static Dictionary<Type, Func<string, object>> _deserializers;
-    private static Dictionary<Type, Func<object, string>> _serializers;
-    private static Dictionary<Type, IEntityMeta> _serializableMetas;
-    public static IEntityMeta GetEntityMeta(Type type) => _serializableMetas[type];
-    private static JsonSerializerOptions _options;
-    public static EntityMeta<T> GetEntityMeta<T>() where T : Entity
+    private JsonSerializerOptions _options;
+
+    private Dictionary<string, Type> _entityTypes;
+    private Dictionary<Type, IEntityMeta> _entityMetas;
+    public IEntityMeta GetEntityMeta(Type type) => _entityMetas[type];
+    public IEntityMeta GetEntityMeta(string type) => _entityMetas[_entityTypes[type]];
+    
+    public EntityMeta<T> GetEntityMeta<T>() where T : Entity
     {
-        return (EntityMeta<T>)_serializableMetas[typeof(T)];
+        return (EntityMeta<T>)_entityMetas[typeof(T)];
     }
-    public static void Setup()
+
+    
+    public Dictionary<string, Type> DomainTypes { get; private set; }
+
+
+
+    private Dictionary<string, Type> _updateTypes;
+    private Dictionary<Type, IUpdateMeta> _updateMetas;
+    public IUpdateMeta GetUpdateMeta(Type type) => _updateMetas[type];
+    public IUpdateMeta GetUpdateMeta(string type) => _updateMetas[_updateTypes[type]];
+    public UpdateMeta<TUpdate> GetUpdateMeta<TUpdate>() where TUpdate : Update
+    {
+        return (UpdateMeta<TUpdate>)_updateMetas[typeof(TUpdate)];
+    }
+    
+    
+    
+    private Dictionary<string, Type> _procedureTypes;
+    private Dictionary<Type, IProcedureMeta> _procedureMetas;
+    public IProcedureMeta GetProcedureMeta(Type type) => _procedureMetas[type];
+    public IProcedureMeta GetProcedureMeta(string type) => _procedureMetas[_procedureTypes[type]];
+    public ProcedureMeta<TProcedure> GetProcedureMeta<TProcedure>() where TProcedure : Procedure
+    {
+        return (ProcedureMeta<TProcedure>)_procedureMetas[typeof(TProcedure)];
+    }
+
+
+    public Serializer()
     {
         _options = new JsonSerializerOptions();
         _options.Converters.Add(new Vector2JsonConverter());
         
-        EntityTypes = new Dictionary<string, Type>();
+        SetupEntityMetas();
+        SetupUpdateMetas();
+        SetupProcedureMetas();
+            
+        DomainTypes = new Dictionary<string, Type>();
+        var domainTypes = Assembly.GetExecutingAssembly().GetConcreteTypesOfType<Domain>();
+        foreach (var domainType in domainTypes)
+        {
+            DomainTypes.Add(domainType.Name, domainType);
+        }
+        
+        CommandMeta.Setup();
+    }
+
+    private void SetupEntityMetas()
+    {
+        _entityTypes = new Dictionary<string, Type>();
         var reference = nameof(EntityMeta<Entity>.ForReference);
-        _serializableMetas = new Dictionary<Type, IEntityMeta>();
+        _entityMetas = new Dictionary<Type, IEntityMeta>();
         var entityTypes = Assembly.GetExecutingAssembly().GetConcreteTypesOfType<Entity>();
         var metaTypes = typeof(EntityMeta<>);
         foreach (var entityType in entityTypes)
@@ -40,31 +83,57 @@ public class Serializer
             _options.Converters.Add(refConverter);
             _options.Converters.Add(refColConverter);
 
-            EntityTypes.Add(entityType.Name, entityType);
+            _entityTypes.Add(entityType.Name, entityType);
             var genericMeta = metaTypes.MakeGenericType(entityType);
             var constructor = genericMeta.GetConstructors()[0];
             var meta = constructor.Invoke(new object[]{_options});
-            _serializableMetas.Add(entityType, (IEntityMeta)meta);
+            _entityMetas.Add(entityType, (IEntityMeta)meta);
         }
-
-        DomainTypes = new Dictionary<string, Type>();
-        var domainTypes = Assembly.GetExecutingAssembly().GetConcreteTypesOfType<Domain>();
-        foreach (var domainType in domainTypes)
-        {
-            DomainTypes.Add(domainType.Name, domainType);
-        }
-        
-        ProcedureMeta.Setup();
-        CommandMeta.Setup();
     }
 
-    public static string Serialize<TValue>(TValue t)
+    private void SetupUpdateMetas()
+    {
+        _updateTypes = new Dictionary<string, Type>();
+        var reference = nameof(UpdateMeta<EntityVarUpdate>.ForReference);
+        _updateMetas = new Dictionary<Type, IUpdateMeta>();
+        var updateTypes = Assembly.GetExecutingAssembly().GetConcreteTypesOfType<Update>();
+        var metaTypes = typeof(UpdateMeta<>);
+        foreach (var updateType in updateTypes)
+        {
+            _updateTypes.Add(updateType.Name, updateType);
+            var genericMeta = metaTypes.MakeGenericType(updateType);
+            var constructor = genericMeta.GetConstructors()[0];
+            var meta = constructor.Invoke(new object[]{_options});
+            _updateMetas.Add(updateType, (IUpdateMeta)meta);
+        }
+    }
+    private void SetupProcedureMetas()
+    {
+        _procedureTypes = new Dictionary<string, Type>();
+        var reference = nameof(ProcedureMeta<Procedure>.ForReference);
+        _procedureMetas = new Dictionary<Type, IProcedureMeta>();
+        var procedureTypes = Assembly.GetExecutingAssembly().GetConcreteTypesOfType<Procedure>();
+        var metaTypes = typeof(ProcedureMeta<>);
+        foreach (var procType in procedureTypes)
+        {
+            _procedureTypes.Add(procType.Name, procType);
+            var genericMeta = metaTypes.MakeGenericType(procType);
+            var constructor = genericMeta.GetConstructors()[0];
+            var meta = constructor.Invoke(new object[]{_options});
+            _procedureMetas.Add(procType, (IProcedureMeta)meta);
+        }
+    }
+    public string Serialize<TValue>(TValue t)
     {
         return JsonSerializer.Serialize<TValue>(t, _options);
     }
-    public static TValue Deserialize<TValue>(string json)
+    public TValue Deserialize<TValue>(string json)
     {
         return JsonSerializer.Deserialize<TValue>(json, _options);
+    }
+    public object Deserialize(string json, Type objectType)
+    {
+        return JsonSerializer.Deserialize(json, objectType, _options);
     }
 }
 

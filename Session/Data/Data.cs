@@ -50,8 +50,7 @@ public class Data
         EntityRepos.Add(e.Id, repo);
         if (key is HostWriteKey hKey)
         {
-            var creationUpdate = EntityCreationUpdate.Encode(e, domainType, hKey);
-            hKey.Server.QueueUpdate(creationUpdate);
+            EntityCreationUpdate.Send(e, domainType, hKey);
         }
     }
 
@@ -62,8 +61,7 @@ public class Data
         EntityRepos.Remove(e.Id);
         if (key is HostWriteKey hKey)
         {
-            var deletionUpdate = new EntityDeletionUpdate(e.Id);
-            hKey.Server.QueueUpdate(deletionUpdate);
+            EntityDeletionUpdate.Send(e.Id, hKey);
         }
     }
     public T GetDomain<T>() where T : Domain
