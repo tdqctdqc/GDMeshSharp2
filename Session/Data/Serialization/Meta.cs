@@ -24,6 +24,7 @@ public class Meta<TSpecific, TMeta> : IMeta<TMeta> where TSpecific : TMeta
         _deserializeConstructor = deserializeDel;
 
         var properties = type.GetProperties();
+        _fieldNames = properties.Select(p => p.Name).ToList();
         var setFuncsMi = GetType().GetMethod(nameof(SetFuncs), BindingFlags.Instance | BindingFlags.NonPublic);
         for (var i = 0; i < properties.Length; i++)
         {

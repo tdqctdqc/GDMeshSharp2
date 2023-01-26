@@ -8,7 +8,7 @@ public class EntityDeletionUpdate : Update
     public static void Send(int entityId, HostWriteKey key)
     {
         var u = new EntityDeletionUpdate(entityId, key);
-        key.Server.QueueUpdate(u);
+        key.HostServer.QueueUpdate(u);
     }
     public EntityDeletionUpdate(int entityId, HostWriteKey key) : base(key)
     {

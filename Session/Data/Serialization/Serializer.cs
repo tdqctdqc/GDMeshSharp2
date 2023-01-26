@@ -12,10 +12,10 @@ public class Serializer
 {
     private JsonSerializerOptions _options;
 
-    private Dictionary<string, Type> _entityTypes;
+    private Dictionary<string, Type> _types;
     private Dictionary<Type, IEntityMeta> _entityMetas;
     public IEntityMeta GetEntityMeta(Type type) => _entityMetas[type];
-    public IEntityMeta GetEntityMeta(string type) => _entityMetas[_entityTypes[type]];
+    public IEntityMeta GetEntityMeta(string type) => _entityMetas[_types[type]];
     
     public EntityMeta<T> GetEntityMeta<T>() where T : Entity
     {
@@ -25,28 +25,30 @@ public class Serializer
     
     public Dictionary<string, Type> DomainTypes { get; private set; }
 
-
-
-    private Dictionary<string, Type> _updateTypes;
-    private Dictionary<Type, IUpdateMeta> _updateMetas;
-    public IUpdateMeta GetUpdateMeta(Type type) => _updateMetas[type];
-    public IUpdateMeta GetUpdateMeta(string type) => _updateMetas[_updateTypes[type]];
-    public UpdateMeta<TUpdate> GetUpdateMeta<TUpdate>() where TUpdate : Update
+    private Dictionary<Type, IMeta<Update>> _updateMetas;
+    public IMeta<Update> GetUpdateMeta(Type type) => _updateMetas[type];
+    public IMeta<Update> GetUpdateMeta(string type) => _updateMetas[_types[type]];
+    public Meta<TUpdate, Update> GetUpdateMeta<TUpdate>() where TUpdate : Update
     {
-        return (UpdateMeta<TUpdate>)_updateMetas[typeof(TUpdate)];
+        return (Meta<TUpdate, Update>)_updateMetas[typeof(TUpdate)];
+    }
+    
+    private Dictionary<Type, IMeta<Procedure>> _procedureMetas;
+    public IMeta<Procedure> GetProcedureMeta(Type type) => _procedureMetas[type];
+    public IMeta<Procedure> GetProcedureMeta(string type) => _procedureMetas[_types[type]];
+    public Meta<TProcedure, Procedure> GetProcedureMeta<TProcedure>() where TProcedure : Procedure
+    {
+        return (Meta<TProcedure, Procedure>)_procedureMetas[typeof(TProcedure)];
     }
     
     
-    
-    private Dictionary<string, Type> _procedureTypes;
-    private Dictionary<Type, IProcedureMeta> _procedureMetas;
-    public IProcedureMeta GetProcedureMeta(Type type) => _procedureMetas[type];
-    public IProcedureMeta GetProcedureMeta(string type) => _procedureMetas[_procedureTypes[type]];
-    public ProcedureMeta<TProcedure> GetProcedureMeta<TProcedure>() where TProcedure : Procedure
+    private Dictionary<Type, IMeta<Command>> _commandMetas;
+    public IMeta<Command> GetCommandMeta(Type type) => _commandMetas[type];
+    public IMeta<Command> GetCommandMeta(string type) => _commandMetas[_types[type]];
+    public Meta<TCommand, Command> GetCommandMeta<TCommand>() where TCommand : Command
     {
-        return (ProcedureMeta<TProcedure>)_procedureMetas[typeof(TProcedure)];
+        return (Meta<TCommand, Command>)_commandMetas[typeof(TCommand)];
     }
-
 
     public Serializer()
     {
@@ -54,8 +56,13 @@ public class Serializer
         _options.Converters.Add(new Vector2JsonConverter());
         
         SetupEntityMetas();
-        SetupUpdateMetas();
-        SetupProcedureMetas();
+        _updateMetas = new Dictionary<Type, IMeta<Update>>();
+        SetupMetas<Update>(_updateMetas);
+        _procedureMetas = new Dictionary<Type, IMeta<Procedure>>();
+        SetupMetas<Procedure>(_procedureMetas);
+
+        _commandMetas = new Dictionary<Type, IMeta<Command>>();
+        SetupMetas<Command>(_commandMetas);
             
         DomainTypes = new Dictionary<string, Type>();
         var domainTypes = Assembly.GetExecutingAssembly().GetConcreteTypesOfType<Domain>();
@@ -63,13 +70,11 @@ public class Serializer
         {
             DomainTypes.Add(domainType.Name, domainType);
         }
-        
-        CommandMeta.Setup();
     }
 
     private void SetupEntityMetas()
     {
-        _entityTypes = new Dictionary<string, Type>();
+        _types = new Dictionary<string, Type>();
         var reference = nameof(EntityMeta<Entity>.ForReference);
         _entityMetas = new Dictionary<Type, IEntityMeta>();
         var entityTypes = Assembly.GetExecutingAssembly().GetConcreteTypesOfType<Entity>();
@@ -83,44 +88,25 @@ public class Serializer
             _options.Converters.Add(refConverter);
             _options.Converters.Add(refColConverter);
 
-            _entityTypes.Add(entityType.Name, entityType);
+            _types.Add(entityType.Name, entityType);
             var genericMeta = metaTypes.MakeGenericType(entityType);
             var constructor = genericMeta.GetConstructors()[0];
             var meta = constructor.Invoke(new object[]{_options});
             _entityMetas.Add(entityType, (IEntityMeta)meta);
         }
     }
-
-    private void SetupUpdateMetas()
+    private void SetupMetas<TMeta>(Dictionary<Type, IMeta<TMeta>> metaDic)
     {
-        _updateTypes = new Dictionary<string, Type>();
-        var reference = nameof(UpdateMeta<EntityVarUpdate>.ForReference);
-        _updateMetas = new Dictionary<Type, IUpdateMeta>();
-        var updateTypes = Assembly.GetExecutingAssembly().GetConcreteTypesOfType<Update>();
-        var metaTypes = typeof(UpdateMeta<>);
+        var reference = nameof(Meta<TMeta, TMeta>.ForReference);
+        var updateTypes = Assembly.GetExecutingAssembly().GetConcreteTypesOfType<TMeta>();
+        var metaTypes = typeof(Meta<,>);
         foreach (var updateType in updateTypes)
         {
-            _updateTypes.Add(updateType.Name, updateType);
-            var genericMeta = metaTypes.MakeGenericType(updateType);
+            _types.Add(updateType.Name, updateType);
+            var genericMeta = metaTypes.MakeGenericType(updateType, typeof(TMeta));
             var constructor = genericMeta.GetConstructors()[0];
             var meta = constructor.Invoke(new object[]{_options});
-            _updateMetas.Add(updateType, (IUpdateMeta)meta);
-        }
-    }
-    private void SetupProcedureMetas()
-    {
-        _procedureTypes = new Dictionary<string, Type>();
-        var reference = nameof(ProcedureMeta<Procedure>.ForReference);
-        _procedureMetas = new Dictionary<Type, IProcedureMeta>();
-        var procedureTypes = Assembly.GetExecutingAssembly().GetConcreteTypesOfType<Procedure>();
-        var metaTypes = typeof(ProcedureMeta<>);
-        foreach (var procType in procedureTypes)
-        {
-            _procedureTypes.Add(procType.Name, procType);
-            var genericMeta = metaTypes.MakeGenericType(procType);
-            var constructor = genericMeta.GetConstructors()[0];
-            var meta = constructor.Invoke(new object[]{_options});
-            _procedureMetas.Add(procType, (IProcedureMeta)meta);
+            metaDic.Add(updateType, (IMeta<TMeta>)meta);
         }
     }
     public string Serialize<TValue>(TValue t)
@@ -206,8 +192,8 @@ public class EntityRefColJsonConverter<TEntity> : JsonConverter<EntityRefCollect
     public override void Write(Utf8JsonWriter writer, EntityRefCollection<TEntity> value, JsonSerializerOptions options)
     {
         writer.WriteStartArray();
-        writer.WriteNumberValue(value.Count);
-        foreach (var i in value)
+        writer.WriteNumberValue(value.Count());
+        foreach (var i in value.RefIds)
         {
             writer.WriteNumberValue(i);
         }

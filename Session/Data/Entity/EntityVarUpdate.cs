@@ -12,7 +12,7 @@ public sealed class EntityVarUpdate : Update
     {
         var u = new EntityVarUpdate(fieldName, entityId,
             newVal, key);
-        key.Server.QueueUpdate(u);        
+        key.HostServer.QueueUpdate(u);        
     }
     private EntityVarUpdate(string fieldName, int entityId, object newVal, HostWriteKey key) : base(key)
     {

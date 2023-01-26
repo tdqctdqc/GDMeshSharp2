@@ -16,7 +16,7 @@ public static class EdgeDisturber
         for (var i = 0; i < polys.Count; i++)
         {
             var poly = polys[i];
-            for (var j = 0; j < poly.Neighbors.Count; j++)
+            for (var j = 0; j < poly.Neighbors.Count(); j++)
             {
                 var nPoly = poly.Neighbors.Refs().ElementAt(j);
                 if (poly.Id > nPoly.Id)

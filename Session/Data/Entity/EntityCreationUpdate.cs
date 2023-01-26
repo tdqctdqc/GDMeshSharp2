@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 public class EntityCreationUpdate : Update
 {
@@ -10,14 +11,22 @@ public class EntityCreationUpdate : Update
 
     public static void Send(Entity entity, Type domainType, HostWriteKey key)
     {
-        var entityJson = entity.GetMeta().Serialize(entity);
         var u = new EntityCreationUpdate(entity.GetType(), domainType, entity, key);
+        key.HostServer.QueueUpdate(u);
+    }
+    public static void Send(Entity entity, Type domainType, HostWriteKey key, StreamPeerTCP connection)
+    {
+        var entityJson = entity.GetMeta().GetArgs(entity);
+        var u = new EntityCreationUpdate(entity.GetType(), domainType, entity, key);
+        var args = u.GetMeta().GetArgs(u);
+        GD.Print("sending entity " + entity.GetType().Name);
+        connection.PutVar(args);
     }
     private EntityCreationUpdate(Type entityType, Type domainType, Entity e, HostWriteKey key) : base(key)
     {
         EntityType = entityType.Name;
         DomainType = domainType.Name;
-        EntityArgs = e.GetMeta().Serialize(e);
+        EntityArgs = e.GetMeta().GetArgs(e);
     }
     public override void Enact(ServerWriteKey key)
     {

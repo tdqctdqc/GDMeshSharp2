@@ -7,10 +7,22 @@ public class StateTransferUpdate : Update
 {
     public Dictionary<string, Dictionary<string, List<object[]>>> Data { get; private set; }
 
-    public static void Send(HostWriteKey key, int remoteId)
+    public static void Send(HostWriteKey key, StreamPeerTCP connection)
     {
-        var u = new StateTransferUpdate(key);
-        key.Server.QueueUpdate(u);
+        foreach (var kvpDomain in key.Data.Domains)
+        {
+            var domainType = kvpDomain.Key;
+            var domain = kvpDomain.Value;
+            foreach (var kvpRepo in domain.Repos)
+            {
+                var entityType = kvpRepo.Key;
+                var repo = kvpRepo.Value;
+                foreach (var e in repo.Entities)
+                {
+                    EntityCreationUpdate.Send(e, domainType, key, connection);
+                }
+            }
+        }
     }
 
     private StateTransferUpdate(HostWriteKey key) : base(key)
@@ -33,7 +45,7 @@ public class StateTransferUpdate : Update
 
                 foreach (var entity in repo.Entities)
                 {
-                    eArgs.Add(meta.Serialize(entity));
+                    eArgs.Add(meta.GetArgs(entity));
                 }
             }
         }

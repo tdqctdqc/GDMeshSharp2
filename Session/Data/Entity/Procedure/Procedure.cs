@@ -5,7 +5,7 @@ using System.Text.Json;
 [EntityProcedure]
 public abstract class Procedure
 {
-    public IProcedureMeta GetMeta() => Game.I.Serializer.GetProcedureMeta(GetType());
+    public IMeta<Procedure> GetMeta() => Game.I.Serializer.GetProcedureMeta(GetType());
     protected Procedure(HostWriteKey key)
     {
         

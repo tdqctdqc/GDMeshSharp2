@@ -61,14 +61,14 @@ public class Session : Node, ISession
     }
     private void StartClient(IServer server)
     {
-        var client = new GameClient();
-        Client = client;
-        client.Setup(Data, server);
-        AddChild((Node)Client);
+        // var client = new GameClient();
+        // Client = client;
+        // client.Setup(Data, server);
+        // AddChild((Node)Client);
     }
     public override void _UnhandledInput(InputEvent e)
     {
         var delta = GetProcessDeltaTime();
-        Client.HandleInput(e, delta);
+        Client?.HandleInput(e, delta);
     }
 }

@@ -3,7 +3,7 @@ using System;
 
 public abstract class Update
 {
-    public IUpdateMeta GetMeta() => Game.I.Serializer.GetUpdateMeta(GetType());
+    public IMeta<Update> GetMeta() => Game.I.Serializer.GetUpdateMeta(GetType());
     protected Update(HostWriteKey key)
     {
         

@@ -8,7 +8,7 @@ public interface IEntityMeta
     IReadOnlyList<Type> FieldTypes { get; }
     // Serializable Deserialize(string json);
     void Initialize(Entity entity, object[] args);
-    object[] Serialize(Entity entity);
+    object[] GetArgs(Entity entity);
     Entity Deserialize(object[] args);
     void UpdateEntityVar(string fieldName, Entity t, ServerWriteKey key, object newValue);
     void UpdateEntityVar<TValue>(string fieldName, Entity t, CreateWriteKey key, TValue newValue);

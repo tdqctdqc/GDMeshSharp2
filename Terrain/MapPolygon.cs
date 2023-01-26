@@ -41,11 +41,11 @@ public sealed class MapPolygon : Entity
         if (Neighbors.Contains(poly)) return;
         Neighbors.AddRef(poly, key.Data);
         var startN = Neighbors.Refs().ElementAt(0);
-        for (int i = 0; i < Neighbors.Count; i++)
+        for (int i = 0; i < Neighbors.Count(); i++)
         {
-            if (startN.Neighbors.Any(n => Neighbors.Contains(n)))
+            if (startN.Neighbors.Refs().Any(n => Neighbors.Contains(n)))
             {
-                startN = Neighbors.Refs().ElementAt((i + 1) % Neighbors.Count);
+                startN = Neighbors.Refs().ElementAt((i + 1) % Neighbors.Count());
             }
             else break;
         }
@@ -88,7 +88,7 @@ public static class MapPolygonExt
     public static List<Vector2> GetTrisAbs(this MapPolygon p, Data data)
     {
         var tris = new List<Vector2>();
-        for (var i = 0; i < p.Neighbors.Count; i++)
+        for (var i = 0; i < p.Neighbors.Count(); i++)
         {
             var edge = p.GetBorder(p.Neighbors.Refs().ElementAt(i), data);
             var segs = edge.GetSegsRel(p);
@@ -105,7 +105,7 @@ public static class MapPolygonExt
     public static List<Vector2> GetTrisRel(this MapPolygon p, Data data)
     {
         var tris = new List<Vector2>();
-        for (var i = 0; i < p.Neighbors.Count; i++)
+        for (var i = 0; i < p.Neighbors.Count(); i++)
         {
             var edge = p.GetBorder(p.Neighbors.Refs().ElementAt(i), data);
             var segs = edge.GetSegsRel(p);

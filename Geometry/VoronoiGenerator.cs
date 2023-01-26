@@ -104,9 +104,9 @@ public class VoronoiGenerator
             var right = poly1.Center.x < poly2.Center.x
                 ? poly2
                 : poly1;
-            var leftN = left.Neighbors.Count;
-            var rightN = right.Neighbors.Count;
-            for (var i = 0; i < right.Neighbors.Count; i++)
+            var leftN = left.Neighbors.Count();
+            var rightN = right.Neighbors.Count();
+            for (var i = 0; i < right.Neighbors.Count(); i++)
             {
                 var neighbor = right.Neighbors.Refs().ElementAt(i);
                 var oldBorder = right.GetBorder(neighbor, _data);

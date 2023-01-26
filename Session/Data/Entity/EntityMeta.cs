@@ -20,6 +20,7 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
     private Dictionary<string, Action<T, object>> _fieldSetters;
     private Dictionary<string, Action<T, object>> _refFieldSetters;
     private Dictionary<string, Action<T, object, StrongWriteKey>> _refUnderlyingSetters;
+    private Dictionary<string, Func<T, object>> _refUnderlyingGetters;
     private Dictionary<string, Type> _refUnderlyingTypes;
     private Func<object[], T> _deserializer;
     private JsonSerializerOptions _options;
@@ -51,6 +52,7 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
         _refUnderlyingTypes = new Dictionary<string, Type>();
         _refUnderlyingSetters = new Dictionary<string, Action<T, object, StrongWriteKey>>();
         _refFieldSetters = new Dictionary<string, Action<T, object>>();
+        _refUnderlyingGetters = new Dictionary<string, Func<T, object>>();
         
         var makeFuncsMi = typeof(EntityMeta<T>).GetMethod(nameof(MakeFuncs),
             BindingFlags.Instance | BindingFlags.NonPublic);
@@ -91,12 +93,6 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
         var setter = prop.GetSetMethod(true);
         var setterDelg = setter.MakeInstanceMethodDelegate<Action<T, TProperty>>();
         _fieldSetters.Add(name, (t, o) => setterDelg(t, (TProperty)o));
-        
-        // Func<string, TProperty> deserialize = (json) => Game.I.Serializer.Deserialize<TProperty>(json);
-        // _fieldDeserializeAndSetters.Add(name, (entity, json) =>
-        // {
-        //     setterDelg(entity, deserialize(json));
-        // });
     }
     private void SetupRefType<TProperty, TUnderlying>(PropertyInfo prop) where TProperty : IRef<TUnderlying>
     {
@@ -106,6 +102,8 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
         var setUnderlyingDel = setUnderlyingMi.MakeInstanceMethodDelegate<Action<TProperty, TUnderlying, StrongWriteKey>>();
         _refUnderlyingSetters[name] = (t, o, k) => 
             setUnderlyingDel((TProperty)_fieldGetters[name](t), (TUnderlying)o, k);
+
+
         
         var setter = prop.GetSetMethod(true);
         var setterDelg = setter.MakeInstanceMethodDelegate<Action<T, TProperty>>();
@@ -119,14 +117,8 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
         var getUnderlyingMi = typeof(TProperty).GetMethod(nameof(IRef<int>.GetUnderlying));
         var getUnderlyingDel = getUnderlyingMi.MakeInstanceMethodDelegate<Func<TProperty, TUnderlying>>();
         
+        _refUnderlyingGetters.Add(name, t => getUnderlyingDel((TProperty)_fieldGetters[name](t)));
         _fieldSerializers.Add(name, p => getUnderlyingDel((TProperty) p));
-        // Func<string, TUnderlying> deserialize = (json) => Game.I.Serializer.Deserialize<TUnderlying>(json);
-        // _fieldDeserializeAndSetters.Add(name, (entity, json) =>
-        // {
-        //     var underlying = deserialize(json);
-        //     var p = deserializeConstructorDel(underlying);
-        //     setterDelg(entity, p);
-        // });
     }
     private void SetConstructor(Type serializableType)
     {
@@ -141,7 +133,7 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
         return _deserializer(args);
     }
 
-    public object[] Serialize(Entity entity)
+    public object[] GetArgs(Entity entity)
     {
         var t = (T) entity;
         var args = new object[_fieldNames.Count];
@@ -149,8 +141,17 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
         for (int i = 0; i < _fieldNames.Count; i++)
         {
             var fieldName = _fieldNames[i];
-            var arg = _fieldGetters[fieldName]((T) entity);
-            args[i] = arg;
+            var fieldType = _fieldTypes[i];
+            if (fieldType.HasAttribute<RefAttribute>())
+            {
+                var arg = _refUnderlyingGetters[fieldName]((T) entity);
+                args[i] = arg;
+            }
+            else
+            {
+                var arg = _fieldGetters[fieldName]((T) entity);
+                args[i] = arg;
+            }
         }
 
         return args;

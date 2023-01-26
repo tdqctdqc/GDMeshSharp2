@@ -13,7 +13,7 @@ public class EntityRefVarUpdate : Update
     {
         var update = new EntityRefVarUpdate(fieldName, entityId,
             newVal, key);
-        key.Server.QueueUpdate(update);
+        key.HostServer.QueueUpdate(update);
     }
     private EntityRefVarUpdate(string fieldName, int entityId, 
         object newVal, HostWriteKey key) 
