@@ -13,7 +13,7 @@ public abstract class EntityConvertibleVar<TBase, TConverted>
         return ConvertToBase(Value);
     }
 
-    public TConverted Value { get; private set; }
+    public TConverted Value { get; protected set; }
     protected EntityConvertibleVar(TConverted c, CreateWriteKey key)
     {
         Value = c;

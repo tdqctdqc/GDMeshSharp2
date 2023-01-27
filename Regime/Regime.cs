@@ -14,12 +14,12 @@ public sealed class Regime : Entity
     {
         PrimaryColor = primaryColor;
         SecondaryColor = secondaryColor;
-        Polygons = new EntityRefCollection<MapPolygon>(new int[0]);
+        Polygons = new EntityRefCollection<MapPolygon>(new List<int>());
         Polygons.AddRef(seed, key.Data);
     }
-    private Regime(object[] args) : base(args) {}
-    private static Regime DeserializeConstructor(object[] args)
+    private Regime(object[] args, ServerWriteKey key) : base(args, key) {}
+    private static Regime DeserializeConstructor(object[] args, ServerWriteKey key)
     {
-        return new Regime(args);
+        return new Regime(args, key);
     }
 }

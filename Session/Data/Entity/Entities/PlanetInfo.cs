@@ -11,10 +11,10 @@ public sealed class PlanetInfo : Entity
         Dimensions = dimensions;
     }
 
-    private PlanetInfo(object[] args) : base(args) { }
+    private PlanetInfo(object[] args, ServerWriteKey key) : base(args, key) { }
 
-    private static PlanetInfo DeserializeConstructor(object[] args)
+    private static PlanetInfo DeserializeConstructor(object[] args, ServerWriteKey key)
     {
-        return new PlanetInfo(args);
+        return new PlanetInfo(args, key);
     }
 }

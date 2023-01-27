@@ -5,19 +5,19 @@ using Godot;
 
 public sealed class Settlement : Location
 {
-    public MapPolygon Poly { get; private set; }
+    public EntityRef<MapPolygon> Poly { get; private set; }
     public float Size { get; private set; }
 
     public Settlement(int id, CreateWriteKey key, MapPolygon poly, float size) : base(id, key)
     {
-        Poly = poly;
+        Poly = new EntityRef<MapPolygon>(poly, key) ;
         Size = size;
     }
     
     
-    private static Settlement DeserializeConstructor(object[] args)
+    private static Settlement DeserializeConstructor(object[] args, ServerWriteKey key)
     {
-        return new Settlement(args);
+        return new Settlement(args, key);
     }
-    private Settlement(object[] args) : base(args) { }
+    private Settlement(object[] args, ServerWriteKey key) : base(args, key) {}
 }

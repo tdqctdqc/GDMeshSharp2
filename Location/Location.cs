@@ -9,7 +9,7 @@ public abstract class Location : Entity
     {
     }
     
-    protected Location(object[] args) : base(args)
+    protected Location(object[] args, ServerWriteKey key) : base(args, key)
     {
     }
     

@@ -10,13 +10,13 @@ using System.Text.Json.Serialization;
     public List<int> RefIds { get; private set; }
     private HashSet<TRef> _refs;
     public int Count() => RefIds.Count;
-    public static EntityRefCollection<TRef> Construct(IEnumerable<int> refIds, CreateWriteKey key)
+    public static EntityRefCollection<TRef> Construct(List<int> refIds, CreateWriteKey key)
     {
         var col = new EntityRefCollection<TRef>(refIds);
         col._refs = col.RefIds.Select(id => (TRef) key.Data[id]).ToHashSet();
         return col;
     }
-    public EntityRefCollection(IEnumerable<int> refIds)
+    public EntityRefCollection(List<int> refIds)
     {
         RefIds = new List<int>(refIds);
         _refs = new HashSet<TRef>();
@@ -86,6 +86,8 @@ using System.Text.Json.Serialization;
     public List<int> GetUnderlying() => RefIds;
     public void Set(List<int> underlying, StrongWriteKey key)
     {
+        GD.Print("ref collection setting");
         RefIds = new List<int>(underlying);
+        GD.Print("ref collection set");
     }
 }

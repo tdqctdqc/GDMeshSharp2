@@ -28,7 +28,7 @@ public class EntityRefVarUpdate : Update
     {
         var entity = key.Data[EntityId];
         var meta = entity.GetMeta();
-        meta.UpdateEntityRefVar(FieldName, entity, key, NewVal);
+        meta.UpdateEntityVar(FieldName, entity, key, NewVal);
     }
 
     private static EntityRefVarUpdate DeserializeConstructor(object[] args)

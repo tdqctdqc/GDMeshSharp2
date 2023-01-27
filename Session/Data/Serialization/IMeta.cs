@@ -5,7 +5,7 @@ using Godot;
 
 public interface IMeta<TMeta>
 {
-    TMeta Deserialize(object[] args);
+    TMeta Deserialize(byte[][] argsBytes);
     void Initialize(TMeta m, object[] args);
-    object[] GetArgs(TMeta update);
+    object[] GetArgs(TMeta t);
 }

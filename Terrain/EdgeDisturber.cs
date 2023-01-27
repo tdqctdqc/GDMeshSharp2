@@ -31,14 +31,14 @@ public static class EdgeDisturber
     private static void DisturbEdge(MapPolygon highId, MapPolygon lowId, OpenSimplexNoise noise)
     {
         var border = highId.GetBorder(lowId, _key.Data);
-        var hiSegs = border.HighSegsRel;
-        var loSegs = border.LowSegsRel;
+        var hiSegs = border.HighSegsRel.Value;
+        var loSegs = border.LowSegsRel.Value;
         var axisHi = border.GetOffsetToOtherPoly(highId);
         var sample = Mathf.Abs(noise.GetNoise2d(highId.Center.x, highId.Center.y)) * .5f;
         sample = Mathf.Pow(sample, 1f / 3f);
         var newSegsHi = new List<LineSegment>();
         var newSegsLow = new List<LineSegment>();
-        var count = border.HighSegsRel.Count;
+        var count = border.HighSegsRel.Value.Count;
         for (int i = 0; i < count; i++)
         {
             var angleDeviation = Game.I.Random.RandfRange(.5f - sample, .5f + sample);

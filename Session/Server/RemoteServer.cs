@@ -1,6 +1,9 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Text.Json;
 
 public class RemoteServer : Node, IServer
 {
@@ -13,6 +16,11 @@ public class RemoteServer : Node, IServer
     private PacketPeerStream _packetStream;
     private string _ip = "127.0.0.1";
     private int _port = 3306;
+
+    public void Setup(Data data)
+    {
+        _key = new ServerWriteKey(data);
+    }
     public override void _Ready()
     {
         _network = new NetworkedMultiplayerENet();
@@ -31,12 +39,16 @@ public class RemoteServer : Node, IServer
     public override void _Process(float delta)
     {
         var availPackets = _packetStream.GetAvailablePacketCount();
+
         if(availPackets > 0) GD.Print("avail packets " + availPackets);
         for (int i = 0; i < availPackets; i++)
         {
-            ReceiveUpdates((object[])_packetStream.GetVar(true));
+            var packet = _packetStream.GetPacket();
+            var argsBytes = Game.I.Serializer.Deserialize<byte[][]>(packet);
+            ReceiveUpdates(argsBytes);
         }
     }
+    
     public void ReceiveDependencies(Data data)
     {
         _key = new ServerWriteKey(data);
@@ -51,22 +63,18 @@ public class RemoteServer : Node, IServer
     {
         GD.Print("connection failed");
     }
-    public void ReceiveUpdates(object[] updateArgs)
+    public void ReceiveUpdates(byte[][] updateArgBytes)
     {
-        var updateTypeName = (string)updateArgs[0];
+        GD.Print(updateArgBytes[0].GetType().Name);
+        var updateTypeName = Game.I.Serializer.Deserialize<string>(updateArgBytes[0]);
+        GD.Print(updateTypeName);
         var updateMeta = Game.I.Serializer.GetUpdateMeta(updateTypeName);
-        var update = updateMeta.Deserialize(updateArgs);
+        var update = updateMeta.Deserialize(updateArgBytes);
         update.Enact(_key);
     }
 
-    [Remote] public void ReceiveStateTransfer(object[] stateTransferArgs)
-    {
-        var meta = Game.I.Serializer.GetUpdateMeta<StateTransferUpdate>();
-        var update = meta.Deserialize(stateTransferArgs);
-        update.Enact(_key);
-    }
     public void PushCommand(Command command)
     {
-        //todo send to hostserver
+        //todo send to hostserver sadf
     }
 }

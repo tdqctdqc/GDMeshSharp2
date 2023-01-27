@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Diagnostics;
+using System.Linq;
 
 public class Session : Node, ISession
 {
@@ -29,17 +30,23 @@ public class Session : Node, ISession
         //
         StartServer(hServer);
         StartClient(hServer);
+
+        var firstDom = Data.Domains.First().Value;
+        var firstE = Data.Entities.First().Value;
+        var firstEBytes = Game.I.Serializer.SerializeToUtf8(firstE);
+        var firstE2 = Game.I.Serializer.Deserialize(firstEBytes, firstE.GetType());
     }
     
     public void StartAsRemote(UserCredential userCredential = null)
     {
         SetCredential(userCredential);
-        var server = new RemoteServer();
+        
         _logic = new RemoteLogic();
         
         //todo fix this
         Data = new Data();
-
+        var server = new RemoteServer();
+        server.Setup(Data);
         StartServer(server);
         StartClient(server);
 

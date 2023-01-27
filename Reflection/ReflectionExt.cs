@@ -40,7 +40,11 @@ public static class ReflectionExt
     {
         return (T)Delegate.CreateDelegate(typeof(T), null, m);
     }
-    
+
+    public static Type GetMethodDelType(this MethodInfo mi)
+    {
+        return Delegate.CreateDelegate(null, mi).GetType();
+    }
     public static Delegate MakeInstanceMethodDelegate(this MethodInfo m, Type delegateType)
     {
         return Delegate.CreateDelegate(delegateType, null, m);

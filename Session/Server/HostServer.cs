@@ -16,7 +16,8 @@ public class HostServer : Node, IServer
     private List<StreamPeerTCP> _connections;
     private NetworkedMultiplayerENet _network; 
     private TCP_Server _tcp;
-    private StreamPeerTCP _peer;
+    // private StreamPeerTCP _peer;
+    // private PacketPeerStream _packet;
 
     private string _ip = "127.0.0.1";
     private int _port = 3306;
@@ -38,10 +39,10 @@ public class HostServer : Node, IServer
         
         _tcp = new TCP_Server();
         _tcp.Listen((ushort)_port);
-        _peer = new StreamPeerTCP();
-        _peer.ConnectToHost(_ip, _port);
-        _peer.PutVar(new Dictionary<int, bool>{{1, true}});
-        // StateTransferUpdate.Send(_key, _peer);
+        // _peer = new StreamPeerTCP();
+        // _peer.ConnectToHost(_ip, _port);
+        // _packet = new PacketPeerStream();
+        // _packet.StreamPeer = _peer;
     }
 
     public override void _Process(float delta)
@@ -57,8 +58,9 @@ public class HostServer : Node, IServer
         {
             GD.Print("connection available");
             var connection = _tcp.TakeConnection();
-            
-            // StateTransferUpdate.Send(_key, connection);
+            var hostPacket = new PacketPeerStream();
+            hostPacket.StreamPeer = connection;
+            StateTransferUpdate.Send(_key, connection, hostPacket);
             // _connections.Add(connection);
         }
     }
@@ -103,8 +105,9 @@ public class HostServer : Node, IServer
     {
         var commandTypeName = (string)commandArgs[0];
         var commandMeta = Game.I.Serializer.GetCommandMeta(commandTypeName);
-        var command = commandMeta.Deserialize(commandArgs);
-        _queuedCommands.Add(command);
+        //todo revert
+        // var command = commandMeta.Deserialize(commandArgs);
+        // _queuedCommands.Add(command);
     }
     public void PushCommand(Command command)
     {

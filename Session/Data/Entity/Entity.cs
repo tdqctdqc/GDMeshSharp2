@@ -11,9 +11,14 @@ public abstract class Entity
     {
         Id = id;
     }
-    protected Entity(object[] args)
+
+    protected Entity(int id)
+    {
+        Id = id;
+    }
+    protected Entity(object[] args, ServerWriteKey key)
     {        
-        GetMeta().Initialize(this, args);
+        GetMeta().Initialize(this, args, key);
     }
     public void Set<TValue>(string fieldName, TValue newValue, CreateWriteKey key)
     {
@@ -25,7 +30,7 @@ public abstract class Entity
     }
     public void SetRef<TUnderlying>(string fieldName, TUnderlying newValue, CreateWriteKey key)
     {
-        GetMeta().UpdateEntityRefVar<TUnderlying>(fieldName, this, key, newValue);
+        GetMeta().UpdateEntityVar<TUnderlying>(fieldName, this, key, newValue);
         if (key is HostWriteKey hKey)
         {
             EntityVarUpdate.Send(fieldName, Id, newValue, hKey);

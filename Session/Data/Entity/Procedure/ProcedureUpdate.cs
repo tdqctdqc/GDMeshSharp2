@@ -19,8 +19,9 @@ public class ProcedureUpdate : Update
     public override void Enact(ServerWriteKey key)
     {
         var meta = Game.I.Serializer.GetProcedureMeta(ProcedureName);
-        var proc = meta.Deserialize(ProcedureArgs);
-        proc.Enact(key);
+        //todo revert
+        // var proc = meta.Deserialize(ProcedureArgs);
+        // proc.Enact(key);
     }
 
     private static ProcedureUpdate DeserializeConstructor(object[] args)

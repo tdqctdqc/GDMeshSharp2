@@ -2,6 +2,7 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 public sealed class MapPolygon : Entity
 {
@@ -19,13 +20,29 @@ public sealed class MapPolygon : Entity
     public bool IsWater() => IsLand() == false;
     public MapPolygonBorder GetBorder(MapPolygon neighbor, Data data) 
         => data.Planet.PolyBorders.GetBorder(this, neighbor);
-    
+
+    [JsonConstructor] public MapPolygon(int id, Vector2 center, EntityRefCollection<MapPolygon> neighbors, 
+        List<Vector2> noNeighborBorders, Color color, float altitude, float roughness, 
+        float moisture, float settlementSize, int plateId, EntityRef<Regime> regime) : base(id)
+    {
+        Center = center;
+        Neighbors = neighbors;
+        NoNeighborBorders = noNeighborBorders;
+        Color = color;
+        Altitude = altitude;
+        Roughness = roughness;
+        Moisture = moisture;
+        SettlementSize = settlementSize;
+        PlateId = plateId;
+        Regime = regime;
+    }
+
     public MapPolygon(int id, Vector2 center, float mapWidth, GenWriteKey key) : base(id, key)
     {
         Center = center;
         if (Center.x > mapWidth) Center = new Vector2(Center.x - mapWidth, center.y);
         if (Center.x < 0f) Center = new Vector2(Center.x + mapWidth, center.y);
-        Neighbors = EntityRefCollection<MapPolygon>.Construct(new int[0], key);
+        Neighbors = EntityRefCollection<MapPolygon>.Construct(new List<int>(), key);
         NoNeighborBorders = new List<Vector2>();
         Color = ColorsExt.GetRandomColor();
         Regime = new EntityRef<Regime>(-1);
@@ -70,18 +87,18 @@ public sealed class MapPolygon : Entity
 
     public void SetRegime(Regime r, GenWriteKey key)
     {
-        GetMeta().UpdateEntityRefVar<int>(nameof(Regime), this, key, r.Id);
+        GetMeta().UpdateEntityVar<int>(nameof(Regime), this, key, r.Id);
     }
     public void AddNoNeighborBorder(Vector2 from, Vector2 to)
     {
         NoNeighborBorders.Add(from);
         NoNeighborBorders.Add(to);
     }
-    private static MapPolygon DeserializeConstructor(object[] args)
+    private static MapPolygon DeserializeConstructor(object[] args, ServerWriteKey key)
     {
-        return new MapPolygon(args);
+        return new MapPolygon(args, key);
     }
-    private MapPolygon(object[] args) : base(args) { }
+    private MapPolygon(object[] args, ServerWriteKey key) : base(args, key) { }
 }
 public static class MapPolygonExt
 {

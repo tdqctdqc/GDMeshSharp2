@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-[Convertible] public class TerrainTriDic : EntityConvertibleVar<Dictionary<int, List<Vector2>>, Dictionary<int, List<Triangle>>>
+[Convertible] public class TerrainTriDic 
+    : EntityConvertibleVar<Dictionary<int, List<Vector2>>, 
+                            Dictionary<int, List<Triangle>>>
 {
     public TerrainTriDic(Dictionary<int, List<Triangle>> c, CreateWriteKey key) : base(c, key)
     {
@@ -12,6 +14,7 @@ using Godot;
     public TerrainTriDic(Dictionary<int, List<Vector2>> b) : base(b)
     {
     }
+
 
     public override Dictionary<int, List<Triangle>> ConvertFromBase(Dictionary<int, List<Vector2>> b)
     {
