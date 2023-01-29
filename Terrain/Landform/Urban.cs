@@ -12,7 +12,7 @@ public class Urban : Landform
         
     }
 
-    public override bool Allowed(MapPolygon poly, WorldData data)
+    public override bool Allowed(MapPolygon poly, GenData data)
     {
         return poly.SettlementSize > 0f && base.Allowed(poly, data);
     }

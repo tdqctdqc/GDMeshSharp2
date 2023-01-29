@@ -5,8 +5,8 @@ using Godot;
 
 public class GenWriteKey : CreateWriteKey
 {
-    public WorldData WorldData => (WorldData) Data;
-    public GenWriteKey(WorldData data) : base(data)
+    public GenData GenData => (GenData) Data;
+    public GenWriteKey(GenData data) : base(data)
     {
     }
 }

@@ -8,7 +8,7 @@ public class GameGraphics : Node2D
 {
     public static GameGraphics Get() => (GameGraphics) ((PackedScene)GD.Load("res://Client/GameClient/Graphics/GameGraphics.tscn")).Instance();
     protected List<IGraphicsSegmenter> _segmenters;
-    public List<MapChunkGraphic> MapChunks { get; private set; }
+    public List<MapChunkGraphic> MapChunkGraphics { get; private set; }
     private CameraController _cam;
     public override void _Process(float delta)
     {
@@ -25,21 +25,19 @@ public class GameGraphics : Node2D
             GetChild(0).Free();
         }
     }
-    public void Setup(Data data, CameraController cam)
+    public void Setup(IClient client, Data data, CameraController cam)
     {
         _cam = cam;
         _segmenters = new List<IGraphicsSegmenter>();
-        // _client = client;
-        var polyUnions = data.Planet.Polygons.GetPlateUnions();
-        MapChunks = new List<MapChunkGraphic>();
+        MapChunkGraphics = new List<MapChunkGraphic>();
         Clear();
         
         var polySegmenter = new GraphicsSegmenter<MapChunkGraphic>();
         _segmenters.Add(polySegmenter);
-        var mapChunks = polyUnions.Select(u =>
+        var mapChunks = data.Cache.Chunks.Select(u =>
         {
             var graphic = new MapChunkGraphic();
-            MapChunks.Add(graphic);
+            MapChunkGraphics.Add(graphic);
             graphic.Setup(u, data);
             return graphic;
         }).ToList();

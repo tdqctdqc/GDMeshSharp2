@@ -2,17 +2,23 @@ using Godot;
 using System;
 using System.Collections.Generic;
 
-public class WorldData : Data
+public class GenData : Data
 {
     public LandSeaManager LandSea { get; private set; }
     public GenAuxiliaryData GenAuxData { get; private set; }
-    public WorldData() : base()
+    public GeneratorEvents Events { get; private set; }
+    public GenData()
+    {
+        Init();
+    }
+
+    protected override void Init()
     {
         GenAuxData = new GenAuxiliaryData();
         LandSea = new LandSeaManager();
-        
+        Events = new GeneratorEvents();
+        base.Init();
     }
-
     public void ClearAuxData()
     {
         GenAuxData = null;

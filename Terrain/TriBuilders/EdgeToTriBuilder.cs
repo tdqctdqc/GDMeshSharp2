@@ -16,7 +16,7 @@ public class EdgeToTriBuilder : ITriBuilder
         _widthFromStrength = widthFromStrength;
     }
 
-    public List<Triangle> BuildTrisForPoly(MapPolygon p, WorldData data)
+    public List<Triangle> BuildTrisForPoly(MapPolygon p, GenData data)
     {
         var tris = new List<Triangle>();
         

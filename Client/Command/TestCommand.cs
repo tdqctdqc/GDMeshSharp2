@@ -14,12 +14,6 @@ public class TestCommand : Command
     {
         Code = code;
     }
-
-    private static TestCommand DeserializeConstructor(object[] args)
-    {
-        return new TestCommand(args);
-    }
-    private TestCommand(object[] args) : base(args) {}
     public override void Enact(HostWriteKey key)
     {
         GD.Print(Code);

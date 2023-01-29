@@ -65,17 +65,8 @@ using System.Text.Json.Serialization;
         _refs.Clear();
         foreach (var id in RefIds)
         {
-            TRef refer;
-            try
-            {
-                refer = (TRef) data[id];
-                _refs.Add(refer);
-            }
-            catch (Exception e)
-            {
-                GD.Print(data[id].GetType().ToString() + " supposed to be " + typeof(TRef).ToString());
-                throw;
-            }
+            TRef refer = (TRef) data[id];
+            _refs.Add(refer);
         }
     }
 
@@ -86,8 +77,6 @@ using System.Text.Json.Serialization;
     public List<int> GetUnderlying() => RefIds;
     public void Set(List<int> underlying, StrongWriteKey key)
     {
-        GD.Print("ref collection setting");
         RefIds = new List<int>(underlying);
-        GD.Print("ref collection set");
     }
 }

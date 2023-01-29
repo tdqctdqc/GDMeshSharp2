@@ -8,7 +8,6 @@ public class GameClient : Node, IClient
     private IServer _server;
     public CameraController Cam { get; private set; }
     public GameGraphics Graphics { get; private set; }
-    
     public override void _Ready()
     {
         
@@ -24,14 +23,14 @@ public class GameClient : Node, IClient
         BuildUi(data, server);
         if (server is RemoteServer r)
         {
-            r.ReceivedStateTransfer += () => Graphics.Setup(data, Cam);
+            r.ReceivedStateTransfer += () => Graphics.Setup(this, data, Cam);
         }
     }
 
     private void BuildGraphics(Data data)
     {
         Graphics = GameGraphics.Get();
-        Graphics.Setup(data, Cam);
+        Graphics.Setup(this, data, Cam);
         AddChild(Graphics);
     }
 

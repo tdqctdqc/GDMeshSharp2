@@ -45,7 +45,7 @@ public class ConvertibleVarMeta<TEntity, TProp, TBase, TConverted> : EntityVarMe
     {
         return (TBase) ConvertToBase(GetProperty(e), GetConverted(e));
     }
-    public override object GetFromSerialized(byte[] bytes)
+    public override object GetPropertyFromSerialized(byte[] bytes)
     {
         return Game.I.Serializer.Deserialize<TBase>(bytes);
     }

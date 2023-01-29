@@ -16,7 +16,7 @@ public class HostLogic : ILogic
         _key = new HostWriteKey(server, data);
     }
 
-    public void ReceiveGenerationData(WorldData data)
+    public void ReceiveGenerationData(GenData data)
     {
         
     }

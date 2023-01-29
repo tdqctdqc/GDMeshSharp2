@@ -5,5 +5,5 @@ using Godot;
 
 public interface ITriBuilder
 {
-    List<Triangle> BuildTrisForPoly(MapPolygon p, WorldData data);
+    List<Triangle> BuildTrisForPoly(MapPolygon p, GenData data);
 }

@@ -27,11 +27,4 @@ public sealed class EntityVarUpdate : Update
         var meta = entity.GetMeta();
         meta.UpdateEntityVar(FieldName, entity, key, NewVal);
     }
-
-    private static EntityVarUpdate DeserializeConstructor(object[] args)
-    {
-        return new EntityVarUpdate(args);
-    }
-
-    private EntityVarUpdate(object[] args) : base(args) { }
 }

@@ -46,7 +46,7 @@ public static class PointsGenerator
             if(grid.GetElementsAtPoint(vec).Count == 0)
             {
                 badTries = 0;
-                grid.AddElement(vec, vec);
+                grid.AddElement(vec);
                 points.Add(vec);
             }
             else

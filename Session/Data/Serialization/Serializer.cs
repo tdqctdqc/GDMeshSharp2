@@ -7,11 +7,11 @@ using System.Reflection.Emit;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 
 public class Serializer
 {
     private JsonSerializerOptions _options;
-
     public Dictionary<string, Type> Types { get; private set; }
     public Dictionary<Type, IEntityMeta> _entityMetas;
     public IEntityMeta GetEntityMeta(Type type) => _entityMetas[type];
@@ -25,7 +25,6 @@ public class Serializer
         {
             throw new Exception("no entity types of type " + Types[typeName].Name);
         }
-
         if (_entityMetas[Types[typeName]] == null)
         {
             throw new Exception("null meta for " + Types[typeName].Name);
@@ -37,54 +36,19 @@ public class Serializer
         return (EntityMeta<T>)_entityMetas[typeof(T)];
     }
 
-    
-    public Dictionary<string, Type> DomainTypes { get; private set; }
-
-    private Dictionary<Type, IMeta<Update>> _updateMetas;
-    public IMeta<Update> GetUpdateMeta(Type type) => _updateMetas[type];
-    public IMeta<Update> GetUpdateMeta(string type) => _updateMetas[Types[type]];
-    public Meta<TUpdate, Update> GetUpdateMeta<TUpdate>() where TUpdate : Update
-    {
-        return (Meta<TUpdate, Update>)_updateMetas[typeof(TUpdate)];
-    }
-    
-    private Dictionary<Type, IMeta<Procedure>> _procedureMetas;
-    public IMeta<Procedure> GetProcedureMeta(Type type) => _procedureMetas[type];
-    public IMeta<Procedure> GetProcedureMeta(string type) => _procedureMetas[Types[type]];
-    public Meta<TProcedure, Procedure> GetProcedureMeta<TProcedure>() where TProcedure : Procedure
-    {
-        return (Meta<TProcedure, Procedure>)_procedureMetas[typeof(TProcedure)];
-    }
-    
-    
-    private Dictionary<Type, IMeta<Command>> _commandMetas;
-    public IMeta<Command> GetCommandMeta(Type type) => _commandMetas[type];
-    public IMeta<Command> GetCommandMeta(string type) => _commandMetas[Types[type]];
-    public Meta<TCommand, Command> GetCommandMeta<TCommand>() where TCommand : Command
-    {
-        return (Meta<TCommand, Command>)_commandMetas[typeof(TCommand)];
-    }
-
     public Serializer()
     {
-        _options = new JsonSerializerOptions();
-        // _options.Converters.Add(new Vector2JsonConverter());
+        _options = new JsonSerializerOptions
+        {
+        };
+        _options.Converters.Add(new Vector2JsonConverter());
+        _options.Converters.Add(new ColorJsonConverter());
         
         SetupEntityMetas();
-        _updateMetas = new Dictionary<Type, IMeta<Update>>();
-        SetupMetas<Update>(_updateMetas);
-        _procedureMetas = new Dictionary<Type, IMeta<Procedure>>();
-        SetupMetas<Procedure>(_procedureMetas);
-
-        _commandMetas = new Dictionary<Type, IMeta<Command>>();
-        SetupMetas<Command>(_commandMetas);
-            
-        DomainTypes = new Dictionary<string, Type>();
-        var domainTypes = Assembly.GetExecutingAssembly().GetConcreteTypesOfType<Domain>();
-        foreach (var domainType in domainTypes)
-        {
-            DomainTypes.Add(domainType.Name, domainType);
-        }
+        SetupTypes<Update>();
+        SetupTypes<Procedure>();
+        SetupTypes<Command>();
+        SetupTypes<Domain>();
     }
 
     private void SetupEntityMetas()
@@ -96,12 +60,6 @@ public class Serializer
         var metaTypes = typeof(EntityMeta<>);
         foreach (var entityType in entityTypes)
         {
-            // var refConverterType = typeof(EntityRefJsonConverter<>).MakeGenericType(entityType);
-            // var refColConverterType = typeof(EntityRefColJsonConverter<>).MakeGenericType(entityType);
-            // var refConverter = (JsonConverter)refConverterType.GetConstructors()[0].Invoke(null);
-            // var refColConverter = (JsonConverter)refColConverterType.GetConstructors()[0].Invoke(null);
-            // _options.Converters.Add(refConverter);
-            // _options.Converters.Add(refColConverter);
 
             Types.Add(entityType.Name, entityType);
             var genericMeta = metaTypes.MakeGenericType(entityType);
@@ -110,19 +68,100 @@ public class Serializer
             _entityMetas.Add(entityType, (IEntityMeta)meta);
         }
     }
-    private void SetupMetas<TMeta>(Dictionary<Type, IMeta<TMeta>> metaDic)
+    private void SetupTypes<TMeta>()
     {
-        var reference = nameof(Meta<TMeta, TMeta>.ForReference);
-        var updateTypes = Assembly.GetExecutingAssembly().GetConcreteTypesOfType<TMeta>();
-        var metaTypes = typeof(Meta<,>);
-        foreach (var updateType in updateTypes)
+        var metaSubTypes = Assembly.GetExecutingAssembly().GetConcreteTypesOfType<TMeta>();
+        foreach (var metaSubType in metaSubTypes)
         {
-            Types.Add(updateType.Name, updateType);
-            var genericMeta = metaTypes.MakeGenericType(updateType, typeof(TMeta));
-            var constructor = genericMeta.GetConstructors()[0];
-            var meta = constructor.Invoke(new object[]{_options});
-            metaDic.Add(updateType, (IMeta<TMeta>)meta);
+            Types.Add(metaSubType.Name, metaSubType);
         }
+    }
+
+    public void TestSerialization(Data data, HostWriteKey key)
+    {
+        foreach (var keyValuePair in data.Domains)
+        {
+            foreach (var valueRepo in keyValuePair.Value.Repos)
+            {
+                var e = valueRepo.Value.Entities.FirstOrDefault();
+                if(e != null) TestEntitySerialization(e, key);
+            }
+        }
+    }
+    private void TestEntitySerialization(Entity e, HostWriteKey key)
+    {
+        GD.Print("testing serialization for " + e.GetType().Name);
+
+        var constructors = e.GetType().GetConstructors();
+        if (constructors.Any(c => IsGoodConstructor(c, e.GetType())) == false) throw new Exception();
+        
+        var eBytes = Game.I.Serializer.SerializeToUtf8(e);
+        var e2 = Game.I.Serializer.Deserialize(eBytes, e.GetType());
+        var props = e.GetType().GetProperties();
+        
+        var u = new EntityCreationUpdate(e.GetType(), typeof(PlanetDomain), e, key);
+        var uBytes = Game.I.Serializer.SerializeToUtf8(u);
+        var u2 = JsonSerializer.Deserialize<EntityCreationUpdate>(uBytes);
+        for (var j = 0; j < u.EntityBytes.Length; j++)
+        {
+            if (u.EntityBytes[j] != u2.EntityBytes[j])
+            {
+                throw new Exception();
+            }
+        }
+        var e3 = Game.I.Serializer.Deserialize(u2.EntityBytes, e.GetType());
+        
+        
+        foreach (var p in props)
+        {
+            GD.Print("\ttesting arg " + p.Name);
+            
+            var get = p.GetGetMethod();
+            var pType = p.PropertyType;
+            var arg = get.Invoke(e, null);
+            var arg2 = get.Invoke(e2, null);
+            var arg3 = get.Invoke(e3, null);
+            var argBytes = Game.I.Serializer.SerializeToUtf8(arg);
+            var arg4 = Game.I.Serializer.Deserialize(argBytes, pType);
+
+            if (pType.IsClass)
+            {
+                if (arg is null != arg2 is null) throw new Exception();
+                if (arg is null != arg3 is null) throw new Exception();
+                if (arg is null != arg4 is null) throw new Exception();
+            }
+            else
+            {
+                if (pType == typeof(Color)) continue;
+                if (arg.Equals(arg2) == false)
+                {
+                    throw new Exception();
+                }
+                if (arg.Equals(arg3) == false)
+                {
+                    throw new Exception();
+                }
+                if (arg.Equals(arg3) == false) 
+                {
+                    throw new Exception();
+                }
+            }
+        }
+    }
+
+    private bool IsGoodConstructor(ConstructorInfo c, Type t)
+    {
+        if (c.HasAttribute<JsonConstructorAttribute>() == false) return false;
+        var propTypes = t.GetProperties().ToDictionary(p => p.Name.ToLower(), p => p.PropertyType);
+        var cArgs = c.GetParameters();
+        foreach (var parameterInfo in cArgs)
+        {
+            var lower = parameterInfo.Name.ToLower();
+            if (propTypes.ContainsKey(lower) == false) return false;
+            if (propTypes[lower] != parameterInfo.ParameterType) return false;
+        }
+
+        return true;
     }
     public string Serialize<TValue>(TValue t)
     {
@@ -151,80 +190,23 @@ public class Serializer
     }
 }
 
-public class Vector2JsonConverter : JsonConverter<Vector2>
+
+
+public class PrivateConstructorContractResolver : DefaultJsonTypeInfoResolver
 {
-    public override Vector2 Read(ref Utf8JsonReader reader, Type typeToConvert, 
-        JsonSerializerOptions options)
+    public override JsonTypeInfo GetTypeInfo(Type type, JsonSerializerOptions options)
     {
-        reader.Read();
-        reader.Read();
-        float x = reader.GetSingle();
+        JsonTypeInfo jsonTypeInfo = base.GetTypeInfo(type, options);
 
-        reader.Read();
-        reader.Read();
-        float y = reader.GetSingle();
-        reader.Read();
-        
-        return new Vector2(x, y);
-    }
-
-    public override void Write(Utf8JsonWriter writer, Vector2 value, JsonSerializerOptions options)
-    {
-        writer.WriteStartObject();
-        writer.WriteNumber("x", value.x);
-        writer.WriteNumber("y", value.y);
-        writer.WriteEndObject();
-    }
-}
-
-public class EntityRefJsonConverter<TEntity> : JsonConverter<EntityRef<TEntity>> where TEntity : Entity
-{
-    public override EntityRef<TEntity> Read(ref Utf8JsonReader reader, Type typeToConvert, 
-        JsonSerializerOptions options)
-    {
-        reader.Read();
-        int id = reader.GetInt32();
-        reader.Read();
-        return new EntityRef<TEntity>(id);
-    }
-
-    public override void Write(Utf8JsonWriter writer, EntityRef<TEntity> value, JsonSerializerOptions options)
-    {
-        writer.WriteStartArray();
-        writer.WriteNumberValue(value.RefId);
-        writer.WriteEndArray();
-    }
-}
-
-public class EntityRefColJsonConverter<TEntity> : JsonConverter<EntityRefCollection<TEntity>> where TEntity : Entity
-{
-    public override EntityRefCollection<TEntity> Read(ref Utf8JsonReader reader, Type typeToConvert, 
-        JsonSerializerOptions options)
-    {
-        reader.Read();
-        var refIds = new List<int>();
-        int count = reader.GetInt32();
-        reader.Read();
-
-        for (int i = 0; i < count; i++)
+        if (jsonTypeInfo.Kind == JsonTypeInfoKind.Object && jsonTypeInfo.CreateObject is null)
         {
-            var read = reader.GetInt32();
-            reader.Read();
-            refIds.Add(read);
+            if (typeof(Entity).IsAssignableFrom(jsonTypeInfo.Type))
+            {
+                jsonTypeInfo.CreateObject = () =>
+                    System.Runtime.Serialization.FormatterServices.GetUninitializedObject(jsonTypeInfo.Type);
+            }
         }
-        reader.Read();
-        GD.Print(refIds.ToArray());
-        return new EntityRefCollection<TEntity>(refIds);
-    }
 
-    public override void Write(Utf8JsonWriter writer, EntityRefCollection<TEntity> value, JsonSerializerOptions options)
-    {
-        writer.WriteStartArray();
-        writer.WriteNumberValue(value.Count());
-        foreach (var i in value.RefIds)
-        {
-            writer.WriteNumberValue(i);
-        }
-        writer.WriteEndArray();
+        return jsonTypeInfo;
     }
 }

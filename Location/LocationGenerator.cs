@@ -5,10 +5,10 @@ using Godot;
 
 public class LocationGenerator 
 {
-    public WorldData Data { get; private set; }
+    public GenData Data { get; private set; }
     private CreateWriteKey _key;
     private IDDispenser _id;
-    public LocationGenerator(WorldData data)
+    public LocationGenerator(GenData data)
     {
         Data = data;
     }

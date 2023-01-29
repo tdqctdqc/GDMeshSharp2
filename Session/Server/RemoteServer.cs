@@ -17,9 +17,9 @@ public class RemoteServer : Node, IServer
     private string _ip = "127.0.0.1";
     private int _port = 3306;
 
-    public void Setup(Data data)
+    public void Setup(ISession session, Data data)
     {
-        _key = new ServerWriteKey(data);
+        _key = new ServerWriteKey(this, session, data);
     }
     public override void _Ready()
     {
@@ -40,18 +40,18 @@ public class RemoteServer : Node, IServer
     {
         var availPackets = _packetStream.GetAvailablePacketCount();
 
-        if(availPackets > 0) GD.Print("avail packets " + availPackets);
+        // if(availPackets > 0) GD.Print("avail packets " + availPackets);
         for (int i = 0; i < availPackets; i++)
         {
             var packet = _packetStream.GetPacket();
-            var argsBytes = Game.I.Serializer.Deserialize<byte[][]>(packet);
-            ReceiveUpdates(argsBytes);
+            var argsBytes = Game.I.Serializer.Deserialize<UpdateWrapper>(packet);
+            ReceiveUpdate(argsBytes);
         }
     }
     
-    public void ReceiveDependencies(Data data)
+    public void ReceiveDependencies(ISession session, Data data)
     {
-        _key = new ServerWriteKey(data);
+        _key = new ServerWriteKey(this, session, data);
     }
     [Remote] public void OnConnectionSucceeded()
     {
@@ -63,13 +63,11 @@ public class RemoteServer : Node, IServer
     {
         GD.Print("connection failed");
     }
-    public void ReceiveUpdates(byte[][] updateArgBytes)
+    public void ReceiveUpdate(UpdateWrapper w)
     {
-        GD.Print(updateArgBytes[0].GetType().Name);
-        var updateTypeName = Game.I.Serializer.Deserialize<string>(updateArgBytes[0]);
-        GD.Print(updateTypeName);
-        var updateMeta = Game.I.Serializer.GetUpdateMeta(updateTypeName);
-        var update = updateMeta.Deserialize(updateArgBytes);
+        var updateType = Game.I.Serializer.Types[w.UpdateName];
+        // var updateMeta = Game.I.Serializer.GetUpdateMeta(updateTypeName);
+        var update = (Update)Game.I.Serializer.Deserialize(w.UpdateBytes, updateType);
         update.Enact(_key);
     }
 

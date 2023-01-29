@@ -8,7 +8,7 @@ public class PolygonChunkGraphic : Node2D
 {
     public void Setup(List<MapPolygon> polys, Data data, Func<MapPolygon, Color> getColor)
     {
-        var mb = new MeshBuilder(Colors.White);
+        var mb = new MeshBuilder();
         mb.AddPolysRelative(polys.First(), polys, getColor, data);
         var mesh = mb.GetMeshInstance();
         AddChild(mesh);
@@ -19,7 +19,7 @@ public class PolygonChunkGraphic : Node2D
         float borderTransparency, float borderWidth)
     {
         var first = polys.First();
-        var mb = new MeshBuilder(Colors.White);
+        var mb = new MeshBuilder();
         var unions = UnionFind<MapPolygon, int>
             .DoUnionFind(
                 polys, 

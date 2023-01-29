@@ -33,7 +33,15 @@ public class CameraController : Camera2D
             if (XYRatio > 1f) XYRatio -= 1f;
             if (XYRatio < 0f) XYRatio += 1f;
         }
-
+        
+        if(Input.IsKeyPressed((int)KeyList.Q))
+        {
+            Position += Vector2.Left * delta * Zoom * _udScrollSpeed * mult;
+        }
+        if(Input.IsKeyPressed((int)KeyList.E))
+        {
+            Position += Vector2.Right * delta * Zoom * _udScrollSpeed * mult;
+        }
 
         if(Input.IsKeyPressed((int)KeyList.Z))
         {

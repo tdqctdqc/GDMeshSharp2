@@ -18,7 +18,7 @@ public class River : Landform
         
     }
 
-    public override bool Allowed(MapPolygon p, WorldData data)
+    public override bool Allowed(MapPolygon p, GenData data)
     {
         return p.IsLand() && p.Neighbors.Refs().Any(n => p.GetBorder(n, data).MoistureFlow > _threshold);
     }

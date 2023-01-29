@@ -5,27 +5,28 @@ using Godot;
 
 public class MeshBuilder
 {
-    public List<Vector2> TriPoints { get; private set; }
+    public List<Triangle> Tris { get; private set; }
     public List<Color> Colors { get; private set; }
-    public Color DefaultColor { get; private set; }
 
-    public MeshBuilder(Color defaultColor)
+    public MeshBuilder()
     {
-        DefaultColor = defaultColor;
-        TriPoints = new List<Vector2>();
+        Tris = new List<Triangle>();
         Colors = new List<Color>();
     }
 
-    private void AddTri(Vector2 a, Vector2 b, Vector2 c, Color? color)
+    public void AddTri(Triangle tri, Color color)
     {
-        TriPoints.Add(a);
-        TriPoints.Add(b);
-        TriPoints.Add(c);
-        if(color.HasValue) Colors.Add(color.Value);
-        else Colors.Add(DefaultColor);
+        Tris.Add(tri);
+        Colors.Add(color);
+    }
+    public void AddTri(Vector2 a, Vector2 b, Vector2 c, Color color)
+    {
+        var tri = new Triangle(a, b, c);
+        Tris.Add(tri);
+        Colors.Add(color);
     }
     
-    private void JoinLinePoints(Vector2 from, Vector2 to, float thickness, Color? color = null)
+    private void JoinLinePoints(Vector2 from, Vector2 to, float thickness, Color color)
     {
         var perpendicular = (from - to).Normalized().Rotated(Mathf.Pi / 2f);
         var fromOut = from + perpendicular * .5f * thickness;
@@ -42,11 +43,10 @@ public class MeshBuilder
         {
             var p = polys[i];
             var color = getColor(p);
-            var polyTriPoints = p.GetTrisRel(data).Select(v => v + relTo.GetOffsetTo(p, data));
-            TriPoints.AddRange(polyTriPoints);
-            for (int j = 0; j < polyTriPoints.Count() / 3; j++)
+            var polyTris = data.Cache.PolyRelTris[p].Select(v => v.Transpose(relTo.GetOffsetTo(p, data))).ToList();
+            for (int j = 0; j < polyTris.Count(); j++)
             {
-                Colors.Add(color);
+                AddTri(polyTris[j], color);
             }
         }
     }
@@ -89,25 +89,23 @@ public class MeshBuilder
         });
     }
     public void AddLines(List<Vector2> froms,
-        List<Vector2> tos, float thickness, List<Color> colors = null)
+        List<Vector2> tos, float thickness, List<Color> colors)
     {
         for (int i = 0; i < froms.Count; i++)
         {
-            Color? color = null;
-            if (colors != null) color = colors[i];
+            var color = colors[i];
             JoinLinePoints(froms[i], tos[i], thickness, color);
         }
     }
-    public void AddLines(List<LineSegment> segs, float thickness, List<Color> colors = null)
+    public void AddLines(List<LineSegment> segs, float thickness, List<Color> colors)
     {
         for (int i = 0; i < segs.Count; i++)
         {
-            Color? color = null;
-            if (colors != null) color = colors[i];
+            var color = colors[i];
             JoinLinePoints(segs[i].From, segs[i].To, thickness, color);
         }
     }
-    public void AddLines(List<LineSegment> segs, float thickness, Color? color = null)
+    public void AddLines(List<LineSegment> segs, float thickness, Color color)
     {
         for (int i = 0; i < segs.Count; i++)
         {
@@ -115,17 +113,16 @@ public class MeshBuilder
         }
     }
     public void AddLinesCustomWidths(List<Vector2> froms,
-        List<Vector2> tos, List<float> widths, List<Color> colors = null)
+        List<Vector2> tos, List<float> widths, List<Color> colors)
     {
         for (int i = 0; i < froms.Count; i++)
         {
-            Color? color = null;
-            if (colors != null) color = colors[i];
+            var color = colors[i];
             JoinLinePoints(froms[i], tos[i], widths[i], color);
         }
     }
     
-    public void AddCircle(Vector2 center, float radius, int resolution, Color? color = null)
+    public void AddCircle(Vector2 center, float radius, int resolution, Color color)
     {
         var angleIncrement = Mathf.Pi * 2f / (float) resolution;
         var triPoints = new List<Vector2>();
@@ -139,7 +136,7 @@ public class MeshBuilder
         }
     }
     
-    public void AddArrow(Vector2 from, Vector2 to, float thickness, Color? color = null)
+    public void AddArrow(Vector2 from, Vector2 to, float thickness, Color color)
     {
         var arrow = new Node2D();
         var length = from.DistanceTo(to);
@@ -150,7 +147,7 @@ public class MeshBuilder
             lineTo - perpendicular * thickness, color);
     }
     
-    public void AddPointMarkers(List<Vector2> points, float markerSize, Color? color = null)
+    public void AddPointMarkers(List<Vector2> points, float markerSize, Color color)
     {
         foreach (var p in points)
         {
@@ -168,7 +165,7 @@ public class MeshBuilder
     }
     public MeshInstance2D GetMeshInstance()
     {
-        var mesh = MeshGenerator.GetArrayMesh(TriPoints.ToArray(), Colors.ToArray());
+        var mesh = MeshGenerator.GetArrayMesh(Tris.GetTriPoints().ToArray(), Colors.ToArray());
         var meshInstance = new MeshInstance2D();
         meshInstance.Mesh = mesh;
         return meshInstance;

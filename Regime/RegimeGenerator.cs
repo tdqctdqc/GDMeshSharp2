@@ -5,10 +5,10 @@ using Godot;
 
 public class RegimeGenerator
 {
-    private WorldData _data;
+    private GenData _data;
     private IDDispenser _id;
     private GenWriteKey _key;
-    public RegimeGenerator(WorldData data, IDDispenser id, GenWriteKey key)
+    public RegimeGenerator(GenData data, IDDispenser id, GenWriteKey key)
     {
         _id = id;
         _key = key;
@@ -27,6 +27,7 @@ public class RegimeGenerator
         _data.LandSea.Landmasses.ForEach(lm =>
         {
             var landmassRegimes = Mathf.CeilToInt(lm.Count / polysPerRegime);
+            landmassRegimes = Math.Max(1, landmassRegimes);
             var seeds = lm.GetNRandomElements(landmassRegimes);
             for (var i = 0; i < seeds.Count; i++)
             {
@@ -34,6 +35,7 @@ public class RegimeGenerator
                 var sec = prim.Inverted();
                 var regime = new Regime(_id.GetID(), _key, prim, sec, seeds[i]);
                 _data.AddEntity(regime, typeof(SocietyDomain), _key);
+                seeds[i].SetRegime(regime, _key);
             }
             var remainder = GenerationUtility.PickInTurn(
                 lm.Where(p => p.Regime.Empty()), 

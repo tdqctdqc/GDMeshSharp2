@@ -60,7 +60,7 @@ public class HostServer : Node, IServer
             var connection = _tcp.TakeConnection();
             var hostPacket = new PacketPeerStream();
             hostPacket.StreamPeer = connection;
-            StateTransferUpdate.Send(_key, connection, hostPacket);
+            StateTransferUpdate.Send(_key, hostPacket);
             // _connections.Add(connection);
         }
     }
@@ -72,7 +72,6 @@ public class HostServer : Node, IServer
 
     public void QueueUpdate(Update u)
     {
-        _queuedUpdates.Add(u.GetMeta().GetArgs(u));
     }
 
     private void BroadcastUpdates()
@@ -103,11 +102,7 @@ public class HostServer : Node, IServer
     }
     [Remote] public void ReceiveCommand(object[] commandArgs)
     {
-        var commandTypeName = (string)commandArgs[0];
-        var commandMeta = Game.I.Serializer.GetCommandMeta(commandTypeName);
-        //todo revert
-        // var command = commandMeta.Deserialize(commandArgs);
-        // _queuedCommands.Add(command);
+        
     }
     public void PushCommand(Command command)
     {

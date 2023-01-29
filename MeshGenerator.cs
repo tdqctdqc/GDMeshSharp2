@@ -5,15 +5,7 @@ using System.Linq;
 
 public static class MeshGenerator 
 {
-    public static MeshInstance2D GetMeshInstance(List<Vector2> triPoints, IEnumerable<Color> colors = null)
-    {
-        var mesh = colors != null 
-            ? GetArrayMesh(triPoints.ToArray(), colors.ToArray())
-            : GetArrayMesh(triPoints.ToArray());
-        var meshInstance = new MeshInstance2D();
-        meshInstance.Mesh = mesh;
-        return meshInstance;
-    }
+    
 
     private static void JoinLinePoints(Vector2 from, Vector2 to, List<Vector2> triPoints, float thickness)
     {
@@ -199,7 +191,7 @@ public static class MeshGenerator
         return result;
     }
 
-    private static Color[] ConvertTriToVertexColors(Color[] triColors)
+    public static Color[] ConvertTriToVertexColors(Color[] triColors)
     {
         if (triColors == null) return null;
         var vertexColors = new Color[triColors.Length * 3];

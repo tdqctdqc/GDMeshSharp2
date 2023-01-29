@@ -10,7 +10,7 @@ public class Swamp : Vegetation
     {
     }
 
-    public override bool Allowed(MapPolygon p, WorldData data)
+    public override bool Allowed(MapPolygon p, GenData data)
     {
         return base.Allowed(p, data) && p.Altitude < .6f;
     }

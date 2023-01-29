@@ -6,10 +6,10 @@ using DelaunatorNetStd;
 
 public class GeologyGenerator
 {
-    public WorldData Data { get; private set; }
+    public GenData Data { get; private set; }
     private IDDispenser _id;
     private GenWriteKey _key;
-    public GeologyGenerator(WorldData data, IDDispenser id)
+    public GeologyGenerator(GenData data, IDDispenser id)
     {
         _id = id;
         Data = data;
@@ -38,51 +38,25 @@ public class GeologyGenerator
         
     }
 
-
+    
     private void BuildCells()
     {
         var polysPerCell = 3;
         var numCells = Data.Planet.Polygons.Entities.Count / polysPerCell;
-        // Data.GeoPolygons.AddRange(Data.GeoPolygons);
+        var polyCellDic = Data.GenAuxData.PolyCells;
         var cellSeeds = GenerationUtility.PickSeeds(Data.Planet.Polygons.Entities, new int[] {numCells})[0];
-        var cells = cellSeeds.Select(p => new GenCell(p, _key, Data)).ToList();
-        for (var i = 0; i < cellSeeds.Count; i++)
-        {
-            var cell = cells[i];
-            Data.GenAuxData.PolyCells[cellSeeds[i]] = cells[i];
-        }
+        var cells = cellSeeds.Select(p => new GenCell(p, _key, polyCellDic, Data)).ToList();
         Data.GenAuxData.Cells.AddRange(cells);
         GD.Print("Num cells: " + cells.Count);
         var polysNotTaken =
             Data.Planet.Polygons.Entities.Except(cellSeeds);
-        var record = polysNotTaken.ToHashSet();
         var remainder = GenerationUtility.PickInTurn(polysNotTaken, cells, 
             cell => cell.NeighboringPolyGeos, 
             (cell, poly) => cell.AddPolygon(poly, _key));
-        
-        
-        //todo fix
-        foreach (var r in remainder)
-        {
-            foreach (var rNeighbor in r.Neighbors.Refs())
-            {
-                if(Data.GenAuxData.PolyCells[rNeighbor] is GenCell c)
-                {
-                    Data.GenAuxData.PolyCells[r] = c;
-                    break;
-                }
-            }
-        }
+
+        if (remainder.Count > 0) throw new Exception();
         cells.ForEach(c => c.SetNeighbors(_key));
-        foreach (var p in Data.Planet.Polygons.Entities)
-        {
-            if (Data.GenAuxData.PolyCells.ContainsKey(p) == false)
-            {
-                GD.Print(cellSeeds.Contains(p));
-                GD.Print(record.Contains(p));
-                throw new Exception();
-            }
-        }
+        
     }
 
     private void BuildPlates()
@@ -99,29 +73,15 @@ public class GeologyGenerator
             plate => plate.NeighboringCells,
             (plate, cell) => plate.AddCell(cell, _key),
             ((cell, plate) => plate.NeighboringCellsAdjCount[cell]));
+        if (remainder.Count > 0) throw new Exception();
         plates.ForEach(p =>
         {
             p.SetNeighbors();
         });
-        
-        //todo fix this
-        foreach (var r in remainder)
-        {
-            foreach (var rNeighbor in r.Neighbors)
-            {
-                if(rNeighbor.Plate is GenPlate p)
-                {
-                    r.SetPlate(p, _key);
-                    break;
-                }
-            }
-        }
         foreach (var poly in Data.Planet.Polygons.Entities)
         {
             var cell = Data.GenAuxData.PolyCells[poly];
             var plate = cell.Plate;
-            var plateId = plate.Id;
-            poly.SetPlateId(plateId, _key);
         }
     }
 
@@ -138,18 +98,8 @@ public class GeologyGenerator
             mass => mass.NeighboringPlates,
             (mass, plate) => mass.AddPlate(plate),
             (plate, mass) => mass.NeighboringPlatesAdjCount[plate]);
+        if (remainder.Count > 0) throw new Exception();
         
-        foreach (var r in remainder)
-        {
-            foreach (var rNeighbor in r.Neighbors)
-            {
-                if(rNeighbor.Mass is GenMass c)
-                {
-                    r.SetMass(c);
-                    break;
-                }
-            }
-        }
         Data.GenAuxData.Masses.AddRange(masses);
         masses.ForEach(m => m.SetNeighbors());
     }
@@ -173,17 +123,8 @@ public class GeologyGenerator
         var remainder = GenerationUtility.PickInTurn(Data.GenAuxData.Masses.Except(allSeeds), conts,
             cont => cont.NeighboringMasses,
             (cont, mass) => cont.AddMass(mass));
-        foreach (var r in remainder)
-        {
-            foreach (var rNeighbor in r.Neighbors)
-            {
-                if(rNeighbor.GenContinent is GenContinent c)
-                {
-                    r.SetContinent(c);
-                    break;
-                }
-            }
-        }
+
+        if (remainder.Count > 0) throw new Exception();
         
         
         Data.GenAuxData.Continents.AddRange(conts);

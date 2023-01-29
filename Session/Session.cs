@@ -10,7 +10,7 @@ public class Session : Node, ISession
     private ILogic _logic;
     public UserCredential UserCredential { get; private set; }
     
-    public void StartAsHost(WorldData data, UserCredential userCredential = null)
+    public void StartAsHost(GenData data, UserCredential userCredential = null)
     {
         SetCredential(userCredential);
         var hServer = new HostServer();
@@ -21,20 +21,10 @@ public class Session : Node, ISession
         hServer.SetDependencies(logic, Data);
         logic.SetDependencies(hServer, Data);
         
-        // var sw = new Stopwatch();
-        // sw.Start();
-        // var stateTransfer = StateTransferUpdate.Encode(new HostWriteKey(hServer, data)).Serialize();
-        // sw.Stop();
-        // GD.Print("state transfer building time " + sw.Elapsed.Seconds);
-        // GD.Print("state transfer size " + System.Text.ASCIIEncoding.Unicode.GetByteCount(stateTransfer) / 1_000_000f);
-        //
         StartServer(hServer);
         StartClient(hServer);
 
-        var firstDom = Data.Domains.First().Value;
-        var firstE = Data.Entities.First().Value;
-        var firstEBytes = Game.I.Serializer.SerializeToUtf8(firstE);
-        var firstE2 = Game.I.Serializer.Deserialize(firstEBytes, firstE.GetType());
+        Game.I.Serializer.TestSerialization(Data, new HostWriteKey(hServer, data));
     }
     
     public void StartAsRemote(UserCredential userCredential = null)
@@ -46,9 +36,9 @@ public class Session : Node, ISession
         //todo fix this
         Data = new Data();
         var server = new RemoteServer();
-        server.Setup(Data);
+        server.Setup(this, Data);
         StartServer(server);
-        StartClient(server);
+        // StartClient(server);
 
     }
 
@@ -66,12 +56,17 @@ public class Session : Node, ISession
         ((Node)server).Name = "Server";
         AddChild((Node)server);
     }
+
+    public void StartClient(IServer server, ServerWriteKey key)
+    {
+        StartClient(server);
+    }
     private void StartClient(IServer server)
     {
-        // var client = new GameClient();
-        // Client = client;
-        // client.Setup(Data, server);
-        // AddChild((Node)Client);
+        var client = new GameClient();
+        Client = client;
+        client.Setup(Data, server);
+        AddChild((Node)Client);
     }
     public override void _UnhandledInput(InputEvent e)
     {

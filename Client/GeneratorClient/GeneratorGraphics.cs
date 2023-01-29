@@ -11,7 +11,7 @@ public class GeneratorGraphics : GameGraphics
     {
     }
 
-    public void SetupGenerator(WorldData data, GeneratorClient client)
+    public void SetupGenerator(GenData data, GeneratorClient client)
     {
         
         

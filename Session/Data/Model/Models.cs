@@ -9,6 +9,7 @@ public class Models
     private Dictionary<string, object> _models;
     public LandformManager Landforms { get; private set; }
     public VegetationManager Vegetation { get; private set; }
+    public PeepJobManager PeepJobs { get; private set; }
     public Models()
     {
         _repos = new Dictionary<Type, IModelRepo>();
@@ -17,6 +18,8 @@ public class Models
         AddRepo(Landforms);
         Vegetation = new VegetationManager();
         AddRepo(Vegetation);
+        PeepJobs = new PeepJobManager();
+        AddRepo(PeepJobs);
     }
 
     public T GetModel<T>(string name)

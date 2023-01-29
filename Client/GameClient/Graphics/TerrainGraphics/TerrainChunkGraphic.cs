@@ -8,8 +8,7 @@ public class TerrainChunkGraphic : Node2D
     public void Setup<T>(List<MapPolygon> polys, Data data, TerrainAspectManager<T> manager) where T : TerrainAspect
     {
         var first = polys.First();
-        var tris = new List<Vector2>();
-        var colors = new List<Color>();
+        var mb = new MeshBuilder();
         for (var i = 0; i < polys.Count; i++)
         {
             var p = polys[i];
@@ -21,16 +20,13 @@ public class TerrainChunkGraphic : Node2D
                 if (aspectTris == null) continue;
                 aspectTris.ForEach(t =>
                 {
-                    tris.Add(t.A + offset);
-                    tris.Add(t.B + offset);
-                    tris.Add(t.C + offset);
-                    colors.Add(aspect.Color);
+                    mb.AddTri(t.Transpose(offset), aspect.Color);
                 });
             }
         }
 
-        if (tris.Count == 0) return;
-        var mesh = MeshGenerator.GetMeshInstance(tris.ToList(), colors);
+        if (mb.Tris.Count == 0) return;
+        var mesh = mb.GetMeshInstance();
         AddChild(mesh);
     }
 }

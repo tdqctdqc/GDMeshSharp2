@@ -2,14 +2,26 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 public sealed class MapPolygonBorder : Entity
 {
     public float MoistureFlow { get; private set; }
-    public LineSegmentList LowSegsRel { get; private set; }
-    public LineSegmentList HighSegsRel { get; private set; }
+    public List<LineSegment> LowSegsRel { get; private set; }
+    public List<LineSegment> HighSegsRel { get; private set; }
     public EntityRef<MapPolygon> LowId { get; private set; }
     public EntityRef<MapPolygon> HighId { get; private set; }
+
+
+    [JsonConstructor] public MapPolygonBorder(int id, float moistureFlow, List<LineSegment> lowSegsRel, List<LineSegment> highSegsRel, EntityRef<MapPolygon> lowId, EntityRef<MapPolygon> highId) : base(id)
+    {
+        MoistureFlow = moistureFlow;
+        LowSegsRel = lowSegsRel;
+        HighSegsRel = highSegsRel;
+        LowId = lowId;
+        HighId = highId;
+    }
+
     public MapPolygonBorder(int id, MapPolygon poly1, MapPolygon poly2, List<LineSegment> segments, CreateWriteKey key)
      : base(id, key)
     {
@@ -25,9 +37,9 @@ public sealed class MapPolygonBorder : Entity
         }
         
         var highSegsRel = OrderAndRelativizeSegments(segments, HighId.Ref());
-        HighSegsRel = new LineSegmentList(highSegsRel, key);
+        HighSegsRel = highSegsRel;
         var lowSegsRel = OrderAndRelativizeSegments(segments, LowId.Ref());
-        LowSegsRel = new LineSegmentList(lowSegsRel, key);
+        LowSegsRel = lowSegsRel;
     }
 
     public static MapPolygonBorder ConstructEdgeCase(int id, MapPolygon poly1, List<LineSegment> poly1SegsRel, 
@@ -49,19 +61,17 @@ public sealed class MapPolygonBorder : Entity
             LowId = new EntityRef<MapPolygon>(poly1, key);
             HighId = new EntityRef<MapPolygon>(poly2, key);
             var highSegsRel = OrderAndRelativizeSegments(abs2, HighId.Ref());
-            HighSegsRel = new LineSegmentList(highSegsRel, key);
+            HighSegsRel = highSegsRel;
             var lowSegsRel = OrderAndRelativizeSegments(abs1, LowId.Ref());
-            LowSegsRel = new LineSegmentList(lowSegsRel, key);
+            LowSegsRel = lowSegsRel;
         }
         else
         {
             LowId = new EntityRef<MapPolygon>(poly2, key);
             HighId = new EntityRef<MapPolygon>(poly1, key);
             
-            var highSegsRel = OrderAndRelativizeSegments(abs1, HighId.Ref());
-            HighSegsRel = new LineSegmentList(highSegsRel, key);
-            var lowSegsRel = OrderAndRelativizeSegments(abs2, LowId.Ref());
-            LowSegsRel = new LineSegmentList(lowSegsRel, key);
+            HighSegsRel = OrderAndRelativizeSegments(abs1, HighId.Ref());
+            LowSegsRel = OrderAndRelativizeSegments(abs2, LowId.Ref());
         }
     }
     private List<LineSegment> OrderAndRelativizeSegments(List<LineSegment> abs, MapPolygon poly)
@@ -87,8 +97,8 @@ public sealed class MapPolygonBorder : Entity
     public void ReplacePoints(List<LineSegment> newSegmentsHiRel, 
         List<LineSegment> newSegmentsLowRel, GenWriteKey key)
     {
-        HighSegsRel = new LineSegmentList(newSegmentsHiRel, key);
-        LowSegsRel = new LineSegmentList(newSegmentsLowRel, key);
+        HighSegsRel = newSegmentsHiRel;
+        LowSegsRel = newSegmentsLowRel;
     }
     
     public void SetFlow(float width, GenWriteKey key)
@@ -99,12 +109,6 @@ public sealed class MapPolygonBorder : Entity
     {
         MoistureFlow += increment;
     }
-    
-    private static MapPolygonBorder DeserializeConstructor(object[] args, ServerWriteKey key)
-    {
-        return new MapPolygonBorder(args, key);
-    }
-    private MapPolygonBorder(object[] args, ServerWriteKey key) : base(args, key) { }
 }
 
 public static class PolyBorderExt
@@ -112,20 +116,20 @@ public static class PolyBorderExt
     
     public static List<Vector2> GetPointsRel(this MapPolygonBorder b, MapPolygon p)
     {
-        if (p == b.LowId.Ref()) return b.LowSegsRel.Value.GetPoints().ToList();
-        if (p == b.HighId.Ref()) return b.HighSegsRel.Value.GetPoints().ToList();
+        if (p == b.LowId.Ref()) return b.LowSegsRel.GetPoints().ToList();
+        if (p == b.HighId.Ref()) return b.HighSegsRel.GetPoints().ToList();
         throw new Exception();
     }
 
     public static List<LineSegment> GetSegsRel(this MapPolygonBorder b, MapPolygon p)
     {
-        if (p == b.LowId.Ref()) return b.LowSegsRel.Value;
-        if (p == b.HighId.Ref()) return b.HighSegsRel.Value;
+        if (p == b.LowId.Ref()) return b.LowSegsRel;
+        if (p == b.HighId.Ref()) return b.HighSegsRel;
         throw new Exception();
     }
     public static List<LineSegment> GetSegsAbs(this MapPolygonBorder b)
     {
-        return b.HighSegsRel.Value.Select(s => s.ChangeOrigin(b.HighId.Ref().Center, Vector2.Zero)).ToList();
+        return b.HighSegsRel.Select(s => s.ChangeOrigin(b.HighId.Ref().Center, Vector2.Zero)).ToList();
     }
     public static Vector2 GetOffsetToOtherPoly(this MapPolygonBorder b, MapPolygon p)
     {
@@ -141,7 +145,7 @@ public static class PolyBorderExt
     }
     public static List<Vector2> GetPointsAbs(this MapPolygonBorder b)
     {
-        return b.HighSegsRel.Value.GetPoints().Select(p => p + b.HighId.Ref().Center).ToList();
+        return b.HighSegsRel.GetPoints().Select(p => p + b.HighId.Ref().Center).ToList();
     }
 
     

@@ -33,7 +33,6 @@ public class LandSeaManager
         //todo is union find only doing elements inside the input list?
         Seas = new List<HashSet<MapPolygon>>();
         SeaDic = new Dictionary<MapPolygon, HashSet<MapPolygon>>();
-        var SeaPolys = data.Planet.Polygons.Entities.Where(p => p.IsWater());
         var seamasses =
             UnionFind<MapPolygon, float>.DoUnionFind(seaPolys.ToList(), 
                 (p1, p2) => p1.HasNeighbor(p2), p1 => p1.Neighbors.Refs());
@@ -43,5 +42,8 @@ public class LandSeaManager
             Seas.Add(hash);
             m.ForEach(p => SeaDic.Add(p, hash));
         });
+
+        var landAndSeaCount = landPolys.Count() + seaPolys.Count();
+        if (landAndSeaCount != data.Planet.Polygons.Entities.Count) throw new Exception();
     }
 }

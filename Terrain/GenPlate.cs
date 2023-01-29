@@ -52,7 +52,7 @@ public class GenPlate : ISuper<GenPlate, GenCell>
         Mass = c;
     }
     
-    public List<BorderEdge<MapPolygon>> GetOrderedBorderRelative(GenPlate aPlate, WorldData data)
+    public List<BorderEdge<MapPolygon>> GetOrderedBorderRelative(GenPlate aPlate, GenData data)
     {
         var polyCells = data.GenAuxData.PolyCells;
         var borderCellPolys = this

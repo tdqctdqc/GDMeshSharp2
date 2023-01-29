@@ -15,6 +15,7 @@ public class Meta<TImplem, TMeta> : IMeta<TMeta> where TImplem : TMeta
     private Func<object[], TImplem> _deserializeConstructor;
     public Meta(JsonSerializerOptions options)
     {
+        return;
         _options = options;
         _fieldGetters = new Dictionary<string, Func<TImplem, object>>();
         _fieldSetters = new Dictionary<string, Action<TImplem, object>>();
@@ -74,14 +75,10 @@ public class Meta<TImplem, TMeta> : IMeta<TMeta> where TImplem : TMeta
         for (var i = 1; i < argsBytes.Length; i++)
         {
             var fieldName = _fieldNames[i - 1];
-            // GD.Print("field name " + fieldName);
             var fieldType = _fieldTypes[fieldName];
-            // GD.Print("field type " + fieldType.Name);
             
             if(fieldType != typeof(byte[])) args[i - 1] = Game.I.Serializer.Deserialize(argsBytes[i], fieldType);
             else args[i - 1] = argsBytes[i];
-
-            // GD.Print("arg type " + args[i - 1].GetType().Name);
         }
         return _deserializeConstructor(args);
     }

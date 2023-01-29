@@ -51,6 +51,10 @@ public class VoronoiGenerator
         if(leftRightWrap)
         {
             var discardRight = MergeLeftRightPolys(polygons, lrPolyPairs, polyCenterDic, key);
+            foreach (var mapPolygon in discardRight)
+            {
+                key.Data.Planet.Polygons.RemoveEntity(mapPolygon, key);
+            }
             polygons.RemoveWhere(discardRight.Contains);
         }
 
@@ -118,6 +122,7 @@ public class VoronoiGenerator
                 left.AddNeighbor(neighbor, newBorder, key);
                 neighbor.AddNeighbor(left, newBorder, key);
                 neighbor.RemoveNeighbor(right, key);
+                
             }
             rights.Add(right);
         }

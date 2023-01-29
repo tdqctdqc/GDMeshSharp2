@@ -25,8 +25,9 @@ public class RegularGrid<T>
         Cells[key].Add(element);
         _coords.Add(element, key);
     }
-    public void AddElement(T element, Vector2 pos)
+    public void AddElement(T element)
     {
+        var pos = _posFunc(element);
         var key = new Vector2((int)(pos.x / PartitionLength),(int)(pos.y / PartitionLength));
         if(Cells.ContainsKey(key) == false)
         {

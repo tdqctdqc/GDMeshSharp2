@@ -14,7 +14,7 @@ public class SpikeyTriBuilder : ITriBuilder
     }
 
     
-    public List<Triangle> BuildTrisForPoly(MapPolygon p, WorldData data)
+    public List<Triangle> BuildTrisForPoly(MapPolygon p, GenData data)
     {
         var polyTris = new List<Triangle>();
         foreach (var n in p.Neighbors.Refs())

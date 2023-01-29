@@ -14,7 +14,7 @@ public class FaultLine
     public List<BorderEdge<MapPolygon>> Edges { get; private set; }
     public FaultLine(float friction, GenPlate highId, 
         GenPlate lowId, List<BorderEdge<MapPolygon>> edgesHi,
-        WorldData data)
+        GenData data)
     {
         Friction = friction;
         HighId = highId;
@@ -30,11 +30,11 @@ public class FaultLine
         Edges = edgesHi;
     }
 
-    public float GetDist(MapPolygon poly, WorldData data)
+    public float GetDist(MapPolygon poly, GenData data)
     {
         return Segments.Select(seg => seg.Select(l => l.DistanceTo(Origin.GetOffsetTo(poly, data))).Min()).Min();
     }
-    public bool PointWithinDist(Vector2 pointAbs, float dist, WorldData data)
+    public bool PointWithinDist(Vector2 pointAbs, float dist, GenData data)
     {
         return Segments.Any(seg => seg.Any(l => l.DistanceTo(Origin.GetOffsetTo(pointAbs, data)) < dist));
     }

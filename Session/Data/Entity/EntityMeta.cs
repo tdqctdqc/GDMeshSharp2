@@ -17,7 +17,6 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
 
     private Dictionary<string, IEntityVarMeta<T>> _vars;
 
-    private Func<object[], ServerWriteKey, T> _deserializer;
     private JsonSerializerOptions _options;
     public void ForReference(JsonSerializerOptions options)
     {
@@ -48,7 +47,6 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
             var makeFuncsGeneric = makeFuncsMi.MakeGenericMethod(propertyInfo.PropertyType);
             makeFuncsGeneric.Invoke(this, new []{propertyInfo});
         }
-        SetConstructor(entityType);
     }
 
     private void MakeFuncs<TProperty>(PropertyInfo prop)
@@ -94,60 +92,17 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
         var conVar = new ConvertibleVarMeta<T, TProperty, TBase, TConverted>(prop);
         _vars.Add(prop.Name, conVar);
     }
-    private void SetConstructor(Type serializableType)
-    {
-        var constructor = serializableType.GetMethods(BindingFlags.Static | BindingFlags.NonPublic)
-            .Where(m => m.Name == "DeserializeConstructor")
-            .Where(m => m.ReturnType == serializableType)
-            .First();
-        _deserializer = constructor.MakeStaticMethodDelegate<Func<object[], ServerWriteKey, T>>();
-    }
-    public Entity Deserialize(byte[][] argsBytes, ServerWriteKey key)
-    {
-        var args = new object[argsBytes.Count()];
-        for (var i = 0; i < argsBytes.Length; i++)
-        {
-            var fieldName = _fieldNames[i];
-            var fieldType = _fieldTypes[fieldName];
-            GD.Print("field name " + fieldName);
-            GD.Print("field type " + fieldType);
-            var argBytes = argsBytes[i];
-            args[i] = _vars[fieldName].GetFromSerialized(argBytes);
-        }
-        return _deserializer(args, key);
-    }
-
-    public object[] GetArgs(Entity entity)
+    public object[] GetPropertyValues(Entity entity)
     {
         var t = (T) entity;
         var args = new object[_fieldNames.Count];
         for (int i = 0; i < _fieldNames.Count; i++)
         {
             var fieldName = _fieldNames[i];
-            // if(typeof(T) == typeof(TerrainTriHolder)) GD.Print(fieldName);
             args[i] = _vars[fieldName].GetForSerialize(t);
         }
 
         return args;
-    }
-    public void Initialize(Entity entity, object[] args, ServerWriteKey key)
-    {
-        var t = (T) entity;
-        
-        for (int i = 0; i < args.Length; i++)
-        {
-            var fieldName = _fieldNames[i];
-            GD.Print("field " + fieldName);
-            GD.Print("field type " + _fieldTypes[fieldName]);
-            GD.Print("received type " + args[i].GetType().Name);
-            var bytes = Game.I.Serializer.SerializeToUtf8(args[i]);
-            if (_vars[fieldName] == null) throw new Exception();            
-            if (args[i] == null) throw new Exception();
-            if (t == null) throw new Exception();
-            if (key == null) throw new Exception();
-
-            _vars[fieldName].Set(t, args[i], key);
-        }
     }
     public void UpdateEntityVar(string fieldName, Entity t, ServerWriteKey key, object newValue)
     {

@@ -12,7 +12,7 @@ public class CenterTriBuilder : ITriBuilder
         _getRatio = getRatio;
     }
 
-    public List<Triangle> BuildTrisForPoly(MapPolygon p, WorldData data)
+    public List<Triangle> BuildTrisForPoly(MapPolygon p, GenData data)
     {
         var ratio = _getRatio(p);
         var tris = new List<Triangle>();

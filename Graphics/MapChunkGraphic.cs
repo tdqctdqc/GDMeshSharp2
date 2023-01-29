@@ -11,25 +11,29 @@ public class MapChunkGraphic : Node2D
     public TerrainChunkGraphic Vegetation { get; private set; }
     public RoadChunkGraphic Roads { get; private set; }
 
-    public void Setup(List<MapPolygon> chunk, Data data)
+    public void Setup(MapChunk chunk, Data data)
     {
-        var first = chunk.First();
+        var first = chunk.Polys.First();
+        var polys = chunk.Polys.ToList();
         Polys = new PolygonChunkGraphic();
-        Polys.Setup(chunk, data, p => p.IsLand() 
+        Polys.Setup
+        (chunk.Polys.ToList(), data, 
+            p => p.IsLand() 
             ? Colors.SaddleBrown 
-            : Colors.Blue);
+            : Colors.Blue
+        );
         AddChild(Polys);
 
         Landform = new TerrainChunkGraphic();
-        Landform.Setup(chunk, data, data.Models.Landforms);
+        Landform.Setup(polys, data, data.Models.Landforms);
         AddChild(Landform);
         
         Vegetation = new TerrainChunkGraphic();
-        Vegetation.Setup(chunk, data, data.Models.Vegetation);
+        Vegetation.Setup(polys, data, data.Models.Vegetation);
         AddChild(Vegetation);
         
         Regimes = new PolygonChunkGraphic();
-        Regimes.SetupWithBorder(chunk, 
+        Regimes.SetupWithBorder(polys, 
             data, 
             p => p.Regime.Ref().PrimaryColor,
             (p1, p2) => p1.Regime.RefId == p2.Regime.RefId,
@@ -38,7 +42,7 @@ public class MapChunkGraphic : Node2D
         AddChild(Regimes);
 
         Roads = new RoadChunkGraphic();
-        Roads.Setup(chunk, data);
+        Roads.Setup(polys, data);
         AddChild(Roads);
         
         Position = first.Center;

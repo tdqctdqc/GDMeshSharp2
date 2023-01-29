@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using Godot;
 
 public sealed class PlanetInfo : Entity
@@ -11,10 +12,8 @@ public sealed class PlanetInfo : Entity
         Dimensions = dimensions;
     }
 
-    private PlanetInfo(object[] args, ServerWriteKey key) : base(args, key) { }
-
-    private static PlanetInfo DeserializeConstructor(object[] args, ServerWriteKey key)
+    [JsonConstructor] public PlanetInfo(int id, Vector2 dimensions) : base(id)
     {
-        return new PlanetInfo(args, key);
+        Dimensions = dimensions;
     }
 }

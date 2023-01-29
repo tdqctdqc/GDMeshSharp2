@@ -18,15 +18,10 @@ public class RefVarMeta<TEntity, TRefVar, TUnderlying> : EntityVarMeta<TEntity, 
         
         var setUnderlyingMi = typeof(TRefVar).GetMethod(nameof(IRef<int>.Set));
         var setUnderlyingDel = setUnderlyingMi.MakeInstanceMethodDelegate<Action<TRefVar, TUnderlying, StrongWriteKey>>();
-        // if(typeof(TRefVar) == typeof(EntityRefCollection<MapPolygon>)) setUnderlyingDel(default, default, default);
         SetUnderlying = (e, ul, k) =>
         {
-            GD.Print("setting underlying");
-            GD.Print(typeof(TRefVar));
             var p = GetProperty(e);
-            if (p == null) throw new Exception();
             setUnderlyingDel(p, ul, k);
-            GD.Print("set underlying");
         };
     }
     public override void Set(TEntity e, object receivedValue, ServerWriteKey key)
@@ -41,7 +36,7 @@ public class RefVarMeta<TEntity, TRefVar, TUnderlying> : EntityVarMeta<TEntity, 
     {
         return (TUnderlying) GetUnderlying(e);
     }
-    public override object GetFromSerialized(byte[] bytes)
+    public override object GetPropertyFromSerialized(byte[] bytes)
     {
         return Game.I.Serializer.Deserialize<TUnderlying>(bytes);
     }

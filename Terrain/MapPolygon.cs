@@ -14,16 +14,13 @@ public sealed class MapPolygon : Entity
     public float Roughness { get; private set; }
     public float Moisture { get; private set; }
     public float SettlementSize { get; private set; }
-    public int PlateId { get; private set; }
     public EntityRef<Regime> Regime { get; private set; }
     public bool IsLand() => Altitude > .5f;
     public bool IsWater() => IsLand() == false;
     public MapPolygonBorder GetBorder(MapPolygon neighbor, Data data) 
         => data.Planet.PolyBorders.GetBorder(this, neighbor);
 
-    [JsonConstructor] public MapPolygon(int id, Vector2 center, EntityRefCollection<MapPolygon> neighbors, 
-        List<Vector2> noNeighborBorders, Color color, float altitude, float roughness, 
-        float moisture, float settlementSize, int plateId, EntityRef<Regime> regime) : base(id)
+    [JsonConstructor] public MapPolygon(int id, Vector2 center, EntityRefCollection<MapPolygon> neighbors, List<Vector2> noNeighborBorders, Color color, float altitude, float roughness, float moisture, float settlementSize, int chunkId, EntityRef<Regime> regime) : base(id)
     {
         Center = center;
         Neighbors = neighbors;
@@ -33,7 +30,6 @@ public sealed class MapPolygon : Entity
         Roughness = roughness;
         Moisture = moisture;
         SettlementSize = settlementSize;
-        PlateId = plateId;
         Regime = regime;
     }
 
@@ -74,17 +70,11 @@ public sealed class MapPolygon : Entity
             .ToList();
         Neighbors = EntityRefCollection<MapPolygon>.Construct(ns, key);
     }
-
-    public void SetPlateId(int plateId, GenWriteKey key)
-    {
-        PlateId = plateId;
-    }
     public void RemoveNeighbor(MapPolygon poly, GenWriteKey key)
     {
         //only use in merging left-right wrap
         Neighbors.RemoveRef(poly, key.Data);
     }
-
     public void SetRegime(Regime r, GenWriteKey key)
     {
         GetMeta().UpdateEntityVar<int>(nameof(Regime), this, key, r.Id);
@@ -94,48 +84,19 @@ public sealed class MapPolygon : Entity
         NoNeighborBorders.Add(from);
         NoNeighborBorders.Add(to);
     }
-    private static MapPolygon DeserializeConstructor(object[] args, ServerWriteKey key)
-    {
-        return new MapPolygon(args, key);
-    }
-    private MapPolygon(object[] args, ServerWriteKey key) : base(args, key) { }
 }
 public static class MapPolygonExt
 {
-    public static List<Vector2> GetTrisAbs(this MapPolygon p, Data data)
+    // public static float GetRatioGrassland(this MapPolygon p, Data data)
+    // {
+    //     p.tri
+    // }
+    public static bool PointInPoly(this MapPolygon poly, Vector2 posAbs, Data data)
     {
-        var tris = new List<Vector2>();
-        for (var i = 0; i < p.Neighbors.Count(); i++)
-        {
-            var edge = p.GetBorder(p.Neighbors.Refs().ElementAt(i), data);
-            var segs = edge.GetSegsRel(p);
-            for (var j = 0; j < segs.Count; j++)
-            {
-                tris.Add(p.Center);
-                tris.Add(segs[j].From + p.Center);
-                tris.Add(segs[j].To + p.Center);
-            }
-        }
-
-        return tris;
+        return data.Cache.PolyRelTris[poly].Any(t => t.PointInsideTriangle(poly.GetOffsetTo(posAbs, data)));
     }
-    public static List<Vector2> GetTrisRel(this MapPolygon p, Data data)
-    {
-        var tris = new List<Vector2>();
-        for (var i = 0; i < p.Neighbors.Count(); i++)
-        {
-            var edge = p.GetBorder(p.Neighbors.Refs().ElementAt(i), data);
-            var segs = edge.GetSegsRel(p);
-            for (var j = 0; j < segs.Count; j++)
-            {
-                tris.Add(Vector2.Zero);
-                tris.Add(segs[j].From);
-                tris.Add(segs[j].To);
-            }
-        }
-
-        return tris;
-    }
+    
+    
     public static Vector2 GetOffsetTo(this MapPolygon poly, MapPolygon p, Data data)
     {
         var off1 = p.Center - poly.Center;

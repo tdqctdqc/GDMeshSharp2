@@ -11,10 +11,10 @@ public sealed class GenCell : ISuper<GenCell, MapPolygon>
     public HashSet<MapPolygon> NeighboringPolyGeos { get; private set; }
     public List<GenCell> Neighbors { get; private set; }
     public Vector2 Center { get; private set; }
-    private IReadOnlyDictionary<MapPolygon, GenCell> _polyCells;
-    public GenCell(MapPolygon seed, GenWriteKey key, WorldData data)
+    private Dictionary<MapPolygon, GenCell> _polyCells;
+    public GenCell(MapPolygon seed, GenWriteKey key, Dictionary<MapPolygon, GenCell> polyCells, GenData data)
     {
-        _polyCells = data.GenAuxData.PolyCells;
+        _polyCells = polyCells;
         Center = Vector2.Zero;
         Seed = seed;
         PolyGeos = new HashSet<MapPolygon>();
@@ -31,7 +31,7 @@ public sealed class GenCell : ISuper<GenCell, MapPolygon>
     {
         Center = (Center * PolyGeos.Count + p.Center) / (PolyGeos.Count + 1);
         PolyGeos.Add(p);
-        key.WorldData.GenAuxData.PolyCells[p] = this;
+        _polyCells[p] = this;
         NeighboringPolyGeos.Remove(p);
         var newBorder = p.Neighbors.Refs().Except(PolyGeos);
         foreach (var borderPoly in newBorder)
@@ -44,7 +44,7 @@ public sealed class GenCell : ISuper<GenCell, MapPolygon>
     public void SetNeighbors(GenWriteKey key)
     {
         Neighbors = NeighboringPolyGeos
-            .Select(t => key.WorldData.GenAuxData.PolyCells[t]).Distinct().ToList();
+            .Select(t => key.GenData.GenAuxData.PolyCells[t]).Distinct().ToList();
     }
     
     

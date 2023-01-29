@@ -44,7 +44,7 @@ public class Game : Node
         session.StartAsRemote();
         AddChild(session);
     }
-    public void StartHostSession(WorldData data)
+    public void StartHostSession(GenData data)
     {
         var session = new Session();
         _session = session;

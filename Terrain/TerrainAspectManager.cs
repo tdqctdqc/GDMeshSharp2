@@ -36,7 +36,7 @@ public abstract class TerrainAspectManager<TAspect> : IModelRepo<TAspect>
             data.AddEntity(triHolder, typeof(PlanetDomain), key);
         }
     }
-    public TAspect GetAspectFromPoly(MapPolygon p, WorldData data)
+    public TAspect GetAspectFromPoly(MapPolygon p, GenData data)
     {
         for (var i = 0; i < ByPriority.Count; i++)
         {
@@ -70,7 +70,7 @@ public abstract class TerrainAspectManager<TAspect> : IModelRepo<TAspect>
     }
 
     
-    public Dictionary<TAspect, List<List<MapPolygon>>> GetUnions(HashSet<MapPolygon> polys, WorldData data)
+    public Dictionary<TAspect, List<List<MapPolygon>>> GetUnions(HashSet<MapPolygon> polys, GenData data)
     {
         var result = new Dictionary<TAspect, List<List<MapPolygon>>>();
         //todo need to allow overlaps
@@ -84,7 +84,7 @@ public abstract class TerrainAspectManager<TAspect> : IModelRepo<TAspect>
         return result;
     }
 
-    private List<List<MapPolygon>> GetAspectUnion(TAspect aspect, WorldData data)
+    private List<List<MapPolygon>> GetAspectUnion(TAspect aspect, GenData data)
     {
         var polys = data.Planet.Polygons.Entities.Where(p => aspect.Allowed(p, data));
         return UnionFind<MapPolygon, float>.DoUnionFind(polys.ToList(), 
@@ -93,7 +93,7 @@ public abstract class TerrainAspectManager<TAspect> : IModelRepo<TAspect>
         );
     }
     
-    public void BuildTris(HashSet<MapPolygon> affectedPolys, WorldData data)
+    public void BuildTris(HashSet<MapPolygon> affectedPolys, GenData data)
     {
         var aspectUnions = GetUnions(affectedPolys, data);
         foreach (var keyValuePair in aspectUnions)
@@ -109,7 +109,7 @@ public abstract class TerrainAspectManager<TAspect> : IModelRepo<TAspect>
             });
         }
     }
-    public void BuildTrisForAspect(TAspect aspect, WorldData data, List<MapPolygon> affectedPolys = null)
+    public void BuildTrisForAspect(TAspect aspect, GenData data, List<MapPolygon> affectedPolys = null)
     {
         if (aspect == LandDefault || aspect == WaterDefault) return;
         if (affectedPolys == null) affectedPolys = data.Planet.Polygons.Entities.Where(p => aspect.Allowed(p, data)).ToList();

@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 [RefAttribute] public class EntityRef<TRef> : IRef<int> where TRef : Entity
 {
@@ -12,7 +13,7 @@ using System.Collections.Generic;
         RefId = entity.Id;
         _ref = entity;
     }
-    public EntityRef(int refId)
+    [JsonConstructor] public EntityRef(int refId)
     {
         RefId = refId;
         _ref = null;
@@ -38,15 +39,7 @@ using System.Collections.Generic;
     }
     public void SyncRef(Data data)
     {
-        try
-        {
-            _ref = (TRef) data[RefId];
-        }
-        catch (Exception e)
-        {
-            GD.Print(data[RefId].GetType().ToString() + " supposed to be " + typeof(TRef).ToString());
-            throw;
-        }
+        _ref = (TRef) data[RefId];
     }
     public static EntityRef<TRef> DeserializeConstructor(int t)
     {

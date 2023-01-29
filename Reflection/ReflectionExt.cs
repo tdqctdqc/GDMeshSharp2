@@ -17,9 +17,13 @@ public static class ReflectionExt
             .Where(t => t.IsInterface == false && t.IsAbstract == false && abstractType.IsAssignableFrom(t)).ToList();
     }
 
-    public static bool HasAttribute<TAttribute>(this Type type) where TAttribute : Attribute
+    // public static bool HasAttribute<TAttribute>(this Type type) where TAttribute : Attribute
+    // {
+    //     return type.GetCustomAttributesData().Any(d => d.AttributeType == typeof(TAttribute));
+    // }
+    public static bool HasAttribute<TAttribute>(this MemberInfo c) where TAttribute : Attribute
     {
-        return type.GetCustomAttributesData().Any(d => d.AttributeType == typeof(TAttribute));
+        return c.GetCustomAttributesData().Any(d => d.AttributeType == typeof(TAttribute));
     }
 
     public static T MakeStaticMethodDelegate<T>(this MethodInfo m) where T : Delegate

@@ -5,7 +5,7 @@ using Godot;
 
 public class BlobTriBuilder : ITriBuilder
 {
-    public List<Triangle> BuildTrisForPoly(MapPolygon p, WorldData data)
+    public List<Triangle> BuildTrisForPoly(MapPolygon p, GenData data)
     {
         var borders = data.Planet.PolyBorders;
         return p.Neighbors.Refs().SelectMany(n => borders.GetBorder(p, n).GetSegsRel(p)

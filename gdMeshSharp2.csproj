@@ -9,16 +9,15 @@
     <PackageReference Include="System.Text.Json" Version="7.0.1" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Graph\Superset" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Remove="Client\ExampleClient\**" />
     <Compile Remove="Client\GameClient\ExampleUi\**" />
     <Compile Remove="Client\GameClient\GameUi\**" />
+    <Compile Remove="Graph\Superset\**" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Remove="Client\ExampleClient\**" />
     <EmbeddedResource Remove="Client\GameClient\ExampleUi\**" />
     <EmbeddedResource Remove="Client\GameClient\GameUi\**" />
+    <EmbeddedResource Remove="Graph\Superset\**" />
   </ItemGroup>
 </Project>

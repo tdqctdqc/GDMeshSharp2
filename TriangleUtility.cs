@@ -5,6 +5,17 @@ using System.Linq;
 
 public static class TriangleUtility 
 {
+    public static List<Vector2> GetTriPoints(this List<Triangle> tris)
+    {
+        var res = new List<Vector2>();
+        for (var i = 0; i < tris.Count; i++)
+        {
+            res.Add(tris[i].A);
+            res.Add(tris[i].B);
+            res.Add(tris[i].C);
+        }
+        return res;
+    }
     public static bool BadTri(this Triangle tri, float minLength)
     {
         return BadTri(minLength, tri.A, tri.B, tri.C);
@@ -23,7 +34,12 @@ public static class TriangleUtility
         return .5f * Mathf.Abs(a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y));
     }
 
-    
+    public static void AddTriPointsToCollection(this Triangle tri, ICollection<Vector2> col)
+    {
+        col.Add(tri.A);
+        col.Add(tri.B);
+        col.Add(tri.C);
+    }
     
     public static float GetMinEdgeLength(Vector2 p0, Vector2 p1, Vector2 p2)
     {

@@ -34,7 +34,7 @@ public class EntityOverview : WindowDialog
         foreach (var keyValuePair in _data.Entities)
         {
             var entity = keyValuePair.Value;
-            var json = entity.GetMeta().GetArgs(entity);
+            var json = entity.GetMeta().GetPropertyValues(entity);
             if (entity is MapPolygon || entity is MapPolygonBorder) continue;
             // if (sw.ElapsedMilliseconds > 2000)
             // {

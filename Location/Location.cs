@@ -1,15 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using Godot;
 
 public abstract class Location : Entity
 {
-    protected Location(int id, CreateWriteKey key) : base(id, key)
+    [JsonConstructor] public Location(int id) : base(id)
     {
     }
-    
-    protected Location(object[] args, ServerWriteKey key) : base(args, key)
+
+    protected Location(int id, CreateWriteKey key) : base(id, key)
     {
     }
     

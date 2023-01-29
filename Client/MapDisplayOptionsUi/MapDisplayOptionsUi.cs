@@ -17,20 +17,20 @@ public class MapDisplayOptionsUi : Container
     {
         _roads = ButtonToken.Get(this, "Roads", () =>
         {
-            Toggle(graphics.MapChunks, r => r.ToggleRoads(), _roads, "Roads");
+            Toggle(graphics.MapChunkGraphics, r => r.ToggleRoads(), _roads, "Roads");
         });
         _regimes = ButtonToken.Get(this, "Regimes", () =>
         {
-            Toggle(graphics.MapChunks, r => r.ToggleRegimes(), _regimes, "Regimes");
+            Toggle(graphics.MapChunkGraphics, r => r.ToggleRegimes(), _regimes, "Regimes");
         });
         _landforms = ButtonToken.Get(this, "Landforms", () =>
         {
-            Toggle(graphics.MapChunks, r => r.ToggleLandforms(), _landforms, "Landforms");
+            Toggle(graphics.MapChunkGraphics, r => r.ToggleLandforms(), _landforms, "Landforms");
 
         });
         _vegetation = ButtonToken.Get(this, "Vegetation", () =>
         {
-            Toggle(graphics.MapChunks, r => r.ToggleVegetation(), _vegetation, "Vegetation");
+            Toggle(graphics.MapChunkGraphics, r => r.ToggleVegetation(), _vegetation, "Vegetation");
         });
     }
     private void Toggle(IEnumerable<MapChunkGraphic> chunks, Func<MapChunkGraphic, bool> toggle, ButtonToken token, string name)

@@ -5,10 +5,10 @@ using Godot;
 
 public class MoistureGenerator
 {
-    public WorldData Data { get; private set; }
+    public GenData Data { get; private set; }
     private GenWriteKey _key;
     private IDDispenser _id;
-    public MoistureGenerator(WorldData data, IDDispenser id)
+    public MoistureGenerator(GenData data, IDDispenser id)
     {
         Data = data;
         _id = id;
@@ -97,12 +97,8 @@ public class MoistureGenerator
             pathToSea.Add(p, path);
             additional.Add(p, 0f);
         });
-        var iter1 = 0;
         foreach (var keyValuePair in pathToSea)
         {
-            // if(iter1 % 100 == 0) GD.Print($"{iter1} / {pathToSea.Count}");
-            iter1++;
-
             var origin = keyValuePair.Key;
             var path = keyValuePair.Value;
             var water = 10f;
@@ -126,11 +122,8 @@ public class MoistureGenerator
             }
         }
 
-        var iter2 = 0;
         foreach (var keyValuePair in additional)
         {
-            // if(iter2 % 100 == 0) GD.Print($"{iter2} / {additional.Count}");
-            iter2++;
 
             var origin = keyValuePair.Key;
             var add = keyValuePair.Value;

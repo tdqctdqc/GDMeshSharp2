@@ -13,15 +13,8 @@ public class EntityVarMeta<TEntity, TProperty> : IEntityVarMeta<TEntity> where T
     public EntityVarMeta(PropertyInfo prop)
     {
         var getMi = prop.GetGetMethod();
-        var getPropDel = getMi.MakeInstanceMethodDelegate<Func<TEntity, TProperty>>();
-        GetProperty = e =>
-        {
-            GD.Print("getting");
-            GD.Print(e == null);
-            var p = getPropDel(e);
-            GD.Print("got");
-            return p;
-        };
+        GetProperty = getMi.MakeInstanceMethodDelegate<Func<TEntity, TProperty>>();
+        
         var setMi = prop.GetSetMethod(true);
         SetProperty = setMi.MakeInstanceMethodDelegate<Action<TEntity, TProperty>>();
     }
@@ -30,7 +23,7 @@ public class EntityVarMeta<TEntity, TProperty> : IEntityVarMeta<TEntity> where T
     {
         return GetProperty(e);
     }
-    public virtual object GetFromSerialized(byte[] bytes)
+    public virtual object GetPropertyFromSerialized(byte[] bytes)
     {
         return Game.I.Serializer.Deserialize<TProperty>(bytes);
     }

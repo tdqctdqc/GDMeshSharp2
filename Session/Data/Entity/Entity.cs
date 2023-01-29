@@ -11,14 +11,9 @@ public abstract class Entity
     {
         Id = id;
     }
-
     protected Entity(int id)
     {
         Id = id;
-    }
-    protected Entity(object[] args, ServerWriteKey key)
-    {        
-        GetMeta().Initialize(this, args, key);
     }
     public void Set<TValue>(string fieldName, TValue newValue, CreateWriteKey key)
     {

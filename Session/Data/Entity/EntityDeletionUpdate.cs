@@ -19,10 +19,4 @@ public class EntityDeletionUpdate : Update
     {
         key.Data.RemoveEntity(key.Data[EntityId], key);
     }
-
-    private static EntityDeletionUpdate DeserializeConstructor(object[] args)
-    {
-        return new EntityDeletionUpdate(args);
-    }
-    private EntityDeletionUpdate(object[] args) : base(args) { }
 }

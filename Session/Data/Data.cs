@@ -5,6 +5,7 @@ using System.Linq;
 
 public class Data
 {
+    public LocalCache Cache { get; private set; }
     public Models Models { get; private set; }
     public RefFulfiller RefFulfiller { get; private set; }
     public IReadOnlyDictionary<Type, Domain> Domains => _domains;
@@ -19,6 +20,12 @@ public class Data
 
     public Data()
     {
+        Init();
+    }
+
+    protected virtual void Init()
+    {
+        Cache = new LocalCache(this);
         RefFulfiller = new RefFulfiller(this);
         Models = new Models();
         Entities = new Dictionary<int, Entity>();
@@ -42,7 +49,7 @@ public class Data
     {
         if (Entities.ContainsKey(e.Id))
         {
-            GD.Print($"trying to overwrite ${Entities[e.Id].GetType().ToString()} with {e.GetType().ToString()}");
+            GD.Print($"trying to overwrite {Entities[e.Id].GetType().ToString()} with {e.GetType().ToString()}");
         }
         Entities.Add(e.Id, e);
         var repo = _domains[domainType].Repos[e.GetType()];

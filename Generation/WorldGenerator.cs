@@ -5,7 +5,7 @@ using Godot;
 
 public class WorldGenerator
 {
-    public WorldData Data { get; private set; }
+    public GenData Data { get; private set; }
     private IDDispenser _id;
     private Vector2 _dim;
     private GenWriteKey _key;
@@ -13,10 +13,10 @@ public class WorldGenerator
     {
         _dim = dim;
         _id = new IDDispenser();
-        Data = new WorldData();
+        Data = new GenData();
         _key = new GenWriteKey(Data);
     }
-    public WorldData Generate()
+    public GenData Generate()
     {
         var cellSize = 200f;
         var edgePointMargin = new Vector2(cellSize, cellSize);
@@ -41,6 +41,7 @@ public class WorldGenerator
         Data.AddEntity(planetInfo, typeof(PlanetDomain), _key);
         var geologyGenerator = new GeologyGenerator(Data, _id);
         geologyGenerator.GenerateTerrain(_key);
+        Data.Events.FinalizedPolyShapes?.Invoke();
 
         var moistureGenerator = new MoistureGenerator(Data, _id);
         moistureGenerator.Generate(_key);
@@ -50,6 +51,10 @@ public class WorldGenerator
 
         var regimeGen = new RegimeGenerator(Data, _id, _key);
         regimeGen.Generate();
+
+        var peepGen = new PeepGenerator(_id, _key, Data);
+        peepGen.Generate();
+        
         
         return Data;
     }

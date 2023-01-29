@@ -4,14 +4,19 @@ using System.Diagnostics;
 using System.Linq;
 using Godot;
 
-public class GeneratorClient : Node
+public class GeneratorClient : Node, IClient
 {
     private Node _node;
     private ButtonToken _generate, _generateNext, _generateTest, _done;
     private SpinBox _seed;
     private GeneratorGraphics _graphics;
+    public void HandleInput(InputEvent e, float delta)
+    {
+        
+    }
+
     public CameraController Cam { get; private set; }
-    public WorldData Data { get; private set; }
+    public GenData Data { get; private set; }
     public static GeneratorClient Get()
         => (GeneratorClient) ((PackedScene) GD.Load("res://Client/GeneratorClient/GeneratorClient.tscn")).Instance();
 
@@ -71,7 +76,7 @@ public class GeneratorClient : Node
         var worldGen = new WorldGenerator(bounds);
         Data = worldGen.Data;
         worldGen.Generate();
-        _graphics.Setup(Data, Cam);
+        _graphics.Setup(this, Data, Cam);
         _graphics.SetupGenerator(Data, this);
     }
 }

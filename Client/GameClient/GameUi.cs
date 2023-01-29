@@ -17,6 +17,15 @@ public class GameUi : CanvasLayer
         
     }
 
+    public override void _UnhandledInput(InputEvent e)
+    {
+        if (e is InputEventMouseMotion mm)
+        {
+            var pos = mm.GlobalPosition;
+            
+        }
+    }
+
     public void Setup(bool host, Data data, GameGraphics graphics)
     {
         _hostOrClient = (Label) FindNode("HostOrClient");

@@ -12,7 +12,7 @@ public class PeakTriBuilder : ITriBuilder
         _checkNeighborStrong = checkNeighborStrong;
     }
 
-    public List<Triangle> BuildTrisForPoly(MapPolygon p, WorldData data)
+    public List<Triangle> BuildTrisForPoly(MapPolygon p, GenData data)
     {
         var strongNeighbors = p.Neighbors.Refs().Where(n => _checkNeighborStrong(p));
                     

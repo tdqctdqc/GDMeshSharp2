@@ -13,12 +13,12 @@ public class FaultLineGraphic : Node2D
     {
         
     }
-    public FaultLineGraphic(FaultLine f, WorldData data)
+    public FaultLineGraphic(FaultLine f, GenData data)
     {
         FaultLine = f;
         if (f.PolyFootprint.Count == 0) return;
 
-        var mb = new MeshBuilder(Colors.White);
+        var mb = new MeshBuilder();
         _segments = new Node2D();
         var footprintCol = new Color(Colors.Gray, .5f);
         mb.AddPolysRelative(FaultLine.Origin, f.PolyFootprint, p => footprintCol,

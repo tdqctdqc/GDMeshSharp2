@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Text.Json.Serialization;
 
 public sealed class Player : Entity
 {
@@ -9,9 +10,10 @@ public sealed class Player : Entity
     {
         Name = name;
     }
-    private static Player DeserializeConstructor(object[] args, ServerWriteKey key)
+
+    [JsonConstructor] public Player(int id, Guid userId, string name) : base(id)
     {
-        return new Player(args, key);
+        UserId = userId;
+        Name = name;
     }
-    private Player(object[] args, ServerWriteKey key) : base(args, key) { }
 }

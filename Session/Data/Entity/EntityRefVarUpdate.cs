@@ -30,10 +30,4 @@ public class EntityRefVarUpdate : Update
         var meta = entity.GetMeta();
         meta.UpdateEntityVar(FieldName, entity, key, NewVal);
     }
-
-    private static EntityRefVarUpdate DeserializeConstructor(object[] args)
-    {
-        return new EntityRefVarUpdate(args);
-    }
-    private EntityRefVarUpdate(object[] args) : base(args) {}
 }
