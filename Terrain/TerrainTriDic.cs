@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class TerrainTriDic 
+public class TerrainTriDic : Dictionary<int, List<Triangle>>
 {
-    public Dictionary<int, List<Triangle>> Value { get; private set; }
-    public TerrainTriDic(Dictionary<int, List<Triangle>> value)
+    public TerrainTriDic()
     {
-        Value = value;
     }
 }

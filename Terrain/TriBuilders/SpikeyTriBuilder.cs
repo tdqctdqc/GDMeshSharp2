@@ -30,7 +30,7 @@ public class SpikeyTriBuilder : ITriBuilder
             }
             else
             {
-                var otherStrength = Mathf.Clamp(_otherStrength(n), 0f, .8f);
+                var otherStrength = Mathf.Clamp(_otherStrength(n), .1f, .8f);
                 var spike = segs.GetMiddlePoint() * otherStrength;
                 var firstLeg = segs[0].From * .5f * otherStrength;
                 var lastLeg = segs[segs.Count - 1].To * .5f * otherStrength;

@@ -2,7 +2,6 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using DelaunatorNetStd;
 
 public static class GenerationUtility
 {

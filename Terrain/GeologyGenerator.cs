@@ -2,7 +2,6 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using DelaunatorNetStd;
 
 public class GeologyGenerator
 {
@@ -207,8 +206,6 @@ public class GeologyGenerator
                     float erosion = 0f;
                     if (poly.Altitude < .5f) erosion = poly.Altitude;
                     poly.Set(nameof(poly.Altitude), poly.Altitude + altIncrement, _key);
-                    
-                    
                     
                     var rand = Game.I.Random.RandfRange(-.2f, .2f);
                     var newRoughness = Mathf.Clamp(fault.Friction * frictionRoughnessEffect * distRatio - erosion + rand, 0f,

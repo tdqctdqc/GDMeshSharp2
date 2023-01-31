@@ -16,8 +16,13 @@ public class PeakTriBuilder : ITriBuilder
     {
         var strongNeighbors = p.Neighbors.Refs().Where(n => _checkNeighborStrong(p));
                     
-        var tris = strongNeighbors.SelectMany(n => p.GetBorder(n, data).GetSegsRel(p)
-            .Select(s => new Triangle(s.From * .5f, s.To * .5f, Vector2.Zero))).ToList();
+        var tris = strongNeighbors.SelectMany
+        (
+            n => 
+                p.GetBorder(n, data)
+                    .GetSegsRel(p)
+                    .Select(s => new Triangle(s.From * .5f, s.To * .5f, Vector2.Zero))
+        ).ToList();
         return tris;
     }
 }

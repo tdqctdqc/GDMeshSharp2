@@ -45,6 +45,11 @@ public class Data
             AddEntity(entity, domainType, key);
         }
     }
+
+    public void AddEntity<TDomain>(Entity e, StrongWriteKey key) where TDomain : Domain
+    {
+        AddEntity(e, typeof(TDomain), key);
+    }
     public void AddEntity(Entity e, Type domainType, StrongWriteKey key)
     {
         if (Entities.ContainsKey(e.Id))

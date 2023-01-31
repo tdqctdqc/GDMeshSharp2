@@ -2,9 +2,9 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json.Serialization;
+using MessagePack;
 
-public sealed class MapPolygon : Entity
+public partial class MapPolygon : Entity
 {
     public Vector2 Center { get; protected set; }
     public EntityRefCollection<MapPolygon> Neighbors { get; protected set; }
@@ -20,7 +20,9 @@ public sealed class MapPolygon : Entity
     public MapPolygonBorder GetBorder(MapPolygon neighbor, Data data) 
         => data.Planet.PolyBorders.GetBorder(this, neighbor);
 
-    [JsonConstructor] public MapPolygon(int id, Vector2 center, EntityRefCollection<MapPolygon> neighbors, List<Vector2> noNeighborBorders, Color color, float altitude, float roughness, float moisture, float settlementSize, int chunkId, EntityRef<Regime> regime) : base(id)
+    public MapPolygon(int id, Vector2 center, EntityRefCollection<MapPolygon> neighbors, 
+        List<Vector2> noNeighborBorders, Color color, float altitude, float roughness, 
+        float moisture, float settlementSize, EntityRef<Regime> regime) : base(id)
     {
         Center = center;
         Neighbors = neighbors;
@@ -77,7 +79,7 @@ public sealed class MapPolygon : Entity
     }
     public void SetRegime(Regime r, GenWriteKey key)
     {
-        GetMeta().UpdateEntityVar<int>(nameof(Regime), this, key, r.Id);
+        GetMeta().UpdateEntityVar<EntityRef<Regime>>(nameof(Regime), this, key, new EntityRef<Regime>(r.Id));
     }
     public void AddNoNeighborBorder(Vector2 from, Vector2 to)
     {
@@ -87,10 +89,11 @@ public sealed class MapPolygon : Entity
 }
 public static class MapPolygonExt
 {
-    // public static float GetRatioGrassland(this MapPolygon p, Data data)
-    // {
-    //     p.tri
-    // }
+    
+    public static List<Triangle> GetTrisRel(this MapPolygon poly, Data data)
+    {
+        return data.Cache.PolyRelTris[poly];
+    }
     public static bool PointInPoly(this MapPolygon poly, Vector2 posAbs, Data data)
     {
         return data.Cache.PolyRelTris[poly].Any(t => t.PointInsideTriangle(poly.GetOffsetTo(posAbs, data)));
@@ -114,5 +117,15 @@ public static class MapPolygonExt
         if (off1.Length() < off2.Length() && off1.Length() < off3.Length()) return off1;
         if (off2.Length() < off1.Length() && off2.Length() < off3.Length()) return off2;
         return off3;
+    }
+
+    public static int GetNumPeeps(this MapPolygon poly, Data data)
+    {
+        return data.Society.Peeps.Homes.GetNumPeepsInPoly(poly);
+    }
+
+    public static float GetArea(this MapPolygon poly, Data data)
+    {
+        return poly.GetTrisRel(data).Sum(t => t.GetArea());
     }
 }

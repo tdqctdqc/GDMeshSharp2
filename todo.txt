@@ -1,0 +1,6 @@
+https://blog.stephencleary.com/2009/04/message-framing.html
+https://blog.stephencleary.com/2009/04/sample-code-length-prefix-message.html
+https://codereview.stackexchange.com/questions/162907/network-package-management
+
+https://github.com/Habrador/Computational-geometry#1-intersections
+https://github.com/neuecc/MessagePack-CSharp#built-in-supported-types

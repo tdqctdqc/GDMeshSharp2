@@ -5,7 +5,7 @@ using Godot;
 
 public class SingletonRepo<T> : Repository<T> where T : Entity
 {
-    public T Value => Entities[0];
+    public T Value => Entities.First();
     public SingletonRepo(Domain domain, Data data) : base(domain, data)
     {
         AddedEntity += (entity, key) =>

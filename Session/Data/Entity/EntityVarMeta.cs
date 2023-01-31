@@ -23,10 +23,6 @@ public class EntityVarMeta<TEntity, TProperty> : IEntityVarMeta<TEntity> where T
     {
         return GetProperty(e);
     }
-    public virtual object GetPropertyFromSerialized(byte[] bytes)
-    {
-        return Game.I.Serializer.Deserialize<TProperty>(bytes);
-    }
     public virtual void Set(TEntity e, object receivedValue, ServerWriteKey key)
     {
         SetProperty(e, (TProperty)receivedValue);

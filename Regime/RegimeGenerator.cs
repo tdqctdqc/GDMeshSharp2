@@ -33,7 +33,7 @@ public class RegimeGenerator
             {
                 var prim = ColorsExt.GetRandomColor();
                 var sec = prim.Inverted();
-                var regime = new Regime(_id.GetID(), _key, prim, sec, seeds[i]);
+                var regime = new Regime(_id.GetID(), NameGenerator.GetName(), _key, prim, sec, seeds[i]);
                 _data.AddEntity(regime, typeof(SocietyDomain), _key);
                 seeds[i].SetRegime(regime, _key);
             }

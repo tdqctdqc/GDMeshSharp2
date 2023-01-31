@@ -106,6 +106,11 @@ public static class TriangleUtility
         );
     }
 
+    public static bool IsDegenerate(this Triangle tri)
+    {
+        if ((tri.B - tri.A).Normalized() == (tri.C - tri.A).Normalized()) return true;
+        return false;
+    }
     public static bool PointInsideTriangle(this Triangle tri, Vector2 p)
     {
         bool hasNeg, hasPos;

@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json.Serialization;
 using Godot;
+using MessagePack;
 
 public abstract class Location : Entity
 {
-    [JsonConstructor] public Location(int id) : base(id)
+    public Location(int id) : base(id)
     {
     }
 

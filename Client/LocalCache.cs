@@ -8,6 +8,7 @@ public class LocalCache
     private Data _data;
     public HashSet<MapChunk> Chunks { get; private set; }
     public Dictionary<MapPolygon, List<Triangle>> PolyRelTris { get; private set; }
+    public RegularGrid<MapPolygon> MapPolyGrid { get; private set; }
     public LocalCache(Data data)
     {
         _data = data;
@@ -33,15 +34,26 @@ public class LocalCache
 
     private void FinalizedPolyShapes()
     {
+        BuildPolyGrid();
         BuildChunks();
         BuildPolyRelTris();
+    }
+
+    private void BuildPolyGrid()
+    {
+        MapPolyGrid = new RegularGrid<MapPolygon>(v => v.Center, 1000f);
+        foreach (var p in _data.Planet.Polygons.Entities)
+        {
+            MapPolyGrid.AddElement(p);
+        }
+        MapPolyGrid.Update();
     }
     private void BuildChunks()
     {
         var regularGrid = new RegularGrid<MapPolygon>
         (
             polygon => polygon.Center + Vector2.Left * 100f,
-            100f
+            1000f
         );
         foreach (var p in _data.Planet.Polygons.Entities)
         {

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Tynan Dion\\desktop\\games\\gdMeshSharp2\\gdMeshSharp2.csproj": {}
+    "C:\\Users\\Tynan Dion\\Desktop\\games\\gdMeshSharp2\\gdMeshSharp2.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Tynan Dion\\desktop\\games\\gdMeshSharp2\\gdMeshSharp2.csproj": {
+    "C:\\Users\\Tynan Dion\\Desktop\\games\\gdMeshSharp2\\gdMeshSharp2.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Tynan Dion\\desktop\\games\\gdMeshSharp2\\gdMeshSharp2.csproj",
+        "projectUniqueName": "C:\\Users\\Tynan Dion\\Desktop\\games\\gdMeshSharp2\\gdMeshSharp2.csproj",
         "projectName": "gdMeshSharp2",
-        "projectPath": "C:\\Users\\Tynan Dion\\desktop\\games\\gdMeshSharp2\\gdMeshSharp2.csproj",
+        "projectPath": "C:\\Users\\Tynan Dion\\Desktop\\games\\gdMeshSharp2\\gdMeshSharp2.csproj",
         "packagesPath": "C:\\Users\\Tynan Dion\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Tynan Dion\\desktop\\games\\gdMeshSharp2\\.mono\\temp\\obj\\",
+        "outputPath": "C:\\Users\\Tynan Dion\\Desktop\\games\\gdMeshSharp2\\.mono\\temp\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
@@ -21,15 +21,15 @@
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
-          "net472"
+          "netstandard2.0"
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net472": {
-            "targetAlias": "net472",
+          "netstandard2.0": {
+            "targetAlias": "netstandard2.0",
             "projectReferences": {}
           }
         },
@@ -40,26 +40,42 @@
         }
       },
       "frameworks": {
-        "net472": {
-          "targetAlias": "net472",
+        "netstandard2.0": {
+          "targetAlias": "netstandard2.0",
           "dependencies": {
-            "DelaunatorNetStd": {
+            "MarkovNextGen": {
               "target": "Package",
-              "version": "[1.0.4, )"
+              "version": "[1.2.6, )"
             },
-            "Mono.Reflection": {
+            "MessagePack": {
               "target": "Package",
-              "version": "[2.0.0, )"
+              "version": "[2.4.59, )"
+            },
+            "NETStandard.Library": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[2.0.3, )",
+              "autoReferenced": true
             },
             "OptimizedPriorityQueue": {
               "target": "Package",
               "version": "[5.1.0, )"
             },
-            "System.Text.Json": {
+            "RandomFriendlyNameGenerator": {
               "target": "Package",
-              "version": "[7.0.1, )"
+              "version": "[1.0.7, )"
             }
           },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.113\\RuntimeIdentifierGraph.json"
         }
       }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
+
 public class LineSegment
 {
     public Vector2 From { get; private set; }

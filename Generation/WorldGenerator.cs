@@ -25,18 +25,17 @@ public class WorldGenerator
                 (_dim - edgePointMargin, cellSize, cellSize * .75f, false, true)
             .Select(v => v + edgePointMargin / 2f).ToList();
 
-        var polygons 
-            = VoronoiGenerator.GetVoronoiPolygons
-                (
-                    points, _dim, true, cellSize,
-                    (i, center) =>
-                    {
-                        _id.SetMin(i);
-                        return new MapPolygon(i, center, _dim.x, _key);
-                    },
-                    _id,
-                    _key
-                );
+        VoronoiGenerator.GenerateMapPolygons
+        (
+            points, _dim, true, cellSize,
+            (i, center) =>
+            {
+                _id.SetMin(i);
+                return new MapPolygon(i, center, _dim.x, _key);
+            },
+            _id,
+            _key
+        );
         var planetInfo = new PlanetInfo(_dim, _id.GetID(), _key);
         Data.AddEntity(planetInfo, typeof(PlanetDomain), _key);
         var geologyGenerator = new GeologyGenerator(Data, _id);

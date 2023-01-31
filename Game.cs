@@ -3,7 +3,6 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 
 public class Game : Node
 {
@@ -13,10 +12,10 @@ public class Game : Node
     private ISession _session;
 
     public RefFulfiller RefFulfiller => _session == null
-        ? _tempData.Data.RefFulfiller
+        ? _genUi.Data.RefFulfiller
         : _session.Data.RefFulfiller;
     //todo fix this
-    private GeneratorClient _tempData;
+    private GeneratorClient _genUi;
     public override void _Ready()
     {
         if (I != null)
@@ -28,13 +27,16 @@ public class Game : Node
         Serializer = new Serializer();
     }
 
+    public override void _Process(float delta)
+    {
+        _genUi?.Process(delta);
+    }
+
     public void OpenGenerator()
     {
-        var genUi = GeneratorClient.Get();
-        _tempData = genUi;
-
-        genUi.Setup();
-        AddChild(genUi);
+        _genUi = GeneratorClient.Get();
+        _genUi.Setup();
+        AddChild(_genUi);
     }
     public void StartClientSession()
     {
@@ -51,5 +53,8 @@ public class Game : Node
         session.Name = "Session";   
         session.StartAsHost(data);
         AddChild(session);
+        RemoveChild(_genUi);
+        _genUi.QueueFree();
+        _genUi = null;
     }
 }

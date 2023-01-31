@@ -60,7 +60,7 @@ public class HostServer : Node, IServer
             var connection = _tcp.TakeConnection();
             var hostPacket = new PacketPeerStream();
             hostPacket.StreamPeer = connection;
-            StateTransferUpdate.Send(_key, hostPacket);
+            // StateTransferUpdate.Send(_key, hostPacket);
             // _connections.Add(connection);
         }
     }

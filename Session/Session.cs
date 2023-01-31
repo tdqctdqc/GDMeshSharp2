@@ -9,7 +9,11 @@ public class Session : Node, ISession
     public IClient Client { get; private set; }
     private ILogic _logic;
     public UserCredential UserCredential { get; private set; }
-    
+    public override void _Process(float delta)
+    {
+        Client?.Process(delta);
+    }
+
     public void StartAsHost(GenData data, UserCredential userCredential = null)
     {
         SetCredential(userCredential);

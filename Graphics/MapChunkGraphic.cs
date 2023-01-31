@@ -20,7 +20,8 @@ public class MapChunkGraphic : Node2D
         (chunk.Polys.ToList(), data, 
             p => p.IsLand() 
             ? Colors.SaddleBrown 
-            : Colors.Blue
+            : Colors.Blue,
+            false
         );
         AddChild(Polys);
 
@@ -49,16 +50,16 @@ public class MapChunkGraphic : Node2D
 
         Polys.ZAsRelative = false;
         Polys.ZIndex = 0;
-
+        
         Landform.ZAsRelative = false;
         Landform.ZIndex = 1;
-
+        
         Vegetation.ZAsRelative = false;
         Vegetation.ZIndex = 2;
-
+        
         Roads.ZAsRelative = false;
         Roads.ZIndex = 3;
-
+        
         Regimes.ZAsRelative = false;
         Regimes.ZIndex = 4;
     }

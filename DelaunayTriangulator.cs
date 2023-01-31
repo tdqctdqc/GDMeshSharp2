@@ -2,7 +2,7 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using DelaunatorNetStd;
+using DelaunatorSharp;
 
 public class DelaunayTriangulator
 {

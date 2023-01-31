@@ -2,14 +2,14 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using DelaunatorNetStd;
+using DelaunatorSharp;
 
 public class VoronoiGenerator
 {
     private static Vector2 _dimensions;
     private static IDDispenser _id;
     private static Data _data;
-    public static List<MapPolygon> GetVoronoiPolygons(List<Vector2> points, Vector2 dimensions, 
+    public static List<MapPolygon> GenerateMapPolygons(List<Vector2> points, Vector2 dimensions, 
         bool leftRightWrap, float polySize,
         Func<int, Vector2, MapPolygon> constructor,
         IDDispenser id,
@@ -21,7 +21,7 @@ public class VoronoiGenerator
         var edgePoints = AddBoundaryPoints(points, dimensions, polySize, leftRightWrap);
         var leftRightPoints = edgePoints.leftEdgePoints.Union(edgePoints.rightEdgePoints);
         var lrHash = leftRightPoints.ToHashSet();
-        var delaunayPoints = points.Select(p => new DelaunayTriangulator.DelaunatorPoint(p)).ToList();
+        var delaunayPoints = points.Select(p => new DelaunayTriangulator.DelaunatorPoint(p)).ToList<IPoint>();
         var d = new Delaunator(delaunayPoints.ToArray());
         var voronoiCells = d.GetVoronoiCells().ToList();
         var polyIndexDic = new Dictionary<int, MapPolygon>();
@@ -68,8 +68,8 @@ public class VoronoiGenerator
     {
         d.ForEachVoronoiEdge(edge =>
         {
-            var tri = d.TriangleOfEdge(edge.Index);
-            var oppTri = d.TriangleOfEdge(d.Halfedges[edge.Index]);
+            var tri = Delaunator.TriangleOfEdge(edge.Index);
+            var oppTri = Delaunator.TriangleOfEdge(d.Halfedges[edge.Index]);
             var commonPoints = d.PointsOfTriangle(tri).Intersect(d.PointsOfTriangle(oppTri));
             if (commonPoints.Count() == 2)
             {

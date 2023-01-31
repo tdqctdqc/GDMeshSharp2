@@ -6,7 +6,7 @@ using Godot;
 public class Swamp : Vegetation
 {
     public Swamp() 
-        : base(new HashSet<Landform>{LandformManager.Plain}, .7f, Colors.DarkOliveGreen, "Swamp", new BlobTriBuilder())
+        : base(new HashSet<Landform>{LandformManager.Plain}, .7f, .25f, Colors.DarkOliveGreen, "Swamp", new BlobTriBuilder())
     {
     }
 

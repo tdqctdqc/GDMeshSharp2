@@ -9,7 +9,7 @@ public class River : Landform
     private static float _widthRatio = .05f;
 
     public River()
-        : base("River", 0f, Colors.Blue,
+        : base("River", 0f, 0f, Colors.Blue,
             new EdgeToTriBuilder(
                 (p1, p2, d) => p1.GetBorder(p2, d).MoistureFlow,
                 _threshold,

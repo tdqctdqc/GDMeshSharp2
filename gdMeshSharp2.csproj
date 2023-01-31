@@ -1,23 +1,12 @@
 <Project Sdk="Godot.NET.Sdk/3.3.0">
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="DelaunatorNetStd" Version="1.0.4" />
-    <PackageReference Include="Mono.Reflection" Version="2.0.0" />
+    <PackageReference Include="MarkovNextGen" Version="1.2.6" />
+    <PackageReference Include="MessagePack" Version="2.4.59" />
     <PackageReference Include="OptimizedPriorityQueue" Version="5.1.0" />
-    <PackageReference Include="System.Text.Json" Version="7.0.1" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="Client\ExampleClient\**" />
-    <Compile Remove="Client\GameClient\ExampleUi\**" />
-    <Compile Remove="Client\GameClient\GameUi\**" />
-    <Compile Remove="Graph\Superset\**" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Remove="Client\ExampleClient\**" />
-    <EmbeddedResource Remove="Client\GameClient\ExampleUi\**" />
-    <EmbeddedResource Remove="Client\GameClient\GameUi\**" />
-    <EmbeddedResource Remove="Graph\Superset\**" />
+    <PackageReference Include="RandomFriendlyNameGenerator" Version="1.0.7" />
   </ItemGroup>
 </Project>

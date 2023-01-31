@@ -3,9 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text.Json.Serialization;
+using MessagePack;
 
-public sealed class EntityCreationUpdate : Update
+[MessagePackObject(keyAsPropertyName: true)] 
+
+public sealed partial class EntityCreationUpdate : Update
 {
     public string EntityTypeName { get; private set; }
     public string DomainTypeName { get; private set; }
@@ -16,7 +18,7 @@ public sealed class EntityCreationUpdate : Update
         var u = new EntityCreationUpdate(entity.GetType(), domainType, entity, key);
         key.HostServer.QueueUpdate(u);
     }
-    [JsonConstructor] public EntityCreationUpdate(string entityTypeName, string domainTypeName, byte[] entityBytes) 
+    public EntityCreationUpdate(string entityTypeName, string domainTypeName, byte[] entityBytes) 
         : base(new HostWriteKey(null, null))
     {
         EntityBytes = entityBytes;
@@ -27,13 +29,13 @@ public sealed class EntityCreationUpdate : Update
     {
         EntityTypeName = entityType.Name;
         DomainTypeName = domainType.Name;
-        EntityBytes = Game.I.Serializer.SerializeToUtf8(e);
+        EntityBytes = Game.I.Serializer.MP.Serialize(e, entityType);
     }
     public override void Enact(ServerWriteKey key)
     {
         var entityType = Game.I.Serializer.Types[EntityTypeName];
         var domainType = Game.I.Serializer.Types[DomainTypeName];
-        var e = (Entity)Game.I.Serializer.Deserialize(EntityBytes, entityType);
+        var e = Game.I.Serializer.MP.Deserialize<Entity>(EntityBytes);
         key.Data.AddEntity(e, domainType, key);
     }
 }

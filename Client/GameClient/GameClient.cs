@@ -8,13 +8,20 @@ public class GameClient : Node, IClient
     private IServer _server;
     public CameraController Cam { get; private set; }
     public GameGraphics Graphics { get; private set; }
+    public Data Data { get; private set; }
     public override void _Ready()
     {
         
     }
 
+    public void Process(float delta)
+    {
+        Graphics.Process(delta, Data);
+    }
     public void Setup(Data data, IServer server)
     {
+        Data = data;
+        //todo let just transfer graphics from gen
         Cam = new CameraController();
         AddChild(Cam);
         Cam.Current = true;
@@ -23,14 +30,14 @@ public class GameClient : Node, IClient
         BuildUi(data, server);
         if (server is RemoteServer r)
         {
-            r.ReceivedStateTransfer += () => Graphics.Setup(this, data, Cam);
+            r.ReceivedStateTransfer += () => Graphics.Setup(this, data);
         }
     }
 
     private void BuildGraphics(Data data)
     {
         Graphics = GameGraphics.Get();
-        Graphics.Setup(this, data, Cam);
+        Graphics.Setup(this, data);
         AddChild(Graphics);
     }
 

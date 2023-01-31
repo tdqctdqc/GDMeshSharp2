@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public abstract class TerrainAspectManager<TAspect> : IModelRepo<TAspect>
+public abstract class TerrainAspectManager<TAspect> : IModelManager<TAspect>
     where TAspect : TerrainAspect
 {
     public Dictionary<string, TAspect> ByName { get; private set; }
     public List<TAspect> ByPriority { get; private set; }
     public TAspect LandDefault { get; protected set; } 
     public TAspect WaterDefault { get; protected set; }
-    Dictionary<string, TAspect> IModelRepo<TAspect>.Models => ByName;
+    Dictionary<string, TAspect> IModelManager<TAspect>.Models => ByName;
     public TerrainAspectManager(TAspect waterDefault, 
         TAspect landDefault, List<TAspect> byPriority)
     {
@@ -52,16 +52,40 @@ public abstract class TerrainAspectManager<TAspect> : IModelRepo<TAspect>
         }
         return LandDefault;
     }
-
     public TAspect GetAspectAtPoint(MapPolygon p, Vector2 offsetFromPolyCenter, Data data)
     {
         var tris = data.Planet.TerrainTris;
 
         for (int i = 0; i < ByPriority.Count; i++)
         {
-            if (tris.GetTris(ByPriority[i]).Contains(p, offsetFromPolyCenter)) 
+            var first = tris.GetTris(ByPriority[i]).TriangleContaining(p, offsetFromPolyCenter);
+            if (first != null)
+            {
                 return ByPriority[i];
+            }
         }
+
+        if (p.IsWater())
+        {
+            return WaterDefault;
+        }
+        return LandDefault;
+    }
+    public TAspect GetAspectAtPoint(MapPolygon p, Vector2 offsetFromPolyCenter, Data data, out Triangle tri)
+    {
+        var tris = data.Planet.TerrainTris;
+
+        for (int i = 0; i < ByPriority.Count; i++)
+        {
+            var first = tris.GetTris(ByPriority[i]).TriangleContaining(p, offsetFromPolyCenter);
+            if (first != null)
+            {
+                tri = first;
+                return ByPriority[i];
+            }
+        }
+
+        tri = null;
         if (p.IsWater())
         {
             return WaterDefault;

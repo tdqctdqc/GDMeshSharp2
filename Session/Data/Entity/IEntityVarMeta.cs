@@ -6,7 +6,6 @@ using Godot;
 public interface IEntityVarMeta<TEntity> where TEntity : Entity
 {
     object GetForSerialize(TEntity e);
-    object GetPropertyFromSerialized(byte[] bytes);
     void Set(TEntity e, object receivedValue, CreateWriteKey key);
     void Set(TEntity e, object receivedValue, ServerWriteKey key);
 }

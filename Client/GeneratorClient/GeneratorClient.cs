@@ -14,8 +14,11 @@ public class GeneratorClient : Node, IClient
     {
         
     }
-
+    
+    
+    
     public CameraController Cam { get; private set; }
+    Data IClient.Data => Data;
     public GenData Data { get; private set; }
     public static GeneratorClient Get()
         => (GeneratorClient) ((PackedScene) GD.Load("res://Client/GeneratorClient/GeneratorClient.tscn")).Instance();
@@ -29,6 +32,11 @@ public class GeneratorClient : Node, IClient
             Game.I.StartHostSession(Data);
             QueueFree();
         }
+    }
+
+    public void Process(float delta)
+    {
+        _graphics?.Process(delta, Data);
     }
     public void Setup()
     {
@@ -76,7 +84,7 @@ public class GeneratorClient : Node, IClient
         var worldGen = new WorldGenerator(bounds);
         Data = worldGen.Data;
         worldGen.Generate();
-        _graphics.Setup(this, Data, Cam);
+        _graphics.Setup(this, Data);
         _graphics.SetupGenerator(Data, this);
     }
 }

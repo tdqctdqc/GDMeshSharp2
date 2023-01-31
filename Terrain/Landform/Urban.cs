@@ -7,7 +7,7 @@ public class Urban : Landform
 {
     
     public Urban() 
-        : base("Urban", 0f, Colors.Black, new CenterTriBuilder(GetSize))
+        : base("Urban", 0f, 0f, Colors.Black, new CenterTriBuilder(GetSize))
     {
         
     }

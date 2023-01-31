@@ -12,11 +12,17 @@ public class Triangle
         A = a;
         B = b;
         C = c;
+        if (this.IsDegenerate()) throw new Exception();
     }
 
     public Triangle Transpose(Vector2 offset)
     {
         return new Triangle(A + offset, B + offset, C + offset);
+    }
+
+    public Vector2 GetCentroid()
+    {
+        return (A + B + C) / 3f;
     }
 }
 

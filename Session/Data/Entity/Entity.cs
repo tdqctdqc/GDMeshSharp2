@@ -1,6 +1,8 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using MessagePack;
+
 
 public abstract class Entity
 {
@@ -18,17 +20,5 @@ public abstract class Entity
     public void Set<TValue>(string fieldName, TValue newValue, CreateWriteKey key)
     {
         GetMeta().UpdateEntityVar<TValue>(fieldName, this, key, newValue);
-        if (key is HostWriteKey hKey)
-        {
-            EntityVarUpdate.Send(fieldName, Id, newValue, hKey);
-        }
-    }
-    public void SetRef<TUnderlying>(string fieldName, TUnderlying newValue, CreateWriteKey key)
-    {
-        GetMeta().UpdateEntityVar<TUnderlying>(fieldName, this, key, newValue);
-        if (key is HostWriteKey hKey)
-        {
-            EntityVarUpdate.Send(fieldName, Id, newValue, hKey);
-        }
     }
 }

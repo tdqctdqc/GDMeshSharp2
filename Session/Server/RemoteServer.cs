@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Text.Json;
 
 public class RemoteServer : Node, IServer
 {
@@ -19,7 +18,7 @@ public class RemoteServer : Node, IServer
 
     public void Setup(ISession session, Data data)
     {
-        _key = new ServerWriteKey(this, session, data);
+        _key = new ServerWriteKey(data);
     }
     public override void _Ready()
     {
@@ -38,20 +37,20 @@ public class RemoteServer : Node, IServer
     }
     public override void _Process(float delta)
     {
-        var availPackets = _packetStream.GetAvailablePacketCount();
-
-        // if(availPackets > 0) GD.Print("avail packets " + availPackets);
-        for (int i = 0; i < availPackets; i++)
-        {
-            var packet = _packetStream.GetPacket();
-            var argsBytes = Game.I.Serializer.Deserialize<UpdateWrapper>(packet);
-            ReceiveUpdate(argsBytes);
-        }
+        // var availPackets = _packetStream.GetAvailablePacketCount();
+        //
+        // // if(availPackets > 0) GD.Print("avail packets " + availPackets);
+        // for (int i = 0; i < availPackets; i++)
+        // {
+        //     var packet = _packetStream.GetPacket();
+        //     var argsBytes = Game.I.Serializer.Deserialize<UpdateWrapper>(packet);
+        //     ReceiveUpdate(argsBytes);
+        // }
     }
     
     public void ReceiveDependencies(ISession session, Data data)
     {
-        _key = new ServerWriteKey(this, session, data);
+        _key = new ServerWriteKey(data);
     }
     [Remote] public void OnConnectionSucceeded()
     {
@@ -65,10 +64,10 @@ public class RemoteServer : Node, IServer
     }
     public void ReceiveUpdate(UpdateWrapper w)
     {
-        var updateType = Game.I.Serializer.Types[w.UpdateName];
-        // var updateMeta = Game.I.Serializer.GetUpdateMeta(updateTypeName);
-        var update = (Update)Game.I.Serializer.Deserialize(w.UpdateBytes, updateType);
-        update.Enact(_key);
+        // var updateType = Game.I.Serializer.Types[w.UpdateName];
+        // // var updateMeta = Game.I.Serializer.GetUpdateMeta(updateTypeName);
+        // var update = (Update)Game.I.Serializer.Deserialize(w.UpdateBytes, updateType);
+        // update.Enact(_key);
     }
 
     public void PushCommand(Command command)

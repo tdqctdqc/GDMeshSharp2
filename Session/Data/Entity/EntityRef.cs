@@ -1,9 +1,11 @@
 using Godot;
 using System;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
+using MessagePack;
 
-[RefAttribute] public class EntityRef<TRef> : IRef<int> where TRef : Entity
+[RefAttribute] 
+[MessagePackObject(keyAsPropertyName: true)] 
+public class EntityRef<TRef> : IRef<int> where TRef : Entity
 {
     public int RefId { get; private set; }
     private TRef _ref;
@@ -13,7 +15,7 @@ using System.Text.Json.Serialization;
         RefId = entity.Id;
         _ref = entity;
     }
-    [JsonConstructor] public EntityRef(int refId)
+    public EntityRef(int refId)
     {
         RefId = refId;
         _ref = null;

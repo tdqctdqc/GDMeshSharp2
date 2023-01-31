@@ -36,8 +36,4 @@ public class RefVarMeta<TEntity, TRefVar, TUnderlying> : EntityVarMeta<TEntity, 
     {
         return (TUnderlying) GetUnderlying(e);
     }
-    public override object GetPropertyFromSerialized(byte[] bytes)
-    {
-        return Game.I.Serializer.Deserialize<TUnderlying>(bytes);
-    }
 }

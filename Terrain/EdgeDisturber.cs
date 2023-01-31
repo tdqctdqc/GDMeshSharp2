@@ -6,7 +6,7 @@ using System.Linq;
 public static class EdgeDisturber
 {
     private static GenWriteKey _key;
-    public static void DisturbEdges(IReadOnlyList<MapPolygon> polys, Vector2 dimensions, GenWriteKey key)
+    public static void DisturbEdges(IReadOnlyCollection<MapPolygon> polys, Vector2 dimensions, GenWriteKey key)
     {
         _key = key;
         var noise = new OpenSimplexNoise();
@@ -15,7 +15,7 @@ public static class EdgeDisturber
         var disturbedEdges = new HashSet<Vector2>();
         for (var i = 0; i < polys.Count; i++)
         {
-            var poly = polys[i];
+            var poly = polys.ElementAt(i);
             for (var j = 0; j < poly.Neighbors.Count(); j++)
             {
                 var nPoly = poly.Neighbors.Refs().ElementAt(j);

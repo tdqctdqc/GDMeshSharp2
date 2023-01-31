@@ -5,21 +5,21 @@ using Godot;
 
 public class Models
 {
-    private Dictionary<Type, IModelRepo> _repos;
+    private Dictionary<Type, IModelManager> _managers;
     private Dictionary<string, object> _models;
     public LandformManager Landforms { get; private set; }
     public VegetationManager Vegetation { get; private set; }
     public PeepJobManager PeepJobs { get; private set; }
     public Models()
     {
-        _repos = new Dictionary<Type, IModelRepo>();
+        _managers = new Dictionary<Type, IModelManager>();
         _models = new Dictionary<string, object>();
         Landforms = new LandformManager();
-        AddRepo(Landforms);
+        AddManager(Landforms);
         Vegetation = new VegetationManager();
-        AddRepo(Vegetation);
+        AddManager(Vegetation);
         PeepJobs = new PeepJobManager();
-        AddRepo(PeepJobs);
+        AddManager(PeepJobs);
     }
 
     public T GetModel<T>(string name)
@@ -27,10 +27,14 @@ public class Models
         return (T)_models[name];
     }
 
-    private void AddRepo<T>(IModelRepo<T> repo)
+    public IModelManager<TModel> GetManager<TModel>() where TModel : IModel
     {
-        _repos.Add(typeof(T), repo);
-        foreach (var keyValuePair in repo.Models)
+        return (IModelManager<TModel>)_managers[typeof(TModel)];
+    }
+    private void AddManager<T>(IModelManager<T> manager)
+    {
+        _managers.Add(typeof(T), manager);
+        foreach (var keyValuePair in manager.Models)
         {
             _models.Add(keyValuePair.Key, keyValuePair.Value);
         }

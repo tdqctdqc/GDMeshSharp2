@@ -1,15 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json.Serialization;
 using Godot;
+using MessagePack;
 
-public sealed class Settlement : Location
+
+public class Settlement : Location
 {
     public EntityRef<MapPolygon> Poly { get; private set; }
     public float Size { get; private set; }
 
-    [JsonConstructor] public Settlement(int id, EntityRef<MapPolygon> poly, float size) : base(id)
+    public Settlement(int id, EntityRef<MapPolygon> poly, float size) : base(id)
     {
         Poly = poly;
         Size = size;

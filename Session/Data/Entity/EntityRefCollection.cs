@@ -2,10 +2,11 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using MessagePack;
 
-[RefAttribute] public class EntityRefCollection<TRef> : IRef<List<int>> where TRef : Entity
+[MessagePackObject(keyAsPropertyName: true)] 
+public partial class EntityRefCollection<TRef>
+    : IRef<List<int>> where TRef : Entity
 {
     public List<int> RefIds { get; private set; }
     private HashSet<TRef> _refs;
@@ -68,11 +69,6 @@ using System.Text.Json.Serialization;
             TRef refer = (TRef) data[id];
             _refs.Add(refer);
         }
-    }
-
-    public static EntityRefCollection<TRef> DeserializeConstructor(List<int> col)
-    {
-        return new EntityRefCollection<TRef>(col);
     }
     public List<int> GetUnderlying() => RefIds;
     public void Set(List<int> underlying, StrongWriteKey key)

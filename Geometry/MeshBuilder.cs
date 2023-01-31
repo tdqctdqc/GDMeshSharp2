@@ -14,6 +14,11 @@ public class MeshBuilder
         Colors = new List<Color>();
     }
 
+    public void Clear()
+    {
+        Tris.Clear();
+        Colors.Clear();
+    }
     public void AddTri(Triangle tri, Color color)
     {
         Tris.Add(tri);

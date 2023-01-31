@@ -4,9 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using Mono.Reflection;
 
 public class EntityMeta<T> : IEntityMeta where T : Entity
 {
@@ -17,24 +14,18 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
 
     private Dictionary<string, IEntityVarMeta<T>> _vars;
 
-    private JsonSerializerOptions _options;
-    public void ForReference(JsonSerializerOptions options)
+    public void ForReference()
     {
         return;
-        new EntityMeta<T>(options);
+        new EntityMeta<T>();
     }
-    public EntityMeta(JsonSerializerOptions options)
+    public EntityMeta()
     {
-        _options = options;
-
         var entityType = typeof(T);
         //bc with generic parameters it will not capture all the classes
         if (entityType.ContainsGenericParameters) 
             throw new Exception(); 
         
-        //don't want concrete entity classes having descendents 
-        if (entityType.IsSealed == false) 
-             throw new Exception();
         var properties = entityType.GetProperties(BindingFlags.Instance | BindingFlags.Public);
         _fieldNames = properties.Select(p => p.Name).ToList();
         _fieldTypes = properties.ToDictionary(p => p.Name, p => p.PropertyType);
@@ -54,44 +45,16 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
         var name = prop.Name;
         var type = prop.PropertyType;
 
-        if (type.HasAttribute<RefAttribute>())
-        {
-            var underlyingType = type.GetMethod(nameof(IRef<int>.GetUnderlying)).ReturnType;
-            var mi = GetType().GetMethod(nameof(SetupRefType), BindingFlags.Instance | BindingFlags.NonPublic);
-            var genericMi = mi.MakeGenericMethod(new Type[]{typeof(TProperty), underlyingType} );
-            genericMi.Invoke(this, new[] {prop} );
-        }
-        else if (type.HasAttribute<ConvertibleAttribute>())
-        {
-            var baseType = type.GetMethod(nameof(EntityConvertibleVar<int, int>.ConvertToBase)).ReturnType;
-            var convertedType = type.GetMethod(nameof(EntityConvertibleVar<int, int>.ConvertFromBase)).ReturnType;
-            var mi = GetType().GetMethod(nameof(SetupConvertibleAttribute),
-                BindingFlags.Instance | BindingFlags.NonPublic);
-            var genericMi = mi.MakeGenericMethod(new Type[] {typeof(TProperty), baseType, convertedType});
-            genericMi.Invoke(this, new[] {prop});
-        }
-        else
-        {
-            var mi = GetType().GetMethod(nameof(SetupVarType), BindingFlags.Instance | BindingFlags.NonPublic);
-            var genericMi = mi.MakeGenericMethod(new[] {typeof(TProperty)});
-            genericMi.Invoke(this, new []{prop});
-        }
+        var mi = GetType().GetMethod(nameof(SetupVarType), BindingFlags.Instance | BindingFlags.NonPublic);
+        var genericMi = mi.MakeGenericMethod(new[] {typeof(TProperty)});
+        genericMi.Invoke(this, new []{prop});
     }
     private void SetupVarType<TProperty>(PropertyInfo prop)
     {
         var eVar = new EntityVarMeta<T, TProperty>(prop);
         _vars.Add(prop.Name, eVar);
     }
-    private void SetupRefType<TProperty, TUnderlying>(PropertyInfo prop) where TProperty : IRef<TUnderlying>
-    {
-        var refVar = new RefVarMeta<T, TProperty, TUnderlying>(prop);
-        _vars.Add(prop.Name, refVar);
-    }
-    private void SetupConvertibleAttribute<TProperty, TBase, TConverted>(PropertyInfo prop)
-    {
-        var conVar = new ConvertibleVarMeta<T, TProperty, TBase, TConverted>(prop);
-        _vars.Add(prop.Name, conVar);
-    }
+    
     public object[] GetPropertyValues(Entity entity)
     {
         var t = (T) entity;
@@ -104,12 +67,22 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
 
         return args;
     }
-    public void UpdateEntityVar(string fieldName, Entity t, ServerWriteKey key, object newValue)
+    public void UpdateEntityVar<TProperty>(string fieldName, Entity t, ServerWriteKey key, TProperty newValue)
     {
+        var repo = key.Data.EntityRepos[t.Id];
+        var oldValue = (TProperty)_vars[fieldName].GetForSerialize((T)t);
         _vars[fieldName].Set((T)t, newValue, key);
+        repo.RaiseValueChangedNotice(fieldName, t, oldValue, newValue, key);
     }
-    public void UpdateEntityVar<TValue>(string fieldName, Entity t, CreateWriteKey key, TValue newValue)
+    public void UpdateEntityVar<TProperty>(string fieldName, Entity t, CreateWriteKey key, TProperty newValue)
     {
+        var repo = key.Data.EntityRepos[t.Id];
+        var oldValue = _vars[fieldName].GetForSerialize((T)t);
         _vars[fieldName].Set((T)t, newValue, key);
+        repo.RaiseValueChangedNotice(fieldName, t, oldValue, newValue, key);
+        if (key is HostWriteKey hKey)
+        {
+            EntityVarUpdate<TProperty>.Send(fieldName, t.Id, newValue, hKey);
+        }
     }
 }

@@ -2,9 +2,10 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json.Serialization;
+using MessagePack;
 
-public sealed class MapPolygonBorder : Entity
+
+public class MapPolygonBorder : Entity
 {
     public float MoistureFlow { get; private set; }
     public List<LineSegment> LowSegsRel { get; private set; }
@@ -12,8 +13,9 @@ public sealed class MapPolygonBorder : Entity
     public EntityRef<MapPolygon> LowId { get; private set; }
     public EntityRef<MapPolygon> HighId { get; private set; }
 
-
-    [JsonConstructor] public MapPolygonBorder(int id, float moistureFlow, List<LineSegment> lowSegsRel, List<LineSegment> highSegsRel, EntityRef<MapPolygon> lowId, EntityRef<MapPolygon> highId) : base(id)
+    public MapPolygonBorder(int id, float moistureFlow, List<LineSegment> lowSegsRel, 
+        List<LineSegment> highSegsRel, EntityRef<MapPolygon> lowId, 
+        EntityRef<MapPolygon> highId) : base(id)
     {
         MoistureFlow = moistureFlow;
         LowSegsRel = lowSegsRel;

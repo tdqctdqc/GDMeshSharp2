@@ -7,20 +7,20 @@ public class Repository<T> : IRepo where T : Entity
     public Domain Domain { get; private set; }
     public Action<T, WriteKey> AddedEntity { get; set; }
     public Action<T, WriteKey> RemovingEntity { get; set; }
-    private Dictionary<string, Action<int, WriteKey>> _entityValueUpdatedActions;
+    private Dictionary<string, object> _entityValueUpdatedActions;
     public T this[int id] => _entitiesById[id];
     protected Dictionary<int, T> _entitiesById;
-    IReadOnlyList<Entity> IRepo.Entities => _entities;
-    public IReadOnlyList<T> Entities => _entities;
-    private List<T> _entities;
+    IReadOnlyCollection<Entity> IRepo.Entities => _entities;
+    public IReadOnlyCollection<T> Entities => _entities;
+    private HashSet<T> _entities;
     private ClientWriteKey _weakKey;
     
     public Repository(Domain domain, Data data)
     {
         Domain = domain;
-        _entityValueUpdatedActions = new Dictionary<string, Action<int, WriteKey>>();
+        _entityValueUpdatedActions = new Dictionary<string, object>();
         _entitiesById = new Dictionary<int, T>();
-        _entities = new List<T>();
+        _entities = new HashSet<T>();
         _weakKey = new ClientWriteKey(data);
     }
 
@@ -54,19 +54,32 @@ public class Repository<T> : IRepo where T : Entity
         _entities.Remove(t);
     }
 
-    protected void RegisterForValueChangeCallback(string valueName, Action<int, WriteKey> callback) 
+    public void RegisterForValueChangeCallback<TProperty>
+        (string valueName, Action<ValueChangedNotice<T, TProperty>> callback) 
     {
         if (_entityValueUpdatedActions.ContainsKey(valueName) == false)
         {
-            _entityValueUpdatedActions.Add(valueName, (id, key) => { }); 
+            Action<ValueChangedNotice<T, TProperty>> sendNotice = n => { };
+            _entityValueUpdatedActions.Add(valueName, sendNotice); 
         }
-        _entityValueUpdatedActions[valueName] += callback;
+        var notice = (Action<ValueChangedNotice<T, TProperty>>)_entityValueUpdatedActions[valueName];
+        notice += callback;
     }
 
-    public void RaiseValueChangedNotice(string valueName, int id, WriteKey key)
+    void IRepo.RaiseValueChangedNotice<TProperty>(string valueName,
+        Entity entity, TProperty oldVal, TProperty newVal, WriteKey key)
     {
-        if (_entitiesById.ContainsKey(id) == false) throw new Exception();
-        if(_entityValueUpdatedActions.ContainsKey(valueName))
-            _entityValueUpdatedActions[valueName].Invoke(id, key);
+        RaiseValueChangedNotice(valueName, (T)entity, oldVal, newVal, key);
+    }
+    public void RaiseValueChangedNotice<TProperty>(string valueName, T t, 
+        TProperty oldVal, TProperty newVal,
+        WriteKey key)
+    {
+        if (_entities.Contains(t) == false) throw new Exception();
+        if (_entityValueUpdatedActions.ContainsKey(valueName))
+        {
+            var sendNotice = (Action<ValueChangedNotice<T, TProperty>>)_entityValueUpdatedActions[valueName];
+            sendNotice(new ValueChangedNotice<T, TProperty>(t, newVal, oldVal));
+        }
     }
 }

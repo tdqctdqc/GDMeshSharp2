@@ -5,8 +5,36 @@ public class CameraController : Camera2D
 {
     private float _udScrollSpeed = 1000f;
     private float _lrScrollSpeed = .02f;
-    public float XYRatio { get; private set; }
+    public float XScrollRatio { get; private set; }
+    private Vector2 _mapSpaceMousePos;
+    private Vector2 _globalSpaceMousePos;
+    public Vector2 GetMousePosInMapSpace(Data data)
+    {
+        var mapWidth = data.Planet.Width;
+        var scrollDist = mapWidth * XScrollRatio;
+        
+        var mousePosGlobal = GetGlobalMousePosition();
+        if (_globalSpaceMousePos == mousePosGlobal) return _mapSpaceMousePos;
+        _globalSpaceMousePos = mousePosGlobal;
+        _mapSpaceMousePos =  new Vector2(mousePosGlobal.x + scrollDist, mousePosGlobal.y);
+        while (_mapSpaceMousePos.x > mapWidth) _mapSpaceMousePos += Vector2.Left * mapWidth;
+        while (_mapSpaceMousePos.x < 0f) _mapSpaceMousePos += Vector2.Right * mapWidth;
+        return _mapSpaceMousePos;
+    }
 
+    public Vector2 GetMapPosInGlobalSpace(Vector2 mapPos, Data data)
+    {
+        var mapWidth = data.Planet.Width;
+        var scrollDist = mapWidth * XScrollRatio;
+        
+        
+        var globalSpace = new Vector2(mapPos.x - scrollDist, mapPos.y);
+        
+        while (globalSpace.x > mapWidth / 2f) globalSpace += Vector2.Left * mapWidth;
+        while (globalSpace.x < -mapWidth / 2f) globalSpace += Vector2.Right * mapWidth;
+        
+        return globalSpace;
+    }
     public override void _Process(float delta)
     {
         var mult = 1f;
@@ -23,15 +51,15 @@ public class CameraController : Camera2D
         
         if(Input.IsKeyPressed((int)KeyList.A))
         {
-            XYRatio -= delta * Zoom.Length() * _lrScrollSpeed * mult;
-            if (XYRatio > 1f) XYRatio -= 1f;
-            if (XYRatio < 0f) XYRatio += 1f;
+            XScrollRatio -= delta * Zoom.Length() * _lrScrollSpeed * mult;
+            if (XScrollRatio > 1f) XScrollRatio -= 1f;
+            if (XScrollRatio < 0f) XScrollRatio += 1f;
         }
         if(Input.IsKeyPressed((int)KeyList.D))
         {
-            XYRatio += delta * Zoom.Length() * _lrScrollSpeed * mult;
-            if (XYRatio > 1f) XYRatio -= 1f;
-            if (XYRatio < 0f) XYRatio += 1f;
+            XScrollRatio += delta * Zoom.Length() * _lrScrollSpeed * mult;
+            if (XScrollRatio > 1f) XScrollRatio -= 1f;
+            if (XScrollRatio < 0f) XScrollRatio += 1f;
         }
         
         if(Input.IsKeyPressed((int)KeyList.Q))
