@@ -9,13 +9,18 @@ public class RoadRepository : Repository<RoadSegment>
     public RoadRepository(Domain domain, Data data) : base(domain, data)
     {
         ByBorderId = new Dictionary<int, RoadSegment>();
-        AddedEntity += (segment, key) =>
-        {
-            ByBorderId.Add(segment.Border.RefId,  segment);
-        };
-        RemovingEntity += (segment, key) =>
-        {
-            ByBorderId.Remove(segment.Border.RefId);
-        };
+        
+        data.Notices.RegisterEntityAddedCallback<RoadSegment>(
+            segment =>
+                    {
+                        ByBorderId.Add(segment.Border.RefId,  segment);
+                    }
+        );
+        data.Notices.RegisterEntityRemovingCallback<RoadSegment>(
+            segment =>
+            {
+                ByBorderId.Remove(segment.Border.RefId);
+            }
+        );
     }
 }

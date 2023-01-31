@@ -13,7 +13,7 @@ public class PlanetDomain : Domain
     //todo fix this to be properly synced
     public float Width => PlanetInfo.Value.Dimensions.x;
     public float Height => PlanetInfo.Value.Dimensions.y;
-    public PlanetDomain(Data data) : base()
+    public PlanetDomain(Data data) : base(data)
     {
         Polygons = new MapPolygonRepository(this, data);
         TerrainTris = new TerrainTriRepo(this, data);

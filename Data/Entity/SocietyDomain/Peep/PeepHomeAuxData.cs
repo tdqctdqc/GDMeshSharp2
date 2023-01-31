@@ -7,7 +7,7 @@ public class PeepHomeAuxData : RepoAuxData<Peep>
 {
     private Dictionary<MapPolygon, HashSet<Peep>> _polyPeeps;
     
-    public PeepHomeAuxData(Repository<Peep> repo) : base(repo)
+    public PeepHomeAuxData(Repository<Peep> repo) : base(repo.Domain.Data)
     {
         _polyPeeps = new Dictionary<MapPolygon, HashSet<Peep>>();
         
@@ -24,11 +24,11 @@ public class PeepHomeAuxData : RepoAuxData<Peep>
         if (_polyPeeps.ContainsKey(poly)) return _polyPeeps[poly].Count;
         return 0;
     }
-    public override void HandleAdded(Peep added, WriteKey key)
+    public override void HandleAdded(Peep added)
     {
         AddPeepToPoly(added, added.Home.Ref());
     }
-    public override void HandleRemoved(Peep removing, WriteKey key)
+    public override void HandleRemoved(Peep removing)
     {
         RemovePeepFromPoly(removing, removing.Home.Ref());
     }

@@ -21,7 +21,7 @@ public partial class MapPolygon : Entity
     public bool IsWater() => IsLand() == false;
     public MapPolygonBorder GetBorder(MapPolygon neighbor, Data data) 
         => data.Planet.PolyBorders.GetBorder(this, neighbor);
-
+    
     private MapPolygon(int id, Vector2 center, EntityRefCollection<MapPolygon> neighbors, 
         List<Vector2> noNeighborBorders, Color color, float altitude, float roughness, 
         float moisture, float settlementSize, EntityRef<Regime> regime) : base(id)

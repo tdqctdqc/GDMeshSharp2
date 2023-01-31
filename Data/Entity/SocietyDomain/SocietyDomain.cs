@@ -9,7 +9,7 @@ public class SocietyDomain : Domain
     public RoadRepository Roads { get; private set; }
     public RegimeRepository Regimes { get; private set; }
     public PeepRepository Peeps { get; private set; }
-    public SocietyDomain(Data data)
+    public SocietyDomain(Data data) : base(data)
     {
         Settlements = new Repository<Settlement>(this, data);
         AddRepo(Settlements);

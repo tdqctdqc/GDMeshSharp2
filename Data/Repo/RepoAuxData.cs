@@ -6,12 +6,12 @@ using Godot;
 public abstract class RepoAuxData<TEntity>
     where TEntity : Entity
 {
-    public abstract void HandleAdded(TEntity added, WriteKey key);
-    public abstract void HandleRemoved(TEntity removing, WriteKey key);
+    public abstract void HandleAdded(TEntity added);
+    public abstract void HandleRemoved(TEntity removing);
 
-    public RepoAuxData(Repository<TEntity> repo)
+    public RepoAuxData(Data data)
     {
-        repo.AddedEntity += HandleAdded;
-        repo.RemovingEntity += HandleRemoved;
+        data.Notices.RegisterEntityAddedCallback<TEntity>(HandleAdded);
+        data.Notices.RegisterEntityRemovingCallback<TEntity>(HandleRemoved);
     }
 }

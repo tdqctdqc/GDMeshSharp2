@@ -5,8 +5,6 @@ using System.Collections.Generic;
 public class Repository<T> : IRepo where T : Entity
 {
     public Domain Domain { get; private set; }
-    public Action<T, WriteKey> AddedEntity { get; set; }
-    public Action<T, WriteKey> RemovingEntity { get; set; }
     private Dictionary<string, object> _entityValueUpdatedActions;
     public T this[int id] => _entitiesById[id];
     protected Dictionary<int, T> _entitiesById;
@@ -29,26 +27,12 @@ public class Repository<T> : IRepo where T : Entity
         if (e is T t == false) throw new Exception();
         _entitiesById.Add(t.Id, t);
         _entities.Add(t);
-        if(key is HostWriteKey)
-        {
-            AddedEntity?.Invoke(t, key);
-        }
-        else
-        {
-            AddedEntity?.Invoke(t, _weakKey);
-        }
+        
     }
     public void RemoveEntity(Entity e, StrongWriteKey key)
     {
         if (e is T t == false) throw new Exception();
-        if(key is HostWriteKey)
-        {
-            RemovingEntity?.Invoke(t, key);
-        }
-        else
-        {
-            RemovingEntity?.Invoke(t, _weakKey);
-        }
+        
         _entitiesById.Remove(t.Id);
         _entities.Remove(t);
     }

@@ -9,13 +9,18 @@ public class RegimeRepository : Repository<Regime>
     public RegimeRepository(Domain domain, Data data) : base(domain, data)
     {
         Territories = new Dictionary<Regime, RegimeTerritory>();
-        AddedEntity += (regime, key) =>
-        {
-            Territories.Add(regime, new RegimeTerritory(regime, data));
-        };
-        RemovingEntity += (regime, key) =>
-        {
-            Territories.Remove(regime);
-        };
+        
+        data.Notices.RegisterEntityAddedCallback<Regime>(
+            regime =>
+            {
+                Territories.Add(regime, new RegimeTerritory(regime, data));
+            }
+        );
+        data.Notices.RegisterEntityRemovingCallback<Regime>(
+            regime =>
+            {
+                Territories.Remove(regime);
+            }
+        );
     }
 }

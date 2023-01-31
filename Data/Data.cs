@@ -5,8 +5,7 @@ using System.Linq;
 
 public class Data
 {
-    public Action<Entity> AddedEntity { get; set; }
-    public Action<Entity> RemovingEntity { get; set; }
+    public DataNotices Notices { get; private set; }
     public LocalCache Cache { get; private set; }
     public Models Models { get; private set; }
     public RefFulfiller RefFulfiller { get; private set; }
@@ -18,15 +17,13 @@ public class Data
     public BaseDomain BaseDomain { get; private set; }
     public PlanetDomain Planet { get; private set; }
     public SocietyDomain Society { get; private set; }
-    
-
     public Data()
     {
         Init();
     }
-
     protected virtual void Init()
     {
+        Notices = new DataNotices();
         Cache = new LocalCache(this);
         RefFulfiller = new RefFulfiller(this);
         Models = new Models();
@@ -55,12 +52,12 @@ public class Data
         {
             EntityCreationUpdate.Send<TEntity>(e, hKey);
         }
-        AddedEntity?.Invoke(e);
+        Notices.RaiseAddedEntity(e);
     }
 
     public void RemoveEntity<TEntity>(TEntity e, StrongWriteKey key) where TEntity : Entity
     {
-        RemovingEntity?.Invoke(e);
+        Notices.RaiseRemovingEntity(e);
         EntityRepos[e.Id].RemoveEntity(e, key);
         Entities.Remove(e.Id);
         EntityRepos.Remove(e.Id);

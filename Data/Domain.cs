@@ -6,9 +6,10 @@ public abstract class Domain
 {
     public IReadOnlyDictionary<Type, IRepo> Repos => _repos;
     protected Dictionary<Type, IRepo> _repos;
-
-    public Domain()
+    public Data Data { get; private set; }
+    public Domain(Data data)
     {
+        Data = data;
         _repos = new Dictionary<Type, IRepo>();
     }
     public Repository<T> GetRepo<T>() where T : Entity

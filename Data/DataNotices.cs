@@ -10,38 +10,37 @@ public class DataNotices
     
     public DataNotices()
     {
-        
+        _addedActions = new Dictionary<Type, object>();
+        _removingActions = new Dictionary<Type, object>();
     }
 
     public void RegisterEntityAddedCallback<TEntity>(Action<TEntity> callback)
     {
-        if (_addedActions.ContainsKey(typeof(TEntity)) == false)
+        var eType = typeof(TEntity);
+        if (_addedActions.ContainsKey(eType) == false)
         {
-            Action<TEntity> action = (TEntity e) => { };
-            _addedActions.Add(typeof(TEntity), action);
+            Action<TEntity> a = (TEntity e) => { };
+            _addedActions.Add(eType, a);
         }
+        var action = ((Action<TEntity>) _addedActions[eType]);
+        action += callback;
     }
     public void RegisterEntityRemovingCallback<TEntity>(Action<TEntity> callback)
     {
-        if (_removingActions.ContainsKey(typeof(TEntity)) == false)
+        var eType = typeof(TEntity);
+        if (_removingActions.ContainsKey(eType) == false)
         {
-            Action<TEntity> action = (TEntity e) => { };
-            _removingActions.Add(typeof(TEntity), action);
+            Action<TEntity> a = (TEntity e) => { };
+            _removingActions.Add(eType, a);
         }
+        var action = ((Action<TEntity>) _removingActions[eType]);
+        action += callback;
     }
     public void RaiseAddedEntity<TEntity>(TEntity e)
     {
         if (_addedActions.ContainsKey(e.GetType()))
         {
             var action = (Action<TEntity>)_addedActions[e.GetType()];
-            action?.Invoke(e);
-        }
-    }
-    public void RaiseAddedEntity(Entity e, Type entityType)
-    {
-        if (_addedActions.ContainsKey(e.GetType()))
-        {
-            var action = (Action<>)_addedActions[e.GetType()];
             action?.Invoke(e);
         }
     }
