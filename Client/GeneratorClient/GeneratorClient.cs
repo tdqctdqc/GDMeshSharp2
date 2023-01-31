@@ -20,9 +20,6 @@ public class GeneratorClient : Node, IClient
     public CameraController Cam { get; private set; }
     Data IClient.Data => Data;
     public GenData Data { get; private set; }
-    public static GeneratorClient Get()
-        => (GeneratorClient) ((PackedScene) GD.Load("res://Client/GeneratorClient/GeneratorClient.tscn")).Instance();
-
     private MapDisplayOptionsUi _mapOptions;
 
     public void Done()

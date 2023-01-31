@@ -23,7 +23,7 @@ public class Game : Node
             throw new Exception();
         }
         I = this;
-
+        SceneManager.Setup();
         Serializer = new Serializer();
     }
 
@@ -34,7 +34,7 @@ public class Game : Node
 
     public void OpenGenerator()
     {
-        _genUi = GeneratorClient.Get();
+        _genUi = SceneManager.Instance<GeneratorClient>();
         _genUi.Setup();
         AddChild(_genUi);
     }

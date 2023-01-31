@@ -5,12 +5,11 @@ using System.Linq;
 
 public class EntityOverview : WindowDialog
 {
-    public static EntityOverview Get(Data data) 
+    public static EntityOverview Get(Data data)
     {
-        var overview = (EntityOverview) ((PackedScene) GD.Load("res://Client/EntityOverview/EntityOverview.tscn"))
-            .Instance();
-        overview.Setup(data);
-        return overview;
+        var eo = SceneManager.Instance<EntityOverview>();
+        eo.Setup(data);
+        return eo;
     }
     private VBoxContainer _container;
     private Data _data;

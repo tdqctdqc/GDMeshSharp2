@@ -31,13 +31,13 @@ public class WorldGenerator
             (i, center) =>
             {
                 _id.SetMin(i);
-                return new MapPolygon(i, center, _dim.x, _key);
+                return MapPolygon.Create(i, center, _dim.x, _key);
             },
             _id,
             _key
         );
-        var planetInfo = new PlanetInfo(_dim, _id.GetID(), _key);
-        Data.AddEntity(planetInfo, typeof(PlanetDomain), _key);
+        var planetInfo = PlanetInfo.Create(_dim, _id.GetID(), _key);
+        Data.AddEntity<PlanetInfo>(planetInfo, _key);
         var geologyGenerator = new GeologyGenerator(Data, _id);
         geologyGenerator.GenerateTerrain(_key);
         Data.Events.FinalizedPolyShapes?.Invoke();

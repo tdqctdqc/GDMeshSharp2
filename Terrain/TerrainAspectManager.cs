@@ -32,8 +32,8 @@ public abstract class TerrainAspectManager<TAspect> : IModelManager<TAspect>
         void add(TerrainAspect aspect)
         {
             if (data.Planet.TerrainTris.ByName.ContainsKey(aspect.Name)) return;
-            var triHolder = new TerrainTriHolder(aspect, id.GetID(), key);
-            data.AddEntity(triHolder, typeof(PlanetDomain), key);
+            var triHolder = TerrainTriHolder.Create(aspect, id.GetID(), key);
+            data.AddEntity<TerrainTriHolder>(triHolder, key);
         }
     }
     public TAspect GetAspectFromPoly(MapPolygon p, GenData data)

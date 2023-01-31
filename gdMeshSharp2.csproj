@@ -9,4 +9,10 @@
     <PackageReference Include="OptimizedPriorityQueue" Version="5.1.0" />
     <PackageReference Include="RandomFriendlyNameGenerator" Version="1.0.7" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Data\Entity\MapPoly\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Remove="Data\Entity\MapPoly\**" />
+  </ItemGroup>
 </Project>

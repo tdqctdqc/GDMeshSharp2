@@ -5,8 +5,6 @@ using Godot;
 
 public class MapPolyTooltip : Node2D
 {
-    public static MapPolyTooltip Get() 
-        => (MapPolyTooltip) ((PackedScene) GD.Load("res://Client/GameClient/Ui/MapPolyTooltip/MapPolyTooltip.tscn")).Instance();
     private Label _id, _numPops, _regime, _landform, _veg;
     private Container _container;
     private MapPolygon _mouseOverPoly = null;

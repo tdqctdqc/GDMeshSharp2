@@ -55,7 +55,7 @@ public class GameGraphics : Node2D
         
         polySegmenter.Setup(mapChunks, 10, n => n.Position, data);
         AddChild(polySegmenter);
-        _polyTooltip = MapPolyTooltip.Get();
+        _polyTooltip = SceneManager.Instance<MapPolyTooltip>();
         _polyTooltip.ZIndex = 99;
         _polyTooltip.ZAsRelative = false;
         AddChild(_polyTooltip);

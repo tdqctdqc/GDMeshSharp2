@@ -6,6 +6,7 @@ using MessagePack;
 
 public class TerrainTriHolder : Entity
 {
+    public override Type GetDomainType() => typeof(PlanetDomain);
     public TerrainTriDic Tris { get; private set; }
     public ModelRef<TerrainAspect> TerrainAspect { get; private set; }
     public bool Contains(MapPolygon p, Vector2 offsetFromPolyCenter)
@@ -19,17 +20,18 @@ public class TerrainTriHolder : Entity
         return Tris[p.Id].FirstOrDefault(t => t.PointInsideTriangle(offsetFromPolyCenter));
     }
 
-    public TerrainTriHolder(int id, TerrainTriDic tris, 
+    private TerrainTriHolder(int id, TerrainTriDic tris, 
         ModelRef<TerrainAspect> terrainAspect) : base(id)
     {
         Tris = tris;
         TerrainAspect = terrainAspect;
     }
 
-    public TerrainTriHolder(TerrainAspect aspect, int id, CreateWriteKey key) : base(id, key)
+    public static TerrainTriHolder Create(TerrainAspect aspect, int id, CreateWriteKey key)
     {
-        TerrainAspect = new ModelRef<TerrainAspect>(aspect.Name);
-        Tris = new TerrainTriDic();
+        var terrainAspect = new ModelRef<TerrainAspect>(aspect.Name);
+        var tris = new TerrainTriDic();
+        return new TerrainTriHolder(id, tris, terrainAspect);
     }
     public void AddTri(MapPolygon p, Triangle tri)
     {

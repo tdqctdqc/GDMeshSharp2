@@ -34,7 +34,7 @@ public class VoronoiGenerator
             var voronoiCell = voronoiCells[i];
             var center = d.Points[voronoiCell.Index].GetV2();
             var polygon = constructor(voronoiCell.Index, center);
-            key.Data.AddEntity(polygon, typeof(PlanetDomain), key);
+            key.Data.AddEntity<MapPolygon>(polygon, key);
 
             polyCenterDic.Add(center, polygon);
 
@@ -77,8 +77,8 @@ public class VoronoiGenerator
                 var poly2 = polyDic[commonPoints.ElementAt(1)];
                 var borderPoints = new List<LineSegment> {new LineSegment(edge.P.GetIntV2(), edge.Q.GetIntV2()) };
                 
-                var border = new MapPolygonBorder(_id.GetID(), poly1, poly2, borderPoints, key);
-                _data.AddEntity(border, typeof(PlanetDomain), key);
+                var border = MapPolygonBorder.Create(_id.GetID(), poly1, poly2, borderPoints, key);
+                _data.AddEntity<MapPolygonBorder>(border, key);
                 poly1.AddNeighbor(poly2, border, key);
                 poly2.AddNeighbor(poly1, border, key);
             }

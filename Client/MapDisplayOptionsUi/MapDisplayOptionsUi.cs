@@ -5,8 +5,6 @@ using Godot;
 
 public class MapDisplayOptionsUi : Container
 {
-    public static MapDisplayOptionsUi Get() 
-        => (MapDisplayOptionsUi) ((PackedScene) GD.Load("res://Client/MapDisplayOptionsUi/MapDisplayOptionsUi.tscn")).Instance();
     private ButtonToken _roads, _regimes, _landforms, _vegetation;
     public override void _Ready()
     {

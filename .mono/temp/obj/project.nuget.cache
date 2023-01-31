@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "sfLAfShT4vhsNDyhR5qYI9U5/Fk7ui6fDV8P5SlMUiR8rzvhipfDgJHsY6BF+TYZ32mKbWLH9GhP24kVTmHcCA==",
+  "dgSpecHash": "0YvCDe7W482wAxsWasVpWMvatFTsaX/ffYVyxn+0YyLAlhHPfp2tJjNMRQo2WFPGymH0+2gbmZ1Lm+WVv/6QxA==",
   "success": true,
-  "projectFilePath": "C:\\Users\\Tynan Dion\\Desktop\\games\\gdMeshSharp2\\gdMeshSharp2.csproj",
+  "projectFilePath": "C:\\Users\\Tynan Dion\\desktop\\games\\gdMeshSharp2\\gdMeshSharp2.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\fsharp.core\\4.3.4\\fsharp.core.4.3.4.nupkg.sha512",
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\markovnextgen\\1.2.6\\markovnextgen.1.2.6.nupkg.sha512",

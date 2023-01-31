@@ -43,7 +43,7 @@ public class GameClient : Node, IClient
 
     private void BuildUi(Data data, IServer server)
     {
-        Ui = GameUi.Get();
+        Ui = SceneManager.Instance<GameUi>();
         Ui.Setup(server is HostServer, data, Graphics);
         _server = server;
         _entityOverview = EntityOverview.Get(data);

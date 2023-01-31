@@ -4,9 +4,6 @@ using System.Collections.Generic;
 
 public class GameUi : CanvasLayer
 {
-    public static GameUi Get() 
-        => (GameUi) ((PackedScene) GD.Load("res://Client/GameClient/GameUi.tscn")).Instance();
-    
     private ButtonToken _entityOverviewBtn, _generate;
     private EntityOverview _entityOverview;
     private MapDisplayOptionsUi _mapOptions;
