@@ -5,6 +5,10 @@ using System.Linq;
 
 public static class GeometryExt
 {
+    public static Vector2 Intify(this Vector2 v)
+    {
+        return new Vector2((int) v.x, (int) v.y);
+    }
     public static (Vector2 p1, Vector2 p2, float dist) FindClosestPointPair(this List<Vector2> p1s, List<Vector2> p2s)
     {
         float minDist = Mathf.Inf;

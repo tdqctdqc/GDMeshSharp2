@@ -18,9 +18,9 @@ public sealed partial class EntityCreationUpdate : Update
 
         var u = new EntityCreationUpdate(entity.GetType().Name, entityBytes);
 
-        key.HostServer.QueueUpdate(u);
+        // key.HostServer.QueueUpdate(u);
     }
-    private EntityCreationUpdate(string entityTypeName, byte[] entityBytes) 
+    public EntityCreationUpdate(string entityTypeName, byte[] entityBytes) 
         : base(new HostWriteKey(null, null))
     {
         EntityBytes = entityBytes;
@@ -33,6 +33,6 @@ public sealed partial class EntityCreationUpdate : Update
     public override void Enact(ServerWriteKey key)
     {
         var e = Game.I.Serializer.MP.Deserialize<Entity>(EntityBytes);
-        e.GetMeta().AddToDataFromUpdate(e, key);
+        e.GetMeta().AddToData(e, key);
     }
 }

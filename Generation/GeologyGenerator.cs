@@ -16,7 +16,6 @@ public class GeologyGenerator
     public void GenerateTerrain(GenWriteKey key)
     {
         _key = key;
-        EdgeDisturber.DisturbEdges(Data.Planet.Polygons.Entities, Data.Planet.PlanetInfo.Value.Dimensions, key);
         BuildGeology();
     }
 
@@ -52,8 +51,11 @@ public class GeologyGenerator
         var remainder = GenerationUtility.PickInTurn(polysNotTaken, cells, 
             cell => cell.NeighboringPolyGeos, 
             (cell, poly) => cell.AddPolygon(poly, _key));
-
-        if (remainder.Count > 0) throw new Exception();
+        if (remainder.Count > 0)
+        {
+            throw new Exception();
+        }
+        
         cells.ForEach(c => c.SetNeighbors(_key));
         
     }

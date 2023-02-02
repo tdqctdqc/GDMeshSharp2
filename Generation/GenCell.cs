@@ -43,13 +43,17 @@ public sealed class GenCell : ISuper<GenCell, MapPolygon>
 
     public void SetNeighbors(GenWriteKey key)
     {
+        foreach (var p in NeighboringPolyGeos)
+        {
+            if (key.GenData.GenAuxData.PolyCells.ContainsKey(p) == false)
+            {
+                GD.Print(p.Center);
+                throw new Exception();
+            }
+        }
         Neighbors = NeighboringPolyGeos
             .Select(t => key.GenData.GenAuxData.PolyCells[t]).Distinct().ToList();
     }
-    
-    
-    
-    
     IReadOnlyCollection<GenCell> ISuper<GenCell, MapPolygon>.Neighbors => Neighbors;
     IReadOnlyCollection<MapPolygon> ISuper<GenCell, MapPolygon>.GetSubNeighbors(MapPolygon poly) => poly.Neighbors.Refs();
     GenCell ISuper<GenCell, MapPolygon>.GetSubSuper(MapPolygon poly) => _polyCells[poly];

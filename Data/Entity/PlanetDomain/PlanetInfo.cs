@@ -10,10 +10,12 @@ public class PlanetInfo : Entity
     public Vector2 Dimensions { get; private set; }
     public static PlanetInfo Create(Vector2 dimensions, int id, CreateWriteKey key)
     {
-        return new PlanetInfo(id, dimensions);
+        var pi =  new PlanetInfo(id, dimensions);
+        key.Create(pi);
+        return pi;
     }
     
-    private PlanetInfo(int id, Vector2 dimensions) : base(id)
+    [SerializationConstructor] private PlanetInfo(int id, Vector2 dimensions) : base(id)
     {
         Dimensions = dimensions;
     }

@@ -12,6 +12,7 @@ public class PolyHighlighter : Node2D
     }
     public void DrawOutline(MapPolygon poly, Vector2 offset, IClient client)
     {
+        Visible = true;
         Clear();
         Move(client, poly);
         var mb = new MeshBuilder();
@@ -21,14 +22,37 @@ public class PolyHighlighter : Node2D
         TakeFromMeshBuilder(mb);
     }
 
-    public void DrawPolyTris(MapPolygon poly, IClient client)
+    public void DrawPolyAndNeighbors(MapPolygon poly, IClient client)
     {
+        Visible = true;
         Clear();
         Move(client, poly);
         var mb = new MeshBuilder();
+        int iter = 0;
         poly.GetTrisRel(client.Data).ForEach(t =>
         {
-            mb.AddTri(t, Colors.Pink);
+            mb.AddTri(t, ColorsExt.GetRainbowColor(iter++));
+        });
+        foreach (var n in poly.Neighbors.Refs())
+        {
+            n.GetTrisRel(client.Data).ForEach(t =>
+            {
+                mb.AddTri(t.Transpose(poly.GetOffsetTo(n, client.Data)), Colors.White);
+            });
+        }
+        
+        TakeFromMeshBuilder(mb);
+    }
+    public void DrawPolyTris(MapPolygon poly, IClient client)
+    {
+        Visible = true;
+        Clear();
+        Move(client, poly);
+        var mb = new MeshBuilder();
+        int iter = 0;
+        poly.GetTrisRel(client.Data).ForEach(t =>
+        {
+            mb.AddTri(t, ColorsExt.GetRainbowColor(iter++));
         });
         
         TakeFromMeshBuilder(mb);
@@ -38,6 +62,7 @@ public class PolyHighlighter : Node2D
     public void SelectAspectTri<TAspect>(MapPolygon poly, Vector2 offset, IClient client)
         where TAspect : TerrainAspect
     {
+        Visible = true;
         Clear();
         Move(client, poly);
         // var tris = client.Data.Models.GetManager<TAspect>()
@@ -56,6 +81,7 @@ public class PolyHighlighter : Node2D
     public void SelectTargetAspectTri<TAspect>(TAspect target, MapPolygon poly, Vector2 offset, IClient client)
         where TAspect : TerrainAspect
     {
+        Visible = true;
         Clear();
         Move(client, poly);
         var tris = client.Data.Planet.TerrainTris
@@ -74,6 +100,7 @@ public class PolyHighlighter : Node2D
     public void DoXRay<TAspect>(MapPolygon poly, Vector2 offset, IClient client) where TAspect : TerrainAspect
     {
         Clear();
+        Visible = true;
         Move(client, poly);
         var mb = new MeshBuilder();
         var manager = (TerrainAspectManager<TAspect>)client.Data.Models.GetManager<TAspect>();

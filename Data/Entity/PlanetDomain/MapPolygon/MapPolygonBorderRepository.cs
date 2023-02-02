@@ -25,6 +25,10 @@ public class MapPolygonBorderRepository : Repository<MapPolygonBorder>
     }
     public MapPolygonBorder GetBorder(MapPolygon p1, MapPolygon p2)
     {
-        return BordersByEdge[MakeEdge(p1, p2)];
+        if (p1.HasNeighbor(p2) == false) throw new Exception();
+        if (p2.HasNeighbor(p1) == false) throw new Exception();
+        var e = MakeEdge(p1, p2);
+        if (BordersByEdge.ContainsKey(e) == false) return null;
+        return BordersByEdge[e];
     }
 }

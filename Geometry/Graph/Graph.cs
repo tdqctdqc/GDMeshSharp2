@@ -103,7 +103,7 @@ public class Graph<TNode, TEdge>
     {
         GraphNode<TNode, TEdge> nodeToRemove = _nodeDic[value];
         if (nodeToRemove == null) return false;
-
+        Elements.Remove(value);
         _nodeDic.Remove(nodeToRemove.Element);
 
         foreach (var neighbor in nodeToRemove.Neighbors)

@@ -3,10 +3,12 @@ using System;
 
 public abstract class Procedure
 {
-    protected Procedure(HostWriteKey key)
+    protected Procedure()
     {
         
     }
+
+    public abstract bool Valid(Data data);
     public abstract void Enact(ProcedureWriteKey key);
 }
 

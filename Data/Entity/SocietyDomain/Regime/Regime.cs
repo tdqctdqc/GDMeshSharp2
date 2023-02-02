@@ -16,7 +16,7 @@ public class Regime : Entity
     public EntityRefCollection<MapPolygon> Polygons { get; private set; }
 
 
-    private Regime(int id, string name, Color primaryColor, Color secondaryColor, 
+    [SerializationConstructor] private Regime(int id, string name, Color primaryColor, Color secondaryColor, 
         EntityRefCollection<MapPolygon> polygons) : base(id)
     {
         PrimaryColor = primaryColor;
@@ -28,8 +28,10 @@ public class Regime : Entity
     public static Regime Create(int id, string name, Color primaryColor, Color secondaryColor, 
         MapPolygon seed, CreateWriteKey key)
     {
-        var polygons = new EntityRefCollection<MapPolygon>(new List<int>());
+        var polygons = new EntityRefCollection<MapPolygon>(new HashSet<int>());
         polygons.AddRef(seed, key.Data);
-        return new Regime(id, name, primaryColor, secondaryColor, polygons);
+        var r = new Regime(id, name, primaryColor, secondaryColor, polygons);
+        key.Create(r);
+        return r;
     }
 }

@@ -67,7 +67,6 @@ public class PeepGenerator
                     new EntityRef<MapPolygon>(poly, _key),
                     new ModelRef<PeepJob>(job, _key),
                     _key);
-                Data.AddEntity<Peep>(peep, _key);
             }
         }
 

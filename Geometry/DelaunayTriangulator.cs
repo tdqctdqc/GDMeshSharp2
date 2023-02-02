@@ -33,13 +33,17 @@ public class DelaunayTriangulator
 
         public DelaunatorPoint(Vector2 v)
         {
-            X = v.x;
-            Y = v.y;
+            X = (int)v.x;
+            Y = (int)v.y;
         }
     }
 }
 public static class IPointExt
 {
+    public static IPoint GetIPoint(this Vector2 v)
+    {
+        return new DelaunayTriangulator.DelaunatorPoint(v);
+    }
     public static Vector2 GetV2(this IPoint p)
     {
         return new Vector2((float) p.X, (float) p.Y);

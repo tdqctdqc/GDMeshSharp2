@@ -10,7 +10,7 @@ public class RoadSegment : Entity
 
     public EntityRef<MapPolygonBorder> Border { get; private set; }
 
-    private RoadSegment(int id, EntityRef<MapPolygonBorder> border) : base(id)
+    [SerializationConstructor] private RoadSegment(int id, EntityRef<MapPolygonBorder> border) : base(id)
     {
         Border = border;
     }
@@ -18,6 +18,8 @@ public class RoadSegment : Entity
     public static RoadSegment Create(int id, MapPolygonBorder border, CreateWriteKey key)
     {
         var borderRef = new EntityRef<MapPolygonBorder>(border, key);
-        return new RoadSegment(id, borderRef);
+        var rs =  new RoadSegment(id, borderRef);
+        key.Create(rs);
+        return rs;
     }
 }

@@ -20,27 +20,26 @@ public class WorldGenerator
     {
         var cellSize = 200f;
         var edgePointMargin = new Vector2(cellSize, cellSize);
+
+        var planetInfo = PlanetInfo.Create(_dim, _id.GetID(), _key);
         var points = PointsGenerator
             .GenerateConstrainedSemiRegularPoints
                 (_dim - edgePointMargin, cellSize, cellSize * .75f, false, true)
             .Select(v => v + edgePointMargin / 2f).ToList();
 
-        VoronoiGenerator.GenerateMapPolygons
+        PolygonGenerator.GenerateMapPolygons
         (
             points, _dim, true, cellSize,
-            (i, center) =>
-            {
-                _id.SetMin(i);
-                return MapPolygon.Create(i, center, _dim.x, _key);
-            },
             _id,
             _key
         );
-        var planetInfo = PlanetInfo.Create(_dim, _id.GetID(), _key);
-        Data.AddEntity<PlanetInfo>(planetInfo, _key);
+        
+        EdgeDisturber.DisturbEdges(Data.Planet.Polygons.Entities, 
+            Data.Planet.PlanetInfo.Value.Dimensions, _key);
+        Data.Events.FinalizedPolyShapes?.Invoke();
+
         var geologyGenerator = new GeologyGenerator(Data, _id);
         geologyGenerator.GenerateTerrain(_key);
-        Data.Events.FinalizedPolyShapes?.Invoke();
 
         var moistureGenerator = new MoistureGenerator(Data, _id);
         moistureGenerator.Generate(_key);

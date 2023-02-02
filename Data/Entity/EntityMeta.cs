@@ -68,11 +68,11 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
         return args;
     }
 
-    public void AddToDataFromUpdate(Entity e, ServerWriteKey key)
+    public void AddToData(Entity e, StrongWriteKey key)
     {
         key.Data.AddEntity<T>((T)e, key);
     }
-    public void RemoveFromDataFromUpdate(Entity e, ServerWriteKey key)
+    public void RemoveFromData(Entity e, StrongWriteKey key)
     {
         key.Data.RemoveEntity<T>((T)e, key);
     }

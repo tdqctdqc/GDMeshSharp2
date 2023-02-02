@@ -9,19 +9,19 @@ public class VegetationManager : TerrainAspectManager<Vegetation>
     
     public static Vegetation Forest = new Vegetation(
         new HashSet<Landform>{LandformManager.Hill, LandformManager.Plain}, 
-        .5f, .25f, Colors.DarkGreen, "Forest", new BlobTriBuilder());
+        .5f, .25f, Colors.DarkGreen, "Forest", false, new BlobTriBuilder());
     
     public static Vegetation Grassland = new Vegetation(
         new HashSet<Landform>{LandformManager.Hill, LandformManager.Plain}, 
-        .3f, 1f, Colors.Limegreen, "Grassland", new BlobTriBuilder());
+        .3f, 1f, Colors.Limegreen, "Grassland", true, new BlobTriBuilder());
     
     public static Vegetation Desert = new Vegetation(
         new HashSet<Landform>{LandformManager.Hill, LandformManager.Plain}, 
-        0f, .1f, Colors.Tan, "Desert", new BlobTriBuilder());
+        0f, .1f, Colors.Tan, "Desert", true, new BlobTriBuilder());
     
     public static Vegetation Barren = new Vegetation(
         new HashSet<Landform>{LandformManager.Mountain, LandformManager.Peak}, 
-        0f, 0f, Colors.Black, "Barren", null);
+        0f, 0f, Colors.Black, "Barren", true, null);
 
 
     public VegetationManager() 

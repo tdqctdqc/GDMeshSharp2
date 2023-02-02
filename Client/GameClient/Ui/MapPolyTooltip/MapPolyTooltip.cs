@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Godot;
 
@@ -21,35 +22,35 @@ public class MapPolyTooltip : Node2D
     }
     public void Process(Vector2 mousePosMapSpace)
     {
+        var sw = new Stopwatch();
+        sw.Start();
         var mouseIn = _client.Data.Cache.MapPolyGrid
-            .GetElementsAtPoint(mousePosMapSpace)
-            .FirstOrDefault(p => p.PointInPoly(mousePosMapSpace, _client.Data));
+            .GetElementAtPoint(mousePosMapSpace, out string msg);
+        sw.Stop();
         if (mouseIn is MapPolygon poly)
         {
-            var offset = poly.GetOffsetTo(mousePosMapSpace, _client.Data);
+            if (poly != _mouseOverPoly)
+            {
+                // GD.Print("time to find " + sw.Elapsed.TotalMilliseconds.ToString());
+                // GD.Print(msg);
+                var offset = poly.GetOffsetTo(mousePosMapSpace, _client.Data);
             
-            _mouseOverPoly = poly;
-            Visible = true;
-            Position = GetGlobalMousePosition();
-            Draw(poly, offset);
-            Scale = _client.Cam.Zoom;
-            _highlighter.DrawPolyTris(poly, _client);
+                _mouseOverPoly = poly;
+                Visible = true;
+                Position = GetGlobalMousePosition();
+                Draw(poly, offset);
+                Scale = _client.Cam.Zoom;
+                _highlighter.DrawPolyAndNeighbors(poly, _client);
+                Visible = true;
+            }
         }
-        else if (_mouseOverPoly != null)
+        else 
         {
-            if (_mouseOverPoly.PointInPoly(mousePosMapSpace, _client.Data))
-            {
-                var offset = _mouseOverPoly.GetOffsetTo(mousePosMapSpace, _client.Data);
-                _highlighter.DoXRay<Landform>(_mouseOverPoly, offset, _client);
-            }
-            else
-            {
-                _mouseOverPoly = null;
-                _highlighter.Clear();
-            }
+            _mouseOverPoly = null;
+            _highlighter.Clear();
+            _highlighter.Visible = false;
+            Visible = false;
         }
-        
-        
     }
 
     public void Draw(MapPolygon poly, Vector2 offset)
@@ -58,9 +59,9 @@ public class MapPolyTooltip : Node2D
         _numPops.Text = "Num Pops: " + poly.GetNumPeeps(_client.Data);
         _regime.Text = poly.Regime.Empty() ? "Neutral" : poly.Regime.Ref().Name;
         var landform = _client.Data.Models.Landforms.GetAspectAtPoint(poly, offset, _client.Data);
-        _landform.Text = landform.Name;
+        _landform.Text = "Landform: " + landform.Name;
         var veg = _client.Data.Models.Vegetation.GetAspectAtPoint(poly, offset, _client.Data);
-        _veg.Text = veg.Name;
+        _veg.Text = "Vegetation: " + veg.Name;
     }
     public void Setup(PolyHighlighter highlighter, IClient client)
     {

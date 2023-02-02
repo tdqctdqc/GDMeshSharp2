@@ -30,19 +30,23 @@ public static class EdgeDisturber
 
     private static void DisturbEdge(MapPolygon highId, MapPolygon lowId, OpenSimplexNoise noise)
     {
+        var leaveAloneLength = 50f;
         var border = highId.GetBorder(lowId, _key.Data);
         var hiSegs = border.HighSegsRel;
         var loSegs = border.LowSegsRel;
         var axisHi = border.GetOffsetToOtherPoly(highId);
-        var sample = Mathf.Abs(noise.GetNoise2d(highId.Center.x, highId.Center.y)) * .5f;
-        sample = Mathf.Pow(sample, 1f / 3f);
+        var angleSample = Mathf.Abs(noise.GetNoise2d(highId.Center.x, highId.Center.y)) * .35f;
+        var lengthSample = Mathf.Abs(noise.GetNoise2d(highId.Center.x, highId.Center.y)) * .5f;
+        angleSample = Mathf.Pow(angleSample, 1f / 3f);
+        lengthSample = Mathf.Pow(lengthSample, 1f / 3f);
         var newSegsHi = new List<LineSegment>();
         var newSegsLow = new List<LineSegment>();
         var count = border.HighSegsRel.Count;
+        if(border.HighSegsRel.Any(s => s.Length() <= leaveAloneLength)) return;
         for (int i = 0; i < count; i++)
         {
-            var angleDeviation = Game.I.Random.RandfRange(.5f - sample, .5f + sample);
-            var lengthDeviation = Game.I.Random.RandfRange(1f - sample, 1f);
+            var angleDeviation = Game.I.Random.RandfRange(.5f - angleSample, .5f + angleSample);
+            var lengthDeviation = Game.I.Random.RandfRange(1f - lengthSample, 1f);
             var hiSeg = hiSegs[i];
             var loSeg = loSegs[count - 1 - i];
             Vector2 hiDevVector;

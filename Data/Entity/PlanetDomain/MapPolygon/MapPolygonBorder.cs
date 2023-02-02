@@ -14,7 +14,7 @@ public class MapPolygonBorder : Entity
     public EntityRef<MapPolygon> LowId { get; private set; }
     public EntityRef<MapPolygon> HighId { get; private set; }
 
-    private MapPolygonBorder(int id, float moistureFlow, List<LineSegment> lowSegsRel, 
+    [SerializationConstructor] private MapPolygonBorder(int id, float moistureFlow, List<LineSegment> lowSegsRel, 
         List<LineSegment> highSegsRel, EntityRef<MapPolygon> lowId, 
         EntityRef<MapPolygon> highId) : base(id)
     {
@@ -26,7 +26,7 @@ public class MapPolygonBorder : Entity
     }
 
     public static MapPolygonBorder Create(int id, MapPolygon poly1, MapPolygon poly2, 
-        List<LineSegment> segments, CreateWriteKey key)
+        List<LineSegment> segments, GenWriteKey key)
     {
         EntityRef<MapPolygon> lowId;
         EntityRef<MapPolygon> highId;
@@ -42,14 +42,19 @@ public class MapPolygonBorder : Entity
             highId = new EntityRef<MapPolygon>(poly1, key);
         }
         
-        var highSegsRel = OrderAndRelativizeSegments(segments, highId.Ref());
-        var lowSegsRel = OrderAndRelativizeSegments(segments, lowId.Ref());
-
-        return new MapPolygonBorder(
+        var highSegsRel = OrderAndRelativizeSegments(segments, highId.Ref(), key.Data);
+        var lowSegsRel = OrderAndRelativizeSegments(segments, lowId.Ref(), key.Data);
+        
+        var b =  new MapPolygonBorder(
             id, 0f, lowSegsRel, highSegsRel, lowId, highId);
+        poly1.AddNeighbor(poly2, b, key);
+        poly2.AddNeighbor(poly1, b, key);
+        key.Create(b);
+        Test(b, key);
+        return b;
     }
 
-    public static MapPolygonBorder ConstructEdgeCase(int id, MapPolygon poly1, List<LineSegment> poly1SegsRel, 
+    public static MapPolygonBorder CreateEdgeCase(int id, MapPolygon poly1, List<LineSegment> poly1SegsRel, 
         MapPolygon poly2, List<LineSegment> poly2SegsRel, GenWriteKey key)
     {
         // var b = new MapPolygonBorder(id, poly1, poly1SegsRel, poly2, poly2SegsRel, key);
@@ -64,24 +69,32 @@ public class MapPolygonBorder : Entity
         {
             lowId = new EntityRef<MapPolygon>(poly1, key);
             highId = new EntityRef<MapPolygon>(poly2, key);
-            highSegsRel = OrderAndRelativizeSegments(abs2, highId.Ref());
-            lowSegsRel = OrderAndRelativizeSegments(abs1, lowId.Ref());
+            highSegsRel = OrderAndRelativizeSegments(abs2, highId.Ref(), key.Data);
+            lowSegsRel = OrderAndRelativizeSegments(abs1, lowId.Ref(), key.Data);
         }
         else
         {
             lowId = new EntityRef<MapPolygon>(poly2, key);
             highId = new EntityRef<MapPolygon>(poly1, key);
-            highSegsRel = OrderAndRelativizeSegments(abs1, highId.Ref());
-            lowSegsRel = OrderAndRelativizeSegments(abs2, lowId.Ref());
+            highSegsRel = OrderAndRelativizeSegments(abs1, highId.Ref(), key.Data);
+            lowSegsRel = OrderAndRelativizeSegments(abs2, lowId.Ref(), key.Data);
         }
 
-        var b = new MapPolygonBorder(id, 0f, lowSegsRel, highSegsRel, lowId, highId);
-        //todo fix this
-        key.Data.AddEntity<MapPolygonBorder>(b, key);
+        var b =  new MapPolygonBorder(
+            id, 0f, lowSegsRel, highSegsRel, lowId, highId);
+        poly1.AddNeighbor(poly2, b, key);
+        poly2.AddNeighbor(poly1, b, key);
+        key.Create(b);
+        Test(b, key);
         return b;
     }
-    
-    private static List<LineSegment> OrderAndRelativizeSegments(List<LineSegment> abs, MapPolygon poly)
+
+    private static void Test(MapPolygonBorder b, WriteKey key)
+    {
+        var border = b.HighId.Ref().GetBorder(b.LowId.Ref(), key.Data);
+        if (border == null) throw new Exception();
+    }
+    private static List<LineSegment> OrderAndRelativizeSegments(List<LineSegment> abs, MapPolygon poly, Data data)
     {
         var res = new List<LineSegment>();
         
@@ -95,8 +108,8 @@ public class MapPolygonBorder : Entity
         for (var i = 0; i < abs.Count; i++)
         {
             var seg = abs[i];
-            var t = seg.To - poly.Center;
-            var f = seg.From - poly.Center;
+            var t = poly.GetOffsetTo(seg.To, data);
+            var f = poly.GetOffsetTo(seg.From, data);
             res.Add(alter ?  new LineSegment(t, f) : new LineSegment(f, t));
         }
         return res;

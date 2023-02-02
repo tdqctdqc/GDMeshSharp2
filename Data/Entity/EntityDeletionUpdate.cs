@@ -18,7 +18,6 @@ public class EntityDeletionUpdate : Update
     public override void Enact(ServerWriteKey key)
     {
         var e = key.Data.Entities[EntityId];
-        var meta = e.GetMeta();
-        meta.RemoveFromDataFromUpdate(e, key);
+        key.Delete(e);
     }
 }

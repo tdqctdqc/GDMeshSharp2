@@ -20,7 +20,7 @@ public class TerrainTriHolder : Entity
         return Tris[p.Id].FirstOrDefault(t => t.PointInsideTriangle(offsetFromPolyCenter));
     }
 
-    private TerrainTriHolder(int id, TerrainTriDic tris, 
+    [SerializationConstructor] private TerrainTriHolder(int id, TerrainTriDic tris, 
         ModelRef<TerrainAspect> terrainAspect) : base(id)
     {
         Tris = tris;
@@ -31,7 +31,9 @@ public class TerrainTriHolder : Entity
     {
         var terrainAspect = new ModelRef<TerrainAspect>(aspect.Name);
         var tris = new TerrainTriDic();
-        return new TerrainTriHolder(id, tris, terrainAspect);
+        var th =  new TerrainTriHolder(id, tris, terrainAspect);
+        key.Create(th);
+        return th;
     }
     public void AddTri(MapPolygon p, Triangle tri)
     {

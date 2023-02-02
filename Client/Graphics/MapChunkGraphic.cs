@@ -7,8 +7,8 @@ public class MapChunkGraphic : Node2D
 {
     public PolygonChunkGraphic Regimes { get; private set; }
     public PolygonChunkGraphic Polys { get; private set; }
-    public TerrainChunkGraphic Landform { get; private set; }
-    public TerrainChunkGraphic Vegetation { get; private set; }
+    public TerrainColorChunkGraphic Landform { get; private set; }
+    public VegetationChunkGraphic Vegetation { get; private set; }
     public RoadChunkGraphic Roads { get; private set; }
 
     public void Setup(MapChunk chunk, Data data)
@@ -17,7 +17,7 @@ public class MapChunkGraphic : Node2D
         var polys = chunk.Polys.ToList();
         Polys = new PolygonChunkGraphic();
         Polys.Setup
-        (chunk.Polys.ToList(), data, 
+        (polys, data, 
             p => p.IsLand() 
             ? Colors.SaddleBrown 
             : Colors.Blue,
@@ -25,12 +25,12 @@ public class MapChunkGraphic : Node2D
         );
         AddChild(Polys);
 
-        Landform = new TerrainChunkGraphic();
+        Landform = new TerrainColorChunkGraphic();
         Landform.Setup(polys, data, data.Models.Landforms);
         AddChild(Landform);
         
-        Vegetation = new TerrainChunkGraphic();
-        Vegetation.Setup(polys, data, data.Models.Vegetation);
+        Vegetation = new VegetationChunkGraphic();
+        Vegetation.Setup(polys, data);
         AddChild(Vegetation);
         
         Regimes = new PolygonChunkGraphic();

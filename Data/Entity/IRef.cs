@@ -11,8 +11,6 @@ public interface IRef
 
 public interface IRef<TUnderlying> : IRef
 {
-    TUnderlying GetUnderlying();
-    void Set(TUnderlying underlying, StrongWriteKey key);
 }
 
 public class RefAttribute : Attribute

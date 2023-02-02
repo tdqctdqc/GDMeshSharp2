@@ -16,9 +16,11 @@ public class Peep : Entity
     public static Peep Create(int id, int size, EntityRef<MapPolygon> home,
         ModelRef<PeepJob> job, CreateWriteKey key)
     {
-        return new Peep(id, size, home, job);
+        var p = new Peep(id, size, home, job);
+        key.Create(p);
+        return p;
     }
-    private Peep(int id, int size, EntityRef<MapPolygon> home, 
+    [SerializationConstructor] private Peep(int id, int size, EntityRef<MapPolygon> home, 
         ModelRef<PeepJob> job) : base(id)
     {
         Size = size;

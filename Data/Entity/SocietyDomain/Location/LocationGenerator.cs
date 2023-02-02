@@ -63,10 +63,7 @@ public class LocationGenerator
             for (var i = 0; i < settlementPolys.Count; i++)
             {
                 settlementPolys[i].Set(nameof(MapPolygon.SettlementSize), settlementScores[i], _key);
-
                 var settlement = Settlement.Create(_id.GetID(), settlementPolys[i], settlementScores[i], _key);
-                
-                Data.AddEntity<Settlement>(settlement, _key);
             }
         });
         Data.Models.Landforms.BuildTrisForAspect(LandformManager.Urban, Data);
@@ -108,7 +105,6 @@ public class LocationGenerator
                     var border = path[i].GetBorder(path[i + 1], Data);
                     if(Data.Society.Roads.ByBorderId.ContainsKey(border.Id)) continue;
                     var road = RoadSegment.Create(_id.GetID(), border, _key);
-                    Data.AddEntity<RoadSegment>(road, _key);
                 }
             }
         });

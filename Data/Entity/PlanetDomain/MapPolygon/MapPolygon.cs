@@ -7,10 +7,8 @@ using MessagePack;
 public partial class MapPolygon : Entity
 {
     public override Type GetDomainType() => typeof(PlanetDomain);
-
     public Vector2 Center { get; protected set; }
     public EntityRefCollection<MapPolygon> Neighbors { get; protected set; }
-    public List<Vector2> NoNeighborBorders { get; protected set; }
     public Color Color { get; protected set; }
     public float Altitude { get; private set; }
     public float Roughness { get; private set; }
@@ -22,13 +20,12 @@ public partial class MapPolygon : Entity
     public MapPolygonBorder GetBorder(MapPolygon neighbor, Data data) 
         => data.Planet.PolyBorders.GetBorder(this, neighbor);
     
-    private MapPolygon(int id, Vector2 center, EntityRefCollection<MapPolygon> neighbors, 
-        List<Vector2> noNeighborBorders, Color color, float altitude, float roughness, 
+    [SerializationConstructor] private MapPolygon(int id, Vector2 center, EntityRefCollection<MapPolygon> neighbors, 
+        Color color, float altitude, float roughness, 
         float moisture, float settlementSize, EntityRef<Regime> regime) : base(id)
     {
         Center = center;
         Neighbors = neighbors;
-        NoNeighborBorders = noNeighborBorders;
         Color = color;
         Altitude = altitude;
         Roughness = roughness;
@@ -42,9 +39,8 @@ public partial class MapPolygon : Entity
         var mapCenter = center;
         if (mapCenter.x > mapWidth) mapCenter = new Vector2(mapCenter.x - mapWidth, center.y);
         if (mapCenter.x < 0f) mapCenter = new Vector2(mapCenter.x + mapWidth, center.y);
-        return new MapPolygon(id, mapCenter,
-            new EntityRefCollection<MapPolygon>(),
-            new List<Vector2>(),
+        var p = new MapPolygon(id, mapCenter,
+            new EntityRefCollection<MapPolygon>(new HashSet<int>()),
             ColorsExt.GetRandomColor(),
             0f,
             0f,
@@ -52,6 +48,8 @@ public partial class MapPolygon : Entity
             0f,
             new EntityRef<Regime>(-1)
         );
+        key.Create(p);
+        return p;
     }
     public bool HasNeighbor(MapPolygon p)
     {
@@ -63,22 +61,22 @@ public partial class MapPolygon : Entity
     {
         if (Neighbors.Contains(poly)) return;
         Neighbors.AddRef(poly, key.Data);
-        var startN = Neighbors.Refs().ElementAt(0);
-        for (int i = 0; i < Neighbors.Count(); i++)
-        {
-            if (startN.Neighbors.Refs().Any(n => Neighbors.Contains(n)))
-            {
-                startN = Neighbors.Refs().ElementAt((i + 1) % Neighbors.Count());
-            }
-            else break;
-        }
-        //todo make it ordered
-        var ns = Neighbors.Refs()
-            .OrderByClockwise(Vector2.Zero, 
-                n => GetBorder(n, key.Data).GetOffsetToOtherPoly(this),
-                startN).Select(p => p.Id)
-            .ToList();
-        Neighbors = EntityRefCollection<MapPolygon>.Construct(ns, key);
+        // var startN = Neighbors.Refs().ElementAt(0);
+        // for (int i = 0; i < Neighbors.Count(); i++)
+        // {
+        //     if (startN.Neighbors.Refs().Any(n => Neighbors.Contains(n)))
+        //     {
+        //         startN = Neighbors.Refs().ElementAt((i + 1) % Neighbors.Count());
+        //     }
+        //     else break;
+        // }
+        // //todo make it ordered
+        // var ns = Neighbors.Refs()
+        //     .OrderByClockwise(Vector2.Zero, 
+        //         n => GetBorder(n, key.Data).GetOffsetToOtherPoly(this),
+        //         startN).Select(p => p.Id)
+        //     .ToList();
+        // Neighbors = EntityRefCollection<MapPolygon>.Construct(ns, key);
     }
     public void RemoveNeighbor(MapPolygon poly, GenWriteKey key)
     {
@@ -88,11 +86,6 @@ public partial class MapPolygon : Entity
     public void SetRegime(Regime r, GenWriteKey key)
     {
         GetMeta().UpdateEntityVar<EntityRef<Regime>>(nameof(Regime), this, key, new EntityRef<Regime>(r.Id));
-    }
-    public void AddNoNeighborBorder(Vector2 from, Vector2 to)
-    {
-        NoNeighborBorders.Add(from);
-        NoNeighborBorders.Add(to);
     }
 }
 public static class MapPolygonExt

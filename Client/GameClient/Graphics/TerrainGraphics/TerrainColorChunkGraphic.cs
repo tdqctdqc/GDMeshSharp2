@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class TerrainChunkGraphic : Node2D
+public class TerrainColorChunkGraphic : Node2D
 {
     public void Setup<T>(List<MapPolygon> polys, Data data, TerrainAspectManager<T> manager) where T : TerrainAspect
     {

@@ -12,10 +12,10 @@ public abstract class Entity
     {
         Id = id;
     }
+
     public void Set<TValue>(string fieldName, TValue newValue, CreateWriteKey key)
     {
         GetMeta().UpdateEntityVar<TValue>(fieldName, this, key, newValue);
     }
-
     public abstract Type GetDomainType();
 }

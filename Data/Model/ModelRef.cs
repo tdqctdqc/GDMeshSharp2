@@ -34,13 +34,4 @@ public class ModelRef<T> : IRef<string> where T : IModel
     {
         _ref = data.Models.GetModel<T>(ModelName);
     }
-    public static ModelRef<T> DeserializeConstructor(string t)
-    {
-        return new ModelRef<T>(t);
-    }
-    public string GetUnderlying() => ModelName;
-    public void Set(string underlying, StrongWriteKey key)
-    {
-        ModelName = underlying;
-    }
 }

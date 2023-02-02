@@ -11,10 +11,11 @@ public class Vegetation : TerrainAspect
     public override string Name { get; protected set; }
     public override ITriBuilder TriBuilder { get; protected set; }
     public override Color Color { get; protected set; }
-
+    public bool Ground { get; private set; }
     public Vegetation(HashSet<Landform> allowedLandforms, float minMoisture, float fertilityMod, 
-        Color color, string name, ITriBuilder triBuilder)
+        Color color, string name, bool ground, ITriBuilder triBuilder)
     {
+        Ground = ground;
         FertilityMod = fertilityMod;
         TriBuilder = triBuilder;
         AllowedLandforms = allowedLandforms;

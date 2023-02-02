@@ -40,4 +40,14 @@ public static class EnumerableExt
 
         return res;
     }
+
+    public static HashSet<T> GetSingles<T>(this IEnumerable<T> ts)
+    {
+        var singles = new HashSet<T>();
+        foreach (var t in ts)
+        {
+            _ = singles.Contains(t) ? singles.Remove(t) : singles.Add(t);
+        }
+        return singles;
+    }
 }

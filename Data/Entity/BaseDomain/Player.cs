@@ -9,10 +9,12 @@ public class Player : Entity
     public string Name { get; private set; }
     public static Player Create(int id, Guid userId, string name, CreateWriteKey key)
     {
-        return new Player(id, userId, name);
+        var p = new Player(id, userId, name);
+        key.Create(p);
+        return p;
     }
 
-    private Player(int id, Guid userId, string name) : base(id)
+    [SerializationConstructor] private Player(int id, Guid userId, string name) : base(id)
     {
         UserId = userId;
         Name = name;

@@ -20,11 +20,6 @@ public class EntityRef<TRef> : IRef<int> where TRef : Entity
         RefId = refId;
         _ref = null;
     }
-
-    public void Set(int id, StrongWriteKey key)
-    {
-        RefId = id;
-    }
     public TRef Ref()
     {
         if (RefId == -1) return null;
@@ -43,9 +38,4 @@ public class EntityRef<TRef> : IRef<int> where TRef : Entity
     {
         _ref = (TRef) data[RefId];
     }
-    public static EntityRef<TRef> DeserializeConstructor(int t)
-    {
-        return new EntityRef<TRef>(t);
-    }
-    public int GetUnderlying() => RefId;
 }

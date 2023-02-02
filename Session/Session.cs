@@ -11,6 +11,7 @@ public class Session : Node, ISession
     public UserCredential UserCredential { get; private set; }
     public override void _Process(float delta)
     {
+        _logic?.Process(delta);
         Client?.Process(delta);
     }
 

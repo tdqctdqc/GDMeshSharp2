@@ -34,7 +34,6 @@ public class RegimeGenerator
                 var prim = ColorsExt.GetRandomColor();
                 var sec = prim.Inverted();
                 var regime = Regime.Create(_id.GetID(), NameGenerator.GetName(), prim, sec, seeds[i], _key);
-                _data.AddEntity<Regime>(regime, _key);
                 seeds[i].SetRegime(regime, _key);
             }
             var remainder = GenerationUtility.PickInTurn(

@@ -10,6 +10,7 @@ public class CameraController : Camera2D
     private Vector2 _globalSpaceMousePos;
     public Vector2 GetMousePosInMapSpace(Data data)
     {
+        
         var mapWidth = data.Planet.Width;
         var scrollDist = mapWidth * XScrollRatio;
         
@@ -73,7 +74,7 @@ public class CameraController : Camera2D
 
         if(Input.IsKeyPressed((int)KeyList.Z))
         {
-            Zoom *= .9f * mult;
+            Zoom *= .9f;
             Zoom = new Vector2(
                 Mathf.Clamp(Zoom.x, .1f, 100f),
                 Mathf.Clamp(Zoom.y, .1f, 100f)
@@ -81,7 +82,7 @@ public class CameraController : Camera2D
         }
         if(Input.IsKeyPressed((int)KeyList.X))
         {
-            Zoom *= 1.1f * mult;
+            Zoom *= 1.1f;
             Zoom = new Vector2(
                 Mathf.Clamp(Zoom.x, .1f, 100f),
                 Mathf.Clamp(Zoom.y, .1f, 100f)

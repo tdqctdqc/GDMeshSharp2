@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
+using MessagePack;
 
 public class RegimeRelation : Entity
 {
@@ -13,10 +14,12 @@ public class RegimeRelation : Entity
     
     public static RegimeRelation Create(int id, CreateWriteKey key)
     {
-        return new RegimeRelation(id);
+        var rr = new RegimeRelation(id);
+        key.Create(rr);
+        return rr;
     }
 
-    public RegimeRelation(int id) : base(id)
+    [SerializationConstructor] private RegimeRelation(int id) : base(id)
     {
     }
 }

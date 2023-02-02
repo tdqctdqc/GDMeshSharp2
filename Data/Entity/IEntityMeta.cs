@@ -9,6 +9,7 @@ public interface IEntityMeta
     object[] GetPropertyValues(Entity entity);
     void UpdateEntityVar<TProperty>(string fieldName, Entity t, ServerWriteKey key, TProperty newValue);
     void UpdateEntityVar<TProperty>(string fieldName, Entity t, CreateWriteKey key, TProperty newValue);
-    void AddToDataFromUpdate(Entity e, ServerWriteKey key);
-    void RemoveFromDataFromUpdate(Entity e, ServerWriteKey key);
+    
+    void AddToData(Entity e, StrongWriteKey key);
+    void RemoveFromData(Entity e, StrongWriteKey key);
 }

@@ -15,7 +15,7 @@ public class Settlement : Location
     {
         return new Settlement(id, new EntityRef<MapPolygon>(poly.Id), size);
     }
-    public Settlement(int id, EntityRef<MapPolygon> poly, float size) : base(id)
+    [SerializationConstructor] private Settlement(int id, EntityRef<MapPolygon> poly, float size) : base(id)
     {
         Poly = poly;
         Size = size;

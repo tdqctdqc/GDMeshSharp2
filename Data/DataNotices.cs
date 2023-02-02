@@ -24,6 +24,7 @@ public class DataNotices
         }
         var action = ((Action<TEntity>) _addedActions[eType]);
         action += callback;
+        _addedActions[eType] = action;
     }
     public void RegisterEntityRemovingCallback<TEntity>(Action<TEntity> callback)
     {
@@ -35,13 +36,14 @@ public class DataNotices
         }
         var action = ((Action<TEntity>) _removingActions[eType]);
         action += callback;
+        _removingActions[eType] = action;
     }
     public void RaiseAddedEntity<TEntity>(TEntity e)
     {
         if (_addedActions.ContainsKey(e.GetType()))
         {
             var action = (Action<TEntity>)_addedActions[e.GetType()];
-            action?.Invoke(e);
+            action.Invoke(e);
         }
     }
     public void RaiseRemovingEntity<TEntity>(TEntity e)
@@ -49,7 +51,7 @@ public class DataNotices
         if (_removingActions.ContainsKey(e.GetType()))
         {
             var action = (Action<TEntity>)_removingActions[e.GetType()];
-            action?.Invoke(e);
+            action.Invoke(e);
         }
     }
 }

@@ -5,5 +5,8 @@ using Godot;
 
 public class RemoteLogic : ILogic
 {
-    
+    public void Process(float delta)
+    {
+        
+    }
 }
