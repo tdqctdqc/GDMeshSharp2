@@ -21,106 +21,64 @@ public static class EdgeDisturber
                 var nPoly = poly.Neighbors.Refs().ElementAt(j);
                 if (poly.Id > nPoly.Id)
                 {
-                    // DisturbEdge(poly, nPoly, noise);
-                    DisturbEdge(poly, nPoly, noise);
+                    DisturbEdge(_key.Data, poly, nPoly, noise, 50f);
                 }
             }
         }
     }
 
-    private static void DisturbEdge(MapPolygon highId, MapPolygon lowId, OpenSimplexNoise noise)
+    private static void DisturbEdge(Data data, MapPolygon highId, MapPolygon lowId, OpenSimplexNoise noise, float minSegLength)
     {
-        var leaveAloneLength = 50f;
         var border = highId.GetBorder(lowId, _key.Data);
-        var hiSegs = border.HighSegsRel;
-        var loSegs = border.LowSegsRel;
-        var axisHi = border.GetOffsetToOtherPoly(highId);
-        var angleSample = Mathf.Abs(noise.GetNoise2d(highId.Center.x, highId.Center.y)) * .35f;
-        var lengthSample = Mathf.Abs(noise.GetNoise2d(highId.Center.x, highId.Center.y)) * .5f;
-        angleSample = Mathf.Pow(angleSample, 1f / 3f);
-        lengthSample = Mathf.Pow(lengthSample, 1f / 3f);
+        if (border.HighSegsRel.Count != 1) return;
+
+        var hiSeg = border.HighSegsRel[0];
+        var loSeg = border.LowSegsRel[0];
+        var numSplitPoints = Mathf.FloorToInt(hiSeg.Length() / minSegLength) - 1;
+        if (numSplitPoints < 1) return;
+        var splitLength = hiSeg.Length() / numSplitPoints;
+
+        var axisHiToLo = border.GetOffsetToOtherPoly(highId);
+        
+        var borderAxisHi = (hiSeg.To - hiSeg.From).Normalized();
+        
+
+        var newPoints = new List<Vector2> {hiSeg.From};
+        for (int i = 1; i <= numSplitPoints; i++)
+        {
+            newPoints.Add(hiSeg.From + splitLength * i * borderAxisHi);
+        }
+        newPoints.Add(hiSeg.To);
+        var avgShiftMag = 0f;
+        for (int i = 1; i < newPoints.Count - 1; i++)
+        {
+            var segBeforeLength = newPoints[i].DistanceTo(newPoints[i - 1]);
+            var segBeforeFlex = segBeforeLength - minSegLength;
+            var segAfterLength = newPoints[i].DistanceTo(newPoints[i + 1]);
+            var segAfterFlex = segAfterLength - minSegLength;
+
+            var borderAxisDeviation = Game.I.Random.RandfRange(-segBeforeFlex, segAfterFlex);
+            newPoints[i] += borderAxisHi * borderAxisDeviation;
+
+            var axisFromHi = newPoints[i];
+            var axisToLo = axisHiToLo - newPoints[i];
+            var sample = Mathf.Abs(noise.GetNoise2dv(newPoints[i] + highId.Center));
+            var pushToHi = Game.I.Random.RandfRange(0f, 1f) < .5f;
+            var shift = pushToHi ? -axisFromHi * sample : axisToLo * sample;
+            avgShiftMag += shift.Length();
+            newPoints[i] += shift;
+        }
         var newSegsHi = new List<LineSegment>();
         var newSegsLow = new List<LineSegment>();
-        var count = border.HighSegsRel.Count;
-        if(border.HighSegsRel.Any(s => s.Length() <= leaveAloneLength)) return;
-        for (int i = 0; i < count; i++)
-        {
-            var angleDeviation = Game.I.Random.RandfRange(.5f - angleSample, .5f + angleSample);
-            var lengthDeviation = Game.I.Random.RandfRange(1f - lengthSample, 1f);
-            var hiSeg = hiSegs[i];
-            var loSeg = loSegs[count - 1 - i];
-            Vector2 hiDevVector;
-            Vector2 loDevVector;
-
-            if (Game.I.Random.Randf() > .5f)
-            {
-                var temp = hiSeg.From.LinearInterpolate(hiSeg.To, angleDeviation);
-                hiDevVector = temp * lengthDeviation;
-                loDevVector = loSeg.Mid() + (hiDevVector - hiSeg.Mid());
-            }
-            else
-            {
-                var temp = loSeg.To.LinearInterpolate(loSeg.From, angleDeviation);
-                loDevVector = temp * lengthDeviation;
-                hiDevVector = hiSeg.Mid() + (loDevVector - loSeg.Mid());
-            }
-            
-            newSegsHi.Add(new LineSegment(hiSeg.From, hiDevVector));
-            newSegsHi.Add(new LineSegment(hiDevVector, hiSeg.To));
-            newSegsLow.Add(new LineSegment(loSeg.From, loDevVector));
-            newSegsLow.Add(new LineSegment(loDevVector, loSeg.To));
-        }
         
+        for (var i = 0; i < newPoints.Count - 1; i++)
+        {
+            var newHiSeg = new LineSegment(newPoints[i], newPoints[i + 1]);
+            var newLoSeg = new LineSegment(lowId.GetOffsetTo(highId.Center + newPoints[i], data),
+                lowId.GetOffsetTo(highId.Center + newPoints[i + 1], data));
+            newSegsHi.Add(newHiSeg);
+            newSegsLow.Add(newLoSeg);
+        }
         border.ReplacePoints(newSegsHi, newSegsLow, _key);
-    }
-
-    private class EdgeDisturbInfo
-    {
-        public Triangle T1 { get; private set; }
-        public Triangle T2 { get; private set; }
-        public Vector2 Start { get; private set; }
-        public Vector2 End { get; private set; }
-        public Vector2 P1 { get; private set; }
-        public Vector2 P2 { get; private set; }
-        public EdgeDisturbInfo Left { get; private set; }
-        public EdgeDisturbInfo Right { get; private set; }
-        
-        public EdgeDisturbInfo(Vector2 p1, Vector2 p2, Vector2 edgeP1, Vector2 edgeP2)
-        {
-            P1 = p1;
-            P2 = p2;
-            T1 = new Triangle(p1, edgeP1, edgeP2);
-            T2 = new Triangle(p2, edgeP1, edgeP2);
-            Start = edgeP1;
-            End = edgeP2;
-        }
-
-
-        public void Disturb(int times, float disturb, float disturbDecay, float minWidth, OpenSimplexNoise noise)
-        {
-            if (times == 0 || disturb < .1f || Check(minWidth) == false) return;
-            var mid = (P1 + P2) / 2f;
-            var sample = noise.GetNoise2d(mid.x, mid.y) * disturb * .5f;
-            sample *= sample;
-            var splitPoint1 = T1.GetRandomPointInside(sample, 1f - sample);
-            var splitPoint2 = T2.GetRandomPointInside(sample, 1f - sample);
-            var splitPoint = Game.I.Random.GetWeighted(splitPoint1, T1.GetArea(), splitPoint2, T2.GetArea());
-            
-            var left = new EdgeDisturbInfo(P1, P2, Start, splitPoint);
-            var right = new EdgeDisturbInfo(P1, P2, End, splitPoint);
-            if(left.Check(minWidth) && right.Check(minWidth))
-            {
-                Left = left;
-                Left.Disturb(times - 1, disturb * disturbDecay, disturbDecay, minWidth, noise);
-
-                Right = right;
-                Right.Disturb(times - 1, disturb * disturbDecay, disturbDecay, minWidth, noise);
-            }
-        }
-
-        private bool Check(float minWidth)
-        {
-            return (T1.BadTri(minWidth) || T2.BadTri(minWidth)) == false;
-        }
     }
 }

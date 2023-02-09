@@ -30,17 +30,6 @@ public static class GeometryExt
         return (closeP1, closeP2, minDist);
     }
     
-    public static Vector2 FindMiddlePointOfLineSegments(this List<Vector2> points)
-    {
-        if (points.Count % 2 == 0)
-        {
-            var left = points[points.Count / 2 - 1];
-            var right = points[points.Count / 2];
-            return (left + right) / 2f;
-        }
-
-        return points[points.Count / 2];
-    }
     public static float GridDistanceTo(this Vector2 point0, Vector2 point1)
     {
         return Mathf.Abs(point0.x - point1.x) + Mathf.Abs(point0.y - point1.y);
@@ -66,16 +55,37 @@ public static class GeometryExt
 
         return true;
     }
-    public static Vector2 GetLineIntersection(Vector2 p1, Vector2 p2, Vector2 q1, Vector2 q2)
+
+    public static bool LineSegmentsIntersect(Vector2 p1, Vector2 p2, Vector2 q1, Vector2 q2)
+    {
+        if (GetLineIntersection(p1, p2, q1, q2, out var intersect))
+        {
+            var maxPX = Mathf.Max(p1.x, p2.x);
+            var minPX = Mathf.Min(p1.x, p2.x);
+            var maxQX = Mathf.Max(q1.x, q2.x);
+            var minQX = Mathf.Min(q1.x, q2.x);
+            return intersect.x <= maxPX && intersect.x >= minPX
+                                        && intersect.x <= maxQX && intersect.x >= minQX;
+        }
+
+        return false;
+    }
+    public static bool GetLineIntersection(Vector2 p1, Vector2 p2, Vector2 q1, Vector2 q2, out Vector2 intersect)
     {
         var slopeIntercept1 = GetLineSlopeAndIntercept(p1, p2);
         var slopeIntercept2 = GetLineSlopeAndIntercept(q1, q2);
         var determ = (slopeIntercept1.x * -1f) - (slopeIntercept2.x * -1f);
 
-        if (determ == 0f) throw new Exception("lines are parallel");
+        if (determ == 0f)
+        {
+            intersect = Vector2.Zero;
+            return false;
+        }
         var x = (slopeIntercept1.y - slopeIntercept2.y) / determ;
         var y = (slopeIntercept1.x * -slopeIntercept2.y -  slopeIntercept2.x * -slopeIntercept1.y) / determ;
-        return new Vector2(x, y);
+        intersect = new Vector2(x, y);
+
+        return true;
     }
     
     public static Vector2? GetLineSegmentsIntersection(Vector2 p1, Vector2 p2, Vector2 q1, Vector2 q2)
@@ -110,10 +120,10 @@ public static class GeometryExt
         var intercept = p1.y - slope * p1.x;
         return new Vector2(slope, intercept);
     }
-    public static float GetProjectionLength(Vector2 v, Vector2 onto)
+    public static float GetProjectionLength(this Vector2 v, Vector2 onto)
     {
         var angle = v.AngleTo(onto);
-        return GetDotProduct(v, onto) / onto.Length();
+        return v.Dot(onto) / onto.Length();
     }
     public static Vector2 GetReflectionOfPointAcrossLine(this Vector2 point, Vector2 from, Vector2 to)
     {
@@ -180,12 +190,15 @@ public static class GeometryExt
         }
         return reqAns;
     }
-
+    public static float GetClockwiseAngle(this Vector2 v)
+    {
+        if (v == Vector2.Zero) return 0f;
+        return -(v.Angle() - 2f * Mathf.Pi) % (2f * Mathf.Pi);
+    }
     public static float GetClockwiseAngleTo(this Vector2 v, Vector2 to)
     {
         if (v == to) return 0f;
-        var angleTo = v.AngleTo(to);
-        return (2f * Mathf.Pi - angleTo) % (2f * Mathf.Pi);
+        return -(v.AngleTo(to) - 2f * Mathf.Pi) % (2f * Mathf.Pi);
     }
 
     public static float RadToDegrees(this float rad)

@@ -14,7 +14,7 @@ public class CenterTriBuilder : ITriBuilder
 
     public List<Triangle> BuildTrisForPoly(MapPolygon p, GenData data)
     {
-        var ratio = _getRatio(p);
+        var ratio = Mathf.Max(.1f, _getRatio(p));
         var tris = new List<Triangle>();
         var segs = p.Neighbors.Refs().SelectMany(n => p.GetBorder(n, data).GetSegsRel(p));
         foreach (var seg in segs)

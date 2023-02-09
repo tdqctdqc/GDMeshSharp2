@@ -25,7 +25,7 @@ public class CameraController : Camera2D
 
     public Vector2 GetMapPosInGlobalSpace(Vector2 mapPos, Data data)
     {
-        var mapWidth = data.Planet.Width;
+        var mapWidth = data.Planet.Width;   
         var scrollDist = mapWidth * XScrollRatio;
         
         

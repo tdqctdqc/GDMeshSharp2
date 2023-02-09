@@ -26,6 +26,7 @@ public class Vegetation : TerrainAspect
 
     public override bool Allowed(MapPolygon p, GenData data)
     {
+        if (p.IsWater()) return false;
         var pLandform = data.Models.Landforms.GetAspectFromPoly(p, data);
         return AllowedLandforms.Contains(pLandform) && p.Moisture >= MinMoisture;
     }

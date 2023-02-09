@@ -9,6 +9,7 @@
     ".NETStandard,Version=v2.0/": {
       "gdMeshSharp2/1.0.0": {
         "dependencies": {
+          "GeometRi": "1.4.0.3",
           "MarkovNextGen": "1.2.6",
           "MessagePack": "2.4.59",
           "NETStandard.Library": "2.0.3",
@@ -68,6 +69,17 @@
           },
           "lib/netstandard1.6/zh-Hant/FSharp.Core.resources.dll": {
             "locale": "zh-Hant"
+          }
+        }
+      },
+      "GeometRi/1.4.0.3": {
+        "dependencies": {
+          "NETStandard.Library": "2.0.3"
+        },
+        "runtime": {
+          "lib/netstandard1.0/GeometRi.dll": {
+            "assemblyVersion": "1.4.0.3",
+            "fileVersion": "1.4.0.3"
           }
         }
       },
@@ -264,6 +276,13 @@
       "sha512": "sha512-u2UeaUl1pt/Lktdpzq3AsaRmOV1mOiQaSbZgYqQQYuqBSjnILWemetff4xMZIAZi0241jlIkcrJQsU5PlLwIJA==",
       "path": "fsharp.core/4.3.4",
       "hashPath": "fsharp.core.4.3.4.nupkg.sha512"
+    },
+    "GeometRi/1.4.0.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ywo/5JUodFf7rb9+hdFMTxPSuRPEo1RFL5c4AOMRvTxQ/6enjImHt+gQAPOvDBzv5eqpFfZH0zl2ILkWGZ7ZHw==",
+      "path": "geometri/1.4.0.3",
+      "hashPath": "geometri.1.4.0.3.nupkg.sha512"
     },
     "MarkovNextGen/1.2.6": {
       "type": "package",

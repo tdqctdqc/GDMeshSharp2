@@ -6,7 +6,10 @@ using Godot;
 public class Models
 {
     private Dictionary<Type, IModelManager> _managers;
-    private Dictionary<string, object> _models;
+    public IModel this[string name] => _models.TryGetValue(name, out var val) 
+        ? (IModel) val
+        : null;
+    public Dictionary<string, object> _models;
     public LandformManager Landforms { get; private set; }
     public VegetationManager Vegetation { get; private set; }
     public PeepJobManager PeepJobs { get; private set; }

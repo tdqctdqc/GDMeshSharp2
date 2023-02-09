@@ -39,7 +39,7 @@ public class MapChunkGraphic : Node2D
             p => p.Regime.Ref().PrimaryColor,
             (p1, p2) => p1.Regime.RefId == p2.Regime.RefId,
             p => p.Regime.Empty(),
-            .25f, 1f, 25f);
+            1f, 1f, 15f);
         AddChild(Regimes);
 
         Roads = new RoadChunkGraphic();

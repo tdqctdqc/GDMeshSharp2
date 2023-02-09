@@ -19,11 +19,28 @@ public class MeshBuilder
         Tris.Clear();
         Colors.Clear();
     }
+    public void AddTriOutline(Triangle tri, float thickness, Color color)
+    {
+        var center = tri.GetCentroid();
+        var aIn = center + (tri.A - center).Normalized() * ((tri.A - center).Length() - thickness);
+        var bIn = center + (tri.B - center).Normalized() * ((tri.B - center).Length() - thickness);
+        var cIn = center + (tri.C - center).Normalized() * ((tri.C - center).Length() - thickness);
+        
+        AddTri(tri.A, aIn, tri.B, color);
+        AddTri(tri.B, bIn, tri.A, color);
+        
+        AddTri(tri.A, aIn, tri.C, color);
+        AddTri(tri.C, cIn, tri.A, color);
+        
+        AddTri(tri.B, bIn, tri.C, color);
+        AddTri(tri.C, cIn, tri.B, color);
+    }
     public void AddTri(Triangle tri, Color color)
     {
         Tris.Add(tri);
         Colors.Add(color);
     }
+    
     public void AddTri(Vector2 a, Vector2 b, Vector2 c, Color color)
     {
         var tri = new Triangle(a, b, c);

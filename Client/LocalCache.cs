@@ -14,17 +14,12 @@ public class LocalCache
         _data = data;
         if (data is GenData g)
         {
-            InitGenerator(g);
+            g.Events.FinalizedPolyShapes += FinalizedPolyShapes;
         }
         else
         {
-            Init();
+            data.Notices.FinishedStateSync += Init;
         }
-    }
-
-    private void InitGenerator(GenData g)
-    {
-        g.Events.FinalizedPolyShapes += FinalizedPolyShapes;
     }
 
     private void Init()
@@ -70,9 +65,15 @@ public class LocalCache
         foreach (var p in _data.Planet.Polygons.Entities)
         {
             var tris = new List<Triangle>();
-            for (var i = 0; i < p.Neighbors.Count(); i++)
+            if (p.Neighbors.Refs().Count == 0)
             {
-                var edge = p.GetBorder(p.Neighbors.Refs().ElementAt(i), _data);
+                GD.Print(p.Neighbors.RefIds.Count);
+                GD.Print(p.Neighbors.RefIds.Select(id => _data[id]).Distinct().Count());
+                throw new Exception();
+            }
+            foreach (var n in p.Neighbors.Refs())
+            {
+                var edge = p.GetBorder(n, _data);
                 var segs = edge.GetSegsRel(p);
                 for (var j = 0; j < segs.Count; j++)
                 {

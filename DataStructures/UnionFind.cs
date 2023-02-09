@@ -3,7 +3,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-public class UnionFind<T, V>
+public class UnionFind<T>
 {
     private Dictionary<T, T> _parents;
     private Dictionary<T, int> _ranks;
@@ -35,7 +35,7 @@ public class UnionFind<T, V>
         Func<T,T,bool> compare, 
         Func<T, IReadOnlyCollection<T>> neighborFunc)
     {
-        var unionFind = new UnionFind<T, V>(compare);
+        var unionFind = new UnionFind<T>(compare);
         foreach (var element in elements)
         {
             unionFind.AddElement(element, neighborFunc(element));   

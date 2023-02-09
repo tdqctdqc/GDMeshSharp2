@@ -1,19 +1,19 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using MessagePack;
 
-public sealed class EntityVarUpdate<T> : Update
+public sealed class EntityVarUpdate : Update
 {
     public string FieldName { get; private set; }
     public int EntityId { get; private set; }
-    public T NewVal { get; private set; }
-    public static void Send<TValue>(string fieldName, int entityId, TValue newVal, HostWriteKey key)
+    public byte[] NewVal { get; private set; }
+    public static EntityVarUpdate Create(string fieldName, int entityId, byte[] newVal, HostWriteKey key)
     {
-        var u = new EntityVarUpdate<TValue>(fieldName, entityId,
-            newVal, key);
-        key.HostServer.QueueUpdate(u);        
+        return new EntityVarUpdate(fieldName, entityId,
+            newVal);
     }
-    private EntityVarUpdate(string fieldName, int entityId, T newVal, HostWriteKey key) : base(key)
+    [SerializationConstructor] private EntityVarUpdate(string fieldName, int entityId, byte[] newVal)
     {
         FieldName = fieldName;
         EntityId = entityId;

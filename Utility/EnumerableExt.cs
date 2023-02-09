@@ -50,4 +50,27 @@ public static class EnumerableExt
         }
         return singles;
     }
+
+    public static void DoForGridAround(this Func<int, int, bool> action, int x, int y, 
+        bool skipCenter = true)
+    {
+        bool cont = true;
+
+        for (int i = -1; i < 2; i++)
+        {
+            for (int j = -1; j < 2; j++)
+            {
+                if (skipCenter && i == 0 && j == 0) continue;
+                cont = action(i, j);
+                if (cont == false)
+                {
+                    break;
+                }
+            }
+            if (cont == false)
+            {
+                break;
+            }
+        }
+    }
 }

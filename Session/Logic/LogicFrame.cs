@@ -26,14 +26,11 @@ public class LogicFrame
         var tasks = new Task[_modules.Length];
         for (var i = 0; i < _modules.Length; i++)
         {
-            GD.Print("handing module " + i);
             int iter = i;
             var t = new Task(() =>
             {
-                GD.Print("starting module " + iter);
                 var processProcs = _modules[iter].Calculate();
                 _conc.AddOrUpdate(iter, processProcs, (i1, list) => list);
-                GD.Print("finished module " + iter);
             });
             tasks[i] = t;
             t.Start();

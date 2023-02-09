@@ -2,6 +2,8 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using GeometRi;
+
 
 public static class TriangleUtility 
 {
@@ -15,19 +17,6 @@ public static class TriangleUtility
             res.Add(tris[i].C);
         }
         return res;
-    }
-    public static bool BadTri(this Triangle tri, float minLength)
-    {
-        return BadTri(minLength, tri.A, tri.B, tri.C);
-    }
-    public static bool BadTri(float minLength, Vector2 a, Vector2 b, Vector2 c)
-    {
-        if (GetMinAltitude(a,b,c) < minLength
-            || GetMinEdgeLength(a,b,c) < minLength)
-        {
-            return true;
-        }
-        return false;
     }
     public static float GetTriangleArea(Vector2 a, Vector2 b, Vector2 c)
     {
@@ -113,21 +102,31 @@ public static class TriangleUtility
     }
     public static bool PointInsideTriangle(this Triangle tri, Vector2 p)
     {
-        bool hasNeg, hasPos;
-        var v1 = tri.A;
-        var v2 = tri.B;
-        var v3 = tri.C;
+        return PointInsideTriangle(tri.A, tri.B, tri.C, p);
+    }
+    public static bool PointInsideTriangle(Vector2 t1, Vector2 t2, Vector2 t3, Vector2 p)
+    {
         float sign(Vector2 p1, Vector2 p2, Vector2 p3)
         {
             return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
         }
-        var d1 = sign(p, v1, v2);
-        var d2 = sign(p, v2, v3);
-        var d3 = sign(p, v3, v1);
+        var d1 = sign(p, t1, t2);
+        var d2 = sign(p, t2, t3);
+        var d3 = sign(p, t3, t1);
 
-        hasNeg = (d1 < 0) || (d2 < 0) || (d3 < 0);
-        hasPos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+        bool hasNeg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+        bool hasPos = (d1 > 0) || (d2 > 0) || (d3 > 0);
 
         return !(hasNeg && hasPos);
     }
+    public static bool PointInsideTriangleOpt(Vector2 t1, Vector2 t2, Vector2 t3, Vector2 p)
+    {
+        var d1 = (p.x - t2.x) * (t1.y - t2.y) - (t1.x - t2.x) * (p.y - t2.y);
+        var d2 = (p.x - t3.x) * (t2.y - t3.y) - (t2.x - t3.x) * (p.y - t3.y);
+        var d3 = (p.x - t1.x) * (t3.y - t1.y) - (t3.x - t1.x) * (p.y - t1.y);
+
+        return !((d1 < 0 || d2 < 0 || d3 < 0) && (d1 > 0 || d2 > 0 || d3 > 0));
+    }
+    
+    
 }

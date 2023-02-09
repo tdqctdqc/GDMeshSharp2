@@ -55,6 +55,18 @@
           }
         }
       },
+      "GeometRi/1.4.0.3": {
+        "type": "package",
+        "dependencies": {
+          "NETStandard.Library": "1.6.1"
+        },
+        "compile": {
+          "lib/netstandard1.0/GeometRi.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard1.0/GeometRi.dll": {}
+        }
+      },
       "MarkovNextGen/1.2.6": {
         "type": "package",
         "dependencies": {
@@ -331,6 +343,26 @@
         "lib/netstandard1.6/tr/FSharp.Core.resources.dll",
         "lib/netstandard1.6/zh-Hans/FSharp.Core.resources.dll",
         "lib/netstandard1.6/zh-Hant/FSharp.Core.resources.dll"
+      ]
+    },
+    "GeometRi/1.4.0.3": {
+      "sha512": "ywo/5JUodFf7rb9+hdFMTxPSuRPEo1RFL5c4AOMRvTxQ/6enjImHt+gQAPOvDBzv5eqpFfZH0zl2ILkWGZ7ZHw==",
+      "type": "package",
+      "path": "geometri/1.4.0.3",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE.txt",
+        "geometri.1.4.0.3.nupkg.sha512",
+        "geometri.nuspec",
+        "lib/net20/GeometRi.dll",
+        "lib/net20/GeometRi.xml",
+        "lib/net5.0/GeometRi.dll",
+        "lib/net5.0/GeometRi.xml",
+        "lib/netcoreapp3.1/GeometRi.dll",
+        "lib/netcoreapp3.1/GeometRi.xml",
+        "lib/netstandard1.0/GeometRi.dll",
+        "lib/netstandard1.0/GeometRi.xml"
       ]
     },
     "MarkovNextGen/1.2.6": {
@@ -1011,6 +1043,7 @@
   },
   "projectFileDependencyGroups": {
     ".NETStandard,Version=v2.0": [
+      "GeometRi >= 1.4.0.3",
       "MarkovNextGen >= 1.2.6",
       "MessagePack >= 2.4.59",
       "NETStandard.Library >= 2.0.3",
@@ -1061,6 +1094,10 @@
       "netstandard2.0": {
         "targetAlias": "netstandard2.0",
         "dependencies": {
+          "GeometRi": {
+            "target": "Package",
+            "version": "[1.4.0.3, )"
+          },
           "MarkovNextGen": {
             "target": "Package",
             "version": "[1.2.6, )"

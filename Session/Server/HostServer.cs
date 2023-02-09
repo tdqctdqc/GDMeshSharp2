@@ -6,113 +6,85 @@ using System.Linq;
 public class HostServer : Node, IServer
 {
     public int NetworkId => 1;
-    
-
     private HostWriteKey _key;
     private HostLogic _logic;
-    private List<object[]> _queuedUpdates;
-    private List<Command> _queuedCommands;
     private List<int> _clients;
+    private List<HostSyncer> _peers;
     private List<StreamPeerTCP> _connections;
-    private NetworkedMultiplayerENet _network; 
+    private Queue<byte[]> _wrappedPacketsToSend;
+    public Queue<Command> QueuedCommands { get; private set; }
     private TCP_Server _tcp;
-    // private StreamPeerTCP _peer;
-    // private PacketPeerStream _packet;
-
+    private MessageManager _msg;
     private string _ip = "127.0.0.1";
     private int _port = 3306;
     private int _maxPlayers = 100;
-
-    private float _tickTime = .25f;
-    private float _ticker = 0f;
     public override void _Ready()
     {
         _connections = new List<StreamPeerTCP>();
         _clients = new List<int>();
-        _queuedUpdates = new List<object[]>();
-        _queuedCommands = new List<Command>();
-        _network = new NetworkedMultiplayerENet();
-        _network.CreateServer(_port, _maxPlayers);
-        GetTree().NetworkPeer = _network;
-        _network.Connect("peer_connected", this, nameof(PeerConnected));
-        _network.Connect("peer_disconnected", this, nameof(PeerDisconnected));
-        
+        _peers = new List<HostSyncer>();
         _tcp = new TCP_Server();
         _tcp.Listen((ushort)_port);
-        // _peer = new StreamPeerTCP();
-        // _peer.ConnectToHost(_ip, _port);
-        // _packet = new PacketPeerStream();
-        // _packet.StreamPeer = _peer;
     }
 
     public override void _Process(float delta)
     {
-        _ticker += delta;
-        if (_ticker >= _tickTime)
-        {
-            _ticker = 0;
-            BroadcastUpdates();
-            ProcessCommands();
-        }
         if (_tcp.IsConnectionAvailable())
         {
             GD.Print("connection available");
-            var connection = _tcp.TakeConnection();
-            var hostPacket = new PacketPeerStream();
-            hostPacket.StreamPeer = connection;
-            // StateTransferUpdate.Send(_key, hostPacket);
-            // _connections.Add(connection);
+            var peer = _tcp.TakeConnection();
+            HandleNewPeer(peer);
         }
+    }
+
+    private void HandleNewPeer(StreamPeerTCP peer)
+    {
+
+        // peer.ConnectToHost(_ip, _port);
+        var packet = new PacketPeerStream();
+        packet.StreamPeer = peer;
+
+        var syncer = new HostSyncer(packet, _msg);
+        GD.Print("started syncing");
+        syncer.Sync(_key);
+        GD.Print("Done syncing");
+
+        _peers.Add(syncer);
     }
     public void SetDependencies(HostLogic logic, Data data)
     {
         _logic = logic;
         _key = new HostWriteKey(this, data);
+        _msg = new MessageManager(u => { }, p => { }, logic.CommandQueue.Enqueue);
     }
 
     public void QueueUpdate(Update u)
     {
+        var bytes = _msg.WrapUpdate(u);
+        for (var i = 0; i < _peers.Count; i++)
+        {
+            _peers[i].QueuePacket(bytes);
+        }
     }
 
-    private void BroadcastUpdates()
+    public void ReceiveLogicMessages(List<Procedure> procs, List<Update> updates, HostWriteKey key)
     {
-        _queuedUpdates.ForEach(u =>
+        for (var i = 0; i < procs.Count; i++)
         {
-            _connections.ForEach(c =>
+            var bytes = _msg.WrapProcedure(procs[i]);
+            for (var j = 0; j < _peers.Count; j++)
             {
-                c.PutVar(u);
-            });
-        });
-        _queuedUpdates.Clear();
-    }
+                _peers[j].QueuePacket(bytes);
+            }
+        }
 
-    private void TransferState()
-    {
-        
-    }
-    private void PeerConnected(int id)
-    {
-        _clients.Add(id);
-        GD.Print("peer " + id + " connected");
-        RpcId(id, nameof(RemoteServer.OnConnectionSucceeded));
-    }
-    private void PeerDisconnected(int id)
-    {
-        _clients.Remove(id);
-    }
-    [Remote] public void ReceiveCommand(object[] commandArgs)
-    {
-        
-    }
-    public void PushCommand(Command command)
-    {
-        _queuedCommands.Add(command);
-    }
-    private void ProcessCommands()
-    {
-        _queuedCommands.ForEach(c =>
+        for (var i = 0; i < updates.Count; i++)
         {
-            c.Enact(_key);
-        });
+            var bytes = _msg.WrapUpdate(updates[i]);
+            for (var j = 0; j < _peers.Count; j++)
+            {
+                _peers[j].QueuePacket(bytes);
+            }
+        }
     }
 }

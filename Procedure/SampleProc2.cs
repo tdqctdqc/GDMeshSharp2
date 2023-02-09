@@ -12,6 +12,5 @@ public class SampleProc2 : Procedure
 
     public override void Enact(ProcedureWriteKey key)
     {
-        GD.Print("enacting proc 2");
     }
 }

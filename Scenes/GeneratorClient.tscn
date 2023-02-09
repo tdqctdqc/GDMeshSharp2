@@ -20,33 +20,49 @@ __meta__ = {
 }
 
 [node name="Seed" type="SpinBox" parent="Control/HBoxContainer"]
-margin_right = 74.0
+margin_right = 100.0
 margin_bottom = 40.0
+rect_min_size = Vector2( 100, 0 )
 max_value = 10000.0
+prefix = "Seed:"
+
+[node name="Width" type="SpinBox" parent="Control/HBoxContainer"]
+margin_left = 104.0
+margin_right = 254.0
+margin_bottom = 40.0
+rect_min_size = Vector2( 150, 0 )
+min_value = 8000.0
+max_value = 32000.0
+value = 16000.0
+prefix = "Width:"
+
+[node name="Height" type="SpinBox" parent="Control/HBoxContainer"]
+margin_left = 258.0
+margin_right = 408.0
+margin_bottom = 40.0
+rect_min_size = Vector2( 150, 0 )
+min_value = 4000.0
+max_value = 16000.0
+value = 8000.0
+prefix = "Height:"
 
 [node name="Generate" type="Button" parent="Control/HBoxContainer"]
-margin_left = 78.0
-margin_right = 149.0
+margin_left = 412.0
+margin_right = 483.0
 margin_bottom = 40.0
 text = "Generate"
 
-[node name="GenerateNext" type="Button" parent="Control/HBoxContainer"]
-margin_left = 153.0
-margin_right = 258.0
-margin_bottom = 40.0
-text = "Generate Next"
-
-[node name="GenerateTest" type="Button" parent="Control/HBoxContainer"]
-margin_left = 262.0
-margin_right = 364.0
-margin_bottom = 40.0
-text = "Generate Test"
-
 [node name="Done" type="Button" parent="Control/HBoxContainer"]
-margin_left = 368.0
-margin_right = 414.0
+margin_left = 487.0
+margin_right = 533.0
 margin_bottom = 40.0
 text = "Done"
+
+[node name="Progress" type="Label" parent="Control/HBoxContainer"]
+margin_left = 537.0
+margin_top = 13.0
+margin_right = 537.0
+margin_bottom = 27.0
 
 [node name="MapDisplayOptionsUi" parent="Control" instance=ExtResource( 2 )]
 margin_top = 49.0

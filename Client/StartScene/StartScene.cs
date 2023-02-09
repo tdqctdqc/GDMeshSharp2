@@ -5,22 +5,35 @@ using Godot;
 
 public class StartScene : Node
 {
-    private ButtonToken _hostBtn, _clientBtn;
+    private ButtonToken _genBtn, _remoteBtn, _genPresetBtn, _sandbox;
     public override void _Ready()
     {
-        _hostBtn = ButtonToken.Get(this, "Host", StartAsHost); 
-        _clientBtn = ButtonToken.Get(this, "Client", StartAsClient); 
+        _genBtn = ButtonToken.Get(this, "Generate", StartGenerator); 
+        _remoteBtn = ButtonToken.Get(this, "Remote", StartAsClient); 
+        _genPresetBtn = ButtonToken.Get(this, "GenPreset", StartAsTest); 
+        _sandbox = ButtonToken.Get(this, "Sandbox", StartSandbox); 
     }
 
-    public void StartAsHost()
+    private void StartAsTest()
     {
-        Game.I.OpenGenerator();
+        Game.I.StartTestSession();
+        QueueFree();
+    }
+    private void StartGenerator()
+    {
+        Game.I.StartGeneratorSession();
         QueueFree();
     }
 
-    public void StartAsClient()
+    private void StartAsClient()
     {
         Game.I.StartClientSession();
+        QueueFree();
+    }
+
+    private void StartSandbox()
+    {
+        Game.I.StartSandbox();
         QueueFree();
     }
 }

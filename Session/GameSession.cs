@@ -3,8 +3,9 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 
-public class Session : Node, ISession
+public class GameSession : Node, ISession
 {
+    RefFulfiller ISession.RefFulfiller => Data.RefFulfiller;
     public Data Data { get; private set; }
     public IClient Client { get; private set; }
     private ILogic _logic;
@@ -14,7 +15,7 @@ public class Session : Node, ISession
         _logic?.Process(delta);
         Client?.Process(delta);
     }
-
+    
     public void StartAsHost(GenData data, UserCredential userCredential = null)
     {
         SetCredential(userCredential);
@@ -25,26 +26,45 @@ public class Session : Node, ISession
         Data = data;
         hServer.SetDependencies(logic, Data);
         logic.SetDependencies(hServer, Data);
-        
         StartServer(hServer);
         StartClient(hServer);
-
-        Game.I.Serializer.TestSerialization(Data, new HostWriteKey(hServer, data));
     }
-    
+    public void StartAsTest(UserCredential userCredential = null)
+    {
+        var worldGen = new WorldGenerator(new GenerationParameters(new Vector2(8000f, 4000f)));
+        var data = worldGen.Generate();
+        SetCredential(userCredential);
+        var hServer = new HostServer();
+        var logic = new HostLogic();
+        _logic = logic;
+        data.ClearAuxData();
+        Data = data;
+        hServer.SetDependencies(logic, Data);
+        logic.SetDependencies(hServer, Data);
+        StartServer(hServer);
+        StartClient(hServer);
+        var key = new HostWriteKey(hServer, Data);
+        var msg = new MessageManager(u => { GD.Print(u.GetType()); }, p => { }, c => { });
+        var e = Data.Planet.Polygons.Entities.First();
+        var update = EntityCreationUpdate.GetForTest(e, key);
+        var msg1 = msg.WrapUpdate(update);
+        msg.HandleIncoming(msg1);
+    }
     public void StartAsRemote(UserCredential userCredential = null)
     {
         SetCredential(userCredential);
         
-        _logic = new RemoteLogic();
         
         //todo fix this
         Data = new Data();
+        Data.Setup();
+        var logic = new RemoteLogic(Data);
+        _logic = logic;
         var server = new RemoteServer();
-        server.Setup(this, Data);
+        Data.Notices.FinishedStateSync += () => StartClient(server);
+        server.Setup(this, logic, Data);
         StartServer(server);
         // StartClient(server);
-
     }
 
     private void SetCredential(UserCredential userCredential)
@@ -62,10 +82,6 @@ public class Session : Node, ISession
         AddChild((Node)server);
     }
 
-    public void StartClient(IServer server, ServerWriteKey key)
-    {
-        StartClient(server);
-    }
     private void StartClient(IServer server)
     {
         var client = new GameClient();

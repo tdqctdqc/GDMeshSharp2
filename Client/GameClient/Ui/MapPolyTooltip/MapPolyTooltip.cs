@@ -13,19 +13,19 @@ public class MapPolyTooltip : Node2D
     private PolyHighlighter _highlighter;
     public override void _Ready()
     {
-        _container = (Container)FindNode("Container");
+        this.AssignChildNode(ref _container, "Container");
         _id = _container.CreateLabelAsChild("Id");
         _numPops = _container.CreateLabelAsChild("Num Pops");
         _regime = _container.CreateLabelAsChild("Regime");
         _landform = _container.CreateLabelAsChild("Landform");
         _veg = _container.CreateLabelAsChild("Veg");
     }
-    public void Process(Vector2 mousePosMapSpace)
+    public void Process(Data data, Vector2 mousePosMapSpace)
     {
         var sw = new Stopwatch();
         sw.Start();
-        var mouseIn = _client.Data.Cache.MapPolyGrid
-            .GetElementAtPoint(mousePosMapSpace, out string msg);
+        var mouseIn = data.Cache.MapPolyGrid
+            .GetElementAtPoint(mousePosMapSpace);
         sw.Stop();
         if (mouseIn is MapPolygon poly)
         {
@@ -33,14 +33,14 @@ public class MapPolyTooltip : Node2D
             {
                 // GD.Print("time to find " + sw.Elapsed.TotalMilliseconds.ToString());
                 // GD.Print(msg);
-                var offset = poly.GetOffsetTo(mousePosMapSpace, _client.Data);
+                var offset = poly.GetOffsetTo(mousePosMapSpace, data);
             
                 _mouseOverPoly = poly;
                 Visible = true;
                 Position = GetGlobalMousePosition();
-                Draw(poly, offset);
+                Draw(data, poly, offset);
                 Scale = _client.Cam.Zoom;
-                _highlighter.DrawPolyAndNeighbors(poly, _client);
+                _highlighter.DrawOutline(data, poly, offset, _client);
                 Visible = true;
             }
         }
@@ -53,14 +53,14 @@ public class MapPolyTooltip : Node2D
         }
     }
 
-    public void Draw(MapPolygon poly, Vector2 offset)
+    public void Draw(Data data, MapPolygon poly, Vector2 offset)
     {
         _id.Text = "Id: " + poly.Id;
-        _numPops.Text = "Num Pops: " + poly.GetNumPeeps(_client.Data);
+        _numPops.Text = "Num Pops: " + poly.GetNumPeeps(data);
         _regime.Text = poly.Regime.Empty() ? "Neutral" : poly.Regime.Ref().Name;
-        var landform = _client.Data.Models.Landforms.GetAspectAtPoint(poly, offset, _client.Data);
+        var landform = poly.GetLandformAtPoint(data, offset);
         _landform.Text = "Landform: " + landform.Name;
-        var veg = _client.Data.Models.Vegetation.GetAspectAtPoint(poly, offset, _client.Data);
+        var veg = poly.GetVegetationAtPoint(data, offset);
         _veg.Text = "Vegetation: " + veg.Name;
     }
     public void Setup(PolyHighlighter highlighter, IClient client)

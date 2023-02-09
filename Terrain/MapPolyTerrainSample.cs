@@ -18,10 +18,11 @@ public class MapPolyTerrainSample
         for (int i = 0; i < tris.Count; i++)
         {
             var tri = tris[i];
-            Plants[i] = data.Models.Vegetation.GetAspectAtPoint(poly, tri.GetCentroid(), data);
-            Landforms[i] = data.Models.Landforms.GetAspectAtPoint(poly, tri.GetCentroid(), data);
+            Plants[i] = poly.GetVegetationAtPoint(data, tri.GetCentroid());
+            Landforms[i] = poly.GetLandformAtPoint(data, tri.GetCentroid());
         }
 
+        var l = Plants.Length;
         FertilityMod = Enumerable.Range(0, Plants.Length)
             .Select(i => Landforms[i].FertilityMod * Plants[i].FertilityMod).Average();
     }

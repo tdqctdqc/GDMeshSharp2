@@ -26,7 +26,6 @@ public class PolygonGenerator
         var delaunayPoints = info.Points.Select(p => new DelaunayTriangulator.DelaunatorPoint(p)).ToList<IPoint>();
 
         CreateAndRegisterPolys(delaunayPoints, info, key);
-        GD.Print("polys " + info.Polys.Count);
         var graph = GraphGenerator.GenerateMapPolyVoronoiGraph(info, _id, key);
         if (leftRightWrap)
         {

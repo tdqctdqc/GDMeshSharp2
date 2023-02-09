@@ -13,8 +13,6 @@ public class GeneratorGraphics : GameGraphics
 
     public void SetupGenerator(GenData data, GeneratorClient client)
     {
-        
-        
         // var faultLineGraphics = data.GenAuxData.FaultLines.Select(f => new FaultLineGraphic(f, data)).ToList();
         //
         // var faultLineNode = new GraphicsSegmenter<FaultLineGraphic>();

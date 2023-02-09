@@ -21,7 +21,7 @@ public class VegetationChunkGraphic : Node2D
             {
                 var aspect = manager.ByPriority[j];
                 if (aspect.Ground == false) continue;
-                var aspectTris = data.Planet.TerrainTris.ByName[aspect.Name].GetPolyTris(p);
+                var aspectTris = p.TerrainTris[aspect];
                 if (aspectTris == null) continue;
                 aspectTris.ForEach(t => mb.AddTri(t.Transpose(offset), aspect.Color));
             }
@@ -32,7 +32,7 @@ public class VegetationChunkGraphic : Node2D
             {
                 var aspect = manager.ByPriority[j];
                 if (aspect.Ground) continue;
-                var aspectTris = data.Planet.TerrainTris.ByName[aspect.Name].GetPolyTris(p);
+                var aspectTris = p.TerrainTris[aspect];
                 if (aspectTris == null) continue;
                 aspectTris.ForEach(t =>
                 {

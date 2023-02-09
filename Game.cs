@@ -11,11 +11,7 @@ public class Game : Node
     public RandomNumberGenerator Random = new RandomNumberGenerator();
     private ISession _session;
 
-    public RefFulfiller RefFulfiller => _session == null
-        ? _genUi.Data.RefFulfiller
-        : _session.Data.RefFulfiller;
-    //todo fix this
-    private GeneratorClient _genUi;
+    public RefFulfiller RefFulfiller => _session.RefFulfiller;
     public override void _Ready()
     {
         if (I != null)
@@ -26,35 +22,40 @@ public class Game : Node
         SceneManager.Setup();
         Serializer = new Serializer();
     }
-
-    public override void _Process(float delta)
+    public void StartGeneratorSession()
     {
-        _genUi?.Process(delta);
-    }
-
-    public void OpenGenerator()
-    {
-        _genUi = SceneManager.Instance<GeneratorClient>();
-        _genUi.Setup();
-        AddChild(_genUi);
+        SetSession(new GeneratorSession());
     }
     public void StartClientSession()
     {
-        var session = new Session();
-        _session = session;
-        session.Name = "Session";   
+        var session = new GameSession();
+        SetSession(session);
         session.StartAsRemote();
-        AddChild(session);
+
     }
     public void StartHostSession(GenData data)
     {
-        var session = new Session();
-        _session = session;
-        session.Name = "Session";   
+        var session = new GameSession();
+        SetSession(session);
         session.StartAsHost(data);
+    }
+    public void StartTestSession()
+    {
+        var session = new GameSession();
+        SetSession(session);
+        session.StartAsTest();
+    }
+
+    public void StartSandbox()
+    {
+        SetSession(new SandboxSession());
+    }
+
+    private void SetSession(Node session)
+    {
+        _session?.QueueFree();
+        session.Name = "Session";
+        _session = (ISession)session;
         AddChild(session);
-        RemoveChild(_genUi);
-        _genUi.QueueFree();
-        _genUi = null;
     }
 }

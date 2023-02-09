@@ -43,54 +43,64 @@ public class PolyGrid
         if(Cells.ContainsKey(newKey) == false) Cells.Add(newKey, new List<MapPolygon>());
         Cells[newKey].Add(element);
     }
-    public MapPolygon GetElementAtPoint(Vector2 point, out string msg)
+    public MapPolygon GetElementAtPoint(Vector2 point)
     {
         int x = (int)(point.x / _partitionSize.x);
         int y = (int)(point.y / _partitionSize.y);
         var key = new Vector2(x,y);
-        if (Cells.ContainsKey(key))
+        if (CheckCell(point, key, out var mp1))
         {
-            var first = Cells[key].FirstOrDefault(mp => mp.PointInPoly(point, _data));
-            if (first != null)
+            return mp1;
+        }
+        if (x == _partitionsPerAxis - 1)
+        {
+            var offKey = new Vector2(0, y);
+            if (CheckCell(point, offKey, out var mp2))
             {
-                msg = ("found on first");
-                return first;
-            }
-            if (x == _partitionsPerAxis - 1)
-            {
-                var offKey = new Vector2(0, y);
-                msg = ("found on wrap");
-
-                var second = Cells[offKey].FirstOrDefault(mp => mp.PointInPoly(point, _data));
-                if (second != null) return second;
+                return mp2;
             }
         }
 
-        int iter = 0;
-        for (int i = -1; i < 2; i++)
+        MapPolygon found = null;
+        Func<int, int, bool> grid = (int i, int j) =>
         {
-            for (int j = -1; j < 2; j++)
+            var offKey = new Vector2(i, j);
+            if (CheckCell(point, offKey, out var p))
             {
-                if (i == 0 && j == 0) continue;
-                
-                var offX = x + i;
-                if (offX < 0) offX += _partitionsPerAxis;
-                if (offX >= _partitionsPerAxis) offX -= _partitionsPerAxis;
-                var offY = y + j;
-                var offKey = new Vector2(offX, offY);
-                if (Cells.ContainsKey(offKey))
+                found = p;
+                return false;
+            }
+            return true;
+        };
+        EnumerableExt.DoForGridAround(
+            (int i, int j) =>
+            {
+                var offKey = new Vector2(i, j);
+                if (CheckCell(point, offKey, out var p))
                 {
-                    var first = Cells[offKey].FirstOrDefault(mp => mp.PointInPoly(point, _data));
-                    if (first != null)
-                    {
-                        msg = ($"found on {iter++}th iteration");
-                        return first;
-                    }
+                    found = p;
+                    return false;
                 }
+                return true;
+            }, x, y
+        );
+
+        return found;
+    }
+
+
+    private bool CheckCell(Vector2 point, Vector2 key, out MapPolygon p)
+    {
+        if (Cells.TryGetValue(key, out var cell))
+        {
+            p = cell.FirstOrDefault(mp => mp.PointInPoly(point, _data));
+            if (p != null)
+            {
+                return true;
             }
         }
 
-        msg = "Didnt find";
-        return null;
+        p = null;
+        return false;
     }
 }

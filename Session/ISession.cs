@@ -3,7 +3,7 @@ using System;
 
 public interface ISession
 {
-    Data Data { get; }
+    RefFulfiller RefFulfiller { get; }
     IClient Client { get; }
-    void StartClient(IServer server, ServerWriteKey key);
+    void QueueFree();
 }

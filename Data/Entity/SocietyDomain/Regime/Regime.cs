@@ -7,7 +7,7 @@ using MessagePack;
 public class Regime : Entity
 {
     public override Type GetDomainType() => typeof(SocietyDomain);
-
+    public EntityRef<MapPolygon> Capital { get; private set; }
     public Color PrimaryColor { get; private set; }
     public Color SecondaryColor { get; private set; }
 
@@ -17,12 +17,13 @@ public class Regime : Entity
 
 
     [SerializationConstructor] private Regime(int id, string name, Color primaryColor, Color secondaryColor, 
-        EntityRefCollection<MapPolygon> polygons) : base(id)
+        EntityRefCollection<MapPolygon> polygons, EntityRef<MapPolygon> capital) : base(id)
     {
         PrimaryColor = primaryColor;
         SecondaryColor = secondaryColor;
         Polygons = polygons;
         Name = name;
+        Capital = capital;
     }
 
     public static Regime Create(int id, string name, Color primaryColor, Color secondaryColor, 
@@ -30,8 +31,11 @@ public class Regime : Entity
     {
         var polygons = new EntityRefCollection<MapPolygon>(new HashSet<int>());
         polygons.AddRef(seed, key.Data);
-        var r = new Regime(id, name, primaryColor, secondaryColor, polygons);
+        var r = new Regime(id, name, primaryColor, secondaryColor, polygons, new EntityRef<MapPolygon>(seed.Id));
         key.Create(r);
+        
+        r.Polygons.AddRef(seed, key.Data);
+        seed.SetRegime(r, key);
         return r;
     }
 }

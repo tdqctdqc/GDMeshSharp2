@@ -6,14 +6,14 @@ using Godot;
 public class LocationGenerator 
 {
     public GenData Data { get; private set; }
-    private CreateWriteKey _key;
+    private GenWriteKey _key;
     private IDDispenser _id;
     public LocationGenerator(GenData data)
     {
         Data = data;
     }
 
-    public void Generate(CreateWriteKey key, IDDispenser id)
+    public void Generate(GenWriteKey key, IDDispenser id)
     {
         _key = key;
         _id = id;
@@ -58,15 +58,14 @@ public class LocationGenerator
                     }
                 }
             }
-
             var settlementPolys = landPolys.GetNRandomElements(settlementScores.Count);
+            settlementPolys.ForEach(p => p.BuildTrisForAspect(LandformManager.Urban, _key));
             for (var i = 0; i < settlementPolys.Count; i++)
             {
                 settlementPolys[i].Set(nameof(MapPolygon.SettlementSize), settlementScores[i], _key);
                 var settlement = Settlement.Create(_id.GetID(), settlementPolys[i], settlementScores[i], _key);
             }
         });
-        Data.Models.Landforms.BuildTrisForAspect(LandformManager.Urban, Data);
 
         float popScore(MapPolygon p)
         {

@@ -11,8 +11,8 @@ public class GraphicLayerHolder : Control
 
     public void Setup()
     {
-        _viewButtonsContainer = (Container) FindNode("ViewButtons");
-        _overlayButtonsContainer = (Container) FindNode("OverlayButtons");
+        this.AssignChildNode(ref _viewButtonsContainer, "ViewButtons");
+        this.AssignChildNode(ref _overlayButtonsContainer, "OverlayButtons");
         _viewTokens = new Dictionary<string, ButtonToken>();
         _views = new Dictionary<string, GraphicView>();
     }

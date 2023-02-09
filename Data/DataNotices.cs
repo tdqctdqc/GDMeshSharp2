@@ -5,6 +5,7 @@ using Godot;
 
 public class DataNotices
 {
+    public Action FinishedStateSync { get; set; }
     private Dictionary<Type, object> _addedActions;
     private Dictionary<Type, object> _removingActions;
     

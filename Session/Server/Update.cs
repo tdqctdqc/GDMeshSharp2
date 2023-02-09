@@ -3,7 +3,7 @@ using System;
 
 public abstract class Update
 {
-    protected Update(HostWriteKey key)
+    protected Update()
     {
         
     }

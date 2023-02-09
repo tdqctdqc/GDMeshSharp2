@@ -19,12 +19,15 @@ public class Data
     public SocietyDomain Society { get; private set; }
     public Data()
     {
+    }
+
+    public void Setup()
+    {
         Init();
     }
     protected virtual void Init()
     {
         Notices = new DataNotices();
-        Cache = new LocalCache(this);
         RefFulfiller = new RefFulfiller(this);
         Models = new Models();
         Entities = new Dictionary<int, Entity>();
@@ -36,6 +39,7 @@ public class Data
         AddDomain(Planet);
         Society = new SocietyDomain(this);
         AddDomain(Society);
+        Cache = new LocalCache(this);
     }
 
     public void AddEntity<TEntity>(TEntity e, StrongWriteKey key) where TEntity : Entity
@@ -50,7 +54,7 @@ public class Data
         EntityRepos.Add(e.Id, repo);
         if (key is HostWriteKey hKey)
         {
-            EntityCreationUpdate.Send<TEntity>(e, hKey);
+            hKey.HostServer.QueueUpdate(EntityCreationUpdate.Create(e, hKey));
         }
         Notices.RaiseAddedEntity(e);
     }
@@ -63,7 +67,7 @@ public class Data
         EntityRepos.Remove(e.Id);
         if (key is HostWriteKey hKey)
         {
-            EntityDeletionUpdate.Send(e.Id, hKey);
+            hKey.HostServer.QueueUpdate(EntityDeletionUpdate.Create(e.Id, hKey));
         }
     }
     public T GetDomain<T>() where T : Domain

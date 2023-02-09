@@ -17,7 +17,7 @@ public class EntityOverview : WindowDialog
     private void Setup(Data data)
     {
         _data = data;
-        _container = (VBoxContainer)FindNode("VBoxContainer");
+        this.AssignChildNode(ref _container, "VBoxContainer");
         Connect("about_to_show", this, nameof(Draw));
     }
     private void Draw()

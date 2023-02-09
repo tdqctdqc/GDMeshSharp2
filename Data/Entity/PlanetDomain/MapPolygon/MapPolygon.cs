@@ -15,6 +15,7 @@ public partial class MapPolygon : Entity
     public float Moisture { get; private set; }
     public float SettlementSize { get; private set; }
     public EntityRef<Regime> Regime { get; private set; }
+    public TriListHolder TerrainTris { get; private set; }
     public bool IsLand() => Altitude > .5f;
     public bool IsWater() => IsLand() == false;
     public MapPolygonBorder GetBorder(MapPolygon neighbor, Data data) 
@@ -22,8 +23,10 @@ public partial class MapPolygon : Entity
     
     [SerializationConstructor] private MapPolygon(int id, Vector2 center, EntityRefCollection<MapPolygon> neighbors, 
         Color color, float altitude, float roughness, 
-        float moisture, float settlementSize, EntityRef<Regime> regime) : base(id)
+        float moisture, float settlementSize, EntityRef<Regime> regime,
+        TriListHolder terrainTris) : base(id)
     {
+        TerrainTris = terrainTris;
         Center = center;
         Neighbors = neighbors;
         Color = color;
@@ -46,7 +49,8 @@ public partial class MapPolygon : Entity
             0f,
             0f,
             0f,
-            new EntityRef<Regime>(-1)
+            new EntityRef<Regime>(-1),
+            TriListHolder.Construct()
         );
         key.Create(p);
         return p;
@@ -61,29 +65,13 @@ public partial class MapPolygon : Entity
     {
         if (Neighbors.Contains(poly)) return;
         Neighbors.AddRef(poly, key.Data);
-        // var startN = Neighbors.Refs().ElementAt(0);
-        // for (int i = 0; i < Neighbors.Count(); i++)
-        // {
-        //     if (startN.Neighbors.Refs().Any(n => Neighbors.Contains(n)))
-        //     {
-        //         startN = Neighbors.Refs().ElementAt((i + 1) % Neighbors.Count());
-        //     }
-        //     else break;
-        // }
-        // //todo make it ordered
-        // var ns = Neighbors.Refs()
-        //     .OrderByClockwise(Vector2.Zero, 
-        //         n => GetBorder(n, key.Data).GetOffsetToOtherPoly(this),
-        //         startN).Select(p => p.Id)
-        //     .ToList();
-        // Neighbors = EntityRefCollection<MapPolygon>.Construct(ns, key);
     }
     public void RemoveNeighbor(MapPolygon poly, GenWriteKey key)
     {
         //only use in merging left-right wrap
         Neighbors.RemoveRef(poly, key.Data);
     }
-    public void SetRegime(Regime r, GenWriteKey key)
+    public void SetRegime(Regime r, CreateWriteKey key)
     {
         GetMeta().UpdateEntityVar<EntityRef<Regime>>(nameof(Regime), this, key, new EntityRef<Regime>(r.Id));
     }
@@ -128,5 +116,29 @@ public static class MapPolygonExt
     public static float GetArea(this MapPolygon poly, Data data)
     {
         return poly.GetTrisRel(data).Sum(t => t.GetArea());
+    }
+    
+    public static Landform GetLandformAtPoint(this MapPolygon poly, Data data, Vector2 offset)
+    {
+        return poly.TerrainTris.GetLandformAtPoint(poly, data, offset);
+    }
+    public static Vegetation GetVegetationAtPoint(this MapPolygon poly, Data data, Vector2 offset)
+    {
+        return poly.TerrainTris.GetVegetationAtPoint(poly, data, offset);
+    }
+    public static void BuildTrisForAspects<TAspect>
+        (this MapPolygon poly, TerrainAspectManager<TAspect> man, GenWriteKey key) where TAspect : TerrainAspect
+    {
+        for (var i = 0; i < man.ByPriority.Count; i++)
+        {
+            var ta = man.ByPriority[i];
+            if (ta.Allowed(poly, key.GenData) == false) continue;
+            poly.TerrainTris.Add(ta, ta.TriBuilder.BuildTrisForPoly(poly, key.GenData));
+        }
+    }
+    public static void BuildTrisForAspect(this MapPolygon poly, TerrainAspect ta, GenWriteKey key)
+    {
+        if (ta.Allowed(poly, key.GenData) == false) return;
+        poly.TerrainTris.Add(ta, ta.TriBuilder.BuildTrisForPoly(poly, key.GenData));
     }
 }

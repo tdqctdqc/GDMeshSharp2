@@ -1,9 +1,11 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 public class HostLogic : ILogic
 {
+    public Queue<Command> CommandQueue { get; private set; }
     private HostServer _server;
     private HostWriteKey _hKey;
     private ProcedureWriteKey _pKey;
@@ -16,9 +18,10 @@ public class HostLogic : ILogic
     
     public HostLogic()
     {
+        CommandQueue = new Queue<Command>();
         _frames = new LogicFrame[]
         {
-            new LogicFrame(new SampleModule1(), new SampleModule2())
+            new LogicFrame()
         };
     }
 
@@ -43,10 +46,8 @@ public class HostLogic : ILogic
 
     public async void DoFrame()
     {
-        GD.Print("starting frame");
         var procs = await Task.Run(_frames[_frameIter].Calculate);
         _frameIter = (_frameIter + 1) % _frames.Length;
-        GD.Print("done frame calculations");
 
         for (var i = 0; i < procs.Count; i++)
         {

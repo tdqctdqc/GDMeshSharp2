@@ -16,7 +16,8 @@ public class GameClient : Node, IClient
 
     public void Process(float delta)
     {
-        Graphics.Process(delta, Data);
+        if (GetParent() == null) return;
+        Graphics?.Process(delta, Data);
     }
     public void Setup(Data data, IServer server)
     {

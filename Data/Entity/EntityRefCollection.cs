@@ -25,7 +25,7 @@ public partial class EntityRefCollection<TRef>
     [SerializationConstructor] public EntityRefCollection(HashSet<int> refIds)
     {
         RefIds = refIds == null ? new HashSet<int>() : new HashSet<int>(refIds);
-        _refs = new Dictionary<int, TRef>();
+        _refs = null;
     }
     public IReadOnlyCollection<TRef> Refs()
     {
@@ -44,7 +44,7 @@ public partial class EntityRefCollection<TRef>
     {
         //todo need to make this procedure
         RefIds.Add(t.Id);
-        _refs.Add(t.Id, t);
+        _refs?.Add(t.Id, t);
     }
     public void AddRef(int id, Data data)
     {
@@ -56,12 +56,12 @@ public partial class EntityRefCollection<TRef>
     {
         //todo need to make this procedure
         RefIds.Remove(t.Id);
-        _refs.Remove(t.Id);
+        _refs?.Remove(t.Id);
     }
     
     public void SyncRef(Data data)
     {
-        _refs.Clear();
+        _refs = new Dictionary<int, TRef>();
         foreach (var id in RefIds)
         {
             TRef refer = (TRef) data[id];

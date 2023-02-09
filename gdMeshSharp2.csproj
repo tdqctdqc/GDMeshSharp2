@@ -4,6 +4,7 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="GeometRi" Version="1.4.0.3" />
     <PackageReference Include="MarkovNextGen" Version="1.2.6" />
     <PackageReference Include="MessagePack" Version="2.4.59" />
     <PackageReference Include="OptimizedPriorityQueue" Version="5.1.0" />

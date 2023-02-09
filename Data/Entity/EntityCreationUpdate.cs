@@ -12,16 +12,13 @@ public sealed partial class EntityCreationUpdate : Update
     public string EntityTypeName { get; private set; }
     public byte[] EntityBytes { get; private set; }
     
-    public static void Send<TEntity>(TEntity entity, HostWriteKey key)
+    public static EntityCreationUpdate Create(Entity entity, HostWriteKey key)
     {
-        var entityBytes = Game.I.Serializer.MP.Serialize<TEntity>(entity);
+        var entityBytes = Game.I.Serializer.MP.Serialize(entity, entity.GetType());
 
-        var u = new EntityCreationUpdate(entity.GetType().Name, entityBytes);
-
-        // key.HostServer.QueueUpdate(u);
+        return new EntityCreationUpdate(entity.GetType().Name, entityBytes);
     }
-    public EntityCreationUpdate(string entityTypeName, byte[] entityBytes) 
-        : base(new HostWriteKey(null, null))
+    [SerializationConstructor] public EntityCreationUpdate(string entityTypeName, byte[] entityBytes) 
     {
         EntityBytes = entityBytes;
         EntityTypeName = entityTypeName;
@@ -32,7 +29,8 @@ public sealed partial class EntityCreationUpdate : Update
     }
     public override void Enact(ServerWriteKey key)
     {
-        var e = Game.I.Serializer.MP.Deserialize<Entity>(EntityBytes);
+        var eType = Game.I.Serializer.Types[EntityTypeName];
+        var e = (Entity)Game.I.Serializer.MP.Deserialize(EntityBytes, eType);
         e.GetMeta().AddToData(e, key);
     }
 }

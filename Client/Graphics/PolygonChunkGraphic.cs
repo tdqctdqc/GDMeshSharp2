@@ -38,7 +38,7 @@ public class PolygonChunkGraphic : Node2D
     {
         var first = polys.First();
         var mb = new MeshBuilder();
-        var unions = UnionFind<MapPolygon, int>
+        var unions = UnionFind<MapPolygon>
             .DoUnionFind(
                 polys, 
                 native,

@@ -22,7 +22,7 @@ public class LandSeaManager
         var landPolys = data.Planet.Polygons.Entities.Where(p => p.IsLand());
         var seaPolys = data.Planet.Polygons.Entities.Where(p => p.IsWater());
         var landmasses =
-            UnionFind<MapPolygon, float>.DoUnionFind(landPolys.ToList(), (p1, p2) => p1.HasNeighbor(p2), p1 => p1.Neighbors.Refs());
+            UnionFind<MapPolygon>.DoUnionFind(landPolys.ToList(), (p1, p2) => p1.HasNeighbor(p2), p1 => p1.Neighbors.Refs());
         landmasses.ForEach(m =>
         {
             var hash = m.ToHashSet();
@@ -34,7 +34,7 @@ public class LandSeaManager
         Seas = new List<HashSet<MapPolygon>>();
         SeaDic = new Dictionary<MapPolygon, HashSet<MapPolygon>>();
         var seamasses =
-            UnionFind<MapPolygon, float>.DoUnionFind(seaPolys.ToList(), 
+            UnionFind<MapPolygon>.DoUnionFind(seaPolys.ToList(), 
                 (p1, p2) => p1.HasNeighbor(p2), p1 => p1.Neighbors.Refs());
         seamasses.ForEach(m =>
         {

@@ -2,86 +2,92 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Godot;
 
 public class GeneratorClient : Node, IClient
 {
+    private GeneratorSession _session;
     private Node _node;
     private ButtonToken _generate, _generateNext, _generateTest, _done;
-    private SpinBox _seed;
+    private SpinBox _seed, _width, _height;
+    public CameraController Cam { get; private set; }
+    public GenData Data => _session.Data;
     private GeneratorGraphics _graphics;
+    private Label _progress;
+    private bool _generating;
+    private bool _generated;
+    private MapDisplayOptionsUi _mapOptions;
+
+    public override void _Ready()
+    {
+        Cam = new CameraController();
+        AddChild(Cam);
+        Cam.Current = true;
+        this.AssignChildNode(ref _seed, "Seed");
+        this.AssignChildNode(ref _width, "Width");
+        this.AssignChildNode(ref _height, "Height");
+        this.AssignChildNode(ref _width, "Width");
+        this.AssignChildNode(ref _progress, "Progress");
+        this.AssignChildNode(ref _graphics, "Graphics");
+        this.AssignChildNode(ref _mapOptions, "MapDisplayOptionsUi");
+        _mapOptions.Setup(_graphics);
+        
+        _generate = ButtonToken.Get(this, "Generate", () => PressedGenerate());
+        _done = ButtonToken.Get(this, "Done", GoToGameSession);
+    }
+
+    public void Setup(GeneratorSession session)
+    {
+        _session = session;
+    }
     public void HandleInput(InputEvent e, float delta)
     {
         
     }
     
-    
-    
-    public CameraController Cam { get; private set; }
-    Data IClient.Data => Data;
-    public GenData Data { get; private set; }
-    private MapDisplayOptionsUi _mapOptions;
 
-    public void Done()
+    public void GoToGameSession()
     {
-        if (Data != null)
+        if (_generated)
         {
-            Game.I.StartHostSession(Data);
+            Game.I.StartHostSession(_session.Data);
             QueueFree();
         }
     }
-
     public void Process(float delta)
     {
-        _graphics?.Process(delta, Data);
+        if(_generating == false) _graphics?.Process(delta, _session.Data);
     }
-    public void Setup()
+    private async void PressedGenerate()
     {
-        Cam = new CameraController();
-        AddChild(Cam);
-        Cam.Current = true;
-        _seed = (SpinBox) FindNode("Seed");
-        
-        _generate = ButtonToken.Get(this, "Generate", () => PressedGenerate());
-        _generateNext = ButtonToken.Get(this, "GenerateNext", () => PressedGenerateNext());
-        _generateTest = ButtonToken.Get(this, "GenerateTest", () => PressedGenerateTest());
-        _done = ButtonToken.Get(this, "Done", Done);
-        _graphics = (GeneratorGraphics) FindNode("Graphics");
-        _mapOptions = (MapDisplayOptionsUi) FindNode("MapDisplayOptionsUi");
-        _mapOptions.Setup(_graphics);
+        if (_generating) return;
+        _generating = true;
+        await Task.Run(() => Generate((int) _seed.Value, (int) _width.Value, (int) _height.Value)); 
+        _generating = false;
+        _generated = true;
+    }
 
-    }
-    private void PressedGenerateTest()
+    private GenerationParameters GetParams()
     {
-        for (int i = 0; i < 100; i++)
-        {
-            _seed.Value = _seed.Value + 1;
-            Game.I.Random.Seed = (ulong) _seed.Value;
-            Generate((int)_seed.Value);
-        }
+        return new GenerationParameters(new Vector2((int) _width.Value, (int) _height.Value));
     }
-    private void PressedGenerate()
-    {
-        Generate((int)_seed.Value);
-    }
-    private void PressedGenerateNext()
-    {
-        _seed.Value = _seed.Value + 1;
-        Generate((int)_seed.Value);
-    }
-    private void Generate(int seed)
-    {
-        var bounds = new Vector2(16000, 8000);
 
-        Game.I.Random.Seed = (ulong) seed;//DateTime.Now.Millisecond;
+    private void MonitorGeneration(string tag, string progress)
+    {
+        _progress.Text = tag + " " + progress;
+    }
+    private void Generate(int seed, int width, int height)
+    {
+        var bounds = new Vector2(width, height);
+        Game.I.Random.Seed = (ulong) seed;
         _node?.QueueFree();
         _node = new Node();
         AddChild(_node);
         MoveChild(_node, 0);
-        var worldGen = new WorldGenerator(bounds);
-        Data = worldGen.Data;
-        worldGen.Generate();
-        _graphics.Setup(this, Data);
-        _graphics.SetupGenerator(Data, this);
+        
+        _session.Generate(seed, GetParams(), MonitorGeneration);
+        _graphics.Setup(this, _session.Data);
+        _graphics.SetupGenerator(_session.Data, this);
     }
 }

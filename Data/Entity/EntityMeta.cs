@@ -91,7 +91,8 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
         repo.RaiseValueChangedNotice(fieldName, t, oldValue, newValue, key);
         if (key is HostWriteKey hKey)
         {
-            EntityVarUpdate<TProperty>.Send(fieldName, t.Id, newValue, hKey);
+            var bytes = Game.I.Serializer.MP.Serialize(newValue);
+            hKey.HostServer.QueueUpdate(EntityVarUpdate.Create(fieldName, t.Id, bytes, hKey));
         }
     }
 }

@@ -10,47 +10,47 @@ public class PolyHighlighter : Node2D
     {
         _mis = new List<MeshInstance2D>();
     }
-    public void DrawOutline(MapPolygon poly, Vector2 offset, IClient client)
+    public void DrawOutline(Data data, MapPolygon poly, Vector2 offset, IClient client)
     {
         Visible = true;
         Clear();
-        Move(client, poly);
+        Move(data, client, poly);
         var mb = new MeshBuilder();
-        var lines = poly.Neighbors.Refs().Select(n => poly.GetBorder(n, client.Data))
+        var lines = poly.Neighbors.Refs().Select(n => poly.GetBorder(n, data))
             .SelectMany(b => b.GetSegsRel(poly));
         mb.AddLines(lines.ToList(), 20f, Colors.Pink);
         TakeFromMeshBuilder(mb);
     }
 
-    public void DrawPolyAndNeighbors(MapPolygon poly, IClient client)
+    public void DrawPolyAndNeighbors(Data data, MapPolygon poly, IClient client)
     {
         Visible = true;
         Clear();
-        Move(client, poly);
+        Move(data, client, poly);
         var mb = new MeshBuilder();
         int iter = 0;
-        poly.GetTrisRel(client.Data).ForEach(t =>
+        poly.GetTrisRel(data).ForEach(t =>
         {
             mb.AddTri(t, ColorsExt.GetRainbowColor(iter++));
         });
         foreach (var n in poly.Neighbors.Refs())
         {
-            n.GetTrisRel(client.Data).ForEach(t =>
+            n.GetTrisRel(data).ForEach(t =>
             {
-                mb.AddTri(t.Transpose(poly.GetOffsetTo(n, client.Data)), Colors.White);
+                mb.AddTri(t.Transpose(poly.GetOffsetTo(n, data)), Colors.White);
             });
         }
         
         TakeFromMeshBuilder(mb);
     }
-    public void DrawPolyTris(MapPolygon poly, IClient client)
+    public void DrawPolyTris(Data data, MapPolygon poly, IClient client)
     {
         Visible = true;
         Clear();
-        Move(client, poly);
+        Move(data, client, poly);
         var mb = new MeshBuilder();
         int iter = 0;
-        poly.GetTrisRel(client.Data).ForEach(t =>
+        poly.GetTrisRel(data).ForEach(t =>
         {
             mb.AddTri(t, ColorsExt.GetRainbowColor(iter++));
         });
@@ -59,12 +59,12 @@ public class PolyHighlighter : Node2D
     }
 
 
-    public void SelectAspectTri<TAspect>(MapPolygon poly, Vector2 offset, IClient client)
+    public void SelectAspectTri<TAspect>(Data data, MapPolygon poly, Vector2 offset, IClient client)
         where TAspect : TerrainAspect
     {
         Visible = true;
         Clear();
-        Move(client, poly);
+        Move(data, client, poly);
         // var tris = client.Data.Models.GetManager<TAspect>()
         //     .GetTris(target).Tris;
         // if (tris.ContainsKey(poly.Id) == false) return;
@@ -78,55 +78,7 @@ public class PolyHighlighter : Node2D
         // TakeFromMeshBuilder(mb);
     }
     
-    public void SelectTargetAspectTri<TAspect>(TAspect target, MapPolygon poly, Vector2 offset, IClient client)
-        where TAspect : TerrainAspect
-    {
-        Visible = true;
-        Clear();
-        Move(client, poly);
-        var tris = client.Data.Planet.TerrainTris
-            .GetTris(target).Tris;
-        if (tris.ContainsKey(poly.Id) == false) return;
-        
-        var polyTris = tris[poly.Id];
-        var hitTri = polyTris
-            .FirstOrDefault(t => t.PointInsideTriangle(offset));
-        var mb = new MeshBuilder();
-        polyTris.ForEach(t => mb.AddTri(t, Colors.Yellow));
-        if(hitTri != null) mb.AddTri(hitTri, Colors.Red);
-        TakeFromMeshBuilder(mb);
-    }
     
-    public void DoXRay<TAspect>(MapPolygon poly, Vector2 offset, IClient client) where TAspect : TerrainAspect
-    {
-        Clear();
-        Visible = true;
-        Move(client, poly);
-        var mb = new MeshBuilder();
-        var manager = (TerrainAspectManager<TAspect>)client.Data.Models.GetManager<TAspect>();
-        var aspects = manager.ByPriority;
-        bool found = false;
-        for (var i = aspects.Count - 1; i >= 0; i--)
-        {
-            var aspect = aspects[i];
-            var aspectTris = client.Data.Planet.TerrainTris.GetTris(aspect).Tris;
-            if (aspectTris.ContainsKey(poly.Id))
-            {
-                aspectTris[poly.Id].ForEach(t => mb.AddTri(t, ColorsExt.GetRainbowColor(i)));
-                found = true;
-            }
-        }
-
-        if (found == false)
-        {
-            // poly.tri
-        }
-
-        if (mb.Tris.Count > 0)
-        {
-            TakeFromMeshBuilder(mb);
-        }
-    }
 
     private void TakeFromMeshBuilder(MeshBuilder mb)
     {
@@ -136,9 +88,9 @@ public class PolyHighlighter : Node2D
         _mis.Add(mi);
     }
 
-    private void Move(IClient client, MapPolygon poly)
+    private void Move(Data data, IClient client, MapPolygon poly)
     {
-        Position = client.Cam.GetMapPosInGlobalSpace(poly.Center, client.Data);
+        Position = client.Cam.GetMapPosInGlobalSpace(poly.Center, data);
     }
     public void Clear()
     {

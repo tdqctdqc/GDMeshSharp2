@@ -1,16 +1,16 @@
 using Godot;
 using System;
+using MessagePack;
 
 public class EntityDeletionUpdate : Update
 {
     public int EntityId { get; private set; }
 
-    public static void Send(int entityId, HostWriteKey key)
+    public static EntityDeletionUpdate Create(int entityId, HostWriteKey key)
     {
-        var u = new EntityDeletionUpdate(entityId, key);
-        key.HostServer.QueueUpdate(u);
+        return new EntityDeletionUpdate(entityId);
     }
-    public EntityDeletionUpdate(int entityId, HostWriteKey key) : base(key)
+    [SerializationConstructor] private EntityDeletionUpdate(int entityId)
     {
         EntityId = entityId;
     }

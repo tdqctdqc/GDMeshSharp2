@@ -25,7 +25,7 @@ public class GameUi : CanvasLayer
 
     public void Setup(bool host, Data data, GameGraphics graphics)
     {
-        _hostOrClient = (Label) FindNode("HostOrClient");
+        this.AssignChildNode(ref _hostOrClient,"HostOrClient");
         _hostOrClient.Text = host ? "Host" : "Client";
         
         _entityOverviewBtn = ButtonToken.Get(this, "EntityOverviewBtn", () => _entityOverview.Popup_());
@@ -33,7 +33,7 @@ public class GameUi : CanvasLayer
         
         AddChild(_entityOverview);
 
-        _mapOptions = (MapDisplayOptionsUi) FindNode("MapDisplayOptionsUi");
+        this.AssignChildNode(ref _mapOptions, "MapDisplayOptionsUi");
         _mapOptions.Setup(graphics);
     }
 }

@@ -16,7 +16,7 @@ public class TerrainColorChunkGraphic : Node2D
             for (var j = manager.ByPriority.Count - 1; j >= 0; j--)
             {
                 var aspect = manager.ByPriority[j];
-                var aspectTris = data.Planet.TerrainTris.ByName[aspect.Name].GetPolyTris(p);
+                var aspectTris = p.TerrainTris[aspect];
                 if (aspectTris == null) continue;
                 aspectTris.ForEach(t =>
                 {

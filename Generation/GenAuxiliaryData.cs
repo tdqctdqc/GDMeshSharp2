@@ -10,8 +10,8 @@ public class GenAuxiliaryData
     public List<GenMass> Masses { get; private set; }
     public List<GenPlate> Plates { get; private set; }
     public List<GenContinent> Continents { get; private set; }
-    public List<FaultLine> FaultLines { get; private set; }
-
+    public FaultLineManager FaultLines { get; private set; }
+    
     public GenAuxiliaryData()
     {
         Cells = new List<GenCell>();
@@ -19,6 +19,6 @@ public class GenAuxiliaryData
         Masses = new List<GenMass>();
         Plates = new List<GenPlate>();
         Continents = new List<GenContinent>();
-        FaultLines = new List<FaultLine>();
+        FaultLines = new FaultLineManager();
     }
 }

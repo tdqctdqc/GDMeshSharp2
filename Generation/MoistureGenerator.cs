@@ -18,66 +18,84 @@ public class MoistureGenerator
     {
         _key = key;
         SetPolyMoistures();
-        BuildVegetationTris();
+        BuildPolyVegetationTris();
         BuildRivers();
     }
     private void SetPolyMoistures()
     {
-        var massMoistures = new Dictionary<GenMass, float>();
+        var plateMoistures = new Dictionary<GenPlate, float>();
         
-        Data.GenAuxData.Masses.ForEach(m =>
+        Data.GenAuxData.Plates.ForEach(p =>
         {
-            var distFromEquator = Mathf.Abs(Data.Planet.Height / 2f - m.Center.y);
+            var distFromEquator = Mathf.Abs(Data.Planet.Height / 2f - p.Center.y);
             var altMult = .5f + .5f * (1f - distFromEquator / (Data.Planet.Height / 2f));
-            var polyGeos = m.Plates.SelectMany(p => p.Cells).SelectMany(c => c.PolyGeos).ToList();
+            var polyGeos = p.Cells.SelectMany(c => c.PolyGeos).ToList();
             var count = polyGeos.Count;
             var waterCount = polyGeos.Where(g => g.IsWater()).Count();
             var score = altMult * waterCount / count;
-            massMoistures.Add(m, score);
+            plateMoistures.Add(p, score);
         });
 
 
-        for (int i = 0; i < 2; i++)
+        float maxFriction = 0f;
+        float averageFriction = 0f;
+        int iter = 0;
+        for (int i = 0; i < 3; i++)
         {
             diffuse();
         }
-
+        GD.Print("max friction " + maxFriction);
+        GD.Print("average friction " + (averageFriction / iter));
+        
         void diffuse()
         {
-            Data.GenAuxData.Masses.ForEach(m =>
+            Data.GenAuxData.Plates.ForEach(p =>
             {
-                var oldScore = massMoistures[m];
-                var newScore = m.Neighbors.Select(n => massMoistures[n]).Average();
+                var oldScore = plateMoistures[p];
+                
+                var newScore = p.Neighbors.Select(n =>
+                {
+                    var mult = 1f;
+                    if (Data.GenAuxData.FaultLines.TryGetFault(p, n, out var fault))
+                    {
+                        mult = 1f - fault.Friction * .5f;
+                        maxFriction = Mathf.Max(maxFriction, fault.Friction);
+                        averageFriction += fault.Friction;
+                        iter++;
+                    }
+                    return mult * plateMoistures[n];
+                }).Average();
 
                 if (newScore > oldScore)
                 {
-                    massMoistures[m] = newScore;
+                    plateMoistures[p] = newScore;
                 }
             });
         }
 
-        Data.GenAuxData.Masses.ForEach(m =>
+        Data.GenAuxData.Plates.ForEach(p =>
         {
-            var polyGeos = m.Plates.SelectMany(p => p.Cells).SelectMany(c => c.PolyGeos).ToList();
-            polyGeos.ForEach(p =>
+            var polys = p.Cells.SelectMany(c => c.PolyGeos).ToList();
+            polys.ForEach(poly =>
             {
-                if (p.IsWater()) p.Set(nameof(p.Moisture), 1f, _key);
+                if (poly.IsWater()) poly.Set(nameof(poly.Moisture), 1f, _key);
                 else
                 {
-                    var moisture = massMoistures[m] + Game.I.Random.RandfRange(-.1f, .1f);
+                    var moisture = plateMoistures[p] + Game.I.Random.RandfRange(-.1f, .1f);
                     
-                    p.Set(nameof(p.Moisture), Mathf.Clamp(moisture, 0f, 1f), _key);
+                    poly.Set(nameof(poly.Moisture), Mathf.Clamp(moisture, 0f, 1f), _key);
                 }
             });
         });
     }
 
-    private void BuildVegetationTris()
+    private void BuildPolyVegetationTris()
     {
-        Data.Models.Vegetation.BuildTriHolders(_id, Data, _key);
-        Data.Models.Vegetation.BuildTris(Data.Planet.Polygons.Entities.ToHashSet(), Data);
+        foreach (var poly in Data.Planet.Polygons.Entities)
+        {
+            poly.BuildTrisForAspects(Data.Models.Vegetation, _key);
+        }
     }
-
     
     private void BuildRivers()
     {
@@ -133,8 +151,8 @@ public class MoistureGenerator
                 path[i].GetBorder(path[i + 1], Data).IncrementFlow(add, _key);
             }
         }
-        Data.Models.Landforms.BuildTrisForAspect(LandformManager.River, Data, 
-            pathToSea.SelectMany(p => p.Value).Distinct().ToList());
 
+        var riverPolys = pathToSea.SelectMany(p => p.Value).Distinct().ToList();
+        riverPolys.ForEach(p => p.BuildTrisForAspect(LandformManager.River, _key));
     }
 }
