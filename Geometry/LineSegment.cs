@@ -6,8 +6,8 @@ using Godot;
 
 public class LineSegment
 {
-    public Vector2 From { get; private set; }
-    public Vector2 To { get; private set; }
+    public Vector2 From { get; set; }
+    public Vector2 To { get; set; }
     public Vector2 Mid() => (From + To) / 2f;
     public LineSegment(Vector2 from, Vector2 to)
     {
@@ -53,6 +53,11 @@ public class LineSegment
     {
         return From.DistanceTo(To);
     }
+
+    public bool ContainsPoint(Vector2 p)
+    {
+        return (p - From).Normalized() == (To - p).Normalized();
+    }
 }
 
 public static class LineSegmentExt
@@ -67,5 +72,71 @@ public static class LineSegmentExt
         var offset = newOrigin.GetOffsetTo(oldOrigin, data);
         return segs.Select(l => new LineSegment(l.From + offset,
             l.To + offset));
+    }
+    
+    public static List<LineSegment> BreakOnPoints(this List<LineSegment> segs, 
+        List<Vector2> breakPoints)
+    {
+        var result = new List<LineSegment>();
+        for (var i = 0; i < segs.Count; i++)
+        {
+            var seg = segs[i];
+            var segBreaks = breakPoints.Where(p => seg.ContainsPoint(p)).OrderBy(b => b.DistanceTo(seg.From)).ToList();
+
+            if (segBreaks.Count() > 0)
+            {
+                if (segBreaks.Any(b => b == seg.From || b == seg.To)) throw new Exception();
+                result.Add(new LineSegment(seg.From, segBreaks.First()));
+                for (var j = 0; j < segBreaks.Count - 1; j++)
+                {
+                    result.Add(new LineSegment(segBreaks[j], segBreaks[j + 1]));
+                }
+                result.Add(new LineSegment(segBreaks.Last(), seg.To));
+            }
+            else result.Add(seg);
+        }
+
+        return result;
+    }
+    
+    public static List<LineSegment> InsertOnPoints(this List<LineSegment> segs, 
+        List<Vector2> breakPoints, List<float> widths, out HashSet<LineSegment> inserted)
+    {
+        var result = new List<LineSegment>();
+        inserted = new HashSet<LineSegment>();
+        for (var i = 0; i < segs.Count; i++)
+        {
+            var seg = segs[i];
+            var segBreaks = breakPoints.Where(p => seg.ContainsPoint(p)).OrderBy(b => b.DistanceTo(seg.From)).ToList();
+
+            if (segBreaks.Count() > 0)
+            {
+                if (segBreaks.Count() > 1) throw new Exception();
+                
+                var breakPoint = segBreaks.First();
+                var index = breakPoints.IndexOf(breakPoint);
+                var width = widths[index];
+                
+                if (breakPoint == seg.From || breakPoint == seg.To) throw new Exception();
+                if (seg.From.DistanceTo(breakPoint) <= width / 2f || seg.To.DistanceTo(breakPoint) <= width / 2f)
+                {
+                    throw new Exception();
+                }
+                
+                var newFrom = seg.From + (breakPoint - seg.From).Shorten(width / 2f);
+                var newTo = seg.To + (breakPoint - seg.To).Shorten(width / 2f);
+                
+                var before = new LineSegment(seg.From, newFrom);
+                result.Add(before);
+                var newSeg = new LineSegment(newFrom, newTo);
+                result.Add(newSeg);
+                inserted.Add(newSeg);
+                var after = new LineSegment(newTo, seg.To);
+                result.Add(after);
+            }
+            else result.Add(seg);
+        }
+
+        return result;
     }
 }

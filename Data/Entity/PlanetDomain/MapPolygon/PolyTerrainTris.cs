@@ -44,13 +44,12 @@ public class PolyTerrainTris
         for (var i = 0; i < _numSections; i++)
         {
             var section = sectionTris[i];
-            GD.Print("section length " + section.Count);
             var prev = sectionTris[(_numSections + i - 1) % _numSections];
             var next = sectionTris[(i + 1) % _numSections];
             var sharedWPrev = section.Intersect(prev);
             var sharedWNext = section.Intersect(next);
             var exclusive = (section.Where(t => prev.Contains(t) == false && next.Contains(t) == false));
-            
+
             var currCount = orderedTris.Count;
             sectionTriStartIndices[i] = Convert.ToByte(currCount);
             sectionTriCounts[i] = Convert.ToByte(section.Count());
@@ -149,5 +148,18 @@ public class PolyTerrainTris
     public Triangle GetTriangle(int index)
     {
         return Tris[index].GetTriangle(Vertices);
+    }
+
+    public List<Triangle> GetSectionTris(int section)
+    {
+        var ts = new List<Triangle>();
+        var start = SectionTriStartIndices[section];
+        var count = SectionTriCounts[section];
+        for (int i = 0; i < count; i++)
+        {
+            ts.Add(Tris[(start + i) % Tris.Length].GetTriangle(Vertices));
+        }
+
+        return ts;
     }
 }

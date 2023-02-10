@@ -21,15 +21,16 @@ public static class EdgeDisturber
                 var nPoly = poly.Neighbors.Refs().ElementAt(j);
                 if (poly.Id > nPoly.Id)
                 {
-                    DisturbEdge(_key.Data, poly, nPoly, noise, 50f);
+                    DisturbEdge(_key.Data, poly, nPoly, noise);
                 }
             }
         }
     }
 
-    private static void DisturbEdge(Data data, MapPolygon highId, MapPolygon lowId, OpenSimplexNoise noise, float minSegLength)
+    private static void DisturbEdge(Data data, MapPolygon highId, MapPolygon lowId, OpenSimplexNoise noise)
     {
         var border = highId.GetBorder(lowId, _key.Data);
+        var minSegLength = Constants.PreferredMinPolyBorderSegLength;
         if (border.HighSegsRel.Count != 1) return;
 
         var hiSeg = border.HighSegsRel[0];

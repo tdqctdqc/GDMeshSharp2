@@ -100,10 +100,16 @@ public class SandboxClient : Node, IClient
 
         if (intersecting != -1 && intersecting != _prevMouseOver)
         {
-            GD.Print("find time " + sw.Elapsed.TotalMilliseconds);
+            // GD.Print("find time " + sw.Elapsed.TotalMilliseconds);
             _mouseOverTriGraphics?.Free();
             _prevMouseOver = intersecting;
             var mb = new MeshBuilder();
+
+            var sectionTris = _poly.Tris.GetSectionTris(section);
+            sectionTris.ForEach(s =>
+            {
+                mb.AddTri(s, Colors.Yellow);
+            });
             
             mb.AddTri(_poly.Tris.GetTriangle(intersecting), Colors.Red);
             _mouseOverTriGraphics = mb.GetMeshInstance();

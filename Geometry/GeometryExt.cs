@@ -328,4 +328,10 @@ public static class GeometryExt
 
         throw new Exception();
     }
+
+    public static Vector2 Shorten(this Vector2 v, float shortenBy)
+    {
+        if (v.Length() <= shortenBy) throw new Exception();
+        return v.Normalized() * (v.Length() - shortenBy);
+    }
 }

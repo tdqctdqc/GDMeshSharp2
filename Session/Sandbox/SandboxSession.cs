@@ -16,7 +16,16 @@ public class SandboxSession : Node, ISession
         _home = Vector2.Zero;
         Client = client;
         
-        var poly = new MockPolygon(0);
+        var poly = new MockPolygon(Vector2.Zero,
+            new List<LineSegment>
+            {
+                new LineSegment(new Vector2(-500f, -500f), new Vector2(500f, -500f)),
+                new LineSegment(new Vector2(500f, -500f), new Vector2(500f, 500f)),
+                new LineSegment(new Vector2(500f, 500f), new Vector2(-500f, 500f)),
+                new LineSegment(new Vector2(-500f, 500f), new Vector2(-500f, -500f)),
+            },
+            new List<Vector2>{new Vector2(0f, -500f)},
+            new List<float>{20f}, 0);
         client.Setup(_home);
         Client.DrawPoly(poly);
     }

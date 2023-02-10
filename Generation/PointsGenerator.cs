@@ -128,4 +128,14 @@ public static class PointsGenerator
         if(points.Contains(bl) == false) points.Add(bl);
         if(points.Contains(tr) == false) points.Add(tr);
     }
+
+    public static List<Vector2> GetCircleOutlinePoints(Vector2 center, float radius, int resolution)
+    {
+        var points = new List<Vector2>();
+        for (int i = 0; i < 10; i++)
+        {
+            points.Add(radius * Vector2.Up.Rotated(-i * (Mathf.Pi * 2f / 20f)));
+        }
+        return points;
+    }
 }
