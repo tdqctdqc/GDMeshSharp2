@@ -13,7 +13,7 @@ public class GameSession : Node, ISession
     public override void _Process(float delta)
     {
         _logic?.Process(delta);
-        Client?.Process(delta);
+        Client?.ProcessPoly(delta);
     }
     
     public void StartAsHost(GenData data, UserCredential userCredential = null)

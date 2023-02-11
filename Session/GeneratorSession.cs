@@ -31,6 +31,6 @@ public class GeneratorSession : Node, ISession
 
     public override void _Process(float delta)
     {
-        Client.Process(delta);
+        Client.ProcessPoly(delta);
     }
 }

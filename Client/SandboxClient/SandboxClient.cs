@@ -60,6 +60,25 @@ public class SandboxClient : Node, IClient
         }
     }
 
+    public void DrawTri(Triangle tri)
+    {
+
+        if (_triGraphics.TryGetValue(-1, out var node))
+        {
+            node.Free();
+            _triGraphics.Remove(-1);
+        }
+        var mb = new MeshBuilder();
+        mb.AddTri(tri, Colors.Yellow);
+        var points = tri.GenerateRegularPointsInside(20f);
+        points.ForEach(p =>
+        {
+            mb.AddCircle(p, 5f, 6, Colors.Red);
+        });
+        var mi = mb.GetMeshInstance();
+        _triGraphics.Add(-1, mi);
+        AddChild(mi);
+    }
     public void DrawPoly(MockPolygon poly)
     {
         _poly = poly;
@@ -75,15 +94,16 @@ public class SandboxClient : Node, IClient
         for (var i = 0; i < tris.Count; i++)
         {
             var t = tris[i];
-            mb.AddTriOutline(t, 5f, Colors.White);
+            mb.AddTriOutline(t, 3f, Colors.White);
             var tGraphic = mb.GetMeshInstance();
             AddChild(tGraphic);
             _triGraphics.Add(i, tGraphic);
             mb.Clear();
         }
     }
-    public void Process(float delta)
+    public void ProcessPoly(float delta)
     {
+        if (_poly == null) return;
         var mousePos = _hook.GetGlobalMousePosition();
             
         var angle = (mousePos - _home).GetClockwiseAngle();
@@ -105,11 +125,11 @@ public class SandboxClient : Node, IClient
             _prevMouseOver = intersecting;
             var mb = new MeshBuilder();
 
-            var sectionTris = _poly.Tris.GetSectionTris(section);
-            sectionTris.ForEach(s =>
-            {
-                mb.AddTri(s, Colors.Yellow);
-            });
+            // var sectionTris = _poly.Tris.GetSectionTris(section);
+            // sectionTris.ForEach(s =>
+            // {
+            //     mb.AddTri(s, Colors.Yellow);
+            // });
             
             mb.AddTri(_poly.Tris.GetTriangle(intersecting), Colors.Red);
             _mouseOverTriGraphics = mb.GetMeshInstance();

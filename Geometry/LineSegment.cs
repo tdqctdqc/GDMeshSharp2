@@ -58,6 +58,25 @@ public class LineSegment
     {
         return (p - From).Normalized() == (To - p).Normalized();
     }
+
+    public static List<LineSegment> GetBoxBorderSegments(Vector2 center, float dim, int pointsPerSide)
+    {
+        var tl = center + new Vector2(-dim / 2f, -dim / 2f);
+        var tr = center + new Vector2(dim / 2f, -dim / 2f);
+        var br = center + new Vector2(dim / 2f, dim / 2f);
+        var bl = center + new Vector2(-dim / 2f, dim / 2f);
+        var res = new List<LineSegment>();
+        var step = dim / (pointsPerSide + 1); 
+        for (var i = 0; i <= pointsPerSide; i++)
+        {
+            res.Add(new LineSegment(tl + i * step * Vector2.Right, tl + (i + 1) * step * Vector2.Right));
+            res.Add(new LineSegment(tr + i * step * Vector2.Down, tr + (i + 1) * step * Vector2.Down));
+            res.Add(new LineSegment(br + i * step * Vector2.Left, br + (i + 1) * step * Vector2.Left));
+            res.Add(new LineSegment(bl + i * step * Vector2.Up, bl + (i + 1) * step * Vector2.Up));
+        }
+
+        return res;
+    }
 }
 
 public static class LineSegmentExt
@@ -112,7 +131,6 @@ public static class LineSegmentExt
             if (segBreaks.Count() > 0)
             {
                 if (segBreaks.Count() > 1) throw new Exception();
-                
                 var breakPoint = segBreaks.First();
                 var index = breakPoints.IndexOf(breakPoint);
                 var width = widths[index];

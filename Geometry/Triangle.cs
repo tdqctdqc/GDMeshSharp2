@@ -12,7 +12,7 @@ public class Triangle
         A = a;
         B = b;
         C = c;
-        if (this.IsDegenerate()) throw new Exception();
+        // if (this.IsDegenerate()) throw new Exception("Triangle is degenerate");
     }
 
     public Triangle Transpose(Vector2 offset)
@@ -20,6 +20,29 @@ public class Triangle
         return new Triangle(A + offset, B + offset, C + offset);
     }
 
+    public void ReplacePoint(Vector2 oldPoint, Vector2 newPoint)
+    {
+        if (oldPoint == A)
+        {
+            A = newPoint;
+        }
+        else if (oldPoint == B)
+        {
+            B = newPoint;
+        }
+        else if (oldPoint == C)
+        {
+            C = newPoint;
+        }
+        else
+        {
+            throw new Exception();
+        }
+    }
+    public bool HasPoint(Vector2 v)
+    {
+        return v == A || v == B || v == C;
+    }
     public void DoForEachPoint(Action<Vector2> action)
     {
         action(A);

@@ -15,25 +15,63 @@ public class SandboxSession : Node, ISession
         AddChild(client);
         _home = Vector2.Zero;
         Client = client;
+        DoPoly();
+    }
+
+    private void DoTri()
+    {
+        var tri = new Triangle(new Vector2(-100f, -100f), new Vector2(100f, -100f), new Vector2(0f, 200f));
+        Client.Setup(_home);
+        Client.DrawTri(tri);
+    }
+    private void DoPoly()
+    {
+        var border = new List<Vector2>
+        {
+            new Vector2(-100f, -100f),
+            
+            new Vector2(-50f, -100f),
+            new Vector2(50f, -100f), 
+            
+            new Vector2(100f, -100f),
+            
+            new Vector2(100f, -50f),
+            new Vector2(100f, 0f),
+            new Vector2(100f, 50f),
+            
+            new Vector2(100f, 100f),
+            
+            new Vector2(50f, 100f),
+            // new Vector2(0f, 100f),
+            new Vector2(-50f, 100f),
+            
+            new Vector2(-100f, 100f),
+            
+            new Vector2(-100f, 50f),
+            // new Vector2(-100f, 0f),
+            new Vector2(-100f, -50f),
+        }.GetLineSegments(true).ToList();
         
         var poly = new MockPolygon(Vector2.Zero,
-            new List<LineSegment>
-            {
-                new LineSegment(new Vector2(-500f, -500f), new Vector2(500f, -500f)),
-                new LineSegment(new Vector2(500f, -500f), new Vector2(500f, 500f)),
-                new LineSegment(new Vector2(500f, 500f), new Vector2(-500f, 500f)),
-                new LineSegment(new Vector2(-500f, 500f), new Vector2(-500f, -500f)),
+            border,
+            new List<Vector2>{new Vector2(0f, -100f), 
+                // new Vector2(100f, 0f), 
+                new Vector2(0f, 100f), 
+                new Vector2(-100f, 0f), 
             },
-            new List<Vector2>{new Vector2(0f, -500f)},
-            new List<float>{20f}, 0);
-        client.Setup(_home);
+            new List<float>{20f, 
+                20f, 
+                20f, 
+                20f
+            }, 
+            0);
+        Client.Setup(_home);
         Client.DrawPoly(poly);
     }
-    
 
     public override void _Process(float delta)
     {
-        Client?.Process(delta);
+        Client?.ProcessPoly(delta);
     }
 
     public override void _UnhandledInput(InputEvent e)

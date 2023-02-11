@@ -14,7 +14,7 @@ public class GameClient : Node, IClient
         
     }
 
-    public void Process(float delta)
+    public void ProcessPoly(float delta)
     {
         if (GetParent() == null) return;
         Graphics?.Process(delta, Data);

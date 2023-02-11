@@ -55,7 +55,7 @@ public class GeneratorClient : Node, IClient
             QueueFree();
         }
     }
-    public void Process(float delta)
+    public void ProcessPoly(float delta)
     {
         if(_generating == false) _graphics?.Process(delta, _session.Data);
     }

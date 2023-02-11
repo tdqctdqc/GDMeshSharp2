@@ -73,6 +73,35 @@ public static class TriangleUtility
         var arc2Ratio = totalArcRatio - arc1Ratio;
         return t.A + arc1 * arc1Ratio + arc2 * arc2Ratio;
     }
+
+    public static List<Vector2> GenerateRegularPointsInside(this Triangle tri, float cellSize)
+    {
+        var res = new List<Vector2>();
+        var mid = (tri.B + tri.C) / 2f;
+        var crossLength = tri.B.DistanceTo(tri.C);
+        var axis = mid - tri.A;
+        var numIter = Mathf.FloorToInt(axis.Length() / cellSize);
+        var step = axis.Length() / (numIter + 1);
+        for (int i = 1; i <= numIter; i++)
+        {
+            var ratioAlongAxis = i / ((float)numIter + 1);
+
+            var numPointsForStep = Mathf.FloorToInt((crossLength * ratioAlongAxis) / cellSize);
+            for (var j = 0; j <= numPointsForStep + 1; j++)
+            {
+                var mod = Vector2.Up.Rotated(Game.I.Random.RandfRange(0f, Mathf.Pi * 2f)) *
+                          Game.I.Random.RandfRange(0f, cellSize / 4f);
+                var crossRatio = j / ((float) numPointsForStep + 1);
+                var p = tri.A 
+                        + (tri.B - tri.A) * ratioAlongAxis 
+                        + (tri.C - tri.B) * ratioAlongAxis * crossRatio + mod;
+                if(tri.PointInsideTriangle(p)) res.Add(p);
+            }
+        }
+        
+        return res;
+    }
+
     public static float GetArea(Vector2 p0, Vector2 p1, Vector2 p2)
     {
         var l0 = p0.DistanceTo(p1);
@@ -100,6 +129,11 @@ public static class TriangleUtility
         if ((tri.B - tri.A).Normalized() == (tri.C - tri.A).Normalized()) return true;
         return false;
     }
+    public static bool IsDegenerate(Vector2 a, Vector2 b, Vector2 c)
+    {
+        if ((b - a).Normalized() == (c - a).Normalized()) return true;
+        return false;
+    }
     public static bool PointInsideTriangle(this Triangle tri, Vector2 p)
     {
         return PointInsideTriangle(tri.A, tri.B, tri.C, p);
@@ -118,14 +152,6 @@ public static class TriangleUtility
         bool hasPos = (d1 > 0) || (d2 > 0) || (d3 > 0);
 
         return !(hasNeg && hasPos);
-    }
-    public static bool PointInsideTriangleOpt(Vector2 t1, Vector2 t2, Vector2 t3, Vector2 p)
-    {
-        var d1 = (p.x - t2.x) * (t1.y - t2.y) - (t1.x - t2.x) * (p.y - t2.y);
-        var d2 = (p.x - t3.x) * (t2.y - t3.y) - (t2.x - t3.x) * (p.y - t3.y);
-        var d3 = (p.x - t1.x) * (t3.y - t1.y) - (t3.x - t1.x) * (p.y - t1.y);
-
-        return !((d1 < 0 || d2 < 0 || d3 < 0) && (d1 > 0 || d2 > 0 || d3 > 0));
     }
     
     

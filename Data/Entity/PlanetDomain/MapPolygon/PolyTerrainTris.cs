@@ -19,7 +19,10 @@ public class PolyTerrainTris
 
     public static PolyTerrainTris Construct(List<Triangle> tris)
     {
-        if (tris.Count > byte.MaxValue - 1) throw new Exception();
+        if (tris.Count > byte.MaxValue - 1)
+        {
+            throw new Exception($"{tris.Count} is too many tris");
+        }
         var vertexIndices = new Dictionary<Vector2, int>();
         var vertices = new List<Vector2>();
         var triVertexIndices = new HashSet<Vector3>();
@@ -132,9 +135,7 @@ public class PolyTerrainTris
         byte[] sectionTriCounts)
     {
         Vertices = vertices;
-        GD.Print("vertices " + vertices.Length);
         Tris = tris;
-        GD.Print("tris " + tris.Length);
 
         SectionTriStartIndices = sectionTriStartIndices;
         SectionTriCounts = sectionTriCounts;

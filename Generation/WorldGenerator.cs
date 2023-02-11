@@ -45,9 +45,9 @@ public class WorldGenerator
         generationCallback("Polygons", "");
         
 
-        EdgeDisturber.DisturbEdges(Data.Planet.Polygons.Entities, 
-            Data.Planet.PlanetInfo.Value.Dimensions, _key);
-        generationCallback("Edge disturb", "");
+        // EdgeDisturber.DisturbEdges(Data.Planet.Polygons.Entities, 
+        //     Data.Planet.PlanetInfo.Value.Dimensions, _key);
+        // generationCallback("Edge disturb", "");
         
         Data.Events.FinalizedPolyShapes?.Invoke();
 

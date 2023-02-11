@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 public static class PointsGenerator 
 {
@@ -137,5 +138,17 @@ public static class PointsGenerator
             points.Add(radius * Vector2.Up.Rotated(-i * (Mathf.Pi * 2f / 20f)));
         }
         return points;
+    }
+
+    public static List<Vector2> GenerateInteriorPoints(this List<LineSegment> border, float cellSize)
+    {
+        //assumes the segments are 'conditionally concave' around zero
+        var tris = border.Select(b => new Triangle(b.From, b.To, Vector2.Zero));
+        var res = new List<Vector2>();
+        foreach (var t in tris)
+        {
+            res.AddRange(t.GenerateRegularPointsInside(cellSize));
+        }
+        return res;
     }
 }
