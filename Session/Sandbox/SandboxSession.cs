@@ -42,22 +42,23 @@ public class SandboxSession : Node, ISession
             new Vector2(100f, 100f),
             
             new Vector2(50f, 100f),
-            // new Vector2(0f, 100f),
+            new Vector2(0f, 100f),
             new Vector2(-50f, 100f),
             
             new Vector2(-100f, 100f),
             
             new Vector2(-100f, 50f),
-            // new Vector2(-100f, 0f),
+            new Vector2(-100f, 0f),
             new Vector2(-100f, -50f),
         }.GetLineSegments(true).ToList();
         
         var poly = new MockPolygon(Vector2.Zero,
             border,
-            new List<Vector2>{new Vector2(0f, -100f), 
+            new List<Vector2>{
+                // new Vector2(0f, -100f), 
                 // new Vector2(100f, 0f), 
-                new Vector2(0f, 100f), 
-                new Vector2(-100f, 0f), 
+                // new Vector2(0f, 100f), 
+                // new Vector2(-100f, 0f), 
             },
             new List<float>{20f, 
                 20f, 

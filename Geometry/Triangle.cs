@@ -56,15 +56,19 @@ public class Triangle
 
     public bool InSection(Vector2 startRot, Vector2 endRot)
     {
-        return startRot.AngleTo(A) > 0f && endRot.AngleTo(A) < 0f
-               || startRot.AngleTo(B) > 0f && endRot.AngleTo(B) < 0f
-               || startRot.AngleTo(C) > 0f && endRot.AngleTo(C) < 0f;
+        
+        return startRot.GetClockwiseAngleTo(A) < startRot.GetClockwiseAngleTo(endRot)
+               || startRot.GetClockwiseAngleTo(B) < startRot.GetClockwiseAngleTo(endRot)
+               || startRot.GetClockwiseAngleTo(C) < startRot.GetClockwiseAngleTo(endRot);
+        // return startRot.AngleTo(A) > 0f && endRot.AngleTo(A) < 0f
+        //        || startRot.AngleTo(B) > 0f && endRot.AngleTo(B) < 0f
+        //        || startRot.AngleTo(C) > 0f && endRot.AngleTo(C) < 0f;
     }
     public bool IntersectsRay(Vector2 ray)
     {
-        return GeometryExt.LineSegmentsIntersect(Vector2.Zero, ray, A, B)
-               || GeometryExt.LineSegmentsIntersect(Vector2.Zero, ray, B, C)
-               || GeometryExt.LineSegmentsIntersect(Vector2.Zero, ray, C, A);
+        return Vector2Ext.LineSegmentsIntersect(Vector2.Zero, ray, A, B)
+               || Vector2Ext.LineSegmentsIntersect(Vector2.Zero, ray, B, C)
+               || Vector2Ext.LineSegmentsIntersect(Vector2.Zero, ray, C, A);
     }
     public override string ToString()
     {

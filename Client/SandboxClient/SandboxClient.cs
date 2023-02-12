@@ -125,11 +125,11 @@ public class SandboxClient : Node, IClient
             _prevMouseOver = intersecting;
             var mb = new MeshBuilder();
 
-            // var sectionTris = _poly.Tris.GetSectionTris(section);
-            // sectionTris.ForEach(s =>
-            // {
-            //     mb.AddTri(s, Colors.Yellow);
-            // });
+            var sectionTris = _poly.Tris.GetSectionTris(section);
+            sectionTris.ForEach(s =>
+            {
+                mb.AddTri(s, Colors.Yellow);
+            });
             
             mb.AddTri(_poly.Tris.GetTriangle(intersecting), Colors.Red);
             _mouseOverTriGraphics = mb.GetMeshInstance();

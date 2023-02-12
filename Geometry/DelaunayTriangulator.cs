@@ -8,6 +8,7 @@ public class DelaunayTriangulator
 {
     public static List<Vector2> TriangulatePoints(List<Vector2> points)
     {
+        
         var delaunayPoints = new List<IPoint>();
         foreach (var p in points)
         {

@@ -157,4 +157,94 @@ public static class LineSegmentExt
 
         return result;
     }
+    public static IEnumerable<LineSegment> GetLineSegments(this IEnumerable<Vector2> points, bool close = false)
+    {
+        return Enumerable.Range(0, points.Count() - (close ? 0 : 1))
+            .Select(i =>
+            {
+                return new LineSegment(points.ElementAt(i), points.ElementAt((i + 1) % points.Count()));
+            });
+    }
+
+    public static LineSegment GetFirst(this IEnumerable<LineSegment> segments)
+    {
+        var noTo = segments.Where(s => segments.Any(n => n.PointsTo(s) == false));
+        if (noTo.Count() != 1) throw new Exception();
+        return segments.First(s => segments.Any(n => n.PointsTo(s) == false));
+    }
+    public static IEnumerable<Vector2> GetPoints(this IEnumerable<LineSegment> pairs)
+    {
+        var result = Enumerable.Range(0, pairs.Count())
+            .Select(i => pairs.ElementAt(i).From)
+            .ToList();
+        result.Add(pairs.Last().To);
+        return result;
+    }
+    public static Vector2 GetPointAtRatio(this IEnumerable<LineSegment> pairs, float ratio)
+    {
+        var totalLength = pairs.GetLength();
+        var lengthSoFar = 0f;
+        var iter = 0;
+        var count = pairs.Count();
+        while (iter < count)
+        {
+            var seg = pairs.ElementAt(iter);
+            if (lengthSoFar + seg.Length() > totalLength * ratio)
+            {
+                var portion = totalLength * ratio - lengthSoFar;
+                return seg.From.LinearInterpolate(seg.To, portion / seg.Length());
+            }
+            lengthSoFar += seg.Length();
+            iter++;
+        }
+
+        throw new Exception();
+    }
+    
+    public static Vector2 GetPointAtLength(this IEnumerable<LineSegment> pairs, float length)
+    {
+        var totalLength = pairs.GetLength();
+        var lengthSoFar = 0f;
+        var iter = 0;
+        var count = pairs.Count();
+        while (iter < count)
+        {
+            var seg = pairs.ElementAt(iter);
+            if (lengthSoFar + seg.Length() > length)
+            {
+                var portion = totalLength - lengthSoFar;
+                return seg.From.LinearInterpolate(seg.To, portion / seg.Length());
+            }
+            lengthSoFar += seg.Length();
+            iter++;
+        }
+
+        throw new Exception();
+    }
+
+    public static float GetLength(this IEnumerable<LineSegment> pairs)
+    {
+        return pairs.Select(p => p.From.DistanceTo(p.To)).Sum();
+    }
+    public static Vector2 GetMiddlePoint(this IEnumerable<LineSegment> pairs)
+    {
+        var totalLength = pairs.GetLength();
+        var lengthSoFar = 0f;
+        var iter = 0;
+        var count = pairs.Count();
+        while (iter < count)
+        {
+            var seg = pairs.ElementAt(iter);
+            if (lengthSoFar + seg.Length() > totalLength / 2f)
+            {
+                var portion = totalLength / 2f - lengthSoFar;
+                return seg.From.LinearInterpolate(seg.To, portion / seg.Length());
+            }
+            lengthSoFar += seg.Length();
+            iter++;
+        }
+
+        throw new Exception();
+    }
+
 }

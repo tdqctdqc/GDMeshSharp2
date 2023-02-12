@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Godot;
 using MessagePack;
@@ -17,6 +18,137 @@ public class PolyTerrainTris
     public byte[] SectionTriCounts;
     // private List<HashSet<int>> _sections;
 
+
+    public static PolyTerrainTris MakeFromSegments(List<LineSegment> borderSegsRel, List<Vector2> riverPointsRel, List<float> riverWidths)
+    {
+        PolyTerrainTris tris = null;
+        var sw = new Stopwatch();
+        sw.Start();
+        if (riverPointsRel.Count == 1)
+        {
+            var brokenSegs = borderSegsRel.InsertOnPoints(riverPointsRel, riverWidths, out var riverSegs);
+            tris = RiverSource(brokenSegs, riverSegs);
+        }
+        else if (riverPointsRel.Count > 1)
+        {        
+            var brokenSegs = borderSegsRel.InsertOnPoints(riverPointsRel, riverWidths, out var riverSegs);
+            tris = RiverJunction(brokenSegs, riverSegs);
+        }
+        else
+        {
+            tris = NoRivers(borderSegsRel);
+        }
+        sw.Stop();
+        GD.Print("poly terrain tri construction time " + sw.Elapsed.TotalMilliseconds);
+        return tris;
+    }
+    private static PolyTerrainTris RiverSource(List<LineSegment> borderSegsRel, HashSet<LineSegment> riverSegs)
+    {
+        var riverSeg = riverSegs.First();
+        var riverSegIndex = borderSegsRel.IndexOf(riverSeg);
+
+        var nonRiverSegs = new List<LineSegment>();
+        for (var i = 1; i < borderSegsRel.Count; i++)
+        {
+            var index = (i + riverSegIndex) % borderSegsRel.Count;
+            nonRiverSegs.Add(borderSegsRel[index]);
+        }
+        
+        var riverTri = new Triangle(riverSeg.From, riverSeg.To, Vector2.Zero);
+
+        var tris = new List<Triangle>();
+
+        var segTris = nonRiverSegs.TriangulateSegment(
+            new LineSegment(Vector2.Zero, riverSeg.To),
+            new LineSegment(riverSeg.From, Vector2.Zero));
+        tris.AddRange(segTris);
+        tris.Add(riverTri);
+        
+        return PolyTerrainTris.Construct(tris);
+    }
+
+    private static PolyTerrainTris RiverJunction(List<LineSegment> borderSegsRel, HashSet<LineSegment> riverSegs)
+    {
+        GD.Print("constructing junction");
+        GD.Print(riverSegs.Count + " river segs");
+        var riverIndices = riverSegs
+            .OrderByClockwise(Vector2.Zero, s => s.From, riverSegs.First())
+            .Select(s => borderSegsRel.IndexOf(s)).ToList();
+        var tris = new List<Triangle>();
+
+        
+        var junctionPoints = new List<Vector2>();
+        for (var i = 0; i < riverIndices.Count; i++)
+        {
+            var riverIndex = riverIndices[i];
+            var prevRiverIndex = riverIndices[(i + 1) % riverIndices.Count];
+            var nextRiverIndex = riverIndices[(i - 1 + riverIndices.Count) % riverIndices.Count];
+            
+            var seg = borderSegsRel[riverIndex];
+            var nextRSeg = borderSegsRel[nextRiverIndex];
+            var prevRSeg = borderSegsRel[prevRiverIndex];
+
+            var prevIntersect = GetIntersection(riverIndex, prevRiverIndex);
+            var nextIntersect = GetIntersection(nextRiverIndex, riverIndex);
+            junctionPoints.Add(nextIntersect);
+
+            tris.Add(new Triangle(seg.From, prevIntersect, nextIntersect));
+            tris.Add(new Triangle(seg.To, seg.From, nextIntersect));
+
+            var thisNonRiverSegs = new List<LineSegment>();
+            int iter = (riverIndex + 1) % borderSegsRel.Count;
+            while (iter != nextRiverIndex)
+            {
+                thisNonRiverSegs.Add(borderSegsRel[iter]);
+                iter++;
+                iter = iter % borderSegsRel.Count;
+            }
+            var segTris = thisNonRiverSegs.TriangulateSegment(
+                new LineSegment(nextIntersect, seg.To),
+                new LineSegment(nextRSeg.From, nextIntersect)
+                );
+            
+            tris.AddRange(segTris);
+        }
+
+        Vector2 GetIntersection(int fromIndex, int toIndex)
+        {
+            var to = borderSegsRel[fromIndex];
+            var from = borderSegsRel[toIndex];
+            if (to.Mid().Normalized() == -from.Mid().Normalized())
+            {
+                if (from.Mid() == Vector2.Zero) throw new Exception();
+                if (to.Mid() == Vector2.Zero) throw new Exception();
+                return to.From.LinearInterpolate(from.To,
+                    from.Mid().Length() / (from.Mid().Length() + to.Mid().Length()));
+            }
+                
+            var has = Vector2Ext.GetLineIntersection(to.From, to.From - to.Mid(),
+                from.To, from.To - from.Mid(), 
+                out var intersect);
+            if (Mathf.IsNaN(intersect.x) || Mathf.IsNaN(intersect.y)) throw new Exception();
+            return intersect;
+        }
+        for (var i = 1; i < junctionPoints.Count - 1; i++)
+        {
+            var tri = new Triangle(junctionPoints[0], junctionPoints[i], junctionPoints[i + 1]);
+            tris.Add(tri);
+        }
+        
+        return Construct(tris);
+    }
+
+    private static PolyTerrainTris NoRivers(List<LineSegment> borderSegsRel)
+    {
+        var points = borderSegsRel.GenerateInteriorPoints(50f)
+            .Where(p => borderSegsRel.Min(b => b.DistanceTo(p)) > 10f)
+            .ToList();
+        points.AddRange(borderSegsRel.GetPoints());
+        var triPoints = DelaunayTriangulator.TriangulatePoints(points);
+        
+        return Construct(triPoints.ToTriangles());
+    }
+    
     public static PolyTerrainTris Construct(List<Triangle> tris)
     {
         if (tris.Count > byte.MaxValue - 1)
@@ -36,10 +168,13 @@ public class PolyTerrainTris
             // var centerRot = Vector2.Right.Rotated(_sectionAngle * (i + .5f)) * 10000f;
             var startRot = Vector2.Right.Rotated(_sectionAngle * i);
             var endRot = Vector2.Right.Rotated(_sectionAngle * (i + 1));
-
+            
             var ts = tris.Where(t =>
-                t.InSection(startRot, endRot)
+                {
+                    return t.InSection(startRot, endRot);
+                }
             ).ToHashSet();
+            if(i == 2) GD.Print("section 2 has tris " + ts.Count);
             return ts;
         }).ToList();
 
@@ -49,13 +184,13 @@ public class PolyTerrainTris
             var section = sectionTris[i];
             var prev = sectionTris[(_numSections + i - 1) % _numSections];
             var next = sectionTris[(i + 1) % _numSections];
-            var sharedWPrev = section.Intersect(prev);
-            var sharedWNext = section.Intersect(next);
-            var exclusive = (section.Where(t => prev.Contains(t) == false && next.Contains(t) == false));
+            var sharedWPrev = section.Intersect(prev).Distinct();
+            var sharedWNext = section.Intersect(next).Distinct();
+            var exclusive = section.Except(sharedWNext).Except(sharedWPrev).Distinct();
 
             var currCount = orderedTris.Count;
             sectionTriStartIndices[i] = Convert.ToByte(currCount);
-            sectionTriCounts[i] = Convert.ToByte(section.Count());
+            sectionTriCounts[i] = Convert.ToByte(sharedWPrev.Count() + exclusive.Count() + sharedWNext.Count());
             
             orderedTris.AddRange(sharedWPrev);
             orderedTris.AddRange(exclusive);
@@ -67,7 +202,7 @@ public class PolyTerrainTris
             GD.Print($"{tris.Count} tris {orderedTris.Count} ordered");
             // throw new Exception();
         }
-        
+
         
         var polyTris = new PolyTri[orderedTris.Count];
         for (var i = 0; i < orderedTris.Count; i++)
@@ -101,28 +236,15 @@ public class PolyTerrainTris
 
     private int FindByAngle(Vector2 pos, out int section)
     {
-        section = (Mathf.FloorToInt(pos.Angle() / _sectionAngle) + _numSections) % _numSections;
+        section = (Mathf.FloorToInt(Vector2.Right.GetClockwiseAngleTo(pos) / _sectionAngle) + _numSections) % _numSections;
         var sectionStart = SectionTriStartIndices[section];
         var sectionCount = SectionTriCounts[section];
-        
         for (var i = 0; i < sectionCount; i++)
         {
-            var triIndex = (sectionStart + i) %  Tris.Length;
+            var triIndex = (sectionStart + i) % Tris.Length;
             if (Tris[triIndex].ContainsPoint(pos, Vertices)) return triIndex;
         }
         return -1;
-    }
-    private bool ContainsPoint(int tIndex, Vector2 p, Vector2[] vertices)
-    {
-        var t = Tris[tIndex];
-        var t1 = vertices[t.A];
-        var t2 = vertices[t.B];
-        var t3 = vertices[t.C];
-        var d1 = (p.x - t2.x) * (t1.y - t2.y) - (t1.x - t2.x) * (p.y - t2.y);
-        var d2 = (p.x - t3.x) * (t2.y - t3.y) - (t2.x - t3.x) * (p.y - t3.y);
-        var d3 = (p.x - t1.x) * (t3.y - t1.y) - (t3.x - t1.x) * (p.y - t1.y);
-
-        return !((d1 < 0 || d2 < 0 || d3 < 0) && (d1 > 0 || d2 > 0 || d3 > 0));
     }
 
     
