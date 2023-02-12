@@ -31,7 +31,12 @@ public class PolyTerrainTris
         }
         else if (riverPointsRel.Count > 1)
         {        
+            // StopwatchMeta.TryStart("breaking segs");
             var brokenSegs = borderSegsRel.InsertOnPoints(riverPointsRel, riverWidths, out var riverSegs);
+            StopwatchMeta.TryStop("breaking segs");
+
+            
+
             tris = RiverJunction(brokenSegs, riverSegs);
         }
         else
@@ -39,7 +44,7 @@ public class PolyTerrainTris
             tris = NoRivers(borderSegsRel);
         }
         sw.Stop();
-        GD.Print("poly terrain tri construction time " + sw.Elapsed.TotalMilliseconds);
+        GD.Print("\t poly terrain tri construction time " + sw.Elapsed.TotalMilliseconds);
         return tris;
     }
     private static PolyTerrainTris RiverSource(List<LineSegment> borderSegsRel, HashSet<LineSegment> riverSegs)
@@ -69,17 +74,25 @@ public class PolyTerrainTris
 
     private static PolyTerrainTris RiverJunction(List<LineSegment> borderSegsRel, HashSet<LineSegment> riverSegs)
     {
-        GD.Print("constructing junction");
-        GD.Print(riverSegs.Count + " river segs");
-        var riverIndices = riverSegs
-            .OrderByClockwise(Vector2.Zero, s => s.From, riverSegs.First())
-            .Select(s => borderSegsRel.IndexOf(s)).ToList();
-        var tris = new List<Triangle>();
+        StopwatchMeta.TryStart("river junction");
+        StopwatchMeta.TryStart("not triangulating");
 
         
+        StopwatchMeta.TryStart("not1");
+        var riverIndices = riverSegs
+            .OrderByClockwise(Vector2.Zero, s => s.From)
+            .Select(s => borderSegsRel.IndexOf(s))
+            
+            .ToList();
+        StopwatchMeta.TryStop("not1");
+
+
+        var tris = new List<Triangle>();
         var junctionPoints = new List<Vector2>();
         for (var i = 0; i < riverIndices.Count; i++)
         {
+            StopwatchMeta.TryStart("not2");
+
             var riverIndex = riverIndices[i];
             var prevRiverIndex = riverIndices[(i + 1) % riverIndices.Count];
             var nextRiverIndex = riverIndices[(i - 1 + riverIndices.Count) % riverIndices.Count];
@@ -88,8 +101,10 @@ public class PolyTerrainTris
             var nextRSeg = borderSegsRel[nextRiverIndex];
             var prevRSeg = borderSegsRel[prevRiverIndex];
 
+            
             var prevIntersect = GetIntersection(riverIndex, prevRiverIndex);
             var nextIntersect = GetIntersection(nextRiverIndex, riverIndex);
+
             junctionPoints.Add(nextIntersect);
 
             tris.Add(new Triangle(seg.From, prevIntersect, nextIntersect));
@@ -97,22 +112,32 @@ public class PolyTerrainTris
 
             var thisNonRiverSegs = new List<LineSegment>();
             int iter = (riverIndex + 1) % borderSegsRel.Count;
+            
             while (iter != nextRiverIndex)
             {
                 thisNonRiverSegs.Add(borderSegsRel[iter]);
                 iter++;
                 iter = iter % borderSegsRel.Count;
             }
+            StopwatchMeta.TryStop("not2");
+
+            StopwatchMeta.TryStop("not triangulating");
+
+            
             var segTris = thisNonRiverSegs.TriangulateSegment(
                 new LineSegment(nextIntersect, seg.To),
                 new LineSegment(nextRSeg.From, nextIntersect)
                 );
-            
+
+            StopwatchMeta.TryStart("not triangulating");
+
             tris.AddRange(segTris);
         }
 
+
         Vector2 GetIntersection(int fromIndex, int toIndex)
         {
+
             var to = borderSegsRel[fromIndex];
             var from = borderSegsRel[toIndex];
             if (to.Mid().Normalized() == -from.Mid().Normalized())
@@ -122,35 +147,44 @@ public class PolyTerrainTris
                 return to.From.LinearInterpolate(from.To,
                     from.Mid().Length() / (from.Mid().Length() + to.Mid().Length()));
             }
-                
+            
             var has = Vector2Ext.GetLineIntersection(to.From, to.From - to.Mid(),
                 from.To, from.To - from.Mid(), 
                 out var intersect);
+
             if (Mathf.IsNaN(intersect.x) || Mathf.IsNaN(intersect.y)) throw new Exception();
+            
+
             return intersect;
         }
+
         for (var i = 1; i < junctionPoints.Count - 1; i++)
         {
             var tri = new Triangle(junctionPoints[0], junctionPoints[i], junctionPoints[i + 1]);
             tris.Add(tri);
         }
+
         
+        
+        StopwatchMeta.TryStop("not triangulating");
+        StopwatchMeta.TryStop("river junction");
+
         return Construct(tris);
     }
 
     private static PolyTerrainTris NoRivers(List<LineSegment> borderSegsRel)
     {
-        var points = borderSegsRel.GenerateInteriorPoints(50f)
-            .Where(p => borderSegsRel.Min(b => b.DistanceTo(p)) > 10f)
+        var points = borderSegsRel.GenerateInteriorPoints(30f, 20f)
             .ToList();
         points.AddRange(borderSegsRel.GetPoints());
-        var triPoints = DelaunayTriangulator.TriangulatePoints(points);
+        var tris = DelaunayTriangulator.TriangulatePoints(points);
         
-        return Construct(triPoints.ToTriangles());
+        return Construct(tris);
     }
     
     public static PolyTerrainTris Construct(List<Triangle> tris)
     {
+        StopwatchMeta.TryStart("construct");
         if (tris.Count > byte.MaxValue - 1)
         {
             throw new Exception($"{tris.Count} is too many tris");
@@ -174,7 +208,6 @@ public class PolyTerrainTris
                     return t.InSection(startRot, endRot);
                 }
             ).ToHashSet();
-            if(i == 2) GD.Print("section 2 has tris " + ts.Count);
             return ts;
         }).ToList();
 
@@ -199,7 +232,7 @@ public class PolyTerrainTris
 
         if (orderedTris.Count != tris.Count)
         {
-            GD.Print($"{tris.Count} tris {orderedTris.Count} ordered");
+            // GD.Print($"{tris.Count} tris {orderedTris.Count} ordered");
             // throw new Exception();
         }
 
@@ -231,6 +264,10 @@ public class PolyTerrainTris
         }
 
         if (vertices.Count > byte.MaxValue - 1) throw new Exception();
+        
+        
+        StopwatchMeta.TryStop("construct");
+
         return new PolyTerrainTris(vertices.ToArray(), polyTris, sectionTriStartIndices, sectionTriCounts);
     }
 

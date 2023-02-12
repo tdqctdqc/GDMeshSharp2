@@ -57,6 +57,7 @@ public static class GeometryExt
     public static List<Triangle> TriangulateSegment(this List<LineSegment> segs, 
         LineSegment startLeg, LineSegment endLeg)
     {
+        StopwatchMeta.TryStart("triangulate segment");
         if (startLeg.From != endLeg.To) throw new Exception();
         var anchor = startLeg.From;
         var tris = new List<Triangle>();
@@ -64,9 +65,8 @@ public static class GeometryExt
         var partitionIndices = new List<int>{};
         var partitionNewPoints = new List<List<Vector2>>();
         var startRay = startLeg.To - anchor;
-        var startNewPoints = startLeg.To.GeneratePointsAlong(50f, 5f, anchor);
-        var endNewPoints = endLeg.From.GeneratePointsAlong(50f, 5f, anchor);
-        var partitionNewPointsAll = new List<Vector2>();
+        var startNewPoints = startLeg.To.GeneratePointsAlong(30f, 5f, anchor);
+        var endNewPoints = endLeg.From.GeneratePointsAlong(30f, 5f, anchor);
         for (var i = 0; i < segs.Count; i++)
         {
             var seg = segs[i];
@@ -78,10 +78,10 @@ public static class GeometryExt
                 partitionIndices.Add(i);
                 var newPs = seg.To.GeneratePointsAlong(50f, 5f, anchor);
                 partitionNewPoints.Add(newPs);
-                partitionNewPointsAll.AddRange(newPs);
                 startRay = ray;
             }
         }
+
 
         if (partitionIndices.Count > 0)
         {
@@ -91,11 +91,12 @@ public static class GeometryExt
             for (var i = 0; i < partitionIndices.Count; i++)
             {
                 var partIndex = partitionIndices[i];
+                
                 var sliceSegs = segs.GetRange(prev, partIndex - prev);
                 var end = segs[partIndex].From;
                 var startSeg = new LineSegment(anchor, start);
                 var endSeg = new LineSegment(end, anchor);
-                
+
                 sliceSegs.TriangulateConcaveSegment(startSeg, endSeg, tris, prevPoints, new List<Vector2>());
                 prevPoints = partitionNewPoints[i];
                 start = end;
@@ -113,15 +114,7 @@ public static class GeometryExt
             TriangulateConcaveSegment(segs, startLeg, endLeg, tris, startNewPoints, endNewPoints);
         }
         
-        partitionNewPointsAll.ForEach(p =>
-        {
-            var pTris = tris.Where(t => t.HasPoint(p));
-            var avg = pTris.Select(t => (t.A + t.B + t.C) / 3).Avg();
-            foreach (var pTri in pTris)
-            {
-                pTri.ReplacePoint(p, avg);
-            }
-        });
+        StopwatchMeta.TryStop("triangulate segment");
         return tris;
     }
 
@@ -129,28 +122,29 @@ public static class GeometryExt
         LineSegment startLeg, LineSegment endLeg, List<Triangle> tris, List<Vector2> newStartPoints, 
         List<Vector2> newEndPoints)
     {
-        var segs2 = segs.Union(new List<LineSegment>(){
-            startLeg
-        }).Union(new List<LineSegment>{
-            endLeg
-        }).Distinct().ToList();
+        // StopwatchMeta.TryStart("triangulate concave");
+        segs.Add(startLeg);
+        segs.Add(endLeg);
         var points = segs.GetPoints().ToList();
         
-        points.AddRange(segs2.GenerateInteriorPoints(50f).Where(p => endLeg.DistanceTo(p) > 10f
-                                                                    && startLeg.DistanceTo(p) > 10f
-                                                                    && segs.Min(s => s.DistanceTo(p) > 10f)
-        ));
+        
+        // StopwatchMeta.TryStart("generating interior points");
+        points.AddRange(segs.GenerateInteriorPoints(30f, 20f));
+        StopwatchMeta.TryStop("generating interior points");
+
         points.AddRange(newStartPoints);
         points.AddRange(newEndPoints);
-        points.Add(startLeg.To);
-        points.Add(startLeg.From);
-        points.Add(endLeg.To);
-        points.Add(endLeg.From);
+        
+        
+
+        // StopwatchMeta.TryStart("delaunay");
         tris.AddRange(
             DelaunayTriangulator.TriangulatePoints(points.Distinct().ToList())
-                .ToTriangles()
                 .Where(t => t.IsDegenerate() == false)
             );
-        
+        StopwatchMeta.TryStop("delaunay");
+
+        StopwatchMeta.TryStop("triangulate concave");
+
     }
 }

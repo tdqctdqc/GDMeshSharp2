@@ -179,15 +179,16 @@ public static class GraphGenerator
             graph.AddNode(node);
         }
         var tris = DelaunayTriangulator.TriangulatePoints(poses);
-        for (int i = 0; i < tris.Count; i+=3)
+        for (int i = 0; i < tris.Count; i++)
         {
-            var elementA = elements[poses.IndexOf(tris[i])];
+            var t = tris[i];
+            var elementA = elements[poses.IndexOf(t.A)];
             var a = graph[elementA];
             
-            var elementB = elements[poses.IndexOf(tris[i + 1])];
+            var elementB = elements[poses.IndexOf(t.B)];
             var b = graph[elementB];
             
-            var elementC = elements[poses.IndexOf(tris[i + 2])];
+            var elementC = elements[poses.IndexOf(t.C)];
             var c = graph[elementC];
 
             graph.AddUndirectedEdge(a, b, getEdgeFunc(a.Element, b.Element));
@@ -207,11 +208,11 @@ public static class GraphGenerator
             graph.AddNode(node);
         }
         var tris = DelaunayTriangulator.TriangulatePoints(poses);
-        for (int i = 0; i < tris.Count; i+=3)
+        for (int i = 0; i < tris.Count; i++)
         {
-            var a = graph[tris[i]];
-            var b = graph[tris[i+1]];
-            var c = graph[tris[i+2]];
+            var a = graph[tris[i].A];
+            var b = graph[tris[i].B];
+            var c = graph[tris[i].C];
 
             graph.AddUndirectedEdge(a,b,1f);
             graph.AddUndirectedEdge(a,c,1f);

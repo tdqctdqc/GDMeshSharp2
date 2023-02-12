@@ -140,14 +140,37 @@ public static class PointsGenerator
         return points;
     }
 
-    public static List<Vector2> GenerateInteriorPoints(this List<LineSegment> border, float cellSize)
+    public static List<Vector2> GenerateInteriorPoints(this List<LineSegment> border, float cellSize, float margin)
     {
-        //assumes the segments are 'conditionally concave' around zero
-        var tris = border.Select(b => new Triangle(b.From, b.To, Vector2.Zero));
         var res = new List<Vector2>();
-        foreach (var t in tris)
+
+        var minX = border.Min(b => Mathf.Min(b.From.x, b.To.x));
+        var maxX = border.Max(b => Mathf.Max(b.From.x, b.To.x));
+        
+        var minY = border.Min(b => Mathf.Min(b.From.y, b.To.y));
+        var maxY = border.Max(b => Mathf.Max(b.From.y, b.To.y));
+
+        var xCells = Mathf.Abs(maxX - minX) / cellSize;
+        var yCells = Mathf.Abs(maxY - minY) / cellSize;
+        var mod = Vector2.Right * cellSize * .3f;
+        var shift = Vector2.One * cellSize * .5f;
+
+        for (int i = 0; i < xCells; i++)
         {
-            res.AddRange(t.GenerateRegularPointsInside(cellSize));
+            for (int j = 0; j < yCells; j++)
+            {
+                mod = mod.Rotated(Game.I.Random.RandfRange(0f, Mathf.Pi * 2f));
+                var p = new Vector2(minX + cellSize * i, minY + cellSize * j) + mod + shift;
+                if(border.All(b => 
+                       true 
+                        && b.LeftOf(p) == false
+                        && b.DistanceTo(p) > margin
+                        )
+                   )
+                {
+                    res.Add(p);
+                }
+            }
         }
         return res;
     }

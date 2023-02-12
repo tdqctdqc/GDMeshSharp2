@@ -6,22 +6,21 @@ using DelaunatorSharp;
 
 public class DelaunayTriangulator
 {
-    public static List<Vector2> TriangulatePoints(List<Vector2> points)
+    public static List<Triangle> TriangulatePoints(List<Vector2> points)
     {
-        
-        var delaunayPoints = new List<IPoint>();
-        foreach (var p in points)
+        var d = new Delaunator(points.Select(p => new DelaunatorPoint(p)).ToArray());
+        var tris = new List<Triangle>();
+        for (int i = 0; i < d.Triangles.Length; i+=3)
         {
-            var delaunayPoint = new DelaunatorPoint(p);
-            delaunayPoints.Add(delaunayPoint);
-        }
-        var d = new Delaunator(delaunayPoints.ToArray());
-        var tris = new List<Vector2>();
-        for (int i = 0; i < d.Triangles.Length; i++)
-        {
-            var pointId = d.Triangles[i];
-            var dPoint = d.Points[pointId];
-            tris.Add(new Vector2((float)dPoint.X, (float)dPoint.Y));
+            var pointId1 = d.Triangles[i];
+            var dPoint1 = d.Points[pointId1];
+            
+            var pointId2 = d.Triangles[i + 1];
+            var dPoint2 = d.Points[pointId2];
+            
+            var pointId3 = d.Triangles[i + 2];
+            var dPoint3 = d.Points[pointId3];
+            tris.Add(new Triangle(dPoint1.GetV2(), dPoint2.GetV2(), dPoint3.GetV2()));
         }
         return tris;
     }

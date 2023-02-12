@@ -64,14 +64,10 @@ public static class GenerationUtility
 
     public static IEnumerable<T> OrderByClockwise<T>(this IEnumerable<T> elements, 
         Vector2 center, 
-        Func<T, Vector2> elPos,
-        T start)
+        Func<T, Vector2> elPos)
     {
-        var first = elPos(start) - center;
-        return elements
-            .Select(e => new {element = e, pos = elPos(e) - center})
-            .OrderBy(i => i.pos.GetClockwiseAngleTo(first))
-            .Select(i => i.element);
+        var first = elPos(elements.First()) - center;
+        return elements.OrderBy(i => (elPos(i) - center).GetClockwiseAngleTo(first));
     }
 
     

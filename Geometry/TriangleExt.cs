@@ -5,7 +5,7 @@ using System.Linq;
 using GeometRi;
 
 
-public static class TriangleUtility 
+public static class TriangleExt 
 {
     public static List<Vector2> GetTriPoints(this List<Triangle> tris)
     {
@@ -77,6 +77,7 @@ public static class TriangleUtility
     public static List<Vector2> GenerateRegularPointsInside(this Triangle tri, float cellSize)
     {
         var res = new List<Vector2>();
+        
         var mid = (tri.B + tri.C) / 2f;
         var crossLength = tri.B.DistanceTo(tri.C);
         var axis = mid - tri.A;

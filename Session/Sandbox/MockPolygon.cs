@@ -16,7 +16,6 @@ public class MockPolygon
     {
         Center = center;
         Id = id;
-        GD.Print(riverPoints.Count + " river points");
         Tris = PolyTerrainTris.MakeFromSegments(borderSegs, riverPoints, riverWidths);
     }
 }

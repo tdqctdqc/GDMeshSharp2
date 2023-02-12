@@ -44,9 +44,9 @@ public class LineSegment
         return l.From == To;
     }
 
-    public float DistanceTo(Vector2 pointRel)
+    public float DistanceTo(Vector2 point)
     {
-        return pointRel.DistToLine(From, To);
+        return point.DistToLine(From, To);
     }
 
     public float Length()
@@ -76,6 +76,11 @@ public class LineSegment
         }
 
         return res;
+    }
+
+    public bool LeftOf(Vector2 point)
+    {
+        return (To.x - From.x)*(point.y - From.y) - (To.y - From.y)*(point.x - From.x) < 0;
     }
 }
 
@@ -126,14 +131,23 @@ public static class LineSegmentExt
         for (var i = 0; i < segs.Count; i++)
         {
             var seg = segs[i];
-            var segBreaks = breakPoints.Where(p => seg.ContainsPoint(p)).OrderBy(b => b.DistanceTo(seg.From)).ToList();
-
-            if (segBreaks.Count() > 0)
+            bool hasBreak = false;
+            Vector2 breakPoint = Vector2.Zero;
+            int breakPointIndex = -1;
+            for (var j = 0; j < breakPoints.Count; j++)
             {
-                if (segBreaks.Count() > 1) throw new Exception();
-                var breakPoint = segBreaks.First();
-                var index = breakPoints.IndexOf(breakPoint);
-                var width = widths[index];
+                if (seg.ContainsPoint(breakPoints[j]))
+                {
+                    hasBreak = true;
+                    breakPoint = breakPoints.FirstOrDefault(p => seg.ContainsPoint(p));
+                    breakPointIndex = j;
+                    break;
+                }
+            }
+            
+            if (hasBreak)
+            {
+                var width = widths[breakPointIndex];
                 
                 if (breakPoint == seg.From || breakPoint == seg.To) throw new Exception();
                 if (seg.From.DistanceTo(breakPoint) <= width / 2f || seg.To.DistanceTo(breakPoint) <= width / 2f)
@@ -144,13 +158,11 @@ public static class LineSegmentExt
                 var newFrom = seg.From + (breakPoint - seg.From).Shorten(width / 2f);
                 var newTo = seg.To + (breakPoint - seg.To).Shorten(width / 2f);
                 
-                var before = new LineSegment(seg.From, newFrom);
-                result.Add(before);
+                result.Add(new LineSegment(seg.From, newFrom));
                 var newSeg = new LineSegment(newFrom, newTo);
                 result.Add(newSeg);
                 inserted.Add(newSeg);
-                var after = new LineSegment(newTo, seg.To);
-                result.Add(after);
+                result.Add(new LineSegment(newTo, seg.To));
             }
             else result.Add(seg);
         }

@@ -200,6 +200,12 @@ public static class Vector2Ext
     }
     public static float DistToLine(this Vector2 point, Vector2 start, Vector2 end)
     {
+        var theta = Mathf.Abs((point - start).AngleTo(end - start));
+        return Mathf.Sin(theta) * point.DistanceTo(start);
+        
+        
+        
+        
         // vector AB
         var AB = new Vector2();
         AB.x = end.x - start.x;

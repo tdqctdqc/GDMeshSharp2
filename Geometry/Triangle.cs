@@ -74,6 +74,23 @@ public class Triangle
     {
         return $"({A}, {B}, {C}";
     }
+
+    public float MinX()
+    {
+        return Mathf.Min(A.x, Mathf.Min(B.x, C.x));
+    }
+    public float MaxX()
+    {
+        return Mathf.Max(A.x, Mathf.Max(B.x, C.x));
+    }
+    public float MinY()
+    {
+        return Mathf.Min(A.y, Mathf.Min(B.y, C.y));
+    }
+    public float MaxY()
+    {
+        return Mathf.Max(A.y, Mathf.Max(B.y, C.y));
+    }
 }
 
 
