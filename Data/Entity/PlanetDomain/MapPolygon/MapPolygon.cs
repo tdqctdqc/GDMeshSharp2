@@ -15,7 +15,7 @@ public partial class MapPolygon : Entity
     public float Moisture { get; private set; }
     public float SettlementSize { get; private set; }
     public EntityRef<Regime> Regime { get; private set; }
-    public TriListHolder TerrainTris { get; private set; }
+    public PolyTerrainTris TerrainTris { get; private set; }
     public bool IsLand() => Altitude > .5f;
     public bool IsWater() => IsLand() == false;
     public MapPolygonBorder GetBorder(MapPolygon neighbor, Data data) 
@@ -24,7 +24,7 @@ public partial class MapPolygon : Entity
     [SerializationConstructor] private MapPolygon(int id, Vector2 center, EntityRefCollection<MapPolygon> neighbors, 
         Color color, float altitude, float roughness, 
         float moisture, float settlementSize, EntityRef<Regime> regime,
-        TriListHolder terrainTris) : base(id)
+        PolyTerrainTris terrainTris) : base(id)
     {
         TerrainTris = terrainTris;
         Center = center;
@@ -50,7 +50,7 @@ public partial class MapPolygon : Entity
             0f,
             0f,
             new EntityRef<Regime>(-1),
-            TriListHolder.Construct()
+            null
         );
         key.Create(p);
         return p;
@@ -59,8 +59,25 @@ public partial class MapPolygon : Entity
     {
         return Neighbors.Refs().Contains(p);
     }
-    
-    public IEnumerable<MapPolygonBorder> GetNeighborBorders(Data data) => Neighbors.Refs().Select(n => GetBorder(n, data));
+
+    public void SetTris(PolyTerrainTris tris, GenWriteKey key)
+    {
+        TerrainTris = tris;
+    }
+    public IEnumerable<MapPolygonBorder> GetNeighborBorders(Data data) => Neighbors.Refs()
+        .Select(n => GetBorder(n, data));
+
+    public List<LineSegment> GetAllBorderSegmentsClockwise(Data data)
+    {
+        var res = Neighbors.Refs().Select(n => GetBorder(
+            n, data))
+            .SelectMany(b => b.GetSegsRel(this))
+            .ToList();
+        res.OrderByClockwise(Vector2.Zero, ls => ls.From);
+        return res;
+        //todo have to account for open edges?
+
+    }
     public void AddNeighbor(MapPolygon poly, MapPolygonBorder border, GenWriteKey key)
     {
         if (Neighbors.Contains(poly)) return;
@@ -81,11 +98,11 @@ public static class MapPolygonExt
     
     public static List<Triangle> GetTrisRel(this MapPolygon poly, Data data)
     {
-        return data.Cache.PolyRelTris[poly];
+        return data.Cache.PolyRelWheelTris[poly];
     }
     public static bool PointInPoly(this MapPolygon poly, Vector2 posAbs, Data data)
     {
-        return data.Cache.PolyRelTris[poly].Any(t => t.PointInsideTriangle(poly.GetOffsetTo(posAbs, data)));
+        return data.Cache.PolyRelWheelTris[poly].Any(t => t.ContainsPoint(poly.GetOffsetTo(posAbs, data)));
     }
     
     
@@ -118,27 +135,18 @@ public static class MapPolygonExt
         return poly.GetTrisRel(data).Sum(t => t.GetArea());
     }
     
-    public static Landform GetLandformAtPoint(this MapPolygon poly, Data data, Vector2 offset)
+    
+    public static float GetScore(this MapPolygon poly, MapPolygon closest, MapPolygon secondClosest, 
+        Vector2 pRel, Data data, Func<MapPolygon, float> getScore)
     {
-        return poly.TerrainTris.GetLandformAtPoint(poly, data, offset);
+        var l = pRel.Length();
+        var closeL = (poly.GetOffsetTo(closest, data) - pRel).Length();
+        var secondCloseL = (poly.GetOffsetTo(secondClosest, data) - pRel).Length();
+        var totalDist = l + closeL + secondCloseL;
+        var closeInt = .5f * Mathf.Lerp(getScore(poly), getScore(closest), closeL / (l + closeL));
+        var secondInt = .5f * Mathf.Lerp(getScore(poly), getScore(secondClosest), secondCloseL / (l + secondCloseL));
+
+        return closeInt + secondInt;
     }
-    public static Vegetation GetVegetationAtPoint(this MapPolygon poly, Data data, Vector2 offset)
-    {
-        return poly.TerrainTris.GetVegetationAtPoint(poly, data, offset);
-    }
-    public static void BuildTrisForAspects<TAspect>
-        (this MapPolygon poly, TerrainAspectManager<TAspect> man, GenWriteKey key) where TAspect : TerrainAspect
-    {
-        for (var i = 0; i < man.ByPriority.Count; i++)
-        {
-            var ta = man.ByPriority[i];
-            if (ta.Allowed(poly, key.GenData) == false) continue;
-            poly.TerrainTris.Add(ta, ta.TriBuilder.BuildTrisForPoly(poly, key.GenData));
-        }
-    }
-    public static void BuildTrisForAspect(this MapPolygon poly, TerrainAspect ta, GenWriteKey key)
-    {
-        if (ta.Allowed(poly, key.GenData) == false) return;
-        poly.TerrainTris.Add(ta, ta.TriBuilder.BuildTrisForPoly(poly, key.GenData));
-    }
+    
 }

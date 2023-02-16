@@ -17,36 +17,24 @@ public class VegetationChunkGraphic : Node2D
             var p = polys[i];
             var offset = first.GetOffsetTo(p, data);
 
-            for (var j = manager.ByPriority.Count - 1; j >= 0; j--)
+            
+            for (var j = 0; j < p.TerrainTris.Tris.Length; j++)
             {
-                var aspect = manager.ByPriority[j];
-                if (aspect.Ground == false) continue;
-                var aspectTris = p.TerrainTris[aspect];
-                if (aspectTris == null) continue;
-                aspectTris.ForEach(t => mb.AddTri(t.Transpose(offset), aspect.Color));
-            }
-
-
-
-            for (var j = manager.ByPriority.Count - 1; j >= 0; j--)
-            {
-                var aspect = manager.ByPriority[j];
-                if (aspect.Ground) continue;
-                var aspectTris = p.TerrainTris[aspect];
-                if (aspectTris == null) continue;
-                aspectTris.ForEach(t =>
+                var t = p.TerrainTris.Tris[j];
+                var tri = p.TerrainTris.Tris[j];
+                var aspect = tri.Vegetation;
+                mb.AddTri(tri.Transpose(offset), aspect.Color);
+                
+                var size = tri.GetArea();
+                var numMarkers = Mathf.CeilToInt(size / areaPerMark);
+                for (int k = 0; k < numMarkers; k++)
                 {
-                    var size = t.GetArea();
-                    var numMarkers = Mathf.CeilToInt(size / areaPerMark);
-                    for (int k = 0; k < numMarkers; k++)
-                    {
-                        var point = t.GetRandomPointInside(.1f, .9f);
-                        var markTri = new Triangle(point + Vector2.Left * markSize / 2f + offset,
-                            point + Vector2.Right * markSize / 2f  + offset,
-                            point + Vector2.Up * markSize  + offset);
-                        mb.AddTri(markTri, aspect.Color);
-                    }
-                });
+                    var point = tri.GetRandomPointInside(.1f, .9f);
+                    var markTri = new Triangle(point + Vector2.Left * markSize / 2f + offset,
+                        point + Vector2.Right * markSize / 2f  + offset,
+                        point + Vector2.Up * markSize  + offset);
+                    mb.AddTri(markTri, aspect.Color);
+                }
             }
         }
 

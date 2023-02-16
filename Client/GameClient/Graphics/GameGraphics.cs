@@ -39,11 +39,15 @@ public class GameGraphics : Node2D
         MapChunkGraphics = new List<MapChunkGraphic>();
         var polySegmenter = new GraphicsSegmenter<MapChunkGraphic>();
         _segmenters.Add(polySegmenter);
+        int iter = 0;
         var mapChunks = data.Cache.Chunks.Select(u =>
         {
             var graphic = new MapChunkGraphic();
+
             MapChunkGraphics.Add(graphic);
+
             graphic.Setup(u, data);
+
             return graphic;
         }).ToList();
 

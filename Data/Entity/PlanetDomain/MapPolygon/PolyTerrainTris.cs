@@ -14,41 +14,84 @@ public class PolyTerrainTris
     
     
     
-    public byte[] SectionTriStartIndices;
-    public byte[] SectionTriCounts;
+    public int[] SectionTriStartIndices;
+    public int[] SectionTriCounts;
     // private List<HashSet<int>> _sections;
 
-
-    public static PolyTerrainTris MakeFromSegments(List<LineSegment> borderSegsRel, List<Vector2> riverPointsRel, List<float> riverWidths)
+    public static PolyTerrainTris MakeWheel(MapPolygon poly, GenData data)
     {
-        PolyTerrainTris tris = null;
-        var sw = new Stopwatch();
-        sw.Start();
-        if (riverPointsRel.Count == 1)
+        var segs = poly.Neighbors.Refs().Select(n => poly.GetBorder(n, data)).SelectMany(b => b.GetSegsRel(poly))
+            .ToList();
+        var tris = new List<PolyTri>();
+        for (var i = 0; i < segs.Count; i++)
         {
-            var brokenSegs = borderSegsRel.InsertOnPoints(riverPointsRel, riverWidths, out var riverSegs);
-            tris = RiverSource(brokenSegs, riverSegs);
+            tris.Add(new PolyTri(segs[i].From, segs[i].To, Vector2.Zero, 
+                
+                poly.IsLand() ? LandformManager.Plain : LandformManager.Sea, 
+                
+                VegetationManager.Barren));
         }
-        else if (riverPointsRel.Count > 1)
-        {        
-            // StopwatchMeta.TryStart("breaking segs");
-            var brokenSegs = borderSegsRel.InsertOnPoints(riverPointsRel, riverWidths, out var riverSegs);
-            StopwatchMeta.TryStop("breaking segs");
 
-            
+        return Construct(tris, data);
+    }
+    public static PolyTerrainTris MakeGeneric(MapPolygon poly, GenData data)
+    {
+        var segs = poly.Neighbors.Refs().Select(n => poly.GetBorder(n, data)).SelectMany(b => b.GetSegsRel(poly))
+            .ToList();
 
-            tris = RiverJunction(brokenSegs, riverSegs);
+        var ps = segs.GenerateInteriorPoints(50f, 25f);
+        ps.AddRange(segs.GetPoints());
+
+
+        var tris = DelaunayTriangulator.TriangulatePoints(ps).Select(t => new PolyTri(t.A, t.B, t.C,
+            poly.IsLand() ? LandformManager.Plain : LandformManager.Sea, VegetationManager.Barren))
+            .ToList();
+
+        return Construct(tris, data);
+    }
+    public static PolyTerrainTris MakeFromSegments(MapPolygon poly, GenData data)
+    {
+        StopwatchMeta.TryStart("make poly terrain tris");
+        var borderSegsRel = poly.GetAllBorderSegmentsClockwise(data);
+
+        var riverBs = poly.Neighbors.Refs()
+            .Select(n => poly.GetBorder(n, data))
+            .Where(b => b.MoistureFlow > 0f);
+        var riverPointsRel = riverBs
+            .Select(b => b.GetSegsRel(poly).GetMiddlePoint()).ToList();
+        var riverWidths = riverBs.Select(b => b.MoistureFlow / 10f).ToList();
+        
+        
+        PolyTerrainTris tris = null;
+        
+        if (poly.IsWater())
+        {
+            tris = Sea(borderSegsRel, data);
         }
+        // else if (riverPointsRel.Count == 1)
+        // {
+        //     var brokenSegs = borderSegsRel.InsertOnPoints(riverPointsRel, riverWidths, out var riverSegs);
+        //     tris = RiverSource(poly, brokenSegs, riverSegs, data);
+        // }
+        // else if (riverPointsRel.Count > 1)
+        // {        
+        //     var brokenSegs = borderSegsRel.InsertOnPoints(riverPointsRel, riverWidths, out var riverSegs);
+        //     tris = RiverJunction(poly, brokenSegs, riverSegs, data);
+        // }
         else
         {
-            tris = NoRivers(borderSegsRel);
+            tris = LandNoRivers(poly, borderSegsRel, data);
         }
-        sw.Stop();
-        GD.Print("\t poly terrain tri construction time " + sw.Elapsed.TotalMilliseconds);
+        StopwatchMeta.TryStop("make poly terrain tris");
+
         return tris;
     }
-    private static PolyTerrainTris RiverSource(List<LineSegment> borderSegsRel, HashSet<LineSegment> riverSegs)
+    private static PolyTerrainTris RiverSource(MapPolygon poly, 
+        List<LineSegment> borderSegsRel, HashSet<LineSegment> riverSegs,
+        GenData data)
     {
+        var lf = data.Models.Landforms;
+        var v = data.Models.Vegetation;
         var riverSeg = riverSegs.First();
         var riverSegIndex = borderSegsRel.IndexOf(riverSeg);
 
@@ -59,39 +102,49 @@ public class PolyTerrainTris
             nonRiverSegs.Add(borderSegsRel[index]);
         }
         
-        var riverTri = new Triangle(riverSeg.From, riverSeg.To, Vector2.Zero);
-
-        var tris = new List<Triangle>();
-
+        var riverTri = new PolyTri(riverSeg.From, riverSeg.To, Vector2.Zero);
+        riverTri.Landform = LandformManager.River;
+        riverTri.Vegetation = VegetationManager.Barren;
+        
+        
+        var tris = new List<PolyTri>();
+        tris.Add(riverTri);
         var segTris = nonRiverSegs.TriangulateSegment(
             new LineSegment(Vector2.Zero, riverSeg.To),
             new LineSegment(riverSeg.From, Vector2.Zero));
-        tris.AddRange(segTris);
-        tris.Add(riverTri);
+        var segPolyTris = new List<PolyTri>();
+        for (int i = 0; i < segTris.Count; i++)
+        {
+            var t = segTris[i];
+            var pt = new PolyTri(t.A, t.B, t.C);
+            pt.Landform = lf.GetAtPoint(poly, pt.GetCentroid(), data);
+            pt.Vegetation = v.GetAtPoint(poly, pt.GetCentroid(), pt.Landform, data);
+                segPolyTris.Add(pt);
+        }
         
-        return PolyTerrainTris.Construct(tris);
+        tris.AddRange(segPolyTris);
+        
+        return Construct(tris, data);
     }
 
-    private static PolyTerrainTris RiverJunction(List<LineSegment> borderSegsRel, HashSet<LineSegment> riverSegs)
+    private static PolyTerrainTris RiverJunction(MapPolygon poly,
+        List<LineSegment> borderSegsRel, HashSet<LineSegment> riverSegs, 
+        Data data)
     {
-        StopwatchMeta.TryStart("river junction");
-        StopwatchMeta.TryStart("not triangulating");
-
+        var lf = data.Models.Landforms;
+        var v = data.Models.Vegetation;
         
-        StopwatchMeta.TryStart("not1");
-        var riverIndices = riverSegs
-            .OrderByClockwise(Vector2.Zero, s => s.From)
+        var clockwise = riverSegs.ToList();
+        clockwise.OrderByClockwise(Vector2.Zero, s => s.From);
+        
+        var riverIndices = clockwise
             .Select(s => borderSegsRel.IndexOf(s))
-            
             .ToList();
-        StopwatchMeta.TryStop("not1");
 
-
-        var tris = new List<Triangle>();
+        var tris = new List<PolyTri>();
         var junctionPoints = new List<Vector2>();
         for (var i = 0; i < riverIndices.Count; i++)
         {
-            StopwatchMeta.TryStart("not2");
 
             var riverIndex = riverIndices[i];
             var prevRiverIndex = riverIndices[(i + 1) % riverIndices.Count];
@@ -107,8 +160,11 @@ public class PolyTerrainTris
 
             junctionPoints.Add(nextIntersect);
 
-            tris.Add(new Triangle(seg.From, prevIntersect, nextIntersect));
-            tris.Add(new Triangle(seg.To, seg.From, nextIntersect));
+            tris.Add(new PolyTri(seg.From, prevIntersect, nextIntersect, 
+                LandformManager.River, VegetationManager.Barren));
+            
+            tris.Add(new PolyTri(seg.To, seg.From, nextIntersect,
+                 LandformManager.River, VegetationManager.Barren));
 
             var thisNonRiverSegs = new List<LineSegment>();
             int iter = (riverIndex + 1) % borderSegsRel.Count;
@@ -119,17 +175,17 @@ public class PolyTerrainTris
                 iter++;
                 iter = iter % borderSegsRel.Count;
             }
-            StopwatchMeta.TryStop("not2");
-
-            StopwatchMeta.TryStop("not triangulating");
 
             
             var segTris = thisNonRiverSegs.TriangulateSegment(
                 new LineSegment(nextIntersect, seg.To),
                 new LineSegment(nextRSeg.From, nextIntersect)
-                );
-
-            StopwatchMeta.TryStart("not triangulating");
+                ).Select(t =>
+            {
+                var land = lf.GetAtPoint(poly, t.GetCentroid(), data);
+                var veg = v.GetAtPoint(poly, t.GetCentroid(), land, data);
+                return new PolyTri(t.A, t.B, t.C, land, veg);
+            });
 
             tris.AddRange(segTris);
         }
@@ -160,58 +216,63 @@ public class PolyTerrainTris
 
         for (var i = 1; i < junctionPoints.Count - 1; i++)
         {
-            var tri = new Triangle(junctionPoints[0], junctionPoints[i], junctionPoints[i + 1]);
-            tris.Add(tri);
+            tris.Add(new PolyTri(junctionPoints[0], junctionPoints[i], junctionPoints[i + 1],
+                LandformManager.River, VegetationManager.Barren));
         }
 
-        
-        
-        StopwatchMeta.TryStop("not triangulating");
-        StopwatchMeta.TryStop("river junction");
-
-        return Construct(tris);
+        return Construct(tris, data);
     }
-
-    private static PolyTerrainTris NoRivers(List<LineSegment> borderSegsRel)
+    private static PolyTerrainTris Sea(List<LineSegment> borderSegsRel, Data data)
     {
-        var points = borderSegsRel.GenerateInteriorPoints(30f, 20f)
+        var points = borderSegsRel.GetPoints().ToList();
+        var tris = new List<PolyTri>();
+        var anchor = borderSegsRel.First().From;
+        for (var i = 1; i < borderSegsRel.Count - 1; i++)
+        {
+            tris.Add( new PolyTri(borderSegsRel[i].From, borderSegsRel[i].To, anchor, LandformManager.Sea, VegetationManager.Barren));
+        }
+        return Construct(tris, data);
+    }
+    private static PolyTerrainTris LandNoRivers(MapPolygon poly, List<LineSegment> borderSegsRel, Data data)
+    {
+        var lf = data.Models.Landforms;
+        var v = data.Models.Vegetation;
+        var points = borderSegsRel.GenerateInteriorPoints(50f, 10f)
             .ToList();
         points.AddRange(borderSegsRel.GetPoints());
-        var tris = DelaunayTriangulator.TriangulatePoints(points);
+        borderSegsRel.ForEach(b => b.GeneratePointsAlong(50f, 10f, points));
         
-        return Construct(tris);
+        var tris = DelaunayTriangulator.TriangulatePoints(points)
+            .Select(t =>
+            {
+                var land = lf.GetAtPoint(poly, t.GetCentroid(), data);
+                var veg = v.GetAtPoint(poly, t.GetCentroid(), land, data);
+                return new PolyTri(t.A, t.B, t.C, land, veg);
+            })
+            .ToList();
+        return Construct(tris, data);
     }
     
-    public static PolyTerrainTris Construct(List<Triangle> tris)
+    public static PolyTerrainTris Construct(List<PolyTri> tris, 
+        Data data)
     {
-        StopwatchMeta.TryStart("construct");
-        if (tris.Count > byte.MaxValue - 1)
-        {
-            throw new Exception($"{tris.Count} is too many tris");
-        }
         var vertexIndices = new Dictionary<Vector2, int>();
         var vertices = new List<Vector2>();
         var triVertexIndices = new HashSet<Vector3>();
 
-        var sectionTriStartIndices = new byte[_numSections];
-        var sectionTriCounts = new byte[_numSections];
+        var sectionTriStartIndices = new int[_numSections];
+        var sectionTriCounts = new int[_numSections];
+        
         
         var sectionTris = Enumerable.Range(0, _numSections)
         .Select(i =>
         {
-            // var centerRot = Vector2.Right.Rotated(_sectionAngle * (i + .5f)) * 10000f;
             var startRot = Vector2.Right.Rotated(_sectionAngle * i);
             var endRot = Vector2.Right.Rotated(_sectionAngle * (i + 1));
-            
-            var ts = tris.Where(t =>
-                {
-                    return t.InSection(startRot, endRot);
-                }
-            ).ToHashSet();
-            return ts;
+            return tris.Where(t => t.InSection(startRot, endRot)).ToHashSet();
         }).ToList();
 
-        var orderedTris = new List<Triangle>();
+        var orderedTris = new List<PolyTri>();
         for (var i = 0; i < _numSections; i++)
         {
             var section = sectionTris[i];
@@ -222,76 +283,22 @@ public class PolyTerrainTris
             var exclusive = section.Except(sharedWNext).Except(sharedWPrev).Distinct();
 
             var currCount = orderedTris.Count;
-            sectionTriStartIndices[i] = Convert.ToByte(currCount);
-            sectionTriCounts[i] = Convert.ToByte(sharedWPrev.Count() + exclusive.Count() + sharedWNext.Count());
+            sectionTriStartIndices[i] = currCount;
+            sectionTriCounts[i] = sharedWPrev.Count() + exclusive.Count() + sharedWNext.Count();
             
             orderedTris.AddRange(sharedWPrev);
             orderedTris.AddRange(exclusive);
         }
 
-
-        if (orderedTris.Count != tris.Count)
-        {
-            // GD.Print($"{tris.Count} tris {orderedTris.Count} ordered");
-            // throw new Exception();
-        }
-
         
-        var polyTris = new PolyTri[orderedTris.Count];
-        for (var i = 0; i < orderedTris.Count; i++)
-        {
-            var tri = orderedTris[i];
-            
-            var polyTri = new PolyTri();
-            polyTris[i] = polyTri;
-            int triIter = 0;
 
-            tri.DoForEachPoint(p =>
-            {
-                int vertexIndex;
-                if (vertexIndices.ContainsKey(p) == false)
-                {
-                    vertexIndex = vertexIndices.Count;
-                    vertexIndices.Add(p, vertexIndex);
-                    vertices.Add(p);
-                }
-                else
-                {
-                    vertexIndex = vertexIndices[p];
-                }
-                polyTri.Set(triIter++, (byte)vertexIndex);
-            });
-        }
-
-        if (vertices.Count > byte.MaxValue - 1) throw new Exception();
-        
-        
-        StopwatchMeta.TryStop("construct");
-
-        return new PolyTerrainTris(vertices.ToArray(), polyTris, sectionTriStartIndices, sectionTriCounts);
-    }
-
-    private int FindByAngle(Vector2 pos, out int section)
-    {
-        section = (Mathf.FloorToInt(Vector2.Right.GetClockwiseAngleTo(pos) / _sectionAngle) + _numSections) % _numSections;
-        var sectionStart = SectionTriStartIndices[section];
-        var sectionCount = SectionTriCounts[section];
-        for (var i = 0; i < sectionCount; i++)
-        {
-            var triIndex = (sectionStart + i) % Tris.Length;
-            if (Tris[triIndex].ContainsPoint(pos, Vertices)) return triIndex;
-        }
-        return -1;
+        return new PolyTerrainTris(vertices.ToArray(), orderedTris.ToArray(), sectionTriStartIndices, sectionTriCounts);
     }
 
     
-    public List<Triangle> GetTris()
-    {
-        return Tris.Select(pt => pt.GetTriangle(Vertices)).ToList();
-    }
     [SerializationConstructor] 
-    private PolyTerrainTris(Vector2[] vertices, PolyTri[] tris, byte[] sectionTriStartIndices, 
-        byte[] sectionTriCounts)
+    private PolyTerrainTris(Vector2[] vertices, PolyTri[] tris, int[] sectionTriStartIndices, 
+        int[] sectionTriCounts)
     {
         Vertices = vertices;
         Tris = tris;
@@ -300,14 +307,9 @@ public class PolyTerrainTris
         SectionTriCounts = sectionTriCounts;
     }
 
-    public int IntersectingTri(Vector2 point, out int section)
+    public PolyTri GetTriAndSection(Vector2 point, out int section)
     {
         return FindByAngle(point, out section);
-    }
-
-    public Triangle GetTriangle(int index)
-    {
-        return Tris[index].GetTriangle(Vertices);
     }
 
     public List<Triangle> GetSectionTris(int section)
@@ -317,9 +319,26 @@ public class PolyTerrainTris
         var count = SectionTriCounts[section];
         for (int i = 0; i < count; i++)
         {
-            ts.Add(Tris[(start + i) % Tris.Length].GetTriangle(Vertices));
+            ts.Add(Tris[(start + i) % Tris.Length]);
         }
 
         return ts;
+    }
+    public PolyTri GetAtPoint(Vector2 point, Data data)
+    {
+        return (FindByAngle(point, out _));
+    }
+    
+    private PolyTri FindByAngle(Vector2 pos, out int section)
+    {
+        section = (Mathf.FloorToInt(Vector2.Right.GetClockwiseAngleTo(pos) / _sectionAngle) + _numSections) % _numSections;
+        var sectionStart = SectionTriStartIndices[section];
+        var sectionCount = SectionTriCounts[section];
+        for (var i = 0; i < sectionCount; i++)
+        {
+            var triIndex = (sectionStart + i) % Tris.Length;
+            if (Tris[triIndex].ContainsPoint(pos)) return Tris[triIndex];
+        }
+        return null;
     }
 }

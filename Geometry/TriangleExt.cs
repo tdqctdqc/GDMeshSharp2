@@ -39,20 +39,13 @@ public static class TriangleExt
         return Mathf.Min(min, dist3);
     }
 
+    public static float GetMinAltitude(this Triangle tri)
+    {
+        return GetMinAltitude(tri.A, tri.B, tri.C);
+    }
     public static float GetMinAltitude(Vector2 p0, Vector2 p1, Vector2 p2)
     {
-        var area = GetArea(p0, p1, p2);
-        var minAlt = Mathf.Inf;
-        float altitude(Vector2 po0, Vector2 po1)
-        {
-            var baseLength = po1.DistanceTo(po0);
-            return area * 2f / baseLength;
-        }
-
-        minAlt = Mathf.Min(minAlt, altitude(p0, p1));
-        minAlt = Mathf.Min(minAlt, altitude(p1, p2));
-        minAlt = Mathf.Min(minAlt, altitude(p2, p0));
-        return minAlt;
+        return Mathf.Min(p0.DistToLine(p1, p2), Mathf.Min(p1.DistToLine(p0, p2), p2.DistToLine(p0, p1)));
     }
     public static float GetMinAltitude(List<Vector2> points)
     {
@@ -96,7 +89,7 @@ public static class TriangleExt
                 var p = tri.A 
                         + (tri.B - tri.A) * ratioAlongAxis 
                         + (tri.C - tri.B) * ratioAlongAxis * crossRatio + mod;
-                if(tri.PointInsideTriangle(p)) res.Add(p);
+                if(tri.ContainsPoint(p)) res.Add(p);
             }
         }
         
@@ -135,11 +128,11 @@ public static class TriangleExt
         if ((b - a).Normalized() == (c - a).Normalized()) return true;
         return false;
     }
-    public static bool PointInsideTriangle(this Triangle tri, Vector2 p)
+    public static bool ContainsPoint(this Triangle tri, Vector2 p)
     {
-        return PointInsideTriangle(tri.A, tri.B, tri.C, p);
+        return ContainsPoint(tri.A, tri.B, tri.C, p);
     }
-    public static bool PointInsideTriangle(Vector2 t1, Vector2 t2, Vector2 t3, Vector2 p)
+    public static bool ContainsPoint(Vector2 t1, Vector2 t2, Vector2 t3, Vector2 p)
     {
         float sign(Vector2 p1, Vector2 p2, Vector2 p3)
         {

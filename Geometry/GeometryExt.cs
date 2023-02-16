@@ -57,7 +57,6 @@ public static class GeometryExt
     public static List<Triangle> TriangulateSegment(this List<LineSegment> segs, 
         LineSegment startLeg, LineSegment endLeg)
     {
-        StopwatchMeta.TryStart("triangulate segment");
         if (startLeg.From != endLeg.To) throw new Exception();
         var anchor = startLeg.From;
         var tris = new List<Triangle>();
@@ -65,8 +64,8 @@ public static class GeometryExt
         var partitionIndices = new List<int>{};
         var partitionNewPoints = new List<List<Vector2>>();
         var startRay = startLeg.To - anchor;
-        var startNewPoints = startLeg.To.GeneratePointsAlong(30f, 5f, anchor);
-        var endNewPoints = endLeg.From.GeneratePointsAlong(30f, 5f, anchor);
+        var startNewPoints = startLeg.To.GeneratePointsAlong(30f, 5f, null, anchor).Select(p => p.Intify()).ToList();
+        var endNewPoints = endLeg.From.GeneratePointsAlong(30f, 5f, null, anchor).Select(p => p.Intify()).ToList();;
         for (var i = 0; i < segs.Count; i++)
         {
             var seg = segs[i];
@@ -76,7 +75,7 @@ public static class GeometryExt
             if (startRay.GetClockwiseAngleTo(ray) > Mathf.Pi)
             {
                 partitionIndices.Add(i);
-                var newPs = seg.To.GeneratePointsAlong(50f, 5f, anchor);
+                var newPs = seg.To.GeneratePointsAlong(50f, 5f, null, anchor).Select(p => p.Intify()).ToList();;
                 partitionNewPoints.Add(newPs);
                 startRay = ray;
             }
@@ -114,7 +113,6 @@ public static class GeometryExt
             TriangulateConcaveSegment(segs, startLeg, endLeg, tris, startNewPoints, endNewPoints);
         }
         
-        StopwatchMeta.TryStop("triangulate segment");
         return tris;
     }
 
@@ -122,29 +120,28 @@ public static class GeometryExt
         LineSegment startLeg, LineSegment endLeg, List<Triangle> tris, List<Vector2> newStartPoints, 
         List<Vector2> newEndPoints)
     {
-        // StopwatchMeta.TryStart("triangulate concave");
+        
+        var points = new List<Vector2>();
         segs.Add(startLeg);
         segs.Add(endLeg);
-        var points = segs.GetPoints().ToList();
-        
-        
-        // StopwatchMeta.TryStart("generating interior points");
-        points.AddRange(segs.GenerateInteriorPoints(30f, 20f));
-        StopwatchMeta.TryStop("generating interior points");
+        points.AddRange(segs.GenerateInteriorPoints(50f, 10f));
+        points.AddRange(segs.GetPoints());
+        segs.ForEach(b => b.GeneratePointsAlong(50f, 10f, points));
 
         points.AddRange(newStartPoints);
         points.AddRange(newEndPoints);
+
+        try
+        {
+            tris.AddRange(
+                DelaunayTriangulator.TriangulatePoints(points.Distinct().Select(p => p.Intify()).ToList())
+                    .Where(t => t.IsDegenerate() == false));
+        }
+        catch (Exception e)
+        {
+            // GD.Print(points.Distinct().Select(p => p.ToString()).ToArray());
+            // throw;
+        }
         
-        
-
-        // StopwatchMeta.TryStart("delaunay");
-        tris.AddRange(
-            DelaunayTriangulator.TriangulatePoints(points.Distinct().ToList())
-                .Where(t => t.IsDegenerate() == false)
-            );
-        StopwatchMeta.TryStop("delaunay");
-
-        StopwatchMeta.TryStop("triangulate concave");
-
     }
 }

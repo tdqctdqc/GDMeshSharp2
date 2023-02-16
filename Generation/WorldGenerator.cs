@@ -22,7 +22,6 @@ public class WorldGenerator
     }
     public GenData Generate(Action<string, string> generationCallback = null)
     {
-
         var cellSize = 200f;
         var edgePointMargin = new Vector2(cellSize, cellSize);
 
@@ -43,41 +42,42 @@ public class WorldGenerator
             _key
         );
         generationCallback("Polygons", "");
-        
 
         // EdgeDisturber.DisturbEdges(Data.Planet.Polygons.Entities, 
         //     Data.Planet.PlanetInfo.Value.Dimensions, _key);
-        // generationCallback("Edge disturb", "");
-        
-        Data.Events.FinalizedPolyShapes?.Invoke();
-
         
         
-        var geologyGenerator = new GeologyGenerator(Data, _id);
-        geologyGenerator.GenerateTerrain(_key);
+        
+        
+        new GeologyGenerator(Data, _id).GenerateTerrain(_key);
         generationCallback("Geology", "");
 
-        var moistureGenerator = new MoistureGenerator(Data, _id);
-        moistureGenerator.Generate(_key);
+        new MoistureGenerator(Data, _id).Generate(_key);
         generationCallback("Moisture", "");
-
+        
+        
+        //todo not quite lining up
+        EdgeDisturber.SplitEdges(Data.Planet.Polygons.Entities, _key, 50f);
+        generationCallback("Edge split", "");
+        
+        
+        new PolyTriGenerator().BuildTris(_key);
+        GD.Print("built tris");
+        generationCallback("Built tris", "");
+        Data.Events.FinalizedPolyShapes?.Invoke();
 
         var locationGenerator = new LocationGenerator(Data);
         locationGenerator.Generate(_key, _id);
         generationCallback("Locations", "");
 
-
         var regimeGen = new RegimeGenerator(Data, _id, _key);
         regimeGen.Generate();
         generationCallback("Regimes", "");
-
-
+        
         var peepGen = new PeepGenerator(_id, _key, Data);
         peepGen.Generate();
         generationCallback("Peeps", "");
 
-        
-        
         return Data;
     }
 }

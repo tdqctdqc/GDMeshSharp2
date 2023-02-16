@@ -12,8 +12,8 @@ public class Swamp : Vegetation
     {
     }
 
-    public override bool Allowed(MapPolygon p, GenData data)
+    public override bool Allowed(MapPolygon p, float moisture, Landform lf, Data data)
     {
-        return base.Allowed(p, data) && p.Altitude < .6f && p.Roughness < .15f;
+        return base.Allowed(p, moisture, lf, data) && p.Altitude < .6f && p.Roughness < .15f;
     }
 }

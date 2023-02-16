@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Godot;
 
 public class MapDisplayOptionsUi : Container
@@ -13,33 +14,34 @@ public class MapDisplayOptionsUi : Container
 
     public void Setup(GameGraphics graphics)
     {
-        _roads = ButtonToken.Get(this, "Roads", () =>
+        var mapChunkGraphicType = typeof(MapChunkGraphic);
+        var toggleable = mapChunkGraphicType
+            .GetProperties()
+            .Where(p => p.HasAttribute<ToggleableAttribute>());
+        
+        foreach (var pi in toggleable)
         {
-            Toggle(graphics.MapChunkGraphics, r => r.ToggleRoads(), _roads, "Roads");
-        });
-        _regimes = ButtonToken.Get(this, "Regimes", () =>
-        {
-            Toggle(graphics.MapChunkGraphics, r => r.ToggleRegimes(), _regimes, "Regimes");
-        });
-        _landforms = ButtonToken.Get(this, "Landforms", () =>
-        {
-            Toggle(graphics.MapChunkGraphics, r => r.ToggleLandforms(), _landforms, "Landforms");
-
-        });
-        _vegetation = ButtonToken.Get(this, "Vegetation", () =>
-        {
-            Toggle(graphics.MapChunkGraphics, r => r.ToggleVegetation(), _vegetation, "Vegetation");
-        });
-    }
-    private void Toggle(IEnumerable<MapChunkGraphic> chunks, Func<MapChunkGraphic, bool> toggle, ButtonToken token, string name)
-    {
-        bool vis = false;
-        foreach (var t in chunks)
-        {
-            vis = toggle(t);
+            var name = pi.Name;
+            var btn = new Button();
+            btn.Text = "Showing " + name;
+            Action toggle = () =>
+            {
+                foreach (var mc in graphics.MapChunkGraphics)
+                {
+                    var n = (Node2D) pi.GetMethod.Invoke(mc, null);
+                    Toggle(mc, n, btn, name);
+                }
+            };
+            
+            var token = ButtonToken.Get(btn, toggle);
+            AddChild(btn);
         }
+    }
+    private void Toggle(MapChunkGraphic mc, Node2D n,  Button btn, string name)
+    {
+        bool vis = n.Toggle();
 
-        token.Button.Text = vis
+        btn.Text = vis
             ? "Showing " + name
             : name + " is hidden";
     }

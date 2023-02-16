@@ -33,7 +33,7 @@ public class PolygonGenerator
         }
         else
         {
-            // throw new NotImplementedException();
+            throw new NotImplementedException();
         }
         BuildBorders(info, graph, key);
     }

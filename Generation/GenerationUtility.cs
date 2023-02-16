@@ -62,12 +62,16 @@ public static class GenerationUtility
         return notTaken;
     }
 
-    public static IEnumerable<T> OrderByClockwise<T>(this IEnumerable<T> elements, 
+    public static void OrderByClockwise<T>(this List<T> elements, 
         Vector2 center, 
         Func<T, Vector2> elPos)
     {
         var first = elPos(elements.First()) - center;
-        return elements.OrderBy(i => (elPos(i) - center).GetClockwiseAngleTo(first));
+        elements.Sort((i,j) => 
+            (elPos(i) - center).GetClockwiseAngleTo(first).CompareTo(
+                (elPos(j) - center).GetClockwiseAngleTo(first)
+                )
+            );
     }
 
     

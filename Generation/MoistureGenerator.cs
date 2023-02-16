@@ -91,10 +91,11 @@ public class MoistureGenerator
 
     private void BuildPolyVegetationTris()
     {
-        foreach (var poly in Data.Planet.Polygons.Entities)
-        {
-            poly.BuildTrisForAspects(Data.Models.Vegetation, _key);
-        }
+        //todo fix
+        // foreach (var poly in Data.Planet.Polygons.Entities)
+        // {
+        //     poly.BuildTrisForAspects(Data.Models.Vegetation, _key);
+        // }
     }
     
     private void BuildRivers()
@@ -152,7 +153,7 @@ public class MoistureGenerator
             }
         }
 
-        var riverPolys = pathToSea.SelectMany(p => p.Value).Distinct().ToList();
-        riverPolys.ForEach(p => p.BuildTrisForAspect(LandformManager.River, _key));
+        // var riverPolys = pathToSea.SelectMany(p => p.Value).Distinct().ToList();
+        // riverPolys.ForEach(p => p.BuildTrisForAspect(LandformManager.River, _key));
     }
 }

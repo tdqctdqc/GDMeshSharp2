@@ -5,20 +5,40 @@ using Godot;
 
 public static class Vector2Ext
 {
-    public static List<Vector2> GeneratePointsAlong(this Vector2 to, float spacing, float variation, Vector2 from = default)
+    public static List<Vector2> GeneratePointsAlong(this LineSegment seg, float spacing, 
+        float variation, List<Vector2> addTo = null)
     {
+        if (addTo == null) addTo = new List<Vector2>();
+        var to = seg.To;
+        var from = seg.From;
         if (variation >= spacing / 2f) throw new Exception();
-        var res = new List<Vector2>();
         var numPoints = Mathf.FloorToInt((to - from).Length() / spacing );
         var axis = (to - from).Normalized();
         for (int i = 1; i <= numPoints; i++)
         {
             var rand = Game.I.Random.RandfRange(-1f, 1f);
             var p = from + axis * (spacing * i);
-            res.Add(p);
+            addTo.Add(p);
         }
 
-        return res;
+        return addTo;
+    }
+    public static List<Vector2> GeneratePointsAlong(this Vector2 to, float spacing, float variation, 
+            List<Vector2> addTo = null, Vector2 from = default)
+    {
+        if (variation >= spacing / 2f) throw new Exception();
+        if (addTo == null) addTo = new List<Vector2>();
+
+        var numPoints = Mathf.FloorToInt((to - from).Length() / spacing );
+        var axis = (to - from).Normalized();
+        for (int i = 1; i <= numPoints; i++)
+        {
+            var rand = Game.I.Random.RandfRange(-1f, 1f);
+            var p = from + axis * (spacing * i);
+            addTo.Add(p);
+        }
+
+        return addTo;
     }
     public static Vector2 Shorten(this Vector2 v, float shortenBy)
     {

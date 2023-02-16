@@ -15,7 +15,7 @@ public class SandboxClient : Node, IClient
     private CanvasLayer _canvas;
     private Node2D _hook;
     private MockPolygon _poly;
-    private int _prevMouseOver = -1;
+    private PolyTri _prevMouseOver;
     private List<int> _sectionTriIndices;
     
     public SandboxClient()
@@ -89,9 +89,9 @@ public class SandboxClient : Node, IClient
         
         _triGraphics = new Dictionary<int, Node2D>();
         var mb = new MeshBuilder();
-        var tris = poly.Tris.GetTris();
+        var tris = poly.Tris.Tris;
         
-        for (var i = 0; i < tris.Count; i++)
+        for (var i = 0; i < tris.Length; i++)
         {
             var t = tris[i];
             mb.AddTriOutline(t, 3f, Colors.White);
@@ -115,10 +115,10 @@ public class SandboxClient : Node, IClient
 
         var sw = new Stopwatch();
         sw.Start();
-        var intersecting = _poly.Tris.IntersectingTri(mousePos, out int section);
+        var intersecting = _poly.Tris.GetTriAndSection(mousePos, out int section);
         sw.Stop();
 
-        if (intersecting != -1 && intersecting != _prevMouseOver)
+        if (intersecting != null && intersecting != _prevMouseOver)
         {
             // GD.Print("find time " + sw.Elapsed.TotalMilliseconds);
             _mouseOverTriGraphics?.Free();
@@ -131,7 +131,7 @@ public class SandboxClient : Node, IClient
                 mb.AddTri(s, Colors.Yellow);
             });
             
-            mb.AddTri(_poly.Tris.GetTriangle(intersecting), Colors.Red);
+            mb.AddTri(intersecting, Colors.Red);
             _mouseOverTriGraphics = mb.GetMeshInstance();
             AddChild(_mouseOverTriGraphics);
         }

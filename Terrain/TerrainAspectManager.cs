@@ -19,26 +19,11 @@ public abstract class TerrainAspectManager<TAspect> : IModelManager<TAspect>
         LandDefault = landDefault;
         ByPriority = byPriority;
         ByName = new Dictionary<string, TAspect>();
-        ByName.Add(waterDefault.Name, waterDefault);
-        if(landDefault != waterDefault) ByName.Add(landDefault.Name, landDefault);
+        // ByName.Add(waterDefault.Name, waterDefault);
+        // if(landDefault != waterDefault) ByName.Add(landDefault.Name, landDefault);
         ByPriority.ForEach(ta => ByName.Add(ta.Name, ta));
     }
 
     
-    public TAspect GetAspectFromPoly(MapPolygon p, GenData data)
-    {
-        for (var i = 0; i < ByPriority.Count; i++)
-        {
-            var val = ByPriority[i];
-            if (val.Allowed(p, data))
-            {
-                return val;
-            }
-        }
-        if (p.IsWater())
-        {
-            return WaterDefault;
-        }
-        return LandDefault;
-    }
+
 }

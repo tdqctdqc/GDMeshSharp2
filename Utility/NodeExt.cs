@@ -25,4 +25,10 @@ public static class NodeExt
     {
         self.FindNode(childName).AddChild(toAdd);
     }
+    
+    public static bool Toggle(this Node2D n)
+    {
+        n.Visible = n.Visible == false;
+        return n.Visible;
+    }
 }

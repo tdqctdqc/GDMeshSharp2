@@ -16,6 +16,6 @@ public class MockPolygon
     {
         Center = center;
         Id = id;
-        Tris = PolyTerrainTris.MakeFromSegments(borderSegs, riverPoints, riverWidths);
+        // Tris = PolyTerrainTris.MakeFromSegments(borderSegs, riverPoints, riverWidths);
     }
 }

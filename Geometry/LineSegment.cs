@@ -25,6 +25,11 @@ public class LineSegment
         return new LineSegment(From + oldOrigin - newOrigin, To + oldOrigin - newOrigin);
     }
 
+    public LineSegment Translate(Vector2 offset)
+    {
+        return new LineSegment(From + offset, To + offset);
+    }
+
     public void Clamp(float mapWidth)
     {
         if (Mid().x > mapWidth / 2f)
@@ -80,12 +85,16 @@ public class LineSegment
 
     public bool LeftOf(Vector2 point)
     {
-        return (To.x - From.x)*(point.y - From.y) - (To.y - From.y)*(point.x - From.x) < 0;
+        return (To.x - From.x)*(point.y - From.y) - (To.y - From.y)*(point.x - From.x) > 0;
     }
 }
 
 public static class LineSegmentExt
 {
+    public static IEnumerable<LineSegment> GetOpposing(this IEnumerable<LineSegment> segs, Vector2 offset)
+    {
+        return segs.Select(s => s.Translate(-offset).GetReverse()).Reverse();
+    }
     public static IEnumerable<LineSegment> ChangeOrigin(this IEnumerable<LineSegment> segs, Vector2 oldOrigin, Vector2 newOrigin)
     {
         return segs.Select(l => l.ChangeOrigin(oldOrigin, newOrigin));
@@ -96,6 +105,42 @@ public static class LineSegmentExt
         var offset = newOrigin.GetOffsetTo(oldOrigin, data);
         return segs.Select(l => new LineSegment(l.From + offset,
             l.To + offset));
+    }
+
+    public static void SplitToMinLength(this MapPolygonBorder border, float minLength, GenWriteKey key)
+    {
+        var newSegsAbs = new List<LineSegment>();
+        var segs = border.GetSegsAbs();
+        var offset = border.HighId.Ref().GetOffsetTo(border.LowId.Ref(), key.Data);
+        for (var i = 0; i < segs.Count; i++)
+        {
+            var seg = segs[i];
+            var axis = (seg.To - seg.From);
+            var l = seg.Length();
+            if (l > minLength * 2f)
+            {
+                var numSplits = Mathf.FloorToInt(l / minLength) - 1;
+                var prev = seg.From;
+                for (int j = 1; j <= numSplits; j++)
+                {
+                    var interp = j / (numSplits + 1f) ;
+                    var splitP = (seg.From + axis * interp).Intify();
+                    
+                    newSegsAbs.Add(new LineSegment(prev, splitP));
+                    prev = splitP;
+                }
+                newSegsAbs.Add(new LineSegment(prev, seg.To));
+            }
+            else
+            {
+                newSegsAbs.Add(seg);
+            }
+        }
+        
+        border.ReplacePoints(newSegsAbs, 
+            // newHiSegs.GetOpposing(offset).ToList(), 
+            // offset,
+            key);
     }
     
     public static List<LineSegment> BreakOnPoints(this List<LineSegment> segs, 
@@ -150,9 +195,10 @@ public static class LineSegmentExt
                 var width = widths[breakPointIndex];
                 
                 if (breakPoint == seg.From || breakPoint == seg.To) throw new Exception();
+                width = Mathf.Min(width, Mathf.Min(seg.From.DistanceTo(breakPoint) * 1.5f, seg.To.DistanceTo(breakPoint) * 1.5f));
                 if (seg.From.DistanceTo(breakPoint) <= width / 2f || seg.To.DistanceTo(breakPoint) <= width / 2f)
                 {
-                    throw new Exception();
+                    throw new Exception($"segment not big enough, width is {seg.Length()} and insert is ${width}");
                 }
                 
                 var newFrom = seg.From + (breakPoint - seg.From).Shorten(width / 2f);

@@ -59,7 +59,7 @@ public class TriListHolder
         foreach (var keyValuePair in Landforms)
         {
             var ts = keyValuePair.Value;
-            if (ts.Any(t => t.PointInsideTriangle(offset))) return (Landform)data.Models[keyValuePair.Key];
+            if (ts.Any(t => t.ContainsPoint(offset))) return (Landform)data.Models[keyValuePair.Key];
         }
 
         return poly.IsLand() ? LandformManager.LandDefault : LandformManager.WaterDefault;
@@ -69,7 +69,7 @@ public class TriListHolder
         foreach (var keyValuePair in Vegetations)
         {
             var ts = keyValuePair.Value;
-            if (ts.Any(t => t.PointInsideTriangle(offset))) return (Vegetation)data.Models[keyValuePair.Key];
+            if (ts.Any(t => t.ContainsPoint(offset))) return (Vegetation)data.Models[keyValuePair.Key];
         }
 
         return poly.IsLand() ? VegetationManager.LandDefault : VegetationManager.WaterDefault;

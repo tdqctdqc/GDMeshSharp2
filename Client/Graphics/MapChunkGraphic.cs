@@ -5,84 +5,88 @@ using Godot;
 
 public class MapChunkGraphic : Node2D
 {
-    public PolygonChunkGraphic Regimes { get; private set; }
-    public PolygonChunkGraphic Polys { get; private set; }
-    public TerrainColorChunkGraphic Landform { get; private set; }
-    public VegetationChunkGraphic Vegetation { get; private set; }
-    public RoadChunkGraphic Roads { get; private set; }
+    [Toggleable] public PolygonChunkGraphic Regimes { get; private set; }
+    [Toggleable] public PolygonChunkGraphic Polys { get; private set; }
+    [Toggleable] public PolygonChunkGraphic PolyWheelTris { get; private set; }
+    [Toggleable] public TerrainTriChunkGraphic Landform { get; private set; }
+    [Toggleable] public TerrainTriChunkGraphic Tris { get; private set; }
+    [Toggleable] public VegetationChunkGraphic Vegetation { get; private set; }
+    [Toggleable] public RoadChunkGraphic Roads { get; private set; }
 
     public void Setup(MapChunk chunk, Data data)
     {
         var first = chunk.Polys.First();
         var polys = chunk.Polys.ToList();
-        Polys = new PolygonChunkGraphic();
-        Polys.Setup
-        (polys, data, 
-            p => p.IsLand() 
-            ? Colors.SaddleBrown 
-            : Colors.Blue,
-            false
+        Polys = SetupPolygonGraphic(polys, data, 
+            p => p.IsLand() ? Colors.SaddleBrown : Colors.Blue, 
+            0
         );
-        AddChild(Polys);
+        Landform = SetupTerrainTriGraphic(polys, data, t => t.Landform.Color, 1);
 
-        Landform = new TerrainColorChunkGraphic();
-        Landform.Setup(polys, data, data.Models.Landforms);
-        AddChild(Landform);
-        
-        Vegetation = new VegetationChunkGraphic();
-        Vegetation.Setup(polys, data);
-        AddChild(Vegetation);
-        
-        Regimes = new PolygonChunkGraphic();
-        Regimes.SetupWithBorder(polys, 
-            data, 
-            p => p.Regime.Ref().PrimaryColor,
-            (p1, p2) => p1.Regime.RefId == p2.Regime.RefId,
-            p => p.Regime.Empty(),
-            1f, 1f, 15f);
-        AddChild(Regimes);
+        Tris = SetupTerrainTriGraphic(polys, data, t => ColorsExt.GetRandomColor(), 5);
 
+        // Vegetation = new VegetationChunkGraphic();
+        // Vegetation.Setup(polys, data);
+        // AddChild(Vegetation);
+        // Vegetation.ZAsRelative = false;
+        // Vegetation.ZIndex = 2;
+
+        Regimes = SetupPolygonGraphic(polys, data, 
+            p => p.Regime.Empty()  
+                ? Colors.Transparent
+                : p.Regime.Ref().PrimaryColor, 
+            4);
+        
         Roads = new RoadChunkGraphic();
         Roads.Setup(polys, data);
         AddChild(Roads);
         
         Position = first.Center;
-
-        Polys.ZAsRelative = false;
-        Polys.ZIndex = 0;
+        PolyWheelTris = SetupPolygonWheelGraphic(polys, data, i => Colors.Orange.GetPeriodicShade(i), 9);
         
-        Landform.ZAsRelative = false;
-        Landform.ZIndex = 1;
         
-        Vegetation.ZAsRelative = false;
-        Vegetation.ZIndex = 2;
         
         Roads.ZAsRelative = false;
         Roads.ZIndex = 3;
-        
-        Regimes.ZAsRelative = false;
-        Regimes.ZIndex = 4;
     }
 
-    private bool Toggle(Node2D n)
+    private TerrainTriChunkGraphic SetupTerrainTriGraphic(List<MapPolygon> polys, Data data, 
+        Func<PolyTri, Color> getColor, int z)
     {
-        n.Visible = n.Visible == false;
-        return n.Visible;
+        var t = new TerrainTriChunkGraphic();
+        t.Setup(polys, data, getColor);
+        AddChild(t);
+        t.ZAsRelative = false;
+        t.ZIndex = z;
+        return t;
     }
-    public bool ToggleRegimes()
+
+    private PolygonChunkGraphic SetupPolygonGraphic(List<MapPolygon> polys, Data data,
+        Func<MapPolygon, Color> getColor, int z)
     {
-        return Toggle(Regimes);
+        var g = new PolygonChunkGraphic();
+        g.Setup
+        (polys, data, 
+            getColor,
+            false
+        );
+        AddChild(g);
+        g.ZAsRelative = false;
+        g.ZIndex = z;
+        return g;
     }
-    public bool ToggleRoads()
+    private PolygonChunkGraphic SetupPolygonWheelGraphic(List<MapPolygon> polys, Data data,
+        Func<int, Color> getColor, int z)
     {
-        return Toggle(Roads);
-    }
-    public bool ToggleLandforms()
-    {
-        return Toggle(Landform);
-    }
-    public bool ToggleVegetation()
-    {
-        return Toggle(Vegetation);
+        var g = new PolygonChunkGraphic();
+        g.SetupWheel
+        (polys, data, 
+            getColor,
+            false
+        );
+        AddChild(g);
+        g.ZAsRelative = false;
+        g.ZIndex = z;
+        return g;
     }
 }

@@ -50,50 +50,9 @@ public class MapPolygonBorder : Entity
         poly1.AddNeighbor(poly2, b, key);
         poly2.AddNeighbor(poly1, b, key);
         key.Create(b);
-        Test(b, key);
         return b;
     }
 
-    public static MapPolygonBorder CreateEdgeCase(int id, MapPolygon poly1, List<LineSegment> poly1SegsRel, 
-        MapPolygon poly2, List<LineSegment> poly2SegsRel, GenWriteKey key)
-    {
-        // var b = new MapPolygonBorder(id, poly1, poly1SegsRel, poly2, poly2SegsRel, key);
-        List<LineSegment> abs1 = poly1SegsRel.Select(p => p.ChangeOrigin(poly1.Center, Vector2.Zero)).ToList();
-        List<LineSegment> abs2 = poly2SegsRel.Select(p => p.ChangeOrigin(poly2.Center, Vector2.Zero)).ToList();
-
-        EntityRef<MapPolygon> lowId;
-        EntityRef<MapPolygon> highId;
-        List<LineSegment> lowSegsRel;
-        List<LineSegment> highSegsRel;
-        if (poly1.Id < poly2.Id)
-        {
-            lowId = new EntityRef<MapPolygon>(poly1, key);
-            highId = new EntityRef<MapPolygon>(poly2, key);
-            highSegsRel = OrderAndRelativizeSegments(abs2, highId.Ref(), key.Data);
-            lowSegsRel = OrderAndRelativizeSegments(abs1, lowId.Ref(), key.Data);
-        }
-        else
-        {
-            lowId = new EntityRef<MapPolygon>(poly2, key);
-            highId = new EntityRef<MapPolygon>(poly1, key);
-            highSegsRel = OrderAndRelativizeSegments(abs1, highId.Ref(), key.Data);
-            lowSegsRel = OrderAndRelativizeSegments(abs2, lowId.Ref(), key.Data);
-        }
-
-        var b =  new MapPolygonBorder(
-            id, 0f, lowSegsRel, highSegsRel, lowId, highId);
-        poly1.AddNeighbor(poly2, b, key);
-        poly2.AddNeighbor(poly1, b, key);
-        key.Create(b);
-        Test(b, key);
-        return b;
-    }
-
-    private static void Test(MapPolygonBorder b, WriteKey key)
-    {
-        var border = b.HighId.Ref().GetBorder(b.LowId.Ref(), key.Data);
-        if (border == null) throw new Exception();
-    }
     private static List<LineSegment> OrderAndRelativizeSegments(List<LineSegment> abs, MapPolygon poly, Data data)
     {
         var res = new List<LineSegment>();
@@ -110,15 +69,19 @@ public class MapPolygonBorder : Entity
             var seg = abs[i];
             var t = poly.GetOffsetTo(seg.To, data);
             var f = poly.GetOffsetTo(seg.From, data);
+            if (t.Length() > 1000f || f.Length() > 1000f) throw new Exception();
             res.Add(alter ?  new LineSegment(t, f) : new LineSegment(f, t));
         }
         return res;
     }
-    public void ReplacePoints(List<LineSegment> newSegmentsHiRel, 
-        List<LineSegment> newSegmentsLowRel, GenWriteKey key)
+    public void ReplacePoints(List<LineSegment> newSegmentsAbs, 
+        // List<LineSegment> newSegmentsLoRel,
+        // Vector2 offset,
+        GenWriteKey key)
     {
-        HighSegsRel = newSegmentsHiRel;
-        LowSegsRel = newSegmentsLowRel;
+        HighSegsRel = OrderAndRelativizeSegments(newSegmentsAbs, HighId.Ref(), key.Data);
+        LowSegsRel = OrderAndRelativizeSegments(newSegmentsAbs, LowId.Ref(), key.Data);
+        LowSegsRel.Reverse();
     }
     
     public void SetFlow(float width, GenWriteKey key)

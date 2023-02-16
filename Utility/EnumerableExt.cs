@@ -73,4 +73,25 @@ public static class EnumerableExt
             }
         }
     }
+
+    public static Dictionary<TKey, TValue> BindDictionary<TKey, TValue>(this List<TKey> keys,
+        List<TValue> values)
+    {
+        if (keys.Count != values.Count) throw new Exception("different number of keys and values");
+        var res = new Dictionary<TKey, TValue>();
+        for (var i = 0; i < keys.Count; i++)
+        {
+            res.Add(keys[i], values[i]);
+        }
+        return res;
+    }
+
+    public static T Next<T>(this List<T> list, int i)
+    {
+        return list[(i + 1) % list.Count];
+    }
+    public static T Prev<T>(this List<T> list, int i)
+    {
+        return list[(i - 1 + list.Count) % list.Count];
+    }
 }

@@ -47,8 +47,7 @@ public sealed class GenCell : ISuper<GenCell, MapPolygon>
         {
             if (key.GenData.GenAuxData.PolyCells.ContainsKey(p) == false)
             {
-                GD.Print(p.Center);
-                throw new Exception();
+                throw new Exception($"No aux data for cell at " + p.Center);
             }
         }
         Neighbors = NeighboringPolyGeos

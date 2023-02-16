@@ -5,21 +5,15 @@ using Godot;
 
 public class River : Landform
 {
-    private static float _threshold = 25f;
-    private static float _widthRatio = .05f;
 
     public River()
-        : base("River", 0f, 0f, Colors.Blue,
-            new EdgeToTriBuilder(
-                (p1, p2, d) => p1.GetBorder(p2, d).MoistureFlow,
-                _threshold,
-                s => Mathf.Pow(s, .5f)  + 5f))
+        : base("River", Mathf.Inf, 0f, Colors.Blue)
     {
         
     }
 
-    public override bool Allowed(MapPolygon p, GenData data)
+    public override bool Allowed(MapPolygon p, PolyTri t, GenData data)
     {
-        return p.IsLand() && p.Neighbors.Refs().Any(n => p.GetBorder(n, data).MoistureFlow > _threshold);
+        return false;
     }
 }

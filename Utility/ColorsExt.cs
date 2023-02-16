@@ -14,6 +14,7 @@ public static class ColorsExt
     public static Color Transparent = new Color(0f, 0f, 0f, 0f);
 
     private static RandomNumberGenerator _rand = new RandomNumberGenerator();
+
     private static List<Color> GetRainbow()
     {
         var list = new List<Color>();
@@ -39,7 +40,13 @@ public static class ColorsExt
             _rand.RandfRange(0f, 1f)
         );
     }
-    public static Color GetColor(int index)
+
+    public static Color GetPeriodicShade(this Color color, int iter)
+    {
+        return color.Darkened((iter % 7) / 7f);
+    }
+
+public static Color GetColor(int index)
     {
         return ColorList[index % ColorList.Count];
     }

@@ -218,12 +218,13 @@ public class GeologyGenerator
     }
     private void BuildLandformTris()
     {
-        var polys = Data.GenAuxData
-            .FaultLines.FaultLines.SelectMany(f => f.PolyFootprint)
-            .Where(p => p.IsLand()).ToHashSet();
-        foreach (var poly in Data.Planet.Polygons.Entities)
-        {
-            poly.BuildTrisForAspects(Data.Models.Landforms, _key);
-        }
+        //todo fix
+        // var polys = Data.GenAuxData
+        //     .FaultLines.FaultLines.SelectMany(f => f.PolyFootprint)
+        //     .Where(p => p.IsLand()).ToHashSet();
+        // foreach (var poly in Data.Planet.Polygons.Entities)
+        // {
+        //     poly.BuildTrisForAspects(Data.Models.Landforms, _key);
+        // }
     }
 }

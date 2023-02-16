@@ -8,18 +8,16 @@ public class Landform : TerrainAspect
     public override string Name { get; protected set; }
     public float MinRoughness { get; private set; }
     public float FertilityMod { get; private set; }
-    public override bool Allowed(MapPolygon poly, GenData data)
+    public virtual bool Allowed(MapPolygon poly, PolyTri t, GenData data)
     {
-        return poly.Roughness >= MinRoughness && poly.IsWater() == (this == LandformManager.Water);
+        return poly.Roughness >= MinRoughness && poly.IsWater() == (this == LandformManager.Sea);
     }
 
+    
     public override Color Color { get; protected set; }
-    public override ITriBuilder TriBuilder { get; protected set; }
-    public Landform(string name, float minRoughness, float fertilityMod, Color color, ITriBuilder triBuilder)
-        : base()
+    public Landform(string name, float minRoughness, float fertilityMod, Color color)
     {
         FertilityMod = fertilityMod;
-        TriBuilder = triBuilder;
         Name = name;
         MinRoughness = minRoughness;
         Color = color;

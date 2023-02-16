@@ -7,14 +7,14 @@ public class Urban : Landform
 {
     
     public Urban() 
-        : base("Urban", 0f, 0f, Colors.Black, new CenterTriBuilder(GetSize))
+        : base("Urban", 1000f, 0f, Colors.Black)
     {
         
     }
 
-    public override bool Allowed(MapPolygon poly, GenData data)
+    public override bool Allowed(MapPolygon poly, PolyTri t, GenData data)
     {
-        return poly.SettlementSize > 0f && base.Allowed(poly, data);
+        return false;
     }
 
     private static float GetSize(MapPolygon p)

@@ -59,12 +59,14 @@ public class LocationGenerator
                 }
             }
             var settlementPolys = landPolys.GetNRandomElements(settlementScores.Count);
-            settlementPolys.ForEach(p => p.BuildTrisForAspect(LandformManager.Urban, _key));
-            for (var i = 0; i < settlementPolys.Count; i++)
-            {
-                settlementPolys[i].Set(nameof(MapPolygon.SettlementSize), settlementScores[i], _key);
-                var settlement = Settlement.Create(_id.GetID(), settlementPolys[i], settlementScores[i], _key);
-            }
+            
+            //todo fix
+            // settlementPolys.ForEach(p => p.BuildTrisForAspect(LandformManager.Urban, _key));
+            // for (var i = 0; i < settlementPolys.Count; i++)
+            // {
+            //     settlementPolys[i].Set(nameof(MapPolygon.SettlementSize), settlementScores[i], _key);
+            //     var settlement = Settlement.Create(_id.GetID(), settlementPolys[i], settlementScores[i], _key);
+            // }
         });
 
         float popScore(MapPolygon p)

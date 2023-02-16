@@ -60,7 +60,7 @@ public class SandboxSession : Node, ISession
                 border,
                 new List<Vector2>{
                     new Vector2(0f, -100f), 
-                    new Vector2(100f, 0f), 
+                    // new Vector2(100f, 0f), 
                     new Vector2(0f, 100f), 
                     new Vector2(-100f, 0f), 
                 },

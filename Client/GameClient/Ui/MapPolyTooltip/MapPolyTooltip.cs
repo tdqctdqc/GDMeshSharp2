@@ -58,10 +58,13 @@ public class MapPolyTooltip : Node2D
         _id.Text = "Id: " + poly.Id;
         _numPops.Text = "Num Pops: " + poly.GetNumPeeps(data);
         _regime.Text = poly.Regime.Empty() ? "Neutral" : poly.Regime.Ref().Name;
-        var landform = poly.GetLandformAtPoint(data, offset);
-        _landform.Text = "Landform: " + landform.Name;
-        var veg = poly.GetVegetationAtPoint(data, offset);
-        _veg.Text = "Vegetation: " + veg.Name;
+
+        var tri = poly.TerrainTris.GetAtPoint(offset, data);
+        if (tri != null)
+        {
+            _landform.Text = "Landform: " + tri.Landform.Name;
+            _veg.Text = "Vegetation: " + tri.Vegetation.Name;
+        }
     }
     public void Setup(PolyHighlighter highlighter, IClient client)
     {

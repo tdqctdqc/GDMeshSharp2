@@ -7,7 +7,7 @@ public class LocalCache
 {
     private Data _data;
     public HashSet<MapChunk> Chunks { get; private set; }
-    public Dictionary<MapPolygon, List<Triangle>> PolyRelTris { get; private set; }
+    public Dictionary<MapPolygon, List<Triangle>> PolyRelWheelTris { get; private set; }
     public PolyGrid MapPolyGrid { get; private set; }
     public LocalCache(Data data)
     {
@@ -61,14 +61,12 @@ public class LocalCache
 
     private void BuildPolyRelTris()
     {
-        PolyRelTris = new Dictionary<MapPolygon, List<Triangle>>();
+        PolyRelWheelTris = new Dictionary<MapPolygon, List<Triangle>>();
         foreach (var p in _data.Planet.Polygons.Entities)
         {
             var tris = new List<Triangle>();
             if (p.Neighbors.Refs().Count == 0)
             {
-                GD.Print(p.Neighbors.RefIds.Count);
-                GD.Print(p.Neighbors.RefIds.Select(id => _data[id]).Distinct().Count());
                 throw new Exception();
             }
             foreach (var n in p.Neighbors.Refs())
@@ -81,7 +79,7 @@ public class LocalCache
                     tris.Add(tri);
                 }
             }
-            PolyRelTris.Add(p, tris);
+            PolyRelWheelTris.Add(p, tris);
         }
     }
 }
