@@ -23,13 +23,15 @@ public static class Vector2Ext
 
         return addTo;
     }
-    public static List<Vector2> GeneratePointsAlong(this Vector2 to, float spacing, float variation, 
+    public static List<Vector2> GeneratePointsAlong(this Vector2 to, float spacing, float variation, bool includeEndPoints,
             List<Vector2> addTo = null, Vector2 from = default)
     {
         if (variation >= spacing / 2f) throw new Exception();
         if (addTo == null) addTo = new List<Vector2>();
 
-        var numPoints = Mathf.FloorToInt((to - from).Length() / spacing );
+        
+        if(includeEndPoints) addTo.Add(from);
+        var numPoints = Mathf.FloorToInt((to - from).Length() / spacing ) - 1;
         var axis = (to - from).Normalized();
         for (int i = 1; i <= numPoints; i++)
         {
@@ -37,6 +39,7 @@ public static class Vector2Ext
             var p = from + axis * (spacing * i);
             addTo.Add(p);
         }
+        if(includeEndPoints) addTo.Add(to);
 
         return addTo;
     }
@@ -47,7 +50,7 @@ public static class Vector2Ext
     }
     public static Vector2 Intify(this Vector2 v)
     {
-        return new Vector2((int) v.x, (int) v.y);
+        return new Vector2(Mathf.FloorToInt(v.x), Mathf.FloorToInt(v.y));
     }
     public static Vector2 Avg(this List<Vector2> points)
     {
@@ -154,7 +157,7 @@ public static class Vector2Ext
 
         if (determ == 0f)
         {
-            intersect = Vector2.Inf;
+            intersect = new Vector2(Single.NaN, Single.NaN);
             return false;
         }
         var x = (slopeIntercept1.y - slopeIntercept2.y) / determ;

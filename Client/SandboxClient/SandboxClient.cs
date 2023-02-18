@@ -14,7 +14,6 @@ public class SandboxClient : Node, IClient
     private Line2D _mouseLine;
     private CanvasLayer _canvas;
     private Node2D _hook;
-    private MockPolygon _poly;
     private PolyTri _prevMouseOver;
     private List<int> _sectionTriIndices;
     
@@ -79,67 +78,10 @@ public class SandboxClient : Node, IClient
         _triGraphics.Add(-1, mi);
         AddChild(mi);
     }
-    public void DrawPoly(MockPolygon poly)
-    {
-        _poly = poly;
-        foreach (var keyValuePair in _triGraphics)
-        {
-            keyValuePair.Value.Free();
-        }
-        
-        _triGraphics = new Dictionary<int, Node2D>();
-        var mb = new MeshBuilder();
-        var tris = poly.Tris.Tris;
-        
-        for (var i = 0; i < tris.Length; i++)
-        {
-            var t = tris[i];
-            mb.AddTriOutline(t, 3f, Colors.White);
-            var tGraphic = mb.GetMeshInstance();
-            AddChild(tGraphic);
-            _triGraphics.Add(i, tGraphic);
-            mb.Clear();
-        }
-    }
+    
     public void ProcessPoly(float delta)
     {
-        if (_poly == null) return;
-        var mousePos = _hook.GetGlobalMousePosition();
-            
-        var angle = (mousePos - _home).GetClockwiseAngle();
-        _degrees.Text = "Degrees: " + ((int)angle.RadToDegrees()).ToString();
-        _mousePos.Text = "Mouse Pos: " + mousePos.ToString();
-        _mouseLine.ClearPoints();
-        _mouseLine.AddPoint(_home);
-        _mouseLine.AddPoint(mousePos);
-
-        var sw = new Stopwatch();
-        sw.Start();
-        var intersecting = _poly.Tris.GetTriAndSection(mousePos, out int section);
-        sw.Stop();
-
-        if (intersecting != null && intersecting != _prevMouseOver)
-        {
-            // GD.Print("find time " + sw.Elapsed.TotalMilliseconds);
-            _mouseOverTriGraphics?.Free();
-            _prevMouseOver = intersecting;
-            var mb = new MeshBuilder();
-
-            var sectionTris = _poly.Tris.GetSectionTris(section);
-            sectionTris.ForEach(s =>
-            {
-                mb.AddTri(s, Colors.Yellow);
-            });
-            
-            mb.AddTri(intersecting, Colors.Red);
-            _mouseOverTriGraphics = mb.GetMeshInstance();
-            AddChild(_mouseOverTriGraphics);
-        }
-        else if(intersecting != _prevMouseOver)
-        {
-            _mouseOverTriGraphics?.Free();
-            _mouseOverTriGraphics = null;
-        }
+        
     }
 
 }

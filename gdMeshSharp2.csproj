@@ -8,6 +8,7 @@
     <PackageReference Include="MarkovNextGen" Version="1.2.6" />
     <PackageReference Include="MessagePack" Version="2.4.59" />
     <PackageReference Include="OptimizedPriorityQueue" Version="5.1.0" />
+    <PackageReference Include="Poly2Tri" Version="1.0.1" />
     <PackageReference Include="RandomFriendlyNameGenerator" Version="1.0.7" />
   </ItemGroup>
   <ItemGroup>

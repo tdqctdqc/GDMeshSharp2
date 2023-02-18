@@ -94,4 +94,22 @@ public static class EnumerableExt
     {
         return list[(i - 1 + list.Count) % list.Count];
     }
+
+    public static T FromEnd<T>(this List<T> list, int i)
+    {
+        return list[(list.Count * 2 - 1 - i) % list.Count];
+    }
+
+    public static T Modulo<T>(this List<T> list, int i)
+    {
+        return list[i % list.Count];
+    }
+
+    public static void AddRange<T>(this HashSet<T> hash, IEnumerable<T> en)
+    {
+        foreach (var t in en)
+        {
+            hash.Add(t);
+        }
+    }
 }

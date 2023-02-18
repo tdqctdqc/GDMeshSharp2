@@ -24,7 +24,32 @@ public class DelaunayTriangulator
         }
         return tris;
     }
+    public static List<PolyTri> PolyTriangulatePoints(MapPolygon poly, List<Vector2> points, Data data)
+    {
+        var lf = data.Models.Landforms;
+        var v = data.Models.Vegetation;
+        var d = new Delaunator(points.Select(p => new DelaunatorPoint(p)).ToArray());
+        var tris = new List<PolyTri>();
+        for (int i = 0; i < d.Triangles.Length; i+=3)
+        {
+            var pointId1 = d.Triangles[i];
+            var p1 = d.Points[pointId1].GetIntV2();
+            
+            var pointId2 = d.Triangles[i + 1];
+            var p2 = d.Points[pointId2].GetIntV2();
+            
+            var pointId3 = d.Triangles[i + 2];
+            var p3 = d.Points[pointId3].GetIntV2();
 
+            var centroid = (p1 + p2 + p3) / 3f;
+            
+            var land = lf.GetAtPoint(poly, centroid, data);
+            var veg = v.GetAtPoint(poly, centroid, land, data);
+
+            tris.Add(new PolyTri(p1, p2, p3, land, veg));
+        }
+        return tris;
+    }
     
     public class DelaunatorPoint : IPoint
     {

@@ -13,7 +13,7 @@ public class MapPolygonBorder : Entity
     public List<LineSegment> HighSegsRel { get; private set; }
     public EntityRef<MapPolygon> LowId { get; private set; }
     public EntityRef<MapPolygon> HighId { get; private set; }
-
+    private int _riverSegIndexHi = -1;
     [SerializationConstructor] private MapPolygonBorder(int id, float moistureFlow, List<LineSegment> lowSegsRel, 
         List<LineSegment> highSegsRel, EntityRef<MapPolygon> lowId, 
         EntityRef<MapPolygon> highId) : base(id)
@@ -21,6 +21,7 @@ public class MapPolygonBorder : Entity
         MoistureFlow = moistureFlow;
         LowSegsRel = lowSegsRel;
         HighSegsRel = highSegsRel;
+        if (lowSegsRel.Count != highSegsRel.Count) throw new Exception();
         LowId = lowId;
         HighId = highId;
     }
@@ -82,6 +83,9 @@ public class MapPolygonBorder : Entity
         HighSegsRel = OrderAndRelativizeSegments(newSegmentsAbs, HighId.Ref(), key.Data);
         LowSegsRel = OrderAndRelativizeSegments(newSegmentsAbs, LowId.Ref(), key.Data);
         LowSegsRel.Reverse();
+        var stitch1 = HighSegsRel.StitchTogether();
+        var stitch2 = LowSegsRel.StitchTogether();
+        if (HighSegsRel.Count != LowSegsRel.Count) throw new Exception();
     }
     
     public void SetFlow(float width, GenWriteKey key)
@@ -91,6 +95,23 @@ public class MapPolygonBorder : Entity
     public void IncrementFlow(float increment, GenWriteKey key)
     {
         MoistureFlow += increment;
+    }
+    public void SetRiverIndexHi(int i, GenWriteKey key)
+    {
+        _riverSegIndexHi = i;
+    }
+
+    public LineSegment GetRiverSegment(MapPolygon poly)
+    {
+        if (poly == HighId.Ref())
+        {
+            return HighSegsRel[_riverSegIndexHi];
+        }
+        else if (poly == LowId.Ref())
+        {
+            return LowSegsRel.FromEnd(_riverSegIndexHi);
+        }
+        else throw new Exception("poly is not part of this border");
     }
 }
 
@@ -112,7 +133,9 @@ public static class PolyBorderExt
     }
     public static List<LineSegment> GetSegsAbs(this MapPolygonBorder b)
     {
-        return b.HighSegsRel.Select(s => s.ChangeOrigin(b.HighId.Ref().Center, Vector2.Zero)).ToList();
+        return b.HighSegsRel
+            .Select(s => s.Translate(b.HighId.Ref().Center))
+            .ToList();
     }
     public static Vector2 GetOffsetToOtherPoly(this MapPolygonBorder b, MapPolygon p)
     {

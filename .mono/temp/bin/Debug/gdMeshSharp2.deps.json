@@ -14,6 +14,7 @@
           "MessagePack": "2.4.59",
           "NETStandard.Library": "2.0.3",
           "OptimizedPriorityQueue": "5.1.0",
+          "Poly2Tri": "1.0.1",
           "RandomFriendlyNameGenerator": "1.0.7"
         },
         "runtime": {
@@ -162,6 +163,14 @@
           "lib/netstandard1.0/PriorityQueue.dll": {
             "assemblyVersion": "5.0.0.0",
             "fileVersion": "5.0.0.0"
+          }
+        }
+      },
+      "Poly2Tri/1.0.1": {
+        "runtime": {
+          "lib/net35-Client/Poly2Tri.dll": {
+            "assemblyVersion": "1.0.1.0",
+            "fileVersion": "1.0.1.0"
           }
         }
       },
@@ -346,6 +355,13 @@
       "sha512": "sha512-0AnX6kAs0GiLrSqrHKe5mpQhJSHTmXeqLNucV2CxGATP/I9UzLMc1N4MtS/z8qB6mcgX61OjHdY3YbOmETGs+A==",
       "path": "optimizedpriorityqueue/5.1.0",
       "hashPath": "optimizedpriorityqueue.5.1.0.nupkg.sha512"
+    },
+    "Poly2Tri/1.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-+/V/DLKkJov+Lc83QE2aRAMqxl+cE6sjhMZ1kdfj1l7B/r0fPcBeLj5uU4sxrKkZVVN+j4JUNf6e2xW5vrhwqQ==",
+      "path": "poly2tri/1.0.1",
+      "hashPath": "poly2tri.1.0.1.nupkg.sha512"
     },
     "RandomFriendlyNameGenerator/1.0.7": {
       "type": "package",

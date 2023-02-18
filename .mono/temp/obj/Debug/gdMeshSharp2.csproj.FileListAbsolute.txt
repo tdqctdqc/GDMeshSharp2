@@ -42,3 +42,4 @@ C:\Users\Tynan Dion\desktop\games\gdMeshSharp2\.mono\temp\bin\Debug\zh-Hans\FSha
 C:\Users\Tynan Dion\desktop\games\gdMeshSharp2\.mono\temp\bin\Debug\zh-Hant\FSharp.Core.resources.dll
 C:\Users\Tynan Dion\desktop\games\gdMeshSharp2\.mono\temp\bin\Debug\RandomFriendlyNameGenerator.dll
 C:\Users\Tynan Dion\desktop\games\gdMeshSharp2\.mono\temp\bin\Debug\GeometRi.dll
+C:\Users\Tynan Dion\desktop\games\gdMeshSharp2\.mono\temp\bin\Debug\Poly2Tri.dll

@@ -25,11 +25,11 @@ public class MapChunkGraphic : Node2D
 
         Tris = SetupTerrainTriGraphic(polys, data, t => ColorsExt.GetRandomColor(), 5);
 
-        // Vegetation = new VegetationChunkGraphic();
-        // Vegetation.Setup(polys, data);
-        // AddChild(Vegetation);
-        // Vegetation.ZAsRelative = false;
-        // Vegetation.ZIndex = 2;
+        Vegetation = new VegetationChunkGraphic();
+        Vegetation.Setup(polys, data);
+        AddChild(Vegetation);
+        Vegetation.ZAsRelative = false;
+        Vegetation.ZIndex = 2;
 
         Regimes = SetupPolygonGraphic(polys, data, 
             p => p.Regime.Empty()  

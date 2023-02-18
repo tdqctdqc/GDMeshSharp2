@@ -12,29 +12,105 @@ public static class GeometryExt
         return (360f * rad / (Mathf.Pi * 2f));
     }
 
-    public static List<Vector2> StitchTogether(this List<List<Vector2>> segments)
+    public static List<LineSegment> StitchTogether(this List<LineSegment> segs)
     {
-        var res = new List<Vector2>(segments[0]);
-        for (int i = 1; i < segments.Count; i++)
+        
+        for (var i = 0; i < segs.Count - 1; i++)
         {
-            var seg = segments[i];
-            if (seg[0] == res[res.Count - 1])
+            if (segs[i].To != segs[i + 1].From) break;
+            if (i == segs.Count - 1)
             {
-                for (var j = 1; j < seg.Count; j++)
-                {
-                    res.Add(seg[j]);
-                }
+                return segs.ToList();
             }
-            else if (seg[seg.Count - 1] == res[res.Count - 1])
+        }
+        
+        
+        var origSeg = segs.ToList();
+        var segments = segs.ToList();
+        var count = segments.Count;
+        var partials = new List<List<LineSegment>>();
+
+
+        while (segments.Count > 0)
+        {
+            var partial = new List<LineSegment>{segments.First()};
+            partials.Add(partial);
+            segments.Remove(segments.First());
+            
+            var curr = partial[0];
+            
+            var next = segments.FirstOrDefault(s => s.From == curr.To);
+            while (next != null)
             {
-                for (var j = seg.Count - 2; j >= 0; j--)
-                {
-                    res.Add(seg[j]);
-                }
+                partial.Add(next);
+                curr = next;
+                segments.Remove(next);
+                next = segments.FirstOrDefault(s => s.From == curr.To);
             }
-            // else throw new Exception();
+
+
+            curr = partial.First();
+            var prev = segments.FirstOrDefault(s => s.To == curr.From);
+            while (prev != null)
+            {
+                partial.Insert(0, prev);
+                curr = prev;
+                segments.Remove(prev);
+                prev = segments.FirstOrDefault(s => s.To == curr.From);
+            }
         }
 
+        var res = new List<LineSegment>(partials[0]);
+        
+        for (var i = 1; i < partials.Count; i++)
+        {
+            var last = partials[i - 1].Last().To;
+            var first = partials[0][0].From;
+            var partial = partials[i];
+            if (partial[0].From == last)
+            {
+                res.AddRange(partial);
+            }
+            else if(partial.Last().To == last)
+            {
+                res.AddRange(partial.Select(p => p.GetReverse()).Reverse());
+            }
+            else if (partial.First().From == first)
+            {
+                res.InsertRange(0, partial.Select(p => p.GetReverse()).Reverse());
+            }
+        }
+        
+        
+
+        if (res.Count != count)
+        {
+            GD.Print($"avg x {segs.Average(s => s.From.x)}");
+            // GD.Print($"{segments.Count} left");
+            //
+            // GD.Print("ORIG");
+            // for (var i = 0; i < origSeg.Count; i++)
+            // {
+            //     GD.Print($"orig from {origSeg[i].From} to {origSeg[i].To}");
+            // }
+            //
+            // for (var i = 0; i < segments.Count; i++)
+            // {
+            //     GD.Print($"remains from {segments[i].From} to {segments[i].To}");
+            // }
+            // for (var i = 0; i < res.Count; i++)
+            // {
+            //     GD.Print($"from {res[i].From} to {res[i].To}");
+            // }
+
+            throw new Exception("segments are not connected");
+        }
+        
+        for (var i = 0; i < res.Count - 1; i++)
+        {
+            if (res[i].To != res[i + 1].From) throw new Exception();
+        }
+        
         return res;
     }
 
@@ -52,8 +128,6 @@ public static class GeometryExt
         return result;
     }
 
-    
-
     public static List<Triangle> TriangulateSegment(this List<LineSegment> segs, 
         LineSegment startLeg, LineSegment endLeg)
     {
@@ -64,8 +138,8 @@ public static class GeometryExt
         var partitionIndices = new List<int>{};
         var partitionNewPoints = new List<List<Vector2>>();
         var startRay = startLeg.To - anchor;
-        var startNewPoints = startLeg.To.GeneratePointsAlong(30f, 5f, null, anchor).Select(p => p.Intify()).ToList();
-        var endNewPoints = endLeg.From.GeneratePointsAlong(30f, 5f, null, anchor).Select(p => p.Intify()).ToList();;
+        var startNewPoints = startLeg.To.GeneratePointsAlong(30f, 5f, false, null, anchor).Select(p => p.Intify()).ToList();
+        var endNewPoints = endLeg.From.GeneratePointsAlong(30f, 5f, false, null, anchor).Select(p => p.Intify()).ToList();
         for (var i = 0; i < segs.Count; i++)
         {
             var seg = segs[i];
@@ -75,7 +149,7 @@ public static class GeometryExt
             if (startRay.GetClockwiseAngleTo(ray) > Mathf.Pi)
             {
                 partitionIndices.Add(i);
-                var newPs = seg.To.GeneratePointsAlong(50f, 5f, null, anchor).Select(p => p.Intify()).ToList();;
+                var newPs = seg.To.GeneratePointsAlong(50f, 5f, false, null, anchor).Select(p => p.Intify()).ToList();;
                 partitionNewPoints.Add(newPs);
                 startRay = ray;
             }

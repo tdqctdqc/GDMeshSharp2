@@ -174,6 +174,15 @@
           "lib/netstandard1.0/PriorityQueue.dll": {}
         }
       },
+      "Poly2Tri/1.0.1": {
+        "type": "package",
+        "compile": {
+          "lib/net35-Client/Poly2Tri.dll": {}
+        },
+        "runtime": {
+          "lib/net35-Client/Poly2Tri.dll": {}
+        }
+      },
       "RandomFriendlyNameGenerator/1.0.7": {
         "type": "package",
         "compile": {
@@ -668,6 +677,18 @@
         "optimizedpriorityqueue.nuspec"
       ]
     },
+    "Poly2Tri/1.0.1": {
+      "sha512": "+/V/DLKkJov+Lc83QE2aRAMqxl+cE6sjhMZ1kdfj1l7B/r0fPcBeLj5uU4sxrKkZVVN+j4JUNf6e2xW5vrhwqQ==",
+      "type": "package",
+      "path": "poly2tri/1.0.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net35-Client/Poly2Tri.dll",
+        "poly2tri.1.0.1.nupkg.sha512",
+        "poly2tri.nuspec"
+      ]
+    },
     "RandomFriendlyNameGenerator/1.0.7": {
       "sha512": "wCQQnvgbokuDEUZcu7KPlEfUPjXBDBfMyMFOrsZ8IN+ebtjkDpKCGq0k6YO2dNkp2AfQSUz5qNJv3ZGRb0wSoQ==",
       "type": "package",
@@ -1048,6 +1069,7 @@
       "MessagePack >= 2.4.59",
       "NETStandard.Library >= 2.0.3",
       "OptimizedPriorityQueue >= 5.1.0",
+      "Poly2Tri >= 1.0.1",
       "RandomFriendlyNameGenerator >= 1.0.7"
     ]
   },
@@ -1058,11 +1080,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Tynan Dion\\Desktop\\games\\gdMeshSharp2\\gdMeshSharp2.csproj",
+      "projectUniqueName": "C:\\Users\\Tynan Dion\\desktop\\games\\gdMeshSharp2\\gdMeshSharp2.csproj",
       "projectName": "gdMeshSharp2",
-      "projectPath": "C:\\Users\\Tynan Dion\\Desktop\\games\\gdMeshSharp2\\gdMeshSharp2.csproj",
+      "projectPath": "C:\\Users\\Tynan Dion\\desktop\\games\\gdMeshSharp2\\gdMeshSharp2.csproj",
       "packagesPath": "C:\\Users\\Tynan Dion\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Tynan Dion\\Desktop\\games\\gdMeshSharp2\\.mono\\temp\\obj\\",
+      "outputPath": "C:\\Users\\Tynan Dion\\desktop\\games\\gdMeshSharp2\\.mono\\temp\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
@@ -1116,6 +1138,10 @@
             "target": "Package",
             "version": "[5.1.0, )"
           },
+          "Poly2Tri": {
+            "target": "Package",
+            "version": "[1.0.1, )"
+          },
           "RandomFriendlyNameGenerator": {
             "target": "Package",
             "version": "[1.0.7, )"
@@ -1134,5 +1160,17 @@
         "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.114\\RuntimeIdentifierGraph.json"
       }
     }
-  }
+  },
+  "logs": [
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'Poly2Tri 1.0.1' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8' instead of the project target framework '.NETStandard,Version=v2.0'. This package may not be fully compatible with your project.",
+      "libraryId": "Poly2Tri",
+      "targetGraphs": [
+        ".NETStandard,Version=v2.0"
+      ]
+    }
+  ]
 }

@@ -138,8 +138,6 @@ public static class LineSegmentExt
         }
         
         border.ReplacePoints(newSegsAbs, 
-            // newHiSegs.GetOpposing(offset).ToList(), 
-            // offset,
             key);
     }
     
@@ -215,12 +213,13 @@ public static class LineSegmentExt
 
         return result;
     }
-    public static IEnumerable<LineSegment> GetLineSegments(this IEnumerable<Vector2> points, bool close = false)
+    public static IEnumerable<LineSegment> GetLineSegments(this List<Vector2> points, bool close = false)
     {
+        
         return Enumerable.Range(0, points.Count() - (close ? 0 : 1))
             .Select(i =>
             {
-                return new LineSegment(points.ElementAt(i), points.ElementAt((i + 1) % points.Count()));
+                return new LineSegment(points[i], points.Modulo(i + 1));
             });
     }
 

@@ -56,7 +56,6 @@ public class WorldGenerator
         generationCallback("Moisture", "");
         
         
-        //todo not quite lining up
         EdgeDisturber.SplitEdges(Data.Planet.Polygons.Entities, _key, 50f);
         generationCallback("Edge split", "");
         
