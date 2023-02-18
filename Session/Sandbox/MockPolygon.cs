@@ -10,12 +10,10 @@ public class MockPolygon
     public int Id { get; private set; }
     public Vector2 Center { get; private set; }
     public List<LineSegment> BorderSegments { get; private set; }
-    public PolyTerrainTris Tris { get; private set; }
     public MockPolygon(Vector2 center, List<LineSegment> borderSegs, List<Vector2> riverPoints, List<float> riverWidths,
         int id)
     {
         Center = center;
         Id = id;
-        // Tris = PolyTerrainTris.MakeFromSegments(borderSegs, riverPoints, riverWidths);
     }
 }

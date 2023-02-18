@@ -62,20 +62,15 @@ public class SandboxClient : Node, IClient
     public void DrawTri(Triangle tri)
     {
 
-        if (_triGraphics.TryGetValue(-1, out var node))
-        {
-            node.Free();
-            _triGraphics.Remove(-1);
-        }
+        // if (_triGraphics.TryGetValue(-1, out var node))
+        // {
+        //     node.Free();
+        //     _triGraphics.Remove(-1);
+        // }
         var mb = new MeshBuilder();
-        mb.AddTri(tri, Colors.Yellow);
-        var points = tri.GenerateRegularPointsInside(20f);
-        points.ForEach(p =>
-        {
-            mb.AddCircle(p, 5f, 6, Colors.Red);
-        });
+        mb.AddTri(tri, ColorsExt.GetRandomColor());
         var mi = mb.GetMeshInstance();
-        _triGraphics.Add(-1, mi);
+        _triGraphics.Add(_triGraphics.Count, mi);
         AddChild(mi);
     }
     

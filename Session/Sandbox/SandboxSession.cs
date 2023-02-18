@@ -15,9 +15,9 @@ public class SandboxSession : Node, ISession
         AddChild(client);
         _home = Vector2.Zero;
         Client = client;
+        client.Setup(Vector2.Zero);
+        new TriangulationTesting(Client).Run();
     }
-
-    
 
     public override void _Process(float delta)
     {

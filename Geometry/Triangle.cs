@@ -43,11 +43,26 @@ public class Triangle
     {
         return v == A || v == B || v == C;
     }
-    public void DoForEachPoint(Action<Vector2> action)
+    public void ForEachPoint(Action<Vector2> action)
     {
         action(A);
         action(B);
         action(C);
+    }
+
+    public bool AllPoints(Func<Vector2, bool> pred)
+    {
+        return pred(A) && pred(B) && pred(C);
+    }
+    
+    public bool AllPointPairs(Func<Vector2, Vector2, bool> pred)
+    {
+        return pred(A, B) && pred(B, C) && pred(C, A);
+    }
+    
+    public bool AnyPointPairs(Func<Vector2, Vector2, bool> pred)
+    {
+        return pred(A, B) || pred(B, C) || pred(C, A);
     }
     public Vector2 GetCentroid()
     {
