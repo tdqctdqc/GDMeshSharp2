@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
+using Poly2Tri.Triangulation.Sets;
+using Poly2Tri.Utility;
 
 
 public class LineSegment
@@ -140,7 +142,49 @@ public static class LineSegmentExt
         border.ReplacePoints(newSegsAbs, 
             key);
     }
-    
+    public static List<Triangle> Triangulate(this List<LineSegment> boundarySegs, 
+        HashSet<Vector2> interiorPoints = null)
+    {
+        var boundaryPoints = boundarySegs.GetPoints().ToList();
+        if(boundaryPoints.Last() == boundaryPoints[0]) boundaryPoints.RemoveAt(boundaryPoints.Count - 1);
+        var boundaryHash = boundaryPoints.ToHashSet();
+        
+        var indices = new List<int>();
+        var indexDic = new Dictionary<Vector2, int>();
+        for (var i = 0; i < boundaryPoints.Count; i++)
+        {
+            var next = (i + 1) % boundaryPoints.Count;
+            indexDic.Add(boundaryPoints[i], i);
+            indices.Add(i);
+            indices.Add(next);
+        }
+        
+        if(interiorPoints != null) boundaryPoints.AddRange(interiorPoints);
+        var hash = boundaryPoints.ToHashSet();
+        
+        var con = new ConstrainedPointSet(boundaryPoints.GetPoly2TriTriPoints());
+        // con.WindingOrder = Point2DList.WindingOrderType.Clockwise;
+
+        Poly2Tri.P2T.Triangulate(con);
+        var tris = new List<Triangle>();
+        foreach (var dt in con.Triangles)
+        {
+            var t = dt.GetTri();
+            var centroid = t.GetCentroid();
+            if (t.AnyPoint(p => hash.Contains(p) == false)) continue;
+            
+            if (t.AllPoints(boundaryHash.Contains))
+            {
+                var index = indexDic[t.A];
+                var next = boundaryPoints
+                    .FindNext(v => v == t.B || v == t.C, index);
+                if (next != t.B) continue;
+            }
+            tris.Add(t);
+        }
+
+        return tris;
+    }
     public static List<LineSegment> BreakOnPoints(this List<LineSegment> segs, 
         List<Vector2> breakPoints)
     {

@@ -86,6 +86,16 @@ public static class EnumerableExt
         return res;
     }
 
+    public static T FindNext<T>(this List<T> list, Func<T, bool> pred, int from)
+    {
+        for (var i = 1; i < list.Count; i++)
+        {
+            var t = list.Modulo(i + from);
+            if (pred(t)) return t;
+        }
+
+        throw new Exception();
+    }
     public static T Next<T>(this List<T> list, int i)
     {
         return list[(i + 1) % list.Count];

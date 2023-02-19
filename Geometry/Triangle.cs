@@ -54,7 +54,10 @@ public class Triangle
     {
         return pred(A) && pred(B) && pred(C);
     }
-    
+    public bool AnyPoint(Func<Vector2, bool> pred)
+    {
+        return pred(A) || pred(B) || pred(C);
+    }
     public bool AllPointPairs(Func<Vector2, Vector2, bool> pred)
     {
         return pred(A, B) && pred(B, C) && pred(C, A);
@@ -63,6 +66,14 @@ public class Triangle
     public bool AnyPointPairs(Func<Vector2, Vector2, bool> pred)
     {
         return pred(A, B) || pred(B, C) || pred(C, A);
+    }
+
+    public Vector2 GetNext(Vector2 v)
+    {
+        if (v == A) return B;
+        if (v == B) return C;
+        if (v == C) return A;
+        throw new Exception("point is not part of tri");
     }
     public Vector2 GetCentroid()
     {
