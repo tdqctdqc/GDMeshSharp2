@@ -212,7 +212,7 @@ public static class LineSegmentExt
         var boundaryHash = points.ToHashSet();
         var hash = points.Select(p => p.GetV2()).ToHashSet();
         
-        if(points.Last() == points[0]) points.RemoveAt(points.Count - 1);
+        if(points.Last().GetV2() == points[0].GetV2()) points.RemoveAt(points.Count - 1);
         
         var constraints = new List<TriangulationConstraint>();
         for (var i = 0; i < points.Count; i++)
