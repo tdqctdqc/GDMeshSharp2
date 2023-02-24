@@ -7,7 +7,6 @@ using MessagePack;
 
 public class PolyTerrainTris
 {
-    public Vector2[] Vertices;
     public PolyTri[] Tris;
     private static int _numSections = 4; //could be by how many tris
     private static float _sectionAngle => Mathf.Pi * 2f / _numSections;
@@ -54,17 +53,14 @@ public class PolyTerrainTris
             orderedTris.AddRange(exclusive);
         }
 
-        
-
-        return new PolyTerrainTris(vertices.ToArray(), orderedTris.ToArray(), sectionTriStartIndices, sectionTriCounts);
+        return new PolyTerrainTris(orderedTris.ToArray(), sectionTriStartIndices, sectionTriCounts);
     }
 
     
     [SerializationConstructor] 
-    private PolyTerrainTris(Vector2[] vertices, PolyTri[] tris, int[] sectionTriStartIndices, 
+    private PolyTerrainTris(PolyTri[] tris, int[] sectionTriStartIndices, 
         int[] sectionTriCounts)
     {
-        Vertices = vertices;
         Tris = tris;
 
         SectionTriStartIndices = sectionTriStartIndices;
@@ -90,7 +86,7 @@ public class PolyTerrainTris
     }
     public PolyTri GetAtPoint(Vector2 point, Data data)
     {
-        return (FindByAngle(point, out _));
+        return FindByAngle(point, out _);
     }
     
     private PolyTri FindByAngle(Vector2 pos, out int section)

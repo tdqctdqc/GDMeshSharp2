@@ -7,6 +7,7 @@ public class GenData : Data
     public LandSeaManager LandSea { get; private set; }
     public GenAuxiliaryData GenAuxData { get; private set; }
     public GeneratorEvents Events { get; private set; }
+    public MapGenInfo GenInfo { get; set; }
     public GenData()
     {
     }

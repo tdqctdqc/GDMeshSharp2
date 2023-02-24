@@ -7,6 +7,21 @@ using GeometRi;
 
 public static class TriangleExt 
 {
+    public static List<LineSegment> GetSegments(this Triangle t)
+    {
+        var res = new List<LineSegment>();
+        res.Add(new LineSegment(t.A, t.B));
+        res.Add(new LineSegment(t.B, t.C));
+        res.Add(new LineSegment(t.C, t.A));
+        return res;
+    }
+    public static Triangle GetInscribed(this Triangle t, float shrinkFactor)
+    {
+        var centroid = t.GetCentroid();
+        return new Triangle(centroid + (t.A - centroid) * shrinkFactor,
+            centroid + (t.B - centroid) * shrinkFactor,
+            centroid + (t.C - centroid) * shrinkFactor);
+    }
     public static bool IsClockwise(this Triangle tri)
     {
         return IsClockwise(tri.A, tri.B, tri.C);

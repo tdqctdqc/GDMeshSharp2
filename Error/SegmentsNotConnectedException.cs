@@ -7,9 +7,11 @@ public class SegmentsNotConnectedException : DisplayableException
     public List<LineSegment> SegsBefore { get; private set; }
     public List<LineSegment> SegsAfter { get; private set; }
     public List<List<LineSegment>> Partials { get; private set; }
-    public SegmentsNotConnectedException(MapPolygon poly, List<LineSegment> segsBefore, List<LineSegment> segsAfter, 
+    public Data Data { get; private set; }
+    public SegmentsNotConnectedException(Data data, MapPolygon poly, List<LineSegment> segsBefore, List<LineSegment> segsAfter, 
         List<List<LineSegment>> partials)
     {
+        Data = data;
         Poly = poly;
         SegsBefore = segsBefore;
         SegsAfter = segsAfter;

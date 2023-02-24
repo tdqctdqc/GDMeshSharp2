@@ -57,7 +57,7 @@ public class GeneratorClient : Node, IClient
     }
     public void ProcessPoly(float delta)
     {
-        if(_generating == false) _graphics?.Process(delta, _session.Data);
+        if(_generating == false && _session.Succeeded) _graphics?.Process(delta, _session.Data);
     }
     private async void PressedGenerate()
     {

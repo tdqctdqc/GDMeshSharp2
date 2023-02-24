@@ -19,6 +19,15 @@ public class PolyHighlighter : Node2D
         var lines = poly.BorderSegments;
         mb.AddArrowsRainbow(lines.ToList(), 5f);
         mb.AddNumMarkers(lines.Select(ls => ls.Mid()).ToList(), 20f, Colors.Transparent);
+        
+        foreach (var t in poly.TerrainTris.Tris)
+        {
+            var inscribed = t.GetInscribed(.9f);
+            var col = ColorsExt.GetRandomColor();
+            mb.AddArrow(inscribed.A, inscribed.B, 3f, col);
+            mb.AddArrow(inscribed.B, inscribed.C, 3f, col);
+            mb.AddArrow(inscribed.C, inscribed.A, 3f, col);
+        }
         TakeFromMeshBuilder(mb);
     }
     private void TakeFromMeshBuilder(MeshBuilder mb)
