@@ -92,14 +92,15 @@ public partial class MapPolygon : Entity
     public void SetBorderSegments(GenWriteKey key)
     {
         var partials = new List<List<LineSegment>>();
-
+        
         var neighborSegs = Neighbors.Refs().Select(n => GetBorder(
                 n, key.Data))
             .SelectMany(b => b.GetSegsRel(this))
             .ToList();
-        neighborSegs.CorrectSegmentsToClockwise(Vector2.Zero);
+        
+        neighborSegs.CorrectSegmentsToAntiClockwise(Vector2.Zero);
         neighborSegs.OrderByClockwise(Vector2.Zero, ls => ls.From);
-        neighborSegs = neighborSegs.OrderEndToStart(this);
+        neighborSegs = neighborSegs.OrderEndToStart(key.GenData, this);
 
         var before = BorderSegments.Count > 0
             ? BorderSegments.ToList() 
@@ -109,11 +110,12 @@ public partial class MapPolygon : Entity
         if (neighborSegs.IsContinuous() == false)
         {
             GD.Print("not continuous");
-            throw new SegmentsNotConnectedException(this, before, neighborSegs, partials);
+            throw new SegmentsNotConnectedException(key.GenData, this, before, neighborSegs, partials);
         }
         partials.Add(neighborSegs.ToList());
         if (neighborSegs.IsCircuit() == false)
         {
+            if(Id == 3085) GD.Print("ADDING EDGE");
             var edge = new LineSegment(neighborSegs.Last().To, neighborSegs[0].From);
             neighborSegs.Add(edge);
             partials.Add(neighborSegs.ToList());
@@ -122,15 +124,9 @@ public partial class MapPolygon : Entity
         if (neighborSegs.IsCircuit() == false || neighborSegs.IsContinuous() == false)
         {
             GD.Print("still not circuit");
-            throw new SegmentsNotConnectedException(this, before, neighborSegs, partials);
+            throw new SegmentsNotConnectedException(key.GenData, this, before, neighborSegs, partials);
         }
 
         BorderSegments = neighborSegs;
-
-        // if (Id == 724)
-        // {
-        //     GD.Print("724");
-        //     throw new SegmentsNotConnectedException(before, BorderSegments.ToList(), null);
-        // }
     }
 }

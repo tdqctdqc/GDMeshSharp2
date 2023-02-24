@@ -30,7 +30,7 @@ public static class LineSegmentExt
     public static void SplitToMinLength(this MapPolygonBorder border, float minLength, GenWriteKey key)
     {
         var newSegsAbs = new List<LineSegment>();
-        var segs = border.GetSegsAbs();
+        var segs = border.GetSegsAbs(key.Data);
         var offset = border.HighId.Ref().GetOffsetTo(border.LowId.Ref(), key.Data);
         for (var i = 0; i < segs.Count; i++)
         {
@@ -78,12 +78,12 @@ public static class LineSegmentExt
         //todo implement
         return true;
     }
-    public static void CorrectSegmentsToClockwise(this List<LineSegment> segs, Vector2 center)
+    public static void CorrectSegmentsToAntiClockwise(this List<LineSegment> segs, Vector2 center)
     {
         if (segs.IsConvexAround(center) == false) throw new Exception();
         for (var i = 0; i < segs.Count; i++)
         {
-            if (IsClockwise(segs[i], center) == false) segs[i] = segs[i].GetReverse();
+            if (IsClockwise(segs[i], center)) segs[i] = segs[i].GetReverse();
         }
     }
     public static Vector2 GetHullPoint(this List<LineSegment> segs, out int hullPointIndex)
@@ -122,7 +122,7 @@ public static class LineSegmentExt
         return (center - seg.From).Cross(seg.To - seg.From) > 0f;
 
     }
-    public static List<LineSegment> OrderEndToStart(this List<LineSegment> segs, MapPolygon poly = null)
+    public static List<LineSegment> OrderEndToStart(this List<LineSegment> segs, Data data, MapPolygon poly = null)
     {
         var segsSample = segs.ToList();
         var res = new List<LineSegment>{segs[0]};
@@ -153,7 +153,7 @@ public static class LineSegmentExt
         prevRes.AddRange(res);
         if (prevRes.Count != segs.Count)
         {
-            throw new SegmentsNotConnectedException(poly, segs, prevRes, null);
+            throw new SegmentsNotConnectedException(data, poly, segs, prevRes, null);
         }
         
         return prevRes;
@@ -165,19 +165,11 @@ public static class LineSegmentExt
             if (segs[i].To != segs[i + 1].From) return false;
         }
         return true;
-
     }
-    public static List<Triangle> Triangulate(this List<LineSegment> boundarySegs,
+    public static List<PolyTri> PolyTriangulate(this List<LineSegment> boundarySegs, GenData data, MapPolygon poly,
         HashSet<Vector2> interiorPoints = null)
     {
-        if (boundarySegs.IsCircuit() == false) throw new Exception("not circuit");
-        if (boundarySegs.IsClockwise() == false) throw new Exception("not clockwise");
-        return boundarySegs.Triangulate((v, w, x) => new Triangle(v, w, x), interiorPoints);
-    }
-    public static List<PolyTri> PolyTriangulate(this List<LineSegment> boundarySegs, Data data, MapPolygon poly,
-        HashSet<Vector2> interiorPoints = null)
-    {
-        return boundarySegs.Triangulate(
+        return boundarySegs.Triangulate(data, poly,
             (v, w, x) =>
             {
                 var lf = data.Models.Landforms.GetAtPoint(poly, (v + w + x) / 3f, data);
@@ -187,37 +179,30 @@ public static class LineSegmentExt
             interiorPoints
         );
     }
-    private static List<T> Triangulate<T>(this List<LineSegment> boundarySegs, 
-        Func<Vector2, Vector2, Vector2, T> constructor,
+    private static List<T> Triangulate<T>(this List<LineSegment> boundarySegs, GenData data, MapPolygon poly,
+        Func<Vector2, Vector2, Vector2, T> constructor, 
         HashSet<Vector2> interiorPoints = null) where T : Triangle
     {
-        var points = boundarySegs.GetPoints().GetPoly2TriTriPoints();
-        
         if (boundarySegs.IsCircuit() == false)
         {
             GD.Print("not circuit");
-            throw new BadTriangulationError(new List<Triangle>(), new List<Color>(), boundarySegs);
+            throw new BadTriangulationError(poly, new List<Triangle>(), new List<Color>(), data, boundarySegs);
         }
         if (boundarySegs.IsClockwise())
         {
             GD.Print("clockwise");
-            throw new BadTriangulationError(new List<Triangle>(), new List<Color>(), boundarySegs);
+            throw new BadTriangulationError(poly, new List<Triangle>(), new List<Color>(), data, boundarySegs);
         }
-        return Triangulate(points, constructor, interiorPoints);
-    }
-    private static List<T> Triangulate<T>(this List<TriangulationPoint> points, 
-        Func<Vector2, Vector2, Vector2, T> constructor,
-        HashSet<Vector2> interiorPoints = null) where T : Triangle
-    {
-        var boundaryHash = points.ToHashSet();
+        
+        var points = boundarySegs.GetPoints().GetPoly2TriTriPoints();
+        var boundaryHash = points.Select(p => p.GetV2()).ToHashSet();
         var hash = points.Select(p => p.GetV2()).ToHashSet();
         
-        if(points.Last() == points[0]) points.RemoveAt(points.Count - 1);
+        if(points.Last().GetV2() == points[0].GetV2()) points.RemoveAt(points.Count - 1);
         
         var constraints = new List<TriangulationConstraint>();
         for (var i = 0; i < points.Count; i++)
         {
-            // constraints.Add(new TriangulationConstraint(points[i], points.Next(i)));
             constraints.Add(new TriangulationConstraint(points.Next(i), points[i]));
         } 
         if(interiorPoints != null)
@@ -231,7 +216,6 @@ public static class LineSegmentExt
         });
         var con = new ConstrainedPointSet(points, constraints);
         Poly2Tri.P2T.Triangulate(con);
-        
 
         var tris = new List<T>();
         for (var i = 0; i < con.Triangles.Count; i++)
@@ -246,12 +230,11 @@ public static class LineSegmentExt
             
             if (dt.Points.Any(p => hash.Contains(p.GetV2()) == false)) continue;
 
-            if (boundaryHash.Contains(t0)
-                && boundaryHash.Contains(t1)
-                && boundaryHash.Contains(t2)
+            if (boundaryHash.Contains(v0)
+                && boundaryHash.Contains(v1)
+                && boundaryHash.Contains(v2)
                 )
             {
-                if (TriangleExt.IsClockwise(v0, v1, v2) == false) continue;
                 var index = points.IndexOf(t0);    
                 var next = points
                     .FindNext(v => v.EqualsV2(v1) || v.EqualsV2(v2), index);
@@ -261,10 +244,9 @@ public static class LineSegmentExt
             var t = constructor(v0, v1, v2);
             tris.Add(t);
         }
+        
         return tris;
     }
-    
-    
     
     public static IEnumerable<LineSegment> GetLineSegments(this List<Vector2> points, bool close = false)
     {

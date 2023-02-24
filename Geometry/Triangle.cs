@@ -12,6 +12,11 @@ public class Triangle
         A = a;
         B = b;
         C = c;
+        if (TriangleExt.IsClockwise(a, b, c))
+        {
+            B = c;
+            C = b;
+        }
         // if (this.IsDegenerate()) throw new Exception("Triangle is degenerate");
     }
 

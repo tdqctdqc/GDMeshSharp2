@@ -19,13 +19,31 @@ public class PolyGrid
     }
     public void AddElement(MapPolygon element)
     {
-        var key = new Vector2((int)(element.Center.x / _partitionSize.x),
-            (int)(element.Center.y / _partitionSize.y));
-        if(Cells.ContainsKey(key) == false)
+        var borderPoints = element.BorderSegments.GetPoints().ToHashSet();
+        var minX = borderPoints.Min(p => p.x);
+        var minXCoord = Mathf.FloorToInt(minX / _partitionSize.x);
+        var maxX = borderPoints.Max(p => p.x);
+        var maxXCoord = Mathf.CeilToInt(maxX / _partitionSize.x);
+
+        var minY = borderPoints.Min(p => p.y);
+        var minYCoord = Mathf.FloorToInt(minY / _partitionSize.y);
+
+        var maxY = borderPoints.Max(p => p.y);
+        var maxYCoord = Mathf.CeilToInt(maxY / _partitionSize.y);
+
+        for (int i = minXCoord; i <= maxXCoord; i++)
         {
-            Cells.Add(key, new List<MapPolygon>());
+            for (int j = minYCoord; j < maxYCoord; j++)
+            {
+                var key = new Vector2(i, j);
+                if(Cells.ContainsKey(key) == false)
+                {
+                    Cells.Add(key, new List<MapPolygon>());
+                }
+                Cells[key].Add(element);
+            }
         }
-        Cells[key].Add(element);
+        
     }
 
     public void Update()
@@ -33,15 +51,8 @@ public class PolyGrid
         Cells = new Dictionary<Vector2, List<MapPolygon>>();
         foreach (var element in _data.Planet.Polygons.Entities)
         {
-            UpdateElement(element);
+            AddElement(element);
         }
-    }
-    private void UpdateElement(MapPolygon element)
-    {
-        var newKey = new Vector2((int)(element.Center.x / _partitionSize.x),
-            (int)(element.Center.y / _partitionSize.y));
-        if(Cells.ContainsKey(newKey) == false) Cells.Add(newKey, new List<MapPolygon>());
-        Cells[newKey].Add(element);
     }
     public MapPolygon GetElementAtPoint(Vector2 point)
     {
@@ -62,16 +73,6 @@ public class PolyGrid
         }
 
         MapPolygon found = null;
-        Func<int, int, bool> grid = (int i, int j) =>
-        {
-            var offKey = new Vector2(i, j);
-            if (CheckCell(point, offKey, out var p))
-            {
-                found = p;
-                return false;
-            }
-            return true;
-        };
         EnumerableExt.DoForGridAround(
             (int i, int j) =>
             {
@@ -84,7 +85,6 @@ public class PolyGrid
                 return true;
             }, x, y
         );
-
         return found;
     }
 
