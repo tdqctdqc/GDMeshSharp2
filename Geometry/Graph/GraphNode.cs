@@ -28,7 +28,10 @@ public class GraphNode<TNode, TEdge> : IGraphNode<TNode, TEdge>
     {
         return _costs[neighbor.Element];
     }
-    
+    public TEdge GetEdgeCost(TNode neighbor)
+    {
+        return _costs[neighbor];
+    }
     public void SetEdgeValue(GraphNode<TNode, TEdge> neighbor, TEdge newEdgeVal)
     {
         _costs[neighbor.Element] = newEdgeVal;

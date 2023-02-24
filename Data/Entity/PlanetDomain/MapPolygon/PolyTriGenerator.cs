@@ -4,6 +4,8 @@ using System.Linq;
 using Godot;
 using Poly2Tri;
 using Poly2Tri.Triangulation.Polygon;
+using Poly2Tri.Triangulation.Sets;
+using Poly2Tri.Utility;
 
 public class PolyTriGenerator
 {
@@ -12,64 +14,18 @@ public class PolyTriGenerator
     public void BuildTris(GenWriteKey key)
     {
         _data = key.Data;
+        _riverBorders = new Dictionary<MapPolygonBorder, int>();
         var polys = key.Data.Planet.Polygons.Entities;
-        FindAndSizeRiverSegs(key);
+        GD.Print("starting altering river segs");
 
-        var max = 0f;
-        var avg = 0f;
-        var iter = 0;
+        FindAndSizeRiverSegs(key);
+        GD.Print("finished altering river segs");
         foreach (var p in polys)
         {
-            iter++;
-            var res = Check(p, key);
-            max = Mathf.Max(max, res.max);
-            avg += res.avg;
             BuildTris(p, key);
         }
-        GD.Print("max deviation " + max);
-        GD.Print("avg deviation " + (avg / iter));
     }
 
-    private (float max, float avg) Check(MapPolygon p, WriteKey key)
-    {      
-        var max = 0f;
-        var avg = 0f;
-        var iter = 0;
-        foreach (var n in p.Neighbors.Refs())
-        {
-            if (p.Center.DistanceTo(n.Center) > 1000f)
-            {
-                continue;
-            }
-            iter++;
-            var offset = p.GetOffsetTo(n, key.Data);
-            
-            var b = p.GetBorder(n, key.Data);
-            var segs = b.GetSegsRel(p);
-            var nSegs = b.GetSegsRel(n);
-            if (segs.Count == 0) continue;
-            if (nSegs.Count != segs.Count) throw new Exception();
-            for (int i = 0; i < segs.Count; i++)
-            {
-                var seg = segs[i];
-                var nSeg = nSegs.FromEnd(i);
-                doPoint(seg.From, nSeg.To);
-            }
-            void doPoint(Vector2 newSource, Vector2 oldCompare)
-            {
-                var p2 = newSource - offset;
-                var dev = oldCompare.DistanceTo(p2);
-                
-                if (dev > 10f)
-                {
-                    GD.Print($"dev of {dev} at {p.Center} and {n.Center}");
-                }
-                max = Mathf.Max(max, dev);
-                avg += dev;
-            }
-        }
-        return (max, avg / iter);
-    }
     
     
     private void FindAndSizeRiverSegs(GenWriteKey key)
@@ -77,14 +33,9 @@ public class PolyTriGenerator
         var polys = key.Data.Planet.Polygons.Entities;
         var borders = key.Data.Planet.PolyBorders.Entities;
         
-        var flowFloor = 50f;
-        var flowCeiling = 10_000f;
+        _riverBorders = borders.Where(b => b.MoistureFlow > River.FlowFloor).ToDictionary(s => s, s => -1);
         
-        _riverBorders = borders.Where(b => b.MoistureFlow > flowFloor).ToDictionary(s => s, s => -1);
-        
-        var widthFloor = 5f;
-        var widthCeil = 20f;
-        var logBase = Mathf.Pow(flowCeiling, 1f / (widthCeil - widthFloor));
+        var logBase = Mathf.Pow(River.FlowCeil, 1f / (River.WidthCeil - River.WidthFloor));
         
         var max = 0f;
         var min = Mathf.Inf;
@@ -93,16 +44,20 @@ public class PolyTriGenerator
         var rBorders = _riverBorders.Keys.ToList();
         foreach (var rBorder in rBorders)
         {
+            var hi = rBorder.HighId.Ref();
+
             var flow = rBorder.MoistureFlow;
-            if (flow > flowCeiling) throw new Exception("river too wide for ceiling");
-            var width = widthFloor + (float)Math.Log(flow, logBase);
+            if (flow > River.FlowCeil)
+            {
+                throw new Exception($"flow is {flow} too wide for ceiling {River.FlowCeil}");
+            }
+            var width = River.FlowFloor + (float)Math.Log(flow, logBase);
             max = Mathf.Max(max, width);
             min = Mathf.Min(min, width);
             avg += width;
 
             var segs = rBorder.GetSegsAbs();
             var numSegs = segs.Count;
-            var stitch0 = rBorder.HighSegsRel.StitchTogether();
 
             var start = segs[0].From;
             var end = segs.Last().To;
@@ -124,7 +79,12 @@ public class PolyTriGenerator
             var newSegs = preSegs.ToList();
             newSegs.Add(rSeg);
             newSegs.AddRange(postSegs);
-            newSegs = newSegs.StitchTogether();
+            newSegs = newSegs.OrderEndToStart(rBorder.HighId.Ref());
+            
+            if(newSegs.IsContinuous() == false)
+            {
+                throw new SegmentsNotConnectedException(hi, hi.BorderSegments.ToList(), newSegs, null);
+            }
             
             var newIndex = preSegs.Count();
             rBorder.ReplacePoints(newSegs, 
@@ -132,10 +92,11 @@ public class PolyTriGenerator
             _riverBorders[rBorder] = newIndex;
             rBorder.SetRiverIndexHi(newIndex, key);
         }
-        GD.Print($"river borders {_riverBorders.Count()}");
-        
-        
-        GD.Print($"min {min} max {max} avg {avg / _riverBorders.Count()}");
+        foreach (var p in _data.Planet.Polygons.Entities)
+        {
+            p.SetBorderSegments(key);
+        }
+
     }
 
     private void BuildTris(MapPolygon poly, GenWriteKey key)
@@ -156,7 +117,7 @@ public class PolyTriGenerator
 
     private void DoSeaPoly(MapPolygon poly, GenWriteKey key)
     {
-        var borderSegsRel = poly.GetAllBorderSegmentsClockwise(key.Data);
+        var borderSegsRel = poly.BorderSegments;
         var lf = key.Data.Models.Landforms;
         var v = key.Data.Models.Vegetation;
         var points = new List<Vector2> {Vector2.Zero};
@@ -176,7 +137,7 @@ public class PolyTriGenerator
     
     private void DoLandPolyNoRivers(MapPolygon poly, GenWriteKey key)
     {
-        var borderSegsRel = poly.GetAllBorderSegmentsClockwise(key.Data);
+        var borderSegsRel = poly.BorderSegments;
         var lf = key.Data.Models.Landforms;
         var v = key.Data.Models.Vegetation;
         var points = borderSegsRel.GenerateInteriorPoints(50f, 10f)
@@ -199,9 +160,13 @@ public class PolyTriGenerator
             .Where(b => _riverBorders.ContainsKey(b))
             .Select(b => b.GetRiverSegment(poly)).ToList();
         riverSegs.OrderByClockwise(Vector2.Zero, ls => ls.From);
-        var borderSegsRel = poly.GetAllBorderSegmentsClockwise(key.Data);
+        var borderSegsRel = poly.BorderSegments;
         var firstRSegIndex = borderSegsRel.IndexOf(riverSegs.First());
         var firstRSeg = riverSegs.First();
+        
+        
+        
+        
         if (riverSegs.Count == 1)
         {
             DoRiverSource(poly, borderSegsRel, firstRSeg, firstRSegIndex, tris, key);
@@ -217,30 +182,39 @@ public class PolyTriGenerator
         poly.SetTris(polyTerrainTris, key);
     }
 
-    private void DoRiverSource(MapPolygon poly, List<LineSegment> borderSegs, LineSegment rSeg, 
+    private void DoRiverSource(MapPolygon poly, IReadOnlyList<LineSegment> borderSegs, LineSegment rSeg, 
         int rSegIndex, List<PolyTri> tris, GenWriteKey key)
     {
-        var between = Enumerable.Range(1, borderSegs.Count - 1).Select(i => borderSegs.Modulo(rSegIndex + i)).ToList();
+        var area = borderSegs.Sum(s => TriangleExt.GetTriangleArea(s.From, s.To, Vector2.Zero));
+        var between = Enumerable.Range(1, borderSegs.Count - 1)
+            .Select(i => borderSegs.Modulo(rSegIndex + i))
+            .ToList();
+        if (between.IsClockwise() == false)
+        {
+            between.OrderByClockwise(Vector2.Zero, ls => ls.From);
+        }
         if (between.Count != borderSegs.Count - 1) throw new Exception();
         if (between.Contains(rSeg)) throw new Exception();
-        
-        // var fan = BuildFan(rSeg, rSeg, Vector2.Zero, between);
-        // TriangulateFan(poly, fan, tris);
-        tris.Add(new PolyTri(rSeg.From, rSeg.To, Vector2.Zero, LandformManager.River, VegetationManager.Barren));
+        if (between.First().From != rSeg.To) throw new Exception();
+        if (between.Last().To != rSeg.From) throw new Exception();
+        if (between.Contains(rSeg)) throw new Exception();
 
-        try
-        {
-            var outline = GetOutline(Vector2.Zero, between);
-            TriangulateArbitrary(poly, outline, tris, key);
-        }
-        catch (Exception e)
-        {
-            GD.Print($"Bad r source triangulation at {poly.Center} {poly.Id}");
-        }
+        var rTri = new PolyTri(rSeg.From, rSeg.To, Vector2.Zero, LandformManager.River, VegetationManager.Barren);
+        tris.Add(rTri);
+        var outline = GetOutline(poly, Vector2.Zero, between);
+        TriangulateArbitrary(poly, outline, tris, key);
         
+        var newArea = tris.Sum(t => t.GetArea());
+        if (Mathf.Abs(newArea - area) > 100f)
+        {
+            GD.Print($"area diff {Mathf.Abs(newArea - area)}");
+            throw new BadTriangulationError(tris, 
+                tris.Select((t, i) => t == rTri ? Colors.Blue : Colors.SaddleBrown.GetPeriodicShade(i)).ToList(),
+                outline);
+        }
     }
 
-    private void DoRiverJunction(MapPolygon poly, List<LineSegment> borderSegsRel, 
+    private void DoRiverJunction(MapPolygon poly, IReadOnlyList<LineSegment> borderSegsRel, 
         List<LineSegment> riverSegs,
         LineSegment firstRSeg,
         int firstRSegIndex,
@@ -266,9 +240,7 @@ public class PolyTriGenerator
                     LandformManager.River, VegetationManager.Barren));
                 tris.Add(new PolyTri(rSeg.From, nextIntersect, -nextIntersect,
                     LandformManager.River, VegetationManager.Barren));
-                junctionPoints.Add(nextIntersect
-                    // .Intify() 
-                    );
+                junctionPoints.Add(nextIntersect);
             }
             else
             {
@@ -278,9 +250,7 @@ public class PolyTriGenerator
                     LandformManager.River, VegetationManager.Barren));
                 tris.Add(new PolyTri(nextRSeg.From, nextIntersect, Vector2.Zero,
                     LandformManager.River, VegetationManager.Barren));
-                junctionPoints.Add(nextIntersect
-                    // .Intify()
-                );
+                junctionPoints.Add(nextIntersect);
             }
         }
         
@@ -304,24 +274,13 @@ public class PolyTriGenerator
                     //this is happening when two incoming river segs share a point
                     continue;
                 }
-
-                try
+                if (between.IsClockwise() == false)
                 {
-                    var outline = GetOutline(intersect, between);
-                    TriangulateArbitrary(poly, outline, tris, key);
+                    between.OrderByClockwise(Vector2.Zero, ls => ls.From);
                 }
-                catch (Exception e)
-                {
-                    GD.Print($"Bad triangulation at {poly.Center} {poly.Id}");
-                    continue;
-                }
+                var outline = GetOutline(poly, intersect, between);
+                TriangulateArbitrary(poly, outline, tris, key);
                 
-                
-                // between.ForEach(s =>
-                // {
-                //     tris.Add(new PolyTri(s.From, s.To, intersect, 
-                //         LandformManager.Plain, VegetationManager.Barren));
-                // });
                 between.Clear();
                 prevR = seg;
                 iter = 0;
@@ -337,27 +296,9 @@ public class PolyTriGenerator
     {
         var lf = key.Data.Models.Landforms;
         var veg = key.Data.Models.Vegetation;
-        var points = 
-            new List<Vector2>();
-        // outline.GenerateInteriorPoints(50f, 10f);
-        points.AddRange(outline.GetPoints());
-        var polygon = new Polygon(points.Select(v => new PolygonPoint(v.x, v.y)));
-        Poly2Tri.P2T.Triangulate(polygon);
-                    
-        tris.AddRange(
-            polygon.Triangles.Select(dt =>
-            {
-                var c = new Vector2(dt.Centroid().Xf, dt.Centroid().Yf);
-                var l = lf.GetAtPoint(poly, c, key.Data);
-                var v = veg.GetAtPoint(poly, c, l, key.Data);
-                return new PolyTri(
-                    new Vector2(dt.Points.Item0.Xf, dt.Points.Item0.Yf),
-                    new Vector2(dt.Points.Item1.Xf, dt.Points.Item1.Yf),
-                    new Vector2(dt.Points.Item2.Xf, dt.Points.Item2.Yf),
-                    l, v
-                );
-            })
-        );
+
+        var interior = outline.GenerateInteriorPoints(50f, 10f).ToHashSet();
+        tris.AddRange(outline.PolyTriangulate(key.Data, poly, interior));
     }
     private Vector2 GetIntersection(LineSegment from, LineSegment to)
     {
@@ -375,145 +316,36 @@ public class PolyTriGenerator
         return intersect;
     }
 
-    private List<LineSegment> GetOutline(Vector2 fanPoint, List<LineSegment> between)
+    private List<LineSegment> GetOutline(MapPolygon poly, Vector2 fanPoint, List<LineSegment> between)
     {
         List<LineSegment> generateBlade(Vector2 bladeStart, Vector2 bladeEnd)
         {
-            var blade = bladeEnd.GeneratePointsAlong(50f, 5f, true, null, bladeStart)
+            return bladeEnd.GeneratePointsAlong(50f, 5f, true, null, bladeStart)
                 // .Select(p => p.Intify())
                 .GetLineSegments()
                 .ToList();
-            
-            return blade.StitchTogether();
         }
-
-        var start = generateBlade(fanPoint, between[0].From);
-        var end = generateBlade(between.Last().To, fanPoint);
-        var edge = between.StitchTogether();
         
-
+        var start = generateBlade(between.Last().To, fanPoint);
+        var end = generateBlade(fanPoint, between[0].From);
         var res = new List<LineSegment>(start);
-        res.AddRange(edge);
+        res.AddRange(between);
         res.AddRange(end);
-        try
+        var stitch = res.OrderEndToStart(poly);
+        if (stitch.IsClockwise())
         {
-            var stitch = res.StitchTogether();
-
+            stitch = stitch.Select(ls => ls.GetReverse()).ToList();
         }
-        catch (Exception e)
-        {
-            // GD.Print("START");
-            // for (var i = 0; i < start.Count; i++)
-            // {
-            //     GD.Print($"start from {start[i].From} to {start[i].To}");
-            // }
-            //
-            // GD.Print("BETWEEN");
-            // for (var i = 0; i < edge.Count; i++)
-            // {
-            //     GD.Print($"edge from {edge[i].From} to {edge[i].To}");
-            // }
-            //
-            // GD.Print("END");
-            // for (var i = 0; i < end.Count; i++)
-            // {
-            //     GD.Print($"end from {end[i].From} to {end[i].To}");
-            // }
-
-            throw;
-        }
-        return res;
-    }
-    private Fan BuildFan(Vector2 fanPoint, List<LineSegment> between)
-    {
-        var blades = new List<List<LineSegment>>();
-        var edges = new List<List<LineSegment>>();
-        var riverFrom = between[0].From;
-        var riverTo = between.Last().To;
-        List<LineSegment> generateBlade(Vector2 bladeStart, Vector2 bladeEnd)
-        {
-            var blade = bladeEnd.GeneratePointsAlong(30f, 5f, true, null, bladeStart)
-                // .Select(p => p.Intify())
-                .GetLineSegments()
-                .ToList();
-            
-            return blade.StitchTogether();
-        }
-
-        var startRay = riverFrom - fanPoint;
-        var startBlade = generateBlade(fanPoint, riverFrom);
-        blades.Add(startBlade);
-
-        var currEdge = new List<LineSegment>();
         
-        for (var i = 0; i < between.Count; i++)
-        {
-            var seg = between[i];
-
-            var ray = seg.To - fanPoint;
-
-            if (Mathf.Abs(ray.AngleTo(startRay)) >= Mathf.Pi)
-            {
-                var newBlade = generateBlade(seg.To, fanPoint);
-                blades.Add(newBlade);
-                blades.Add(newBlade.GetOpposing(Vector2.Zero).ToList());
-                edges.Add(currEdge);
-                if (currEdge.Count == 0)
-                {
-                    GD.Print($"empty edge at {i} / {between.Count}");
-                    GD.Print(ray.GetClockwiseAngleTo(startRay).RadToDegrees() + " degrees");
-                    throw new Exception();
-                }
-                currEdge = new List<LineSegment> {seg};
-                startRay = ray;
-            }
-            else
-            {
-                currEdge.Add(seg);
-            }
-        }
-
-        var endBlade = generateBlade(riverTo, fanPoint);
-        blades.Add(endBlade);
-        edges.Add(currEdge);
-
-        return new Fan(blades, edges);
-    }
-
-    private void TriangulateFan(MapPolygon poly, Fan fan, List<PolyTri> tris)
-    {
-        if (fan.Edges.Count * 2 != fan.Blades.Count) throw new Exception();
-        for (var i = 0; i < fan.Edges.Count; i++)
-        {
-            var edge = fan.Edges[i];
-            var startBlade = fan.Blades[2 * i];
-            if (startBlade.Count == 0) throw new Exception();
-            var endBlade = fan.Blades[2 * i + 1];
-            if (endBlade.Count == 0) throw new Exception();
-
-            
-            var edgeSegs = fan.Edges[i];
-            if (edgeSegs.Count == 0) throw new Exception();
-            
-            TriangulateConvexFanSegment(poly, startBlade, endBlade, edgeSegs, tris);
-        }
-    }
-
-    private void TriangulateConvexFanSegment(MapPolygon poly, List<LineSegment> startBlade, List<LineSegment> endBlade,
-        List<LineSegment> edgeSegments, List<PolyTri> tris)
-    {
-        var allSegs = startBlade.Union(endBlade).Union(edgeSegments).ToList();
-        var first = allSegs[0];
         
-        for (var i = 1; i < allSegs.Count; i++)
+        if (stitch.IsCircuit() == false)
         {
-            tris.Add(new PolyTri(first.From, allSegs[i].From, allSegs[i].To, 
-                LandformManager.Plain, VegetationManager.Barren));
+            GD.Print("closing circuit");
+            stitch = stitch.OrderEndToStart(poly);
+            if (stitch.IsCircuit() == false) throw new Exception();
         }
-        // var points = new HashSet<Vector2>(allSegs.GetPoints()).ToList();
-        // points.AddRange(allSegs.GenerateInteriorPoints(30f, 5f));
-        // tris.AddRange(
-        //     DelaunayTriangulator.PolyTriangulatePoints(poly, points, _data)
-        //         .Where(t => t.IsDegenerate() == false));
+
+        
+        return stitch;
     }
 }

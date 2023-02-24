@@ -110,7 +110,7 @@ public static class EnumerableExt
         return list[(list.Count * 2 - 1 - i) % list.Count];
     }
 
-    public static T Modulo<T>(this List<T> list, int i)
+    public static T Modulo<T>(this IReadOnlyList<T> list, int i)
     {
         return list[i % list.Count];
     }
@@ -121,5 +121,15 @@ public static class EnumerableExt
         {
             hash.Add(t);
         }
+    }
+
+    public static int IndexOf<T>(this IReadOnlyList<T> list, T el)
+    {
+        for (var i = 0; i < list.Count; i++)
+        {
+            if (list[i].Equals(el)) return i;
+        }
+
+        return -1;
     }
 }

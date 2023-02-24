@@ -7,11 +7,13 @@ public class MeshBuilder
 {
     public List<Triangle> Tris { get; private set; }
     public List<Color> Colors { get; private set; }
+    public List<Label> Labels { get; private set; }
 
     public MeshBuilder()
     {
         Tris = new List<Triangle>();
         Colors = new List<Color>();
+        Labels = new List<Label>();
     }
 
     public void Clear()
@@ -78,7 +80,7 @@ public class MeshBuilder
         for (var i = 0; i < polys.Count; i++)
         {
             var p = polys[i];
-            var tris = p.GetAllBorderSegmentsClockwise(data).Select(b => new Triangle(b.From, b.To, Vector2.Zero));
+            var tris = p.BorderSegments.Select(b => new Triangle(b.From, b.To, Vector2.Zero));
             var polyTris = tris.Select(v => v.Transpose(relTo.GetOffsetTo(p, data))).ToList();
             for (int j = 0; j < polyTris.Count(); j++)
             {
@@ -172,18 +174,39 @@ public class MeshBuilder
             AddTri(center, startPoint, endPoint, color);
         }
     }
-    
+
+    public void AddArrowsRainbow(List<LineSegment> segs, float thickness)
+    {
+        for (var i = 0; i < segs.Count; i++)
+        {
+            AddArrow(segs[i].From, segs[i].To, thickness, ColorsExt.GetRainbowColor(i));
+        }
+    }
+    public void AddArrows(List<LineSegment> segs, float thickness, Color color)
+    {
+        segs.ForEach(s => AddArrow(s.From, s.To, thickness, color));
+    }
     public void AddArrow(Vector2 from, Vector2 to, float thickness, Color color)
     {
-        var arrow = new Node2D();
         var length = from.DistanceTo(to);
-        var lineTo = from + (to - from).Normalized() * length * .8f;
+        var lineTo = from + (to - from).Normalized() * (length - thickness * 2f);
         var perpendicular = (to - from).Normalized().Rotated(Mathf.Pi / 2f);
-        JoinLinePoints(from, to, thickness, color);
+        JoinLinePoints(from, lineTo, thickness, color);
         AddTri(to, lineTo + perpendicular * thickness,
             lineTo - perpendicular * thickness, color);
     }
-    
+
+    public void AddNumMarkers(List<Vector2> points, float markerSize, Color color)
+    {
+        AddPointMarkers(points, markerSize, color);
+        for (var i = 0; i < points.Count; i++)
+        {
+            var label = new Label();
+            label.Text = i.ToString();
+            label.RectPosition = points[i];
+            Labels.Add(label);
+        }
+    }
     public void AddPointMarkers(List<Vector2> points, float markerSize, Color color)
     {
         foreach (var p in points)
@@ -205,6 +228,7 @@ public class MeshBuilder
         var mesh = MeshGenerator.GetArrayMesh(Tris.GetTriPoints().ToArray(), Colors.ToArray());
         var meshInstance = new MeshInstance2D();
         meshInstance.Mesh = mesh;
+        Labels.ForEach(l => meshInstance.AddChild(l));
         return meshInstance;
     }
 }

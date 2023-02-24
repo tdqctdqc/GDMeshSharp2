@@ -62,12 +62,19 @@ public class TriangulationTesting
             new Vector2(2.5f * mult, .5f * mult),
             new Vector2(1.5f * mult, 1.5f * mult),
         };
-
         var sw = new Stopwatch();
         sw.Start();
-        var tris = segs.Triangulate(interiorPs);
+        List<Triangle> tris = segs.Triangulate();
         sw.Stop();
-        GD.Print("triangulation took " + sw.Elapsed.TotalMilliseconds+"ms");
+        for (int i = 0; i < 10; i++)
+        {
+            sw.Reset();
+            sw.Start();
+            tris = segs.Triangulate();
+            sw.Stop();
+            GD.Print("triangulation took " + sw.Elapsed.TotalMilliseconds+"ms");
+        }
+        
         
         tris.ForEach(t => _client.DrawTri(t));
     }

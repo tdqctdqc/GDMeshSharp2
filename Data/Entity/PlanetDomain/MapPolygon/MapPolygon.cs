@@ -8,6 +8,9 @@ public partial class MapPolygon : Entity
 {
     public override Type GetDomainType() => typeof(PlanetDomain);
     public Vector2 Center { get; protected set; }
+    
+    //todo check this works w serialization, or put in local cache
+    public IReadOnlyList<LineSegment> BorderSegments { get; private set; }
     public EntityRefCollection<MapPolygon> Neighbors { get; protected set; }
     public Color Color { get; protected set; }
     public float Altitude { get; private set; }
@@ -18,13 +21,16 @@ public partial class MapPolygon : Entity
     public PolyTerrainTris TerrainTris { get; private set; }
     public bool IsLand() => Altitude > .5f;
     public bool IsWater() => IsLand() == false;
+    public bool IsCoast() => IsLand() && Neighbors.Refs().Any(n => n.IsWater());
     public MapPolygonBorder GetBorder(MapPolygon neighbor, Data data) 
         => data.Planet.PolyBorders.GetBorder(this, neighbor);
+    public LineSegment OutsideEdge { get; private set; }
+    
     
     [SerializationConstructor] private MapPolygon(int id, Vector2 center, EntityRefCollection<MapPolygon> neighbors, 
         Color color, float altitude, float roughness, 
         float moisture, float settlementSize, EntityRef<Regime> regime,
-        PolyTerrainTris terrainTris) : base(id)
+        PolyTerrainTris terrainTris, List<LineSegment> borderSegments) : base(id)
     {
         TerrainTris = terrainTris;
         Center = center;
@@ -35,6 +41,7 @@ public partial class MapPolygon : Entity
         Moisture = moisture;
         SettlementSize = settlementSize;
         Regime = regime;
+        BorderSegments = borderSegments;
     }
 
     public static MapPolygon Create(int id, Vector2 center, float mapWidth, GenWriteKey key)
@@ -50,7 +57,8 @@ public partial class MapPolygon : Entity
             0f,
             0f,
             new EntityRef<Regime>(-1),
-            null
+            null,
+            new List<LineSegment>()
         );
         key.Create(p);
         return p;
@@ -66,18 +74,6 @@ public partial class MapPolygon : Entity
     }
     public IEnumerable<MapPolygonBorder> GetNeighborBorders(Data data) => Neighbors.Refs()
         .Select(n => GetBorder(n, data));
-
-    public List<LineSegment> GetAllBorderSegmentsClockwise(Data data)
-    {
-        var res = Neighbors.Refs().Select(n => GetBorder(
-            n, data))
-            .SelectMany(b => b.GetSegsRel(this))
-            .ToList();
-        res.OrderByClockwise(Vector2.Zero, ls => ls.From);
-        return res;
-        //todo have to account for open edges?
-
-    }
     public void AddNeighbor(MapPolygon poly, MapPolygonBorder border, GenWriteKey key)
     {
         if (Neighbors.Contains(poly)) return;
@@ -92,61 +88,49 @@ public partial class MapPolygon : Entity
     {
         GetMeta().UpdateEntityVar<EntityRef<Regime>>(nameof(Regime), this, key, new EntityRef<Regime>(r.Id));
     }
-}
-public static class MapPolygonExt
-{
-    
-    public static List<Triangle> GetTrisRel(this MapPolygon poly, Data data)
-    {
-        return data.Cache.PolyRelWheelTris[poly];
-    }
-    public static bool PointInPoly(this MapPolygon poly, Vector2 posAbs, Data data)
-    {
-        return data.Cache.PolyRelWheelTris[poly].Any(t => t.ContainsPoint(poly.GetOffsetTo(posAbs, data)));
-    }
-    
-    
-    public static Vector2 GetOffsetTo(this MapPolygon poly, MapPolygon p, Data data)
-    {
-        var off1 = p.Center - poly.Center;
-        var off2 = (off1 + Vector2.Right * data.Planet.Width);
-        var off3 = (off1 + Vector2.Left * data.Planet.Width);
-        if (off1.Length() < off2.Length() && off1.Length() < off3.Length()) return off1;
-        if (off2.Length() < off1.Length() && off2.Length() < off3.Length()) return off2;
-        return off3;
-    }
-    public static Vector2 GetOffsetTo(this MapPolygon poly, Vector2 p, Data data)
-    {
-        var off1 = p - poly.Center;
-        var off2 = (off1 + Vector2.Right * data.Planet.Width);
-        var off3 = (off1 + Vector2.Left * data.Planet.Width);
-        if (off1.Length() < off2.Length() && off1.Length() < off3.Length()) return off1;
-        if (off2.Length() < off1.Length() && off2.Length() < off3.Length()) return off2;
-        return off3;
-    }
 
-    public static int GetNumPeeps(this MapPolygon poly, Data data)
+    public void SetBorderSegments(GenWriteKey key)
     {
-        return data.Society.Peeps.Homes.GetNumPeepsInPoly(poly);
-    }
+        var partials = new List<List<LineSegment>>();
 
-    public static float GetArea(this MapPolygon poly, Data data)
-    {
-        return poly.GetTrisRel(data).Sum(t => t.GetArea());
-    }
-    
-    
-    public static float GetScore(this MapPolygon poly, MapPolygon closest, MapPolygon secondClosest, 
-        Vector2 pRel, Data data, Func<MapPolygon, float> getScore)
-    {
-        var l = pRel.Length();
-        var closeL = (poly.GetOffsetTo(closest, data) - pRel).Length();
-        var secondCloseL = (poly.GetOffsetTo(secondClosest, data) - pRel).Length();
-        var totalDist = l + closeL + secondCloseL;
-        var closeInt = .5f * Mathf.Lerp(getScore(poly), getScore(closest), closeL / (l + closeL));
-        var secondInt = .5f * Mathf.Lerp(getScore(poly), getScore(secondClosest), secondCloseL / (l + secondCloseL));
+        var neighborSegs = Neighbors.Refs().Select(n => GetBorder(
+                n, key.Data))
+            .SelectMany(b => b.GetSegsRel(this))
+            .ToList();
+        neighborSegs.CorrectSegmentsToClockwise(Vector2.Zero);
+        neighborSegs.OrderByClockwise(Vector2.Zero, ls => ls.From);
+        neighborSegs = neighborSegs.OrderEndToStart(this);
 
-        return closeInt + secondInt;
+        var before = BorderSegments.Count > 0
+            ? BorderSegments.ToList() 
+            : neighborSegs.ToList();
+
+        partials.Add(neighborSegs.ToList());
+        if (neighborSegs.IsContinuous() == false)
+        {
+            GD.Print("not continuous");
+            throw new SegmentsNotConnectedException(this, before, neighborSegs, partials);
+        }
+        partials.Add(neighborSegs.ToList());
+        if (neighborSegs.IsCircuit() == false)
+        {
+            var edge = new LineSegment(neighborSegs.Last().To, neighborSegs[0].From);
+            neighborSegs.Add(edge);
+            partials.Add(neighborSegs.ToList());
+        }
+
+        if (neighborSegs.IsCircuit() == false || neighborSegs.IsContinuous() == false)
+        {
+            GD.Print("still not circuit");
+            throw new SegmentsNotConnectedException(this, before, neighborSegs, partials);
+        }
+
+        BorderSegments = neighborSegs;
+
+        // if (Id == 724)
+        // {
+        //     GD.Print("724");
+        //     throw new SegmentsNotConnectedException(before, BorderSegments.ToList(), null);
+        // }
     }
-    
 }

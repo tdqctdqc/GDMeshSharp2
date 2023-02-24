@@ -140,7 +140,7 @@ public static class PointsGenerator
         return points;
     }
 
-    public static List<Vector2> GenerateInteriorPoints(this List<LineSegment> border, float cellSize, float margin)
+    public static List<Vector2> GenerateInteriorPoints(this IReadOnlyList<LineSegment> border, float cellSize, float margin)
     {
         var res = new List<Vector2>();
 

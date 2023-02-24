@@ -18,8 +18,7 @@ public class MoistureGenerator
     {
         _key = key;
         SetPolyMoistures();
-        BuildPolyVegetationTris();
-        BuildRivers();
+        BuildRiversDrainGraph();
     }
     private void SetPolyMoistures()
     {
@@ -44,8 +43,6 @@ public class MoistureGenerator
         {
             diffuse();
         }
-        GD.Print("max friction " + maxFriction);
-        GD.Print("average friction " + (averageFriction / iter));
         
         void diffuse()
         {
@@ -89,15 +86,86 @@ public class MoistureGenerator
         });
     }
 
-    private void BuildPolyVegetationTris()
+    private void BuildRiversDrainGraph()
     {
-        //todo fix
-        // foreach (var poly in Data.Planet.Polygons.Entities)
-        // {
-        //     poly.BuildTrisForAspects(Data.Models.Vegetation, _key);
-        // }
+        var lms = Data.LandSea.Landmasses;
+        int iter = 0;
+        foreach (var lm in lms)
+        {
+            var landPolys = lm.Where(p => p.IsLand());
+            var coastPolys = landPolys.Where(p => p.IsCoast()).ToHashSet();
+            var innerPolys = landPolys.Except(coastPolys);
+            var graph = DrainGraph<MapPolygon>.GetDrainGraph(
+                innerPolys, 
+                coastPolys,
+                t => t.Moisture * 10f,
+                (p, q) => (p.Roughness + q.Roughness) * p.GetOffsetTo(q, _key.Data).Length() + 100f,
+                Mathf.Inf, p => p.Neighbors.Refs());
+            graph.Elements.ForEach(e =>
+            {
+                var ns = graph.GetNeighbors(e);
+                foreach (var n in ns)
+                {
+                    if (e.Id < n.Id) continue;
+                    var border = e.GetBorder(n, Data);
+                    var flow = graph.GetEdge(e, n);
+                    border.SetFlow(graph.GetEdge(e, n), _key);
+                }
+            });
+            
+            foreach (var coast in coastPolys)
+            {
+                var flowIn = coast.Neighbors.Refs().Sum(n => coast.GetBorder(n, Data).MoistureFlow);
+                var sea = coast.Neighbors.Refs().Where(n => n.IsWater())
+                    .First();
+                coast.GetBorder(sea, Data).SetFlow(flowIn, _key);
+            }
+        }
     }
-    
+    private void BuildRiversOrTools()
+    {
+        var lms = Data.LandSea.Landmasses;
+        int iter = 0;
+        foreach (var lm in lms)
+        {
+            var moistureTot = Mathf.CeilToInt(lm.Sum(l => l.Moisture));
+
+            var landPolys = lm
+                .Where(p => p.IsLand()).ToList();
+            var coastPolys = landPolys.Where(p => p.IsCoast()).ToHashSet();
+
+
+            Func<MapPolygon, MapPolygon, int> getCost = (p, q) =>
+            {
+                return Mathf.CeilToInt((p.Roughness + q.Roughness) * p.GetOffsetTo(q, _key.Data).Length());
+            };
+            Func<MapPolygon, int> getSupply = p =>
+            {
+                if (coastPolys.Contains(p)) return int.MinValue;
+                return Game.I.Random.Randf() > .01f ? 0 : 1;
+            };
+            var sol = OrToolsExt.SolveMinFlow(
+                landPolys, 
+                p => p.Neighbors.Refs(),
+                (p, q) => coastPolys.Contains(p) ? 0 : 100,
+                getCost,
+                getSupply
+            );
+        
+            foreach (var node in sol.Nodes)
+            {
+                foreach (var n in node.Neighbors)
+                {
+                    if (node.Element.Id < n.Id) continue;
+                    var border = node.Element.GetBorder(n, Data);
+                    var cost = node.GetEdgeCost(n);
+                    border.IncrementFlow(cost, _key);
+                }
+            }
+        }
+        
+        
+    }
     private void BuildRivers()
     {
         var pathToSea = new Dictionary<MapPolygon, List<MapPolygon>>();
@@ -116,6 +184,10 @@ public class MoistureGenerator
             pathToSea.Add(p, path);
             additional.Add(p, 0f);
         });
+        
+        
+        
+        
         foreach (var keyValuePair in pathToSea)
         {
             var origin = keyValuePair.Key;
@@ -154,6 +226,6 @@ public class MoistureGenerator
         }
 
         // var riverPolys = pathToSea.SelectMany(p => p.Value).Distinct().ToList();
-        // riverPolys.ForEach(p => p.BuildTrisForAspect(LandformManager.River, _key));
+        // riverPolys.ForEach(p => p.BuildTrisForAspect(LandformManager.w, _key));
     }
 }

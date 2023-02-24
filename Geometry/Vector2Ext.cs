@@ -23,6 +23,7 @@ public static class Vector2Ext
 
         return addTo;
     }
+    
     public static List<Vector2> GeneratePointsAlong(this Vector2 to, float spacing, float variation, bool includeEndPoints,
             List<Vector2> addTo = null, Vector2 from = default)
     {

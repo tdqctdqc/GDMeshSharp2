@@ -42,7 +42,27 @@ public class Graph<TNode, TEdge>
         if(_nodeDic.ContainsKey(t2) == false) AddNode(t2);
         AddUndirectedEdge(t1, t2, edge);
     }
-
+    public void AddDirectedEdge(GraphNode<TNode, TEdge> from, 
+        GraphNode<TNode, TEdge> to, TEdge edge)
+    {
+        Edges.Add(edge);
+        from.AddNeighbor(to, edge);
+    }
+    private void AddUndirectedEdge(TNode from, TNode to, TEdge edge)
+    {
+        Edges.Add(edge);
+        var fromNode = _nodeDic[from];
+        var toNode = _nodeDic[to];
+        fromNode.AddNeighbor(toNode, edge);
+        toNode.AddNeighbor(fromNode, edge);
+    }
+    public void AddDirectedEdge(TNode from, TNode to, TEdge edge)
+    {
+        Edges.Add(edge);
+        var fromNode = _nodeDic[from];
+        var toNode = _nodeDic[to];
+        fromNode.AddNeighbor(toNode, edge);
+    }
     public TEdge GetEdge(TNode t1, TNode t2)
     {
         var node1 = _nodeDic[t1];
@@ -62,27 +82,8 @@ public class Graph<TNode, TEdge>
         _nodeDic.Add(node.Element, node);
         Nodes.Add(node);
     }
-    public void AddDirectedEdge(TNode from, TNode to, TEdge edge)
-    {
-        Edges.Add(edge);
-        var fromNode = _nodeDic[from];
-        var toNode = _nodeDic[to];
-        fromNode.AddNeighbor(toNode, edge);
-    }
-    public void AddDirectedEdge(GraphNode<TNode, TEdge> from, 
-        GraphNode<TNode, TEdge> to, TEdge edge)
-    {
-        Edges.Add(edge);
-        from.AddNeighbor(to, edge);
-    }
-    public void AddUndirectedEdge(TNode from, TNode to, TEdge edge)
-    {
-        Edges.Add(edge);
-        var fromNode = _nodeDic[from];
-        var toNode = _nodeDic[to];
-        fromNode.AddNeighbor(toNode, edge);
-        toNode.AddNeighbor(fromNode, edge);
-    }
+    
+    
     public void AddUndirectedEdge(GraphNode<TNode, TEdge> from, 
         GraphNode<TNode, TEdge> to, TEdge edge)
     {

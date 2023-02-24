@@ -8,6 +8,9 @@ public class GeologyGenerator
     public GenData Data { get; private set; }
     private IDDispenser _id;
     private GenWriteKey _key;
+    public static readonly float FaultRange = 200f,
+        FrictionAltEffect = .1f,
+        FrictionRoughnessEffect = 1f;
     public GeologyGenerator(GenData data, IDDispenser id)
     {
         _id = id;
@@ -188,11 +191,10 @@ public class GeologyGenerator
 
         IEnumerable<MapPolygon> getPolysInRangeOfFault(FaultLine fault)
         {
-            var faultRange = fault.Friction * 500f;
+            var faultRange = fault.Friction * FaultRange;
             var polys = fault.HighId.Cells.SelectMany(c => c.PolyGeos)
                 .Union(fault.LowId.Cells.SelectMany(c => c.PolyGeos));
-            var frictionAltEffect = .1f;
-            var frictionRoughnessEffect = 1f;
+            
             var polysInRange = new List<MapPolygon>();
             foreach (var poly in polys)
             {
@@ -201,13 +203,13 @@ public class GeologyGenerator
                 if (dist < faultRange)
                 {
                     polysInRange.Add(poly);
-                    var altIncrement = fault.Friction * frictionAltEffect * distRatio;
+                    var altIncrement = fault.Friction * FrictionAltEffect * distRatio;
                     float erosion = 0f;
                     if (poly.Altitude < .5f) erosion = poly.Altitude;
                     poly.Set(nameof(poly.Altitude), poly.Altitude + altIncrement, _key);
                     
                     var rand = Game.I.Random.RandfRange(-.2f, .2f);
-                    var newRoughness = Mathf.Clamp(fault.Friction * frictionRoughnessEffect * distRatio - erosion + rand, 0f,
+                    var newRoughness = Mathf.Clamp(fault.Friction * FrictionRoughnessEffect * distRatio - erosion + rand, 0f,
                         1f);
                     poly.Set(nameof(poly.Roughness), newRoughness, _key);
                 }

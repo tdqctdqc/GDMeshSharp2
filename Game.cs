@@ -39,12 +39,6 @@ public class Game : Node
         SetSession(session);
         session.StartAsHost(data);
     }
-    public void StartTestSession()
-    {
-        var session = new GameSession();
-        SetSession(session);
-        session.StartAsTest();
-    }
 
     public void StartSandbox()
     {

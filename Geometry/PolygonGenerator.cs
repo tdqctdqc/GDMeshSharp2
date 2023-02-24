@@ -86,6 +86,11 @@ public class PolygonGenerator
                 MapPolygonBorder.Create(_id.GetID(), mp, nMp, new List<LineSegment> {edge}, key);
             });
         });
+        
+        foreach (var poly in _data.Planet.Polygons.Entities)
+        {
+            poly.SetBorderSegments(key);
+        }
     }
 }
 public class MapGenInfo
@@ -161,7 +166,6 @@ public class MapGenInfo
                 }
             });
             PolysByCenter = polys.ToDictionary(p => p.Center, p => p);
-            
             LeftPolys = LeftPoints.Select(p => PolysByCenter[p]).ToList();
             RightPolys = RightPoints.Select(p => PolysByCenter[p]).ToList();
             TopPolys = TopPoints.Select(p => PolysByCenter[p]).ToList();

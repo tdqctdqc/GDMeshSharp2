@@ -47,6 +47,10 @@
               "target": "Package",
               "version": "[1.4.0.3, )"
             },
+            "Google.OrTools": {
+              "target": "Package",
+              "version": "[6.7.4973, )"
+            },
             "MarkovNextGen": {
               "target": "Package",
               "version": "[1.2.6, )"

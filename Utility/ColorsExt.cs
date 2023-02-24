@@ -27,7 +27,16 @@ public static class ColorsExt
         return list;
     }
 
-    public static Color GetRainbowColor(int index)
+    public static Color GetRandomScale()
+    {
+        
+        var rand = _rand.RandfRange(0f, 1f);
+        return new Color(
+            rand,rand,rand
+        );
+    }
+
+public static Color GetRainbowColor(int index)
     {
         return Rainbow[index % Rainbow.Count];
     }

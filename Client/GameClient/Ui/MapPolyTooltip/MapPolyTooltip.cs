@@ -22,27 +22,21 @@ public class MapPolyTooltip : Node2D
     }
     public void Process(Data data, Vector2 mousePosMapSpace)
     {
-        var sw = new Stopwatch();
-        sw.Start();
         var mouseIn = data.Cache.MapPolyGrid
             .GetElementAtPoint(mousePosMapSpace);
-        sw.Stop();
         if (mouseIn is MapPolygon poly)
         {
+            var offset = poly.GetOffsetTo(mousePosMapSpace, data);
             if (poly != _mouseOverPoly)
             {
-                // GD.Print("time to find " + sw.Elapsed.TotalMilliseconds.ToString());
-                // GD.Print(msg);
-                var offset = poly.GetOffsetTo(mousePosMapSpace, data);
-            
                 _mouseOverPoly = poly;
                 Visible = true;
-                Position = GetGlobalMousePosition();
-                Draw(data, poly, offset);
-                Scale = _client.Cam.Zoom;
                 _highlighter.DrawOutline(data, poly, offset, _client);
-                Visible = true;
             }
+            
+            Position = GetGlobalMousePosition() + Vector2.One * 20f;
+            Draw(data, poly, offset);
+            Scale = _client.Cam.Zoom;
         }
         else 
         {

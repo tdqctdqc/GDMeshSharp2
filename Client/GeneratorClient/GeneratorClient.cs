@@ -77,6 +77,11 @@ public class GeneratorClient : Node, IClient
     {
         _progress.Text = tag + " " + progress;
     }
+    private void DisplayException(DisplayableException d)
+    {
+        AddChild(d.GetDisplay());
+        GD.Print(d.StackTrace);
+    }
     private void Generate(int seed, int width, int height)
     {
         var bounds = new Vector2(width, height);
@@ -85,9 +90,13 @@ public class GeneratorClient : Node, IClient
         _node = new Node();
         AddChild(_node);
         MoveChild(_node, 0);
-        
-        _session.Generate(seed, GetParams(), MonitorGeneration);
-        _graphics.Setup(this, _session.Data);
-        _graphics.SetupGenerator(_session.Data, this);
+        _session.GenerationFeedback += MonitorGeneration;
+        _session.GenerationFailed += DisplayException;
+        var success = _session.Generate(seed, GetParams());
+        if (success)
+        {
+            _graphics.Setup(this, _session.Data);
+            _graphics.SetupGenerator(_session.Data, this);
+        }
     }
 }

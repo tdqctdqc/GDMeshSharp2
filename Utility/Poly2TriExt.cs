@@ -5,6 +5,7 @@ using Godot;
 using Poly2Tri.Triangulation;
 using Poly2Tri.Triangulation.Delaunay;
 using Poly2Tri.Triangulation.Polygon;
+using Poly2Tri.Utility;
 
 // using Poly2Tri.Triangulation;
 // using Poly2Tri.Triangulation.Delaunay;
@@ -13,11 +14,15 @@ using Poly2Tri.Triangulation.Polygon;
 
 public static class Poly2TriExt
 {
-    // public static Vector2 GetV2(this Point2D p)
-    // {
-    //     return new Vector2(p.Xf, p.Yf);
-    // }
-    //
+    public static bool EqualsV2(this Point2D p, Vector2 v)
+    {
+        return p.Xf == v.x && p.Yf == v.y;
+    }
+    public static Vector2 GetV2(this Point2D p)
+    {
+        return new Vector2(p.Xf, p.Yf);
+    }
+    
     public static TriangulationPoint GetPoly2TriTriPoint(this Vector2 p)
     {
         return new TriangulationPoint(p.x, p.y);

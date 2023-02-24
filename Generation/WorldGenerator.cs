@@ -11,6 +11,8 @@ public class WorldGenerator
     private GenWriteKey _key;
     private Stopwatch _sw;
     private GenerationParameters _genParams;
+    public Action<DisplayableException> GenerationFailed { get; set; }
+    public Action<string, string> GenerationFeedback { get; set; }
     public WorldGenerator(GenerationParameters genParams)
     {
         _genParams = genParams;
@@ -20,7 +22,31 @@ public class WorldGenerator
         _key = new GenWriteKey(Data);
         _sw = new Stopwatch();
     }
-    public GenData Generate(Action<string, string> generationCallback = null)
+    public bool Generate()
+    {
+        try
+        {
+            GenerateInner();
+        }
+        catch (Exception e)
+        {
+            GenerationFeedback?.Invoke("GENERATION FAILED" + e.Message, "");
+            if (e is DisplayableException i)
+            {
+                GenerationFailed?.Invoke(i);
+            }
+            else
+            {
+                throw;
+            }
+            
+            return false;
+        }
+
+        return true;
+    }
+
+    private GenData GenerateInner()
     {
         var cellSize = 200f;
         var edgePointMargin = new Vector2(cellSize, cellSize);
@@ -33,7 +59,7 @@ public class WorldGenerator
             .GenerateConstrainedSemiRegularPoints
                 (_genParams.Dimensions - edgePointMargin, cellSize, cellSize * .75f, false, true)
             .Select(v => v + edgePointMargin / 2f).ToList();
-        generationCallback("Points", "");
+        GenerationFeedback?.Invoke("Points", "");
 
         PolygonGenerator.GenerateMapPolygons
         (
@@ -41,7 +67,7 @@ public class WorldGenerator
             _id,
             _key
         );
-        generationCallback("Polygons", "");
+        GenerationFeedback?.Invoke("Polygons", "");
 
         // EdgeDisturber.DisturbEdges(Data.Planet.Polygons.Entities, 
         //     Data.Planet.PlanetInfo.Value.Dimensions, _key);
@@ -50,33 +76,34 @@ public class WorldGenerator
         
         
         new GeologyGenerator(Data, _id).GenerateTerrain(_key);
-        generationCallback("Geology", "");
+        GenerationFeedback?.Invoke("Geology", "");
 
         new MoistureGenerator(Data, _id).Generate(_key);
-        generationCallback("Moisture", "");
+        GenerationFeedback?.Invoke("Moisture", "");
         
         
         EdgeDisturber.SplitEdges(Data.Planet.Polygons.Entities, _key, 50f);
-        generationCallback("Edge split", "");
+        GenerationFeedback?.Invoke("Edge split", "");
         
         
         new PolyTriGenerator().BuildTris(_key);
         GD.Print("built tris");
-        generationCallback("Built tris", "");
+        GenerationFeedback?.Invoke("Built tris", "");
         Data.Events.FinalizedPolyShapes?.Invoke();
 
         var locationGenerator = new LocationGenerator(Data);
         locationGenerator.Generate(_key, _id);
-        generationCallback("Locations", "");
+        GenerationFeedback?.Invoke("Locations", "");
 
         var regimeGen = new RegimeGenerator(Data, _id, _key);
         regimeGen.Generate();
-        generationCallback("Regimes", "");
+        GenerationFeedback?.Invoke("Regimes", "");
         
         var peepGen = new PeepGenerator(_id, _key, Data);
         peepGen.Generate();
-        generationCallback("Peeps", "");
-
+        GenerationFeedback?.Invoke("Peeps", "");
+        _sw.Stop();
+        GD.Print("world gen time was " + _sw.Elapsed.TotalMilliseconds + "ms");
         return Data;
     }
 }

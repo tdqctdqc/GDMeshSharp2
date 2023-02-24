@@ -1,11 +1,13 @@
 {
   "version": 2,
-  "dgSpecHash": "uzX0CGjdXwk7cAJCQcY1UWdyvvkm2PzxPaYHLZhFCkV1lM8B77mUEtsVWKfGe25gNWZOA0aX5LHimuHls7iNtw==",
+  "dgSpecHash": "Vee69joQ9nopTZ4KSwD5w9dj/yfxkcLgemNmnzGzGDJpgtMVddzRo625CnKEKGvBA7dE9lKvn9BvUgDAVPa5NA==",
   "success": true,
   "projectFilePath": "C:\\Users\\Tynan Dion\\desktop\\games\\gdMeshSharp2\\gdMeshSharp2.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\fsharp.core\\4.3.4\\fsharp.core.4.3.4.nupkg.sha512",
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\geometri\\1.4.0.3\\geometri.1.4.0.3.nupkg.sha512",
+    "C:\\Users\\Tynan Dion\\.nuget\\packages\\google.ortools\\6.7.4973\\google.ortools.6.7.4973.nupkg.sha512",
+    "C:\\Users\\Tynan Dion\\.nuget\\packages\\google.protobuf\\3.5.1\\google.protobuf.3.5.1.nupkg.sha512",
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\markovnextgen\\1.2.6\\markovnextgen.1.2.6.nupkg.sha512",
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\messagepack\\2.4.59\\messagepack.2.4.59.nupkg.sha512",
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\messagepack.annotations\\2.4.59\\messagepack.annotations.2.4.59.nupkg.sha512",
@@ -28,6 +30,16 @@
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\system.threading.tasks.extensions\\4.5.4\\system.threading.tasks.extensions.4.5.4.nupkg.sha512"
   ],
   "logs": [
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'Google.OrTools 6.7.4973' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8' instead of the project target framework '.NETStandard,Version=v2.0'. This package may not be fully compatible with your project.",
+      "libraryId": "Google.OrTools",
+      "targetGraphs": [
+        ".NETStandard,Version=v2.0"
+      ]
+    },
     {
       "code": "NU1701",
       "level": "Warning",

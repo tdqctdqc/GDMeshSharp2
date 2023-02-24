@@ -29,27 +29,7 @@ public class GameSession : Node, ISession
         StartServer(hServer);
         StartClient(hServer);
     }
-    public void StartAsTest(UserCredential userCredential = null)
-    {
-        var worldGen = new WorldGenerator(new GenerationParameters(new Vector2(8000f, 4000f)));
-        var data = worldGen.Generate();
-        SetCredential(userCredential);
-        var hServer = new HostServer();
-        var logic = new HostLogic();
-        _logic = logic;
-        data.ClearAuxData();
-        Data = data;
-        hServer.SetDependencies(logic, Data);
-        logic.SetDependencies(hServer, Data);
-        StartServer(hServer);
-        StartClient(hServer);
-        var key = new HostWriteKey(hServer, Data);
-        var msg = new MessageManager(u => { GD.Print(u.GetType()); }, p => { }, c => { });
-        var e = Data.Planet.Polygons.Entities.First();
-        var update = EntityCreationUpdate.GetForTest(e, key);
-        var msg1 = msg.WrapUpdate(update);
-        msg.HandleIncoming(msg1);
-    }
+    
     public void StartAsRemote(UserCredential userCredential = null)
     {
         SetCredential(userCredential);

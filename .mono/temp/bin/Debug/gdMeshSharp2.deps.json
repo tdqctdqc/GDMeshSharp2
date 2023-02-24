@@ -10,6 +10,7 @@
       "gdMeshSharp2/1.0.0": {
         "dependencies": {
           "GeometRi": "1.4.0.3",
+          "Google.OrTools": "6.7.4973",
           "MarkovNextGen": "1.2.6",
           "MessagePack": "2.4.59",
           "NETStandard.Library": "2.0.3",
@@ -81,6 +82,28 @@
           "lib/netstandard1.0/GeometRi.dll": {
             "assemblyVersion": "1.4.0.3",
             "fileVersion": "1.4.0.3"
+          }
+        }
+      },
+      "Google.OrTools/6.7.4973": {
+        "dependencies": {
+          "Google.Protobuf": "3.5.1"
+        },
+        "runtime": {
+          "lib/net40/Google.OrTools.dll": {
+            "assemblyVersion": "6.7.4973.32602",
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      },
+      "Google.Protobuf/3.5.1": {
+        "dependencies": {
+          "NETStandard.Library": "2.0.3"
+        },
+        "runtime": {
+          "lib/netstandard1.0/Google.Protobuf.dll": {
+            "assemblyVersion": "3.5.1.0",
+            "fileVersion": "3.5.1.0"
           }
         }
       },
@@ -292,6 +315,20 @@
       "sha512": "sha512-ywo/5JUodFf7rb9+hdFMTxPSuRPEo1RFL5c4AOMRvTxQ/6enjImHt+gQAPOvDBzv5eqpFfZH0zl2ILkWGZ7ZHw==",
       "path": "geometri/1.4.0.3",
       "hashPath": "geometri.1.4.0.3.nupkg.sha512"
+    },
+    "Google.OrTools/6.7.4973": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-8NKO0Bas8vVQA1mXcw3oWE2XIfbY05x6WPo4B4DOxAq6gX8CBwultqe11aYqkO/klMiOH7lAS21JHmiiRTfcZQ==",
+      "path": "google.ortools/6.7.4973",
+      "hashPath": "google.ortools.6.7.4973.nupkg.sha512"
+    },
+    "Google.Protobuf/3.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-f2k1VNaB9bfvEsvARzzEL1TZiIpL33KKK3JMH7UANlPlJVptuvsk4qpBZEnz0pORWZOdUHlVwMQuUzFqjJYCxA==",
+      "path": "google.protobuf/3.5.1",
+      "hashPath": "google.protobuf.3.5.1.nupkg.sha512"
     },
     "MarkovNextGen/1.2.6": {
       "type": "package",

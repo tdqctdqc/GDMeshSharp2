@@ -76,15 +76,13 @@ public class MapPolygonBorder : Entity
         return res;
     }
     public void ReplacePoints(List<LineSegment> newSegmentsAbs, 
-        // List<LineSegment> newSegmentsLoRel,
-        // Vector2 offset,
         GenWriteKey key)
     {
         HighSegsRel = OrderAndRelativizeSegments(newSegmentsAbs, HighId.Ref(), key.Data);
         LowSegsRel = OrderAndRelativizeSegments(newSegmentsAbs, LowId.Ref(), key.Data);
         LowSegsRel.Reverse();
-        var stitch1 = HighSegsRel.StitchTogether();
-        var stitch2 = LowSegsRel.StitchTogether();
+        var stitch1 = HighSegsRel.OrderEndToStart(HighId.Ref());
+        var stitch2 = LowSegsRel.OrderEndToStart(LowId.Ref());
         if (HighSegsRel.Count != LowSegsRel.Count) throw new Exception();
     }
     
@@ -135,7 +133,7 @@ public static class PolyBorderExt
     {
         return b.HighSegsRel
             .Select(s => s.Translate(b.HighId.Ref().Center))
-            .ToList();
+            .ToList().OrderEndToStart();
     }
     public static Vector2 GetOffsetToOtherPoly(this MapPolygonBorder b, MapPolygon p)
     {

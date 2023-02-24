@@ -5,7 +5,8 @@ using Godot;
 
 public static class MathExt
 {
-    public static float ProjectToRange(this float val, float range, float resultFloor, float cutoff)
+
+public static float ProjectToRange(this float val, float range, float resultFloor, float cutoff)
     {
         return (val - cutoff) * (range - resultFloor) + resultFloor;
     }

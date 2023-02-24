@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -15,7 +16,7 @@ public class UnionFind<T>
         _ranks = new Dictionary<T, int>();
         _compare = compare;
     }
-    public void AddElement(T x, IReadOnlyCollection<T> neighbors)
+    public void AddElement(T x, IEnumerable<T> neighbors)
     {
         MakeSet(x);
         foreach (var neighbor in neighbors)
@@ -33,7 +34,7 @@ public class UnionFind<T>
 
     public static List<List<T>> DoUnionFind(IReadOnlyCollection<T> elements, 
         Func<T,T,bool> compare, 
-        Func<T, IReadOnlyCollection<T>> neighborFunc)
+        Func<T, IEnumerable<T>> neighborFunc)
     {
         var unionFind = new UnionFind<T>(compare);
         foreach (var element in elements)
