@@ -91,14 +91,12 @@ public partial class MapPolygon : Entity
 
     public void SetBorderSegments(GenWriteKey key)
     {
-        var partials = new List<List<LineSegment>>();
-        
         var neighborSegs = Neighbors.Refs().Select(n => GetBorder(
                 n, key.Data))
             .SelectMany(b => b.GetSegsRel(this))
             .ToList();
         
-        neighborSegs.CorrectSegmentsToAntiClockwise(Vector2.Zero);
+        neighborSegs.CorrectSegmentsToClockwise(Vector2.Zero);
         neighborSegs.OrderByClockwise(Vector2.Zero, ls => ls.From);
         neighborSegs = neighborSegs.OrderEndToStart(key.GenData, this);
 
@@ -106,24 +104,16 @@ public partial class MapPolygon : Entity
             ? BorderSegments.ToList() 
             : neighborSegs.ToList();
 
-        partials.Add(neighborSegs.ToList());
-        if (neighborSegs.IsContinuous() == false)
-        {
-            GD.Print("not continuous");
-            throw new SegmentsNotConnectedException(key.GenData, this, before, neighborSegs, partials.ToArray());
-        }
-        partials.Add(neighborSegs.ToList());
         if (neighborSegs.IsCircuit() == false)
         {
             var edge = new LineSegment(neighborSegs.Last().To, neighborSegs[0].From);
             neighborSegs.Add(edge);
-            partials.Add(neighborSegs.ToList());
         }
 
         if (neighborSegs.IsCircuit() == false || neighborSegs.IsContinuous() == false)
         {
             GD.Print("still not circuit");
-            throw new SegmentsNotConnectedException(key.GenData, this, before, neighborSegs, partials.ToArray());
+            throw new SegmentsNotConnectedException(key.GenData, this, before, neighborSegs);
         }
 
         BorderSegments = neighborSegs;

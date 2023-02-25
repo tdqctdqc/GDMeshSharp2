@@ -8,6 +8,13 @@ using Poly2Tri.Utility;
 
 public static class LineSegmentExt
 {
+    public static Vector2 Average(this IEnumerable<LineSegment> segs)
+    {
+        var avgX = segs.Average(s => (s.From.x + s.To.x) / 2f);
+        var avgY = segs.Average(s => (s.From.y + s.To.y) / 2f);
+        var avg = new Vector2(avgX, avgY);
+        return avg;
+    }
     public static IEnumerable<LineSegment> GetInscribed(this IEnumerable<LineSegment> segs, Vector2 center,
         float insetFactor)
     {
@@ -83,7 +90,7 @@ public static class LineSegmentExt
         //todo implement
         return true;
     }
-    public static void CorrectSegmentsToAntiClockwise(this List<LineSegment> segs, Vector2 center)
+    public static void CorrectSegmentsToClockwise(this List<LineSegment> segs, Vector2 center)
     {
         if (segs.IsConvexAround(center) == false) throw new Exception();
         for (var i = 0; i < segs.Count; i++)
@@ -201,11 +208,6 @@ public static class LineSegmentExt
             GD.Print("not circuit");
             throw new BadTriangulationError(poly, new List<Triangle>(), new List<Color>(), data, boundarySegs);
         }
-        if (boundarySegs.IsClockwise())
-        {
-            GD.Print("clockwise");
-            throw new BadTriangulationError(poly, new List<Triangle>(), new List<Color>(), data, boundarySegs);
-        }
         
         var points = boundarySegs.GetPoints().GetPoly2TriTriPoints();
         var boundaryHash = points.Select(p => p.GetV2()).ToHashSet();
@@ -251,7 +253,7 @@ public static class LineSegmentExt
                 var index = points.IndexOf(t0);    
                 var next = points
                     .FindNext(v => v.EqualsV2(v1) || v.EqualsV2(v2), index);
-                if (next.EqualsV2(v2) == false) continue;
+                if (next.EqualsV2(v1) == false) continue;
             }
 
             var t = constructor(v0, v1, v2);

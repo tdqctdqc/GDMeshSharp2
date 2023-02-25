@@ -150,21 +150,19 @@ public class PolyTriGenerator
         var v = key.Data.Models.Vegetation;
         var tris = new List<PolyTri>();
         var borders = poly.Neighbors.Refs().Select(n => poly.GetBorder(n, key.Data));
-        var riverSegs = borders
-            .Where(b => _riverBorders.ContainsKey(b))
+        var rBorders = borders
+            .Where(b => _riverBorders.ContainsKey(b)).ToList();
+        var riverSegs = rBorders
             .Select(b => b.GetRiverSegment(poly)).ToList();
         riverSegs.OrderByClockwise(Vector2.Zero, ls => ls.From);
-        var borderSegsRel = poly.BorderSegments;
-        var firstRSegIndex = borderSegsRel.IndexOf(riverSegs.First());
-        var firstRSeg = riverSegs.First();
         
         if (riverSegs.Count == 1)
         {
-            DoRiverSource(poly, borderSegsRel, firstRSeg, tris, key);
+            DoRiverSource(poly, rBorders.First(), tris, key);
         }
         else
         {
-            DoRiverJunction(poly, borderSegsRel, riverSegs, firstRSeg, firstRSegIndex, tris, key);
+            DoRiverJunction(poly, rBorders, tris, key);
         }
         var polyTerrainTris = PolyTerrainTris.Construct(
             tris.ToList(), 
@@ -172,9 +170,13 @@ public class PolyTriGenerator
         poly.SetTris(polyTerrainTris, key);
     }
 
-    private void DoRiverSource(MapPolygon poly, IReadOnlyList<LineSegment> borderSegs, LineSegment rSeg, 
+    private void DoRiverSource(MapPolygon poly, MapPolygonBorder rBorder, 
         List<PolyTri> tris, GenWriteKey key)
     {
+        var borderSegs = poly.BorderSegments;
+        var rSeg = borderSegs.First(s => s.Mid().GetClockwiseAngle() == rBorder.GetRiverSegment(poly).Mid().GetClockwiseAngle());
+        
+        
         var rSegIndex = borderSegs.IndexOf(rSeg);
         var between = Enumerable.Range(1, borderSegs.Count - 1)
             .Select(i => borderSegs.Modulo(rSegIndex + i))
@@ -202,14 +204,18 @@ public class PolyTriGenerator
         TriangulateArbitrary(poly, outline, tris, key);
     }
 
-    private void DoRiverJunction(MapPolygon poly, IReadOnlyList<LineSegment> borderSegsRel, 
-        List<LineSegment> riverSegs,
-        LineSegment firstRSeg,
-        int firstRSegIndex,
+    private void DoRiverJunction(MapPolygon poly, List<MapPolygonBorder> riverBorders,
         List<PolyTri> tris, GenWriteKey key)
     {
-        
-        
+        var borderSegs = poly.BorderSegments;
+        var avg = borderSegs.Average();
+        var riverSegs = riverBorders.Select(b => b.GetRiverSegment(poly))
+            .Select(rs => borderSegs.First(s => s.Mid().GetClockwiseAngle() == rs.Mid().GetClockwiseAngle()))
+            .ToList();
+        riverSegs.OrderByClockwise(Vector2.Zero, ls => ls.From);
+        var firstRSeg = riverSegs.First();
+        var firstRSegIndex = borderSegs.IndexOf(firstRSeg);
+
         var junctionPoints = new List<Vector2>();
         var lf = key.Data.Models.Landforms;
         var veg = key.Data.Models.Vegetation;
@@ -218,11 +224,14 @@ public class PolyTriGenerator
         {
             var rSeg = riverSegs[i];
             var nextRSeg = riverSegs.Next(i);
-            
-            var nextBetween = nextRSeg.Mid().Rotated(nextRSeg.Mid().GetClockwiseAngleTo(rSeg.Mid()) / 2f);
-            var nextL = (rSeg.Length() + nextRSeg.Length()) / 2f;
-            var nextIntersect = 
-                nextBetween.Normalized() * nextL / 2f;
+            var lAvg = (rSeg.Length() + nextRSeg.Length()) / 2f;
+
+            var angle = rSeg.To.GetClockwiseAngleTo(nextRSeg.From) / 2f;
+            var nextIntersect = rSeg.To.Rotated(angle).Normalized() * lAvg;
+            // var nextBetween = nextRSeg.Mid().Rotated(nextRSeg.Mid().GetClockwiseAngleTo(rSeg.Mid()) / 2f);
+            // var nextIntersect = 
+            //     -nextBetween.Normalized() * lAvg / 2f;
+            junctionPoints.Add(nextIntersect);
 
             if (riverSegs.Count == 2)
             {
@@ -230,58 +239,33 @@ public class PolyTriGenerator
                     LandformManager.River, VegetationManager.Barren));
                 tris.Add(new PolyTri(rSeg.From, nextIntersect, -nextIntersect,
                     LandformManager.River, VegetationManager.Barren));
-                junctionPoints.Add(nextIntersect);
             }
             else
             {
-                tris.Add(new PolyTri(nextIntersect, Vector2.Zero, rSeg.From,
+                tris.Add(new PolyTri(rSeg.From, rSeg.To, Vector2.Zero,
                     LandformManager.River, VegetationManager.Barren));
-                tris.Add(new PolyTri(rSeg.To, nextIntersect, rSeg.From,
+                
+                tris.Add(new PolyTri(-nextIntersect, Vector2.Zero, nextRSeg.To, 
                     LandformManager.River, VegetationManager.Barren));
-                tris.Add(new PolyTri(nextRSeg.From, nextIntersect, Vector2.Zero,
+                
+                tris.Add(new PolyTri(rSeg.From, -nextIntersect, Vector2.Zero,
                     LandformManager.River, VegetationManager.Barren));
-                junctionPoints.Add(nextIntersect);
             }
         }
         
-       
-        
-        var rHash = new HashSet<LineSegment>(riverSegs);
-        var prevR = firstRSeg;
-        var prevRIndex = firstRSegIndex;
-        var between = new List<LineSegment>();
-        int iter = 0;
-        int rIter = 0;
-        for (int i = 1; i < borderSegsRel.Count + 1; i++)
+        for (var i = 0; i < riverSegs.Count; i++)
         {
-            var seg = borderSegsRel.Modulo(firstRSegIndex + i);
-            if (rHash.Contains(seg))
-            {
-                var intersect = junctionPoints.Modulo(rIter);
-                rIter++;
-                
-                if (between.Count == 0)
-                {
-                    GD.Print($"0 border at {poly.Center} {poly.Id}");
-                    //this is happening when two incoming river segs share a point
-                    continue;
-                }
-                if (between.IsClockwise() == false)
-                {
-                    between.OrderByClockwise(Vector2.Zero, ls => ls.From);
-                }
-                var outline = GetOutline(poly, intersect, between);
-                TriangulateArbitrary(poly, outline, tris, key);
-                
-                
-                between.Clear();
-                prevR = seg;
-                iter = 0;
-            }
-            else
-            {
-                between.Add(seg);
-            }
+            var rSeg = riverSegs[i];
+            var nextRSeg = riverSegs.Next(i);
+            var between = borderSegs.GetBetween(nextRSeg, rSeg);
+            var intersect = -junctionPoints[i];
+            
+            var outline = GetOutline(poly, intersect, between);
+            TriangulateArbitrary(poly, outline, tris, key);
+            int iter = 0;
+            // throw new BadTriangulationError(poly, tris, 
+            //     tris.Select(t => t.Landform.Color.GetPeriodicShade(iter++)).ToList(), (GenData)_data);
+
         }
     }
 
@@ -314,30 +298,21 @@ public class PolyTriGenerator
         List<LineSegment> generateBlade(Vector2 bladeStart, Vector2 bladeEnd)
         {
             return bladeEnd.GeneratePointsAlong(50f, 5f, true, null, bladeStart)
-                // .Select(p => p.Intify())
                 .GetLineSegments()
                 .ToList();
         }
         
         var start = generateBlade(between.Last().To, fanPoint);
         var end = generateBlade(fanPoint, between[0].From);
-        var res = new List<LineSegment>(start);
+        var res = new List<LineSegment>();
         res.AddRange(between);
+        res.AddRange(start);
         res.AddRange(end);
-        var stitch = res.OrderEndToStart(_data, poly);
-        if (stitch.IsClockwise())
-        {
-            stitch = stitch.Select(ls => ls.GetReverse()).ToList();
-        }
+
+        if (res.IsCircuit() == false)
+            throw new SegmentsNotConnectedException(_data, poly, between, res,
+                start, end);
         
-        
-        if (stitch.IsCircuit() == false)
-        {
-            GD.Print("closing circuit");
-            stitch = stitch.OrderEndToStart(_data, poly);
-            if (stitch.IsCircuit() == false) throw new Exception();
-        }
-        
-        return stitch;
+        return res;
     }
 }

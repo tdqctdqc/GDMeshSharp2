@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
@@ -7,12 +8,14 @@ public class BadTriangulationDisplay : Control
     public void Setup(BadTriangulationError err)
     {
         var label = (Label) FindNode("Label");
-        
+        label.Text = err.Poly.Id + " at " + err.Poly.Center;
         
         var mb = new MeshBuilder();
+        mb.AddPointMarkers(new List<Vector2>{Vector2.Zero}, 10f, Colors.Red);
+        mb.AddPointMarkers(new List<Vector2>{err.Poly.BorderSegments.Average()}, 10f, Colors.Green);
         for (var i = 0; i < err.Tris.Count; i++)
         {
-            var inscribe = err.Tris[i].GetInscribed(.9f);
+            var inscribe = err.Tris[i].GetInscribed(1f);
             mb.AddTri(inscribe, err.Colors[i]);
         }
         for (var i = 0; i < err.Outlines.Count; i++)

@@ -6,6 +6,28 @@ using System.Linq;
 public static class EnumerableExt
 {
     private static RandomNumberGenerator _rand = new RandomNumberGenerator();
+
+    public static List<T> GetBetween<T>(this IReadOnlyList<T> list, T from, T to)
+    {
+        var start = list.IndexOf(from);
+        if (start == -1) throw new Exception();
+        var res = new List<T>();
+        for (var i = 1; i < list.Count; i++)
+        {
+            var val = list.Modulo(start + i);
+            if (val.Equals(from))
+            {
+                throw new Exception();
+            }
+            if (val.Equals(to))
+            {
+                break;
+            }
+            res.Add(val);
+        }
+
+        return res;
+    }
     public static T GetRandomElement<T>(this IEnumerable<T> enumerable)
     {
         var index = _rand.RandiRange(0, enumerable.Count() - 1);
