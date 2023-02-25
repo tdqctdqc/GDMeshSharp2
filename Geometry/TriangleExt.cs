@@ -81,6 +81,10 @@ public static class TriangleExt
         return GetArea(t.A, t.B, t.C);
     }
 
+    public static List<Vector2>  GetRandomPointsInside(this Triangle t, int count, float minArcRatio, float maxArcRatio)
+    {
+        return Enumerable.Range(0, count).Select(i => GetRandomPointInside(t, minArcRatio, maxArcRatio)).ToList();
+    }
     public static Vector2 GetRandomPointInside(this Triangle t, float minArcRatio, float maxArcRatio)
     {
         var arc1 = t.B - t.A;

@@ -60,13 +60,26 @@ public class LocationGenerator
             }
             var settlementPolys = landPolys.GetNRandomElements(settlementScores.Count);
             
-            //todo fix
-            // settlementPolys.ForEach(p => p.BuildTrisForAspect(LandformManager.Urban, _key));
-            // for (var i = 0; i < settlementPolys.Count; i++)
-            // {
-            //     settlementPolys[i].Set(nameof(MapPolygon.SettlementSize), settlementScores[i], _key);
-            //     var settlement = Settlement.Create(_id.GetID(), settlementPolys[i], settlementScores[i], _key);
-            // }
+            for (var i = 0; i < settlementPolys.Count; i++)
+            {
+                var p = settlementPolys[i];
+                var size = settlementScores[i];
+                
+                p.Set(nameof(MapPolygon.SettlementSize), size, _key);
+                _key.Create(Settlement.Create(_id.GetID(), p, size, _key));
+                var availTris = p.TerrainTris.Tris
+                    .Where(t => t.Landform != LandformManager.River
+                        && t.Landform != LandformManager.Mountain
+                        && t.Landform != LandformManager.Peak)
+                    .OrderBy(t => t.GetCentroid().LengthSquared());
+                
+                var numUrbanTris = Mathf.Min(availTris.Count(), Mathf.CeilToInt(size / 2f));
+                for (var j = 0; j < numUrbanTris; j++)
+                {
+                    availTris.ElementAt(j).Landform = LandformManager.Urban;
+                    availTris.ElementAt(j).Vegetation = VegetationManager.Barren;
+                }
+            }
         });
 
         float popScore(MapPolygon p)
@@ -81,7 +94,7 @@ public class LocationGenerator
         //generate delaunay triangulation from that, build graph, find edge paths
         Data.LandSea.Landmasses.ForEach(lm =>
         {
-            var settlements = lm.Where(p => p.SettlementSize > 0f);
+            var settlements = lm.Where(p => Data.Society.Settlements.ByPoly.ContainsKey(p));
             if (settlements.Count() == 0) return;
             var first = settlements.First();
             var points = settlements.Select(s => first.GetOffsetTo(s, Data)).ToList();

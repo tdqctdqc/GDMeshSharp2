@@ -5,13 +5,13 @@ using Godot;
 
 public class SocietyDomain : Domain
 {
-    public Repository<Settlement> Settlements { get; private set; }
+    public SettlementRepository Settlements { get; private set; }
     public RoadRepository Roads { get; private set; }
     public RegimeRepository Regimes { get; private set; }
     public PeepRepository Peeps { get; private set; }
     public SocietyDomain(Data data) : base(data)
     {
-        Settlements = new Repository<Settlement>(this, data);
+        Settlements = new SettlementRepository(this, data);
         AddRepo(Settlements);
 
         Roads = new RoadRepository(this, data);

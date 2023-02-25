@@ -259,7 +259,7 @@ public static class LineSegmentExt
             var t = constructor(v0, v1, v2);
             tris.Add(t);
         }
-        
+        //todo check for missing
         return tris;
     }
     

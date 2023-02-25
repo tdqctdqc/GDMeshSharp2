@@ -33,7 +33,7 @@ margin_bottom = 40.0
 rect_min_size = Vector2( 150, 0 )
 min_value = 8000.0
 max_value = 32000.0
-value = 16000.0
+value = 8000.0
 prefix = "Width:"
 
 [node name="Height" type="SpinBox" parent="Control/HBoxContainer"]
@@ -43,7 +43,7 @@ margin_bottom = 40.0
 rect_min_size = Vector2( 150, 0 )
 min_value = 4000.0
 max_value = 16000.0
-value = 8000.0
+value = 4000.0
 prefix = "Height:"
 
 [node name="Generate" type="Button" parent="Control/HBoxContainer"]

@@ -210,7 +210,11 @@ public class PolyTriGenerator
         var borderSegs = poly.BorderSegments;
         var avg = borderSegs.Average();
         var riverSegs = riverBorders.Select(b => b.GetRiverSegment(poly))
-            .Select(rs => borderSegs.First(s => s.Mid().GetClockwiseAngle() == rs.Mid().GetClockwiseAngle()))
+            .Select(rs => 
+                borderSegs
+                        .OrderBy(s => Mathf.Abs(s.Mid().GetClockwiseAngle() - rs.Mid().GetClockwiseAngle()))
+                .First()
+                )
             .ToList();
         riverSegs.OrderByClockwise(Vector2.Zero, ls => ls.From);
         var firstRSeg = riverSegs.First();
@@ -262,10 +266,6 @@ public class PolyTriGenerator
             
             var outline = GetOutline(poly, intersect, between);
             TriangulateArbitrary(poly, outline, tris, key);
-            int iter = 0;
-            // throw new BadTriangulationError(poly, tris, 
-            //     tris.Select(t => t.Landform.Color.GetPeriodicShade(iter++)).ToList(), (GenData)_data);
-
         }
     }
 

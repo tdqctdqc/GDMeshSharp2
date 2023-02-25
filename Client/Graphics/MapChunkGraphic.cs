@@ -10,7 +10,8 @@ public class MapChunkGraphic : Node2D
     [Toggleable] public PolygonChunkGraphic PolyWheelTris { get; private set; }
     [Toggleable] public TerrainTriChunkGraphic Landform { get; private set; }
     [Toggleable] public TerrainTriChunkGraphic Tris { get; private set; }
-    [Toggleable] public VegetationChunkGraphic Vegetation { get; private set; }
+    [Toggleable] public TerrainTriChunkGraphic Vegetation { get; private set; }
+    [Toggleable] public ChunkDecalGraphic Decals { get; private set; }
     [Toggleable] public RoadChunkGraphic Roads { get; private set; }
 
     public void Setup(MapChunk chunk, Data data)
@@ -25,8 +26,8 @@ public class MapChunkGraphic : Node2D
 
         Tris = SetupTerrainTriGraphic(polys, data, t => ColorsExt.GetRandomColor(), 5);
 
-        Vegetation = new VegetationChunkGraphic();
-        Vegetation.Setup(polys, data);
+        Vegetation = new TerrainTriChunkGraphic();
+        Vegetation.Setup(polys, data, pt => pt.Vegetation.Color);
         AddChild(Vegetation);
         Vegetation.ZAsRelative = false;
         Vegetation.ZIndex = 2;
@@ -48,6 +49,12 @@ public class MapChunkGraphic : Node2D
         
         Roads.ZAsRelative = false;
         Roads.ZIndex = 3;
+
+        Decals = new ChunkDecalGraphic();
+        Decals.Setup(chunk, first, data);
+        AddChild(Decals);
+        Decals.ZAsRelative = false;
+        Decals.ZIndex = 12;
     }
 
     private TerrainTriChunkGraphic SetupTerrainTriGraphic(List<MapPolygon> polys, Data data, 

@@ -6,10 +6,8 @@ using Godot;
 public class VegetationManager : TerrainAspectManager<Vegetation>
 {
     public static Vegetation Swamp = new Swamp();
-    
-    public static Vegetation Forest = new Vegetation(
-        new HashSet<Landform>{LandformManager.Hill, LandformManager.Plain}, 
-        .5f, .25f, Colors.DarkGreen, "Forest", false, new BlobTriBuilder());
+
+    public static Vegetation Forest = new Forest();
     
     public static Vegetation Grassland = new Vegetation(
         new HashSet<Landform>{LandformManager.Hill, LandformManager.Plain}, 

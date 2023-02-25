@@ -1,0 +1,26 @@
+
+    using Godot;
+
+    public class Hill : Landform, IDecaledTerrain
+    {
+        public Hill() : 
+            base("Hill", .4f, .3f, Colors.Brown)
+        {
+        }
+
+        public void GetDecal(MeshBuilder mb, PolyTri pt, Vector2 offset)
+        {
+            var size = 20f;
+            var color = pt.Vegetation == VegetationManager.Barren
+                ? Colors.Gray
+                : pt.Vegetation.Color.Darkened(.3f);
+            offset += Vector2.Down * size / 2f;
+
+            var p = pt.GetCentroid();
+            var t = new Triangle(
+                p + Vector2.Left * size + offset,
+                p + Vector2.Right * size + offset,
+                p + Vector2.Up * size + offset);
+            mb.AddTri(t, color);
+        }
+    }

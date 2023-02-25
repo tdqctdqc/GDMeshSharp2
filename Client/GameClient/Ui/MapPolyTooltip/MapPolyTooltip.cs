@@ -22,8 +22,16 @@ public class MapPolyTooltip : Node2D
     }
     public void Process(Data data, Vector2 mousePosMapSpace)
     {
-        var mouseIn = data.Cache.MapPolyGrid
-            .GetElementAtPoint(mousePosMapSpace);
+        MapPolygon mouseIn;
+        if (mousePosMapSpace.y <= 0f || mousePosMapSpace.y >= data.Planet.Height)
+        {
+            mouseIn = null;
+        }
+        else
+        {
+            mouseIn = data.Cache.MapPolyGrid
+                .GetElementAtPoint(mousePosMapSpace);
+        }
         if (mouseIn is MapPolygon poly)
         {
             var offset = poly.GetOffsetTo(mousePosMapSpace, data);

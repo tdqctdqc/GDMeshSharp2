@@ -27,7 +27,6 @@ public class Repository<T> : IRepo where T : Entity
         if (e is T t == false) throw new Exception();
         _entitiesById.Add(t.Id, t);
         _entities.Add(t);
-        
     }
     public void RemoveEntity(Entity e, StrongWriteKey key)
     {
