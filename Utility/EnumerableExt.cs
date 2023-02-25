@@ -105,7 +105,7 @@ public static class EnumerableExt
         return list[(i - 1 + list.Count) % list.Count];
     }
 
-    public static T FromEnd<T>(this List<T> list, int i)
+    public static T FromEnd<T>(this IReadOnlyList<T> list, int i)
     {
         return list[(list.Count * 2 - 1 - i) % list.Count];
     }

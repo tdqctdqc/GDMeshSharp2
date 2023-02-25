@@ -26,7 +26,8 @@ public class BadTriangulationDisplay : Control
                     col
                 );
             }
-            mb.AddNumMarkers(segs.Select(s => s.Mid()).ToList(), 10f, Colors.Transparent);
+            mb.AddNumMarkers(segs.Select(s => s.Mid()).ToList(), 
+                10f, Colors.Transparent, Colors.White, Vector2.Zero);
 
         }
         

@@ -75,7 +75,7 @@ public class LineSegment
 
     public override string ToString()
     {
-        return $"{From} {To}";
+        return $"[from {From} to {To}] \b";
     }
 }
 

@@ -36,8 +36,7 @@ public class PolyTriGenerator
         var min = Mathf.Inf;
         var avg = 0f;
 
-        var rBorders = _riverBorders.Keys.ToList();
-        foreach (var rBorder in rBorders)
+        foreach (var rBorder in _riverBorders.Keys.ToList())
         {
             var hi = rBorder.HighId.Ref();
 
@@ -161,7 +160,7 @@ public class PolyTriGenerator
         
         if (riverSegs.Count == 1)
         {
-            DoRiverSource(poly, borderSegsRel, firstRSeg, firstRSegIndex, tris, key);
+            DoRiverSource(poly, borderSegsRel, firstRSeg, tris, key);
         }
         else
         {
@@ -174,20 +173,27 @@ public class PolyTriGenerator
     }
 
     private void DoRiverSource(MapPolygon poly, IReadOnlyList<LineSegment> borderSegs, LineSegment rSeg, 
-        int rSegIndex, List<PolyTri> tris, GenWriteKey key)
+        List<PolyTri> tris, GenWriteKey key)
     {
-        var area = borderSegs.Sum(s => TriangleExt.GetTriangleArea(s.From, s.To, Vector2.Zero));
+        var rSegIndex = borderSegs.IndexOf(rSeg);
         var between = Enumerable.Range(1, borderSegs.Count - 1)
             .Select(i => borderSegs.Modulo(rSegIndex + i))
             .ToList();
-        if (between.IsClockwise() == false)
-        {
-            between.OrderByClockwise(Vector2.Zero, ls => ls.From);
-        }
+        // if (between.IsClockwise() == false)
+        // {
+        //     between.OrderByClockwise(Vector2.Zero, ls => ls.From);
+        // }
         if (between.Count != borderSegs.Count - 1) throw new Exception();
         if (between.Contains(rSeg)) throw new Exception();
-        if (between.First().From != rSeg.To) throw new Exception();
-        if (between.Last().To != rSeg.From) throw new Exception();
+        if (between.First().From != rSeg.To || between.Last().To != rSeg.From)
+        {
+            GD.Print($"{between.First().From} between first");
+            GD.Print($"{between.Last().To} between last");
+            GD.Print($"rSeg is {rSeg.ToString()}");
+            throw new SegmentsNotConnectedException(_data, poly, poly.BorderSegments.ToList(), 
+                between, 
+                new List<LineSegment>{rSeg});
+        }
         if (between.Contains(rSeg)) throw new Exception();
 
         var rTri = new PolyTri(rSeg.From, rSeg.To, Vector2.Zero, LandformManager.River, VegetationManager.Barren);

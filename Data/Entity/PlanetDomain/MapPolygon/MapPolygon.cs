@@ -110,12 +110,11 @@ public partial class MapPolygon : Entity
         if (neighborSegs.IsContinuous() == false)
         {
             GD.Print("not continuous");
-            throw new SegmentsNotConnectedException(key.GenData, this, before, neighborSegs, partials);
+            throw new SegmentsNotConnectedException(key.GenData, this, before, neighborSegs, partials.ToArray());
         }
         partials.Add(neighborSegs.ToList());
         if (neighborSegs.IsCircuit() == false)
         {
-            if(Id == 3085) GD.Print("ADDING EDGE");
             var edge = new LineSegment(neighborSegs.Last().To, neighborSegs[0].From);
             neighborSegs.Add(edge);
             partials.Add(neighborSegs.ToList());
@@ -124,7 +123,7 @@ public partial class MapPolygon : Entity
         if (neighborSegs.IsCircuit() == false || neighborSegs.IsContinuous() == false)
         {
             GD.Print("still not circuit");
-            throw new SegmentsNotConnectedException(key.GenData, this, before, neighborSegs, partials);
+            throw new SegmentsNotConnectedException(key.GenData, this, before, neighborSegs, partials.ToArray());
         }
 
         BorderSegments = neighborSegs;

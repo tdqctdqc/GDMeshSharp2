@@ -7,13 +7,25 @@ using Godot;
 public class MapDisplayOptionsUi : Container
 {
     private ButtonToken _roads, _regimes, _landforms, _vegetation;
+    private Label _mousePos;
+    private CameraController _cam;
+    private Data _data;
     public override void _Ready()
     {
         
     }
 
-    public void Setup(GameGraphics graphics)
+    public override void _Process(float delta)
     {
+        _mousePos.Text = _cam?.GetMousePosInMapSpace(_data).ToString();
+    }
+
+    public void Setup(GameGraphics graphics, CameraController cam, Data data)
+    {
+        _cam = cam;
+        _data = data;
+        _mousePos = new Label();
+        AddChild(_mousePos);
         var mapChunkGraphicType = typeof(MapChunkGraphic);
         var toggleable = mapChunkGraphicType
             .GetProperties()

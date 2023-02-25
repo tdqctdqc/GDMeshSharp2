@@ -15,7 +15,8 @@ public static class GraphGenerator
             (v1, v2, mp1, mp2) =>
             {
                 return new LineSegment(v1, v2);
-            }
+            },
+            new Vector2(key.GenData.Planet.Width, key.GenData.Planet.Height)
         );
         return g;
     }
@@ -33,8 +34,13 @@ public static class GraphGenerator
             var discardEdge = graph.GetEdge(discard, nextDiscard);
             var keepEdge = graph.GetEdge(keep, nextKeep);
             var newPoints = new List<Vector2> {keepEdge.From, keepEdge.To, discardEdge.From, discardEdge.To}
-                .Where(p => p.x != 0 && p.x != key.Data.Planet.Width).ToList();
-            graph.SetEdgeValue(keep, nextKeep, new LineSegment(newPoints[0], newPoints[1]));
+                .Where(p => p.x != 0 
+                            && p.x < key.Data.Planet.Width
+                            && p.y <= key.Data.Planet.Height).ToList();
+            if (newPoints.Count > 1 && newPoints[0] != newPoints[1])
+            {
+                graph.SetEdgeValue(keep, nextKeep, new LineSegment(newPoints[0], newPoints[1]));
+            }
         }
         WrapVoronoiGraph<MapPolygon, LineSegment>(
             graph, keepMergePolys, discardMergePolys, 
@@ -67,7 +73,7 @@ public static class GraphGenerator
     }
     public static Graph<TNode, TEdge> GenerateVoronoiGraph<TNode, TEdge>
     (List<TNode> elements, Func<TNode, Vector2> posFunc,
-        Func<Vector2, Vector2, TNode, TNode, TEdge> getEdgeFunc) where TNode : class
+        Func<Vector2, Vector2, TNode, TNode, TEdge> getEdgeFunc, Vector2 bounds) where TNode : class
     {
         var graph = new Graph<TNode, TEdge>();
         elements.ForEach(e => graph.AddNode(e));
@@ -98,7 +104,19 @@ public static class GraphGenerator
                 var oppEdgeIndex = d.Halfedges[edge.Index];
                 var oppTri = Mathf.FloorToInt(oppEdgeIndex / 3);
                 var oppCircum = d.GetTriangleCircumcenter(oppTri);
-                var tEdge = getEdgeFunc(circum.GetIntV2(), oppCircum.GetIntV2(), el1, el2);
+                var p = circum.GetIntV2();
+                var oP = oppCircum.GetIntV2();
+
+                if (p.y >= bounds.y) p.y = bounds.y;
+                if (oP.y >= bounds.y) oP.y = bounds.y;
+                if (p.x >= bounds.x) p.x = bounds.x;
+                if (oP.x >= bounds.x) oP.x = bounds.x;
+                if (p == oP)
+                {
+                    GD.Print("degenerate");
+                    return;
+                }
+                var tEdge = getEdgeFunc(p, oP, el1, el2);
                 graph.AddEdge(el1, el2, tEdge);
             }
             else

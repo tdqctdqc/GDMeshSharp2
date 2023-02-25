@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 
 public class SegmentsNotConnectedException : DisplayableException
@@ -9,13 +10,13 @@ public class SegmentsNotConnectedException : DisplayableException
     public List<List<LineSegment>> Partials { get; private set; }
     public Data Data { get; private set; }
     public SegmentsNotConnectedException(Data data, MapPolygon poly, List<LineSegment> segsBefore, List<LineSegment> segsAfter, 
-        List<List<LineSegment>> partials)
+        params List<LineSegment>[] partials)
     {
         Data = data;
         Poly = poly;
         SegsBefore = segsBefore;
         SegsAfter = segsAfter;
-        Partials = partials;
+        Partials = partials.ToList();
         if (Partials == null) Partials = new List<List<LineSegment>>();
     }
     public override Control GetDisplay()

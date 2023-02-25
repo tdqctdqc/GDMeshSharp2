@@ -2,13 +2,13 @@
 
 [ext_resource path="res://Client/GeneratorClient/GeneratorClient.cs" type="Script" id=1]
 [ext_resource path="res://Scenes/GameUi/MapDisplayOptionsUi.tscn" type="PackedScene" id=2]
-[ext_resource path="res://Client/GeneratorClient/GeneratorGraphics.cs" type="Script" id=4]
+[ext_resource path="res://Client/GameClient/Graphics/GameGraphics.cs" type="Script" id=3]
 
 [node name="GeneratorClient" type="Node"]
 script = ExtResource( 1 )
 
 [node name="Graphics" type="Node2D" parent="."]
-script = ExtResource( 4 )
+script = ExtResource( 3 )
 
 [node name="Control" type="CanvasLayer" parent="."]
 

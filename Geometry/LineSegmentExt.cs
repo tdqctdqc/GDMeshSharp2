@@ -8,6 +8,11 @@ using Poly2Tri.Utility;
 
 public static class LineSegmentExt
 {
+    public static IEnumerable<LineSegment> GetInscribed(this IEnumerable<LineSegment> segs, Vector2 center,
+        float insetFactor)
+    {
+        return segs.Select(s => new LineSegment((s.From - center) * insetFactor, (s.To - center) * insetFactor));
+    }
     public static IEnumerable<LineSegment> GetOpposing(this IEnumerable<LineSegment> segs, Vector2 offset)
     {
         return segs.Select(s => s.Translate(-offset).GetReverse()).Reverse();
@@ -153,6 +158,14 @@ public static class LineSegmentExt
         prevRes.AddRange(res);
         if (prevRes.Count != segs.Count)
         {
+            if (prevRes.IsContinuous()) return prevRes;
+            GD.Print($"res is {prevRes.Count} segments source is {segs.Count}");
+            // GD.Print($"degen count {segs.Where(s => s.From == s.To).Count()}");
+            GD.Print("SOURCE");
+            GD.Print(segs.Select(ls => ls.ToString()).ToArray());
+            GD.Print("RESULT");
+            GD.Print(prevRes.Select(ls => ls.ToString()).ToArray());
+            
             throw new SegmentsNotConnectedException(data, poly, segs, prevRes, null);
         }
         

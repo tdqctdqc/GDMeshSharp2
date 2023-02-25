@@ -28,6 +28,7 @@ public class PolygonGenerator
 
         CreateAndRegisterPolys(delaunayPoints, info, key);
         var graph = GraphGenerator.GenerateMapPolyVoronoiGraph(info, _id, key);
+        // throw new PreGraphFailure(graph);
         if (leftRightWrap)
         {
             Wrap(graph, info, key);

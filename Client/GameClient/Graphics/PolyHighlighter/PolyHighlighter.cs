@@ -18,7 +18,8 @@ public class PolyHighlighter : Node2D
         var mb = new MeshBuilder();
         var lines = poly.BorderSegments;
         mb.AddArrowsRainbow(lines.ToList(), 5f);
-        mb.AddNumMarkers(lines.Select(ls => ls.Mid()).ToList(), 20f, Colors.Transparent);
+        mb.AddNumMarkers(lines.Select(ls => ls.Mid()).ToList(), 20f, 
+            Colors.Transparent, Colors.White, Vector2.Zero);
         
         foreach (var t in poly.TerrainTris.Tris)
         {

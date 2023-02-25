@@ -13,7 +13,7 @@ public class GeneratorClient : Node, IClient
     private SpinBox _seed, _width, _height;
     public CameraController Cam { get; private set; }
     public GenData Data => _session.Data;
-    private GeneratorGraphics _graphics;
+    private GameGraphics _graphics;
     private Label _progress;
     private bool _generating;
     private bool _generated;
@@ -31,7 +31,7 @@ public class GeneratorClient : Node, IClient
         this.AssignChildNode(ref _progress, "Progress");
         this.AssignChildNode(ref _graphics, "Graphics");
         this.AssignChildNode(ref _mapOptions, "MapDisplayOptionsUi");
-        _mapOptions.Setup(_graphics);
+        _mapOptions.Setup(_graphics, Cam, _session.Data);
         
         _generate = ButtonToken.Get(this, "Generate", () => PressedGenerate());
         _done = ButtonToken.Get(this, "Done", GoToGameSession);
@@ -43,7 +43,6 @@ public class GeneratorClient : Node, IClient
     }
     public void HandleInput(InputEvent e, float delta)
     {
-        
     }
     
 
@@ -96,7 +95,6 @@ public class GeneratorClient : Node, IClient
         if (success)
         {
             _graphics.Setup(this, _session.Data);
-            _graphics.SetupGenerator(_session.Data, this);
         }
     }
 }

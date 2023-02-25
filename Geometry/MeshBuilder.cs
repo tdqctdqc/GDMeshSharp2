@@ -21,6 +21,16 @@ public class MeshBuilder
         Tris.Clear();
         Colors.Clear();
     }
+
+    public void AddPoly(MapPolygon poly, Vector2 offset, float insetFactor)
+    {
+        var inscribed = poly.BorderSegments.GetInscribed(Vector2.Zero, insetFactor)
+            .Select(ls => ls.Translate(offset))
+            .ToList();
+        var col = ColorsExt.GetRandomColor();
+        AddArrows(inscribed, 3f, col);
+        // mb.AddNumMarkers(inscribed.Select(s => s.Mid()).ToList(), 10f, Colors.Transparent);
+    }
     public void AddTriOutline(Triangle tri, float thickness, Color color)
     {
         var center = tri.GetCentroid();
@@ -201,14 +211,15 @@ public class MeshBuilder
             mid - perpendicular * thickness * 2f, color);
     }
 
-    public void AddNumMarkers(List<Vector2> points, float markerSize, Color color)
+    public void AddNumMarkers(List<Vector2> points, float markerSize, Color color, Color textColor, Vector2 offset)
     {
         AddPointMarkers(points, markerSize, color);
         for (var i = 0; i < points.Count; i++)
         {
             var label = new Label();
             label.Text = i.ToString();
-            label.RectPosition = points[i];
+            label.RectPosition = points[i] + offset;
+            label.SelfModulate = textColor;
             Labels.Add(label);
         }
     }

@@ -10,30 +10,29 @@ public class SegmentsNotConnectedDisplay : Control
         var label = (Label)FindNode("Label");
         if(e.Poly != null) label.Text = "Poly " + e.Poly.Id.ToString();
 
-        if (e.Data is GenData g)
-        {
-            if (g.GenInfo.BottomPolys.Contains(e.Poly))
-            {
-                GD.Print("Bottom Poly");
-            }
-            if (g.GenInfo.TopPolys.Contains(e.Poly))
-            {
-                GD.Print("Top Poly");
-            }
-            if (g.GenInfo.LeftPolys.Contains(e.Poly))
-            {
-                GD.Print("Left Poly");
-            }
-            if (g.GenInfo.RightPolys.Contains(e.Poly))
-            {
-                GD.Print("Right Poly");
-            }
-            if (g.GenInfo.CornerPolys.Contains(e.Poly))
-            {
-                GD.Print("Corner Poly");
-            }
-        }
-        GD.Print(e.Poly.Id);
+        // if (e.Data is GenData g)
+        // {
+        //     if (g.GenInfo.BottomPolys.Contains(e.Poly))
+        //     {
+        //         GD.Print("Bottom Poly");
+        //     }
+        //     if (g.GenInfo.TopPolys.Contains(e.Poly))
+        //     {
+        //         GD.Print("Top Poly");
+        //     }
+        //     if (g.GenInfo.LeftPolys.Contains(e.Poly))
+        //     {
+        //         GD.Print("Left Poly");
+        //     }
+        //     if (g.GenInfo.RightPolys.Contains(e.Poly))
+        //     {
+        //         GD.Print("Right Poly");
+        //     }
+        //     if (g.GenInfo.CornerPolys.Contains(e.Poly))
+        //     {
+        //         GD.Print("Corner Poly");
+        //     }
+        // }
         
         
         
@@ -50,14 +49,16 @@ public class SegmentsNotConnectedDisplay : Control
         }); 
         
         mb.AddArrows(e.SegsAfter, step, Colors.White);
-        mb.AddNumMarkers(e.SegsAfter.Select(s => s.Mid()).ToList(), 20f, Colors.Transparent);
+        mb.AddNumMarkers(e.SegsAfter.Select(s => s.Mid()).ToList(), 20f, Colors.Transparent, Colors.White, Vector2.Zero);
+        mb.AddNumMarkers(e.SegsBefore.Select(s => s.Mid()).ToList(), 20f, Colors.Transparent, Colors.Black, Vector2.One * -10f);
         
-        
-        // mb.AddNumMarkers(e.SegsBefore.Select(s => s.From).ToList(), 5f, Colors.Pink);
-        // mb.AddNumMarkers(e.SegsBefore.Select(s => s.To).ToList(), 5f, Colors.Green);
-        //
-        //
-        
+        foreach (var n in e.Data.Planet.Polygons.Entities)
+        {
+            if (n.BorderSegments.Count == 0) continue;
+            mb.AddPoly(n, e.Poly.GetOffsetTo(n, e.Data), .9f);
+        }
         AddChild(mb.GetMeshInstance());
     }
+
+    
 }

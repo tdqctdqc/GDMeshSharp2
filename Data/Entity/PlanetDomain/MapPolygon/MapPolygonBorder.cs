@@ -106,7 +106,7 @@ public class MapPolygonBorder : Entity
         }
         else if (poly == LowId.Ref())
         {
-            return LowSegsRel.FromEnd(_riverSegIndexHi);
+            return LowSegsRel[LowSegsRel.Count - 1 - _riverSegIndexHi];
         }
         else throw new Exception("poly is not part of this border");
     }
