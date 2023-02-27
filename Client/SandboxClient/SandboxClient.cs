@@ -74,7 +74,7 @@ public class SandboxClient : Node, IClient
         AddChild(mi);
     }
     
-    public void ProcessPoly(float delta)
+    public void Process(float delta)
     {
         
     }

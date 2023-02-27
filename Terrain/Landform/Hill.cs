@@ -10,12 +10,14 @@
 
         public void GetDecal(MeshBuilder mb, PolyTri pt, Vector2 offset)
         {
-            var size = 20f;
             var color = pt.Vegetation == VegetationManager.Barren
                 ? Colors.Gray
-                : pt.Vegetation.Color.Darkened(.3f);
+                : pt.Vegetation.Color.Darkened(.4f);
+            mb.AddTri(pt.Transpose(offset), pt.Vegetation.Color.Darkened(.2f));
+            
+            
+            var size = 20f;
             offset += Vector2.Down * size / 2f;
-
             var p = pt.GetCentroid();
             var t = new Triangle(
                 p + Vector2.Left * size + offset,

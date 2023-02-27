@@ -17,4 +17,9 @@ public class RefFulfiller
     {
         r.SyncRef(_data);
     }
+
+    public TEntity Get<TEntity>(int id) where TEntity : Entity
+    {
+        return (TEntity) _data.Entities[id];
+    }
 }

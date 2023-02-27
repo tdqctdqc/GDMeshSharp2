@@ -105,10 +105,10 @@ public class MeshBuilder
     {
         foreach (var border in borders)
         {
-            var highId = border.HighId.Ref();
+            var highId = border.HighId.Entity();
             var highColor = getColor(highId);
             
-            var lowId = border.LowId.Ref();
+            var lowId = border.LowId.Entity();
             var lowColor = getColor(lowId);
             
             var segs = border.GetSegsRel(highId)

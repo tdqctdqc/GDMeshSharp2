@@ -106,6 +106,10 @@ public class Triangle
         return $"({A}, {B}, {C}";
     }
 
+    public Vector2 GetDimensions()
+    {
+        return new Vector2(Mathf.Abs(MaxX() - MinX()), Mathf.Abs(MaxY() - MinY()));
+    }
     public float MinX()
     {
         return Mathf.Min(A.x, Mathf.Min(B.x, C.x));

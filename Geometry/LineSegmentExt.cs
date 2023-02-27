@@ -43,7 +43,7 @@ public static class LineSegmentExt
     {
         var newSegsAbs = new List<LineSegment>();
         var segs = border.GetSegsAbs(key.Data);
-        var offset = border.HighId.Ref().GetOffsetTo(border.LowId.Ref(), key.Data);
+        var offset = border.HighId.Entity().GetOffsetTo(border.LowId.Entity(), key.Data);
         for (var i = 0; i < segs.Count; i++)
         {
             var seg = segs[i];
@@ -74,7 +74,7 @@ public static class LineSegmentExt
             key);
     }
 
-    public static bool IsCircuit(this List<LineSegment> segs)
+    public static bool IsCircuit(this IReadOnlyList<LineSegment> segs)
     {
         for (int i = 0; i < segs.Count - 1; i++)
         {
@@ -178,7 +178,7 @@ public static class LineSegmentExt
         
         return prevRes;
     }
-    public static bool IsContinuous(this List<LineSegment> segs)
+    public static bool IsContinuous(this IReadOnlyList<LineSegment> segs)
     {
         for (var i = 0; i < segs.Count - 1; i++)
         {
@@ -186,7 +186,8 @@ public static class LineSegmentExt
         }
         return true;
     }
-    public static List<PolyTri> PolyTriangulate(this List<LineSegment> boundarySegs, GenData data, MapPolygon poly,
+    public static List<PolyTri> PolyTriangulate(this IReadOnlyList<LineSegment> boundarySegs, GenData data, 
+        MapPolygon poly, IDDispenser id,
         HashSet<Vector2> interiorPoints = null)
     {
         return boundarySegs.Triangulate(data, poly,
@@ -194,19 +195,19 @@ public static class LineSegmentExt
             {
                 var lf = data.Models.Landforms.GetAtPoint(poly, (v + w + x) / 3f, data);
                 var vg = data.Models.Vegetation.GetAtPoint(poly, (v + w + x) / 3f, lf, data);
-                return new PolyTri(v, w, x, lf, vg);
+                return new PolyTri(id.GetID(), v, w, x, lf, vg);
             }, 
             interiorPoints
         );
     }
-    private static List<T> Triangulate<T>(this List<LineSegment> boundarySegs, GenData data, MapPolygon poly,
+    private static List<T> Triangulate<T>(this IReadOnlyList<LineSegment> boundarySegs, GenData data, MapPolygon poly,
         Func<Vector2, Vector2, Vector2, T> constructor, 
         HashSet<Vector2> interiorPoints = null) where T : Triangle
     {
         if (boundarySegs.IsCircuit() == false)
         {
             GD.Print("not circuit");
-            throw new BadTriangulationError(poly, new List<Triangle>(), new List<Color>(), data, boundarySegs);
+            throw new BadTriangulationError(poly, new List<Triangle>(), new List<Color>(), data, boundarySegs.ToList());
         }
         
         var points = boundarySegs.GetPoints().GetPoly2TriTriPoints();

@@ -5,6 +5,6 @@ using Godot;
 
 public abstract class LogicModule
 {
-    public abstract List<Procedure> Calculate();
+    public abstract List<Procedure> Calculate(Data data);
     
 }

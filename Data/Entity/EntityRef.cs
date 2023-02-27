@@ -20,7 +20,7 @@ public class EntityRef<TRef> : IRef<int> where TRef : Entity
         RefId = refId;
         _ref = null;
     }
-    public TRef Ref()
+    public TRef Entity()
     {
         if (RefId == -1) return null;
         if (_ref == null)

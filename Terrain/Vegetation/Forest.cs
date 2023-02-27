@@ -15,7 +15,7 @@ public class Forest : Vegetation, IDecaledTerrain
         var areaPer = 100f;
         var num = Mathf.FloorToInt(pt.GetArea() / areaPer);
         if (num < 1) return;
-        var ps = pt.GetRandomPointsInside(num, 0f, 1f);
+        var ps = pt.GetPoissonPointsInside(5f);
         var size = 3f;
         offset += Vector2.Down * size;
 

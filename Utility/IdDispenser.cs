@@ -13,6 +13,7 @@ public class IDDispenser
     public int GetID()
     {
         _index++;
+        if (_index == int.MaxValue) throw new Exception("Max Ids reached");
         int id = _index;
         return id;
     }

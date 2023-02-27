@@ -6,7 +6,7 @@ using Godot;
 
 public class SampleModule2 : LogicModule
 {
-    public override List<Procedure> Calculate()
+    public override List<Procedure> Calculate(Data data)
     {
         System.Threading.Thread.Sleep(100);
 

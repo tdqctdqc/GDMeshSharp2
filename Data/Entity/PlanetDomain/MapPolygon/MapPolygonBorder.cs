@@ -43,8 +43,8 @@ public class MapPolygonBorder : Entity
             highId = new EntityRef<MapPolygon>(poly1, key);
         }
         
-        var highSegsRel = OrderAndRelativizeSegments(segments, highId.Ref(), key.Data);
-        var lowSegsRel = OrderAndRelativizeSegments(segments, lowId.Ref(), key.Data);
+        var highSegsRel = OrderAndRelativizeSegments(segments, highId.Entity(), key.Data);
+        var lowSegsRel = OrderAndRelativizeSegments(segments, lowId.Entity(), key.Data);
         
         var b =  new MapPolygonBorder(
             id, 0f, lowSegsRel, highSegsRel, lowId, highId);
@@ -78,10 +78,10 @@ public class MapPolygonBorder : Entity
     public void ReplacePoints(List<LineSegment> newSegmentsAbs, 
         GenWriteKey key)
     {
-        HighSegsRel = OrderAndRelativizeSegments(newSegmentsAbs, HighId.Ref(), key.Data);
-        LowSegsRel = OrderAndRelativizeSegments(newSegmentsAbs, LowId.Ref(), key.Data);
-        var stitch1 = HighSegsRel.OrderEndToStart(key.GenData, HighId.Ref());
-        var stitch2 = LowSegsRel.OrderEndToStart(key.GenData, LowId.Ref());
+        HighSegsRel = OrderAndRelativizeSegments(newSegmentsAbs, HighId.Entity(), key.Data);
+        LowSegsRel = OrderAndRelativizeSegments(newSegmentsAbs, LowId.Entity(), key.Data);
+        var stitch1 = HighSegsRel.OrderEndToStart(key.GenData, HighId.Entity());
+        var stitch2 = LowSegsRel.OrderEndToStart(key.GenData, LowId.Entity());
         if (HighSegsRel.Count != LowSegsRel.Count) throw new Exception();
     }
     
@@ -100,11 +100,11 @@ public class MapPolygonBorder : Entity
 
     public LineSegment GetRiverSegment(MapPolygon poly)
     {
-        if (poly == HighId.Ref())
+        if (poly == HighId.Entity())
         {
             return HighSegsRel[_riverSegIndexHi];
         }
-        else if (poly == LowId.Ref())
+        else if (poly == LowId.Entity())
         {
             return LowSegsRel[LowSegsRel.Count - 1 - _riverSegIndexHi];
         }
@@ -117,21 +117,21 @@ public static class PolyBorderExt
     
     public static List<Vector2> GetPointsRel(this MapPolygonBorder b, MapPolygon p)
     {
-        if (p == b.LowId.Ref()) return b.LowSegsRel.GetPoints().ToList();
-        if (p == b.HighId.Ref()) return b.HighSegsRel.GetPoints().ToList();
+        if (p == b.LowId.Entity()) return b.LowSegsRel.GetPoints().ToList();
+        if (p == b.HighId.Entity()) return b.HighSegsRel.GetPoints().ToList();
         throw new Exception();
     }
 
     public static List<LineSegment> GetSegsRel(this MapPolygonBorder b, MapPolygon p)
     {
-        if (p == b.LowId.Ref()) return b.LowSegsRel;
-        if (p == b.HighId.Ref()) return b.HighSegsRel;
+        if (p == b.LowId.Entity()) return b.LowSegsRel;
+        if (p == b.HighId.Entity()) return b.HighSegsRel;
         throw new Exception();
     }
     public static List<LineSegment> GetSegsAbs(this MapPolygonBorder b, Data data)
     {
         return b.HighSegsRel
-            .Select(s => s.Translate(b.HighId.Ref().Center))
+            .Select(s => s.Translate(b.HighId.Entity().Center))
             .ToList().OrderEndToStart(data);
     }
     public static Vector2 GetOffsetToOtherPoly(this MapPolygonBorder b, MapPolygon p)
@@ -142,13 +142,13 @@ public static class PolyBorderExt
     }
     public static MapPolygon GetOtherPoly(this MapPolygonBorder b, MapPolygon p)
     {
-        if (p == b.LowId.Ref()) return b.HighId.Ref();
-        if (p == b.HighId.Ref()) return b.LowId.Ref();
+        if (p == b.LowId.Entity()) return b.HighId.Entity();
+        if (p == b.HighId.Entity()) return b.LowId.Entity();
         throw new Exception();
     }
     public static List<Vector2> GetPointsAbs(this MapPolygonBorder b)
     {
-        return b.HighSegsRel.GetPoints().Select(p => p + b.HighId.Ref().Center).ToList();
+        return b.HighSegsRel.GetPoints().Select(p => p + b.HighId.Entity().Center).ToList();
     }
 
     

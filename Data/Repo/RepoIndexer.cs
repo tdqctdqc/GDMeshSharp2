@@ -3,19 +3,17 @@ using System;
 using System.Collections.Generic;
 using Godot;
 
-public class RepoAuxLookup<TEntity, TKey> : RepoAuxData<TEntity>
+public class RepoIndexer<TEntity, TKey> : RepoAuxData<TEntity>
     where TEntity : Entity
 {
-    public TEntity this[TKey e] => _dic[e];
+    public TEntity this[TKey e] => _dic.ContainsKey(e) ? _dic[e] : null;
     private Dictionary<TKey, TEntity> _dic;
     private Func<TEntity, TKey> _get;
 
-    public RepoAuxLookup(Data data, Func<TEntity, TKey> get,
-        out Action<TEntity> updateTrigger) : base(data)
+    public RepoIndexer(Data data, Func<TEntity, TKey> get) : base(data)
     {
         _get = get;
         _dic = new Dictionary<TKey, TEntity>();
-        updateTrigger = HandleAdded;
     }
 
     public bool ContainsKey(TKey e)

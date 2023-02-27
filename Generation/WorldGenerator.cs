@@ -86,7 +86,7 @@ public class WorldGenerator
         GenerationFeedback?.Invoke("Edge split", "");
         
         
-        new PolyTriGenerator().BuildTris(_key);
+        new PolyTriGenerator().BuildTris(_key, _id);
         GD.Print("built tris");
         GenerationFeedback?.Invoke("Built tris", "");
         Data.Events.FinalizedPolyShapes?.Invoke();

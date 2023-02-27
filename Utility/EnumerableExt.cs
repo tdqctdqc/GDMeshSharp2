@@ -137,7 +137,7 @@ public static class EnumerableExt
         return list[i % list.Count];
     }
 
-    public static void AddRange<T>(this HashSet<T> hash, IEnumerable<T> en)
+    public static void AddRange<T>(this ICollection<T> hash, IEnumerable<T> en)
     {
         foreach (var t in en)
         {
@@ -153,5 +153,38 @@ public static class EnumerableExt
         }
 
         return -1;
+    }
+
+    public static bool AddOrUpdateRange<TKey, TValue, TCol>(this Dictionary<TKey, TCol> dic,
+        TKey key, params TValue[] vals) where TCol : ICollection<TValue>, new()
+    {
+        if (dic.ContainsKey(key))
+        {
+            dic[key].AddRange(vals);
+            return true;
+        }
+        else
+        {
+            var col = new TCol();
+            col.AddRange(vals);
+            dic.Add(key, col);
+            return false;
+        }
+    }
+    public static bool AddOrUpdate<TKey, TValue, TCol>(this Dictionary<TKey, TCol> dic,
+        TKey key, TValue val) where TCol : ICollection<TValue>, new()
+    {
+        if (dic.ContainsKey(key))
+        {
+            dic[key].Add(val);
+            return true;
+        }
+        else
+        {
+            var col = new TCol();
+            col.Add(val);
+            dic.Add(key, col);
+            return false;
+        }
     }
 }

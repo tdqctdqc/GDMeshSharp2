@@ -13,7 +13,7 @@ public class GameSession : Node, ISession
     public override void _Process(float delta)
     {
         _logic?.Process(delta);
-        Client?.ProcessPoly(delta);
+        Client?.Process(delta);
     }
     
     public void StartAsHost(GenData data, UserCredential userCredential = null)
@@ -34,8 +34,6 @@ public class GameSession : Node, ISession
     {
         SetCredential(userCredential);
         
-        
-        //todo fix this
         Data = new Data();
         Data.Setup();
         var logic = new RemoteLogic(Data);
@@ -44,7 +42,6 @@ public class GameSession : Node, ISession
         Data.Notices.FinishedStateSync += () => StartClient(server);
         server.Setup(this, logic, Data);
         StartServer(server);
-        // StartClient(server);
     }
 
     private void SetCredential(UserCredential userCredential)

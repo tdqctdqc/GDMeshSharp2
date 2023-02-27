@@ -12,7 +12,7 @@ public class MapPolygonBorderRepository : Repository<MapPolygonBorder>
         data.Notices.RegisterEntityAddedCallback<MapPolygonBorder>(
             border =>
             {
-                var edge = MakeEdge(border.HighId.Ref(), border.LowId.Ref());
+                var edge = MakeEdge(border.HighId.Entity(), border.LowId.Entity());
                 BordersByEdge[edge] = border;
             }
         );

@@ -47,12 +47,6 @@ public class Repository<T> : IRepo where T : Entity
         var notice = (Action<ValueChangedNotice<T, TProperty>>)_entityValueUpdatedActions[valueName];
         notice += callback;
     }
-
-    void IRepo.RaiseValueChangedNotice<TProperty>(string valueName,
-        Entity entity, TProperty oldVal, TProperty newVal, WriteKey key)
-    {
-        RaiseValueChangedNotice(valueName, (T)entity, oldVal, newVal, key);
-    }
     public void RaiseValueChangedNotice<TProperty>(string valueName, T t, 
         TProperty oldVal, TProperty newVal,
         WriteKey key)

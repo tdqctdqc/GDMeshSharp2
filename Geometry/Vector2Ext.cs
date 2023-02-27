@@ -106,18 +106,17 @@ public static class Vector2Ext
         return a.x * b.x + a.y + b.y;
     }
 
-    public static bool PointOnLineIsInLineSegment(this Vector2 point, Vector2 from, Vector2 to)
+    public static bool PointIsOnLine(this Vector2 point, Vector2 from, Vector2 to)
     {
-        
-        if (point.x > Mathf.Max(from.x, to.x)
-            || point.x < Mathf.Min(from.x, to.x)
-            || point.y > Mathf.Max(from.y, to.y)
-            || point.y < Mathf.Min(from.y, to.y))
-        {
-            return false;
-        }
-
-        return true;
+        return from.Cross(to) == 0;
+    }
+    public static bool PointIsInLineSegment(this Vector2 point, Vector2 from, Vector2 to)
+    {
+        if (point.PointIsOnLine(from, to) == false) return false;
+        return point.x >= Mathf.Min(from.x, to.x)
+                && point.x <= Mathf.Max(from.x, to.x)
+                && point.y >= Mathf.Min(from.y, to.y)
+                && point.y <= Mathf.Max(from.y, to.y);
     }
 
     public static bool LineSegmentsIntersect(Vector2 p1, Vector2 p2, Vector2 q1, Vector2 q2)
@@ -190,8 +189,8 @@ public static class Vector2Ext
         var x = (slopeIntercept1.y - slopeIntercept2.y) / determ;
         var y = (slopeIntercept1.x * -slopeIntercept2.y -  slopeIntercept2.x * -slopeIntercept1.y) / determ;
         var point = new Vector2(x, y);
-        if (PointOnLineIsInLineSegment(point, p1, p2)
-            && PointOnLineIsInLineSegment(point, q1, q2))
+        if (PointIsInLineSegment(point, p1, p2)
+            && PointIsInLineSegment(point, q1, q2))
         {
             return point;
         }

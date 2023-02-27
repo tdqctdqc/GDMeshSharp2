@@ -81,14 +81,13 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
         var repo = key.Data.EntityRepos[t.Id];
         var oldValue = (TProperty)_vars[fieldName].GetForSerialize((T)t);
         _vars[fieldName].Set((T)t, newValue, key);
-        repo.RaiseValueChangedNotice(fieldName, t, oldValue, newValue, key);
+        key.Data.Notices.RaiseVarChanged<T, TProperty>(fieldName, (T)t, oldValue, newValue, key);
     }
     public void UpdateEntityVar<TProperty>(string fieldName, Entity t, CreateWriteKey key, TProperty newValue)
     {
-        var repo = key.Data.EntityRepos[t.Id];
-        var oldValue = _vars[fieldName].GetForSerialize((T)t);
+        var oldValue = (TProperty)_vars[fieldName].GetForSerialize((T)t);
         _vars[fieldName].Set((T)t, newValue, key);
-        repo.RaiseValueChangedNotice(fieldName, t, oldValue, newValue, key);
+        key.Data.Notices.RaiseVarChanged<T, TProperty>(fieldName, (T)t, oldValue, newValue, key);
         if (key is HostWriteKey hKey)
         {
             var bytes = Game.I.Serializer.MP.Serialize(newValue);

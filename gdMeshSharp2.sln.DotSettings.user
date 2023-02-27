@@ -3,4 +3,5 @@
   &lt;Assembly Path="C:\Users\Tynan Dion\.nuget\packages\memorypack.core\1.9.12\lib\netstandard2.1\MemoryPack.Core.dll" /&gt;&#xD;
   &lt;Assembly Path="C:\Users\Tynan Dion\.nuget\packages\randomfriendlynamegenerator\1.0.7\lib\netstandard2.0\RandomFriendlyNameGenerator.dll" /&gt;&#xD;
   &lt;Assembly Path="C:\Users\Tynan Dion\.nuget\packages\poly2tri\1.0.1\lib\net35-Client\Poly2Tri.dll" /&gt;&#xD;
+  &lt;Assembly Path="C:\Users\Tynan Dion\.nuget\packages\netstandard.library\2.0.3\build\netstandard2.0\ref\System.ComponentModel.dll" /&gt;&#xD;
 &lt;/AssemblyExplorer&gt;</s:String></wpf:ResourceDictionary>

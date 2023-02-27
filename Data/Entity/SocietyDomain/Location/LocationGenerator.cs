@@ -23,7 +23,7 @@ public class LocationGenerator
     
     private void GenerateCities()
     {
-        var minScoreForSettlement = 2f;
+        var minScoreForSettlement = 1f;
         Data.GenAuxData.Plates.ForEach(plate =>
         {
             var landPolys = plate.Cells.SelectMany(c => c.PolyGeos)
@@ -66,7 +66,7 @@ public class LocationGenerator
                 var size = settlementScores[i];
                 
                 p.Set(nameof(MapPolygon.SettlementSize), size, _key);
-                _key.Create(Settlement.Create(_id.GetID(), p, size, _key));
+                _key.Create(Settlement.Create(_id.GetID(), NameGenerator.GetName(), p, size, _key));
                 var availTris = p.TerrainTris.Tris
                     .Where(t => t.Landform != LandformManager.River
                         && t.Landform != LandformManager.Mountain
@@ -94,7 +94,7 @@ public class LocationGenerator
         //generate delaunay triangulation from that, build graph, find edge paths
         Data.LandSea.Landmasses.ForEach(lm =>
         {
-            var settlements = lm.Where(p => Data.Society.Settlements.ByPoly.ContainsKey(p));
+            var settlements = lm.Where(p => Data.Society.Settlements.ByPoly.ContainsKey(p.Id));
             if (settlements.Count() == 0) return;
             var first = settlements.First();
             var points = settlements.Select(s => first.GetOffsetTo(s, Data)).ToList();

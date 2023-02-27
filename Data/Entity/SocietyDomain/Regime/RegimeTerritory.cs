@@ -25,11 +25,11 @@ public class RegimeTerritory : Super<RegimeTerritory, MapPolygon>
     {
         var r = sub.Regime;
         if (r == null) return null;
-        return GetTerritory(r.Ref());
+        return GetTerritory(r.Entity());
     }
     protected override void SetSubSuper(MapPolygon sub, RegimeTerritory super)
     {
-        var prevR = sub.Regime.Ref();
+        var prevR = sub.Regime.Entity();
         if (prevR != null)
         {
             var prevTerr = GetTerritory(prevR);

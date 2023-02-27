@@ -18,7 +18,7 @@ public class LogicFrame
         _queuedProcedures = new List<Procedure>();
     }
 
-    public List<Procedure> Calculate()
+    public List<Procedure> Calculate(Data data)
     {
         _conc.Clear();
         _queuedProcedures.Clear();
@@ -29,7 +29,7 @@ public class LogicFrame
             int iter = i;
             var t = new Task(() =>
             {
-                var processProcs = _modules[iter].Calculate();
+                var processProcs = _modules[iter].Calculate(data);
                 _conc.AddOrUpdate(iter, processProcs, (i1, list) => list);
             });
             tasks[i] = t;

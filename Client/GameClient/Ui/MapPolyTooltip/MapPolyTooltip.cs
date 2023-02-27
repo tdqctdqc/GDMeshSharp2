@@ -6,7 +6,7 @@ using Godot;
 
 public class MapPolyTooltip : Node2D
 {
-    private Label _id, _numPops, _regime, _landform, _veg;
+    private Label _id, _numPops, _regime, _landform, _veg, _settlementName, _settlementSize;
     private Container _container;
     private MapPolygon _mouseOverPoly = null;
     private IClient _client;
@@ -19,6 +19,8 @@ public class MapPolyTooltip : Node2D
         _regime = _container.CreateLabelAsChild("Regime");
         _landform = _container.CreateLabelAsChild("Landform");
         _veg = _container.CreateLabelAsChild("Veg");
+        _settlementName = _container.CreateLabelAsChild("SettlementName");
+        _settlementSize = _container.CreateLabelAsChild("SettlementSize");
     }
     public void Process(Data data, Vector2 mousePosMapSpace)
     {
@@ -35,13 +37,14 @@ public class MapPolyTooltip : Node2D
         if (mouseIn is MapPolygon poly)
         {
             var offset = poly.GetOffsetTo(mousePosMapSpace, data);
+            var tri = poly.TerrainTris.GetAtPoint(offset, data);
             if (poly != _mouseOverPoly)
             {
                 _mouseOverPoly = poly;
                 Visible = true;
-                _highlighter.DrawOutline(data, poly, offset, _client);
             }
-            
+            _highlighter.Draw(data, poly, tri, offset, _client);
+
             Position = GetGlobalMousePosition() + Vector2.One * 20f;
             Draw(data, poly, offset);
             Scale = _client.Cam.Zoom;
@@ -59,13 +62,24 @@ public class MapPolyTooltip : Node2D
     {
         _id.Text = "Id: " + poly.Id;
         _numPops.Text = "Num Pops: " + poly.GetNumPeeps(data);
-        _regime.Text = poly.Regime.Empty() ? "Neutral" : poly.Regime.Ref().Name;
+        _regime.Text = poly.Regime.Empty() ? "Neutral" : poly.Regime.Entity().Name;
 
         var tri = poly.TerrainTris.GetAtPoint(offset, data);
         if (tri != null)
         {
             _landform.Text = "Landform: " + tri.Landform.Name;
             _veg.Text = "Vegetation: " + tri.Vegetation.Name;
+        }
+
+        if (data.Society.Settlements.ByPoly[poly] is Settlement s)
+        {
+            _settlementName.Text = "Settlement: " + s.Name;
+            _settlementSize.Text = "Settlement size: " + s.Size.ToString();
+        }
+        else
+        {
+            _settlementName.Text = "";
+            _settlementSize.Text = "";
         }
     }
     public void Setup(PolyHighlighter highlighter, IClient client)

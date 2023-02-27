@@ -11,11 +11,13 @@ public class PolyTriGenerator
 {
     private Dictionary<MapPolygonBorder, int> _riverBorders;
     private Data _data;
-    public void BuildTris(GenWriteKey key)
+    private IDDispenser _id;
+    public void BuildTris(GenWriteKey key, IDDispenser id)
     {
+        _id = id;
         _data = key.Data;
         _riverBorders = new Dictionary<MapPolygonBorder, int>();
-        var polys = key.Data.Planet.Polygons.Entities;
+        var polys = _data.Planet.Polygons.Entities;
         FindAndSizeRiverSegs(key);
         foreach (var p in polys)
         {
@@ -25,8 +27,8 @@ public class PolyTriGenerator
     
     private void FindAndSizeRiverSegs(GenWriteKey key)
     {
-        var polys = key.Data.Planet.Polygons.Entities;
-        var borders = key.Data.Planet.PolyBorders.Entities;
+        var polys = _data.Planet.Polygons.Entities;
+        var borders = _data.Planet.PolyBorders.Entities;
         
         _riverBorders = borders.Where(b => b.MoistureFlow > River.FlowFloor).ToDictionary(s => s, s => -1);
         
@@ -38,7 +40,7 @@ public class PolyTriGenerator
 
         foreach (var rBorder in _riverBorders.Keys.ToList())
         {
-            var hi = rBorder.HighId.Ref();
+            var hi = rBorder.HighId.Entity();
 
             var flow = rBorder.MoistureFlow;
             if (flow > River.FlowCeil)
@@ -64,16 +66,16 @@ public class PolyTriGenerator
             {
                 width = length / 2f;
             }
-            var p1 = mid - axis * width / 2f;
+            var p1 = (mid - axis * width / 2f);
             var preSegs = p1.GeneratePointsAlong(50f, 10f, true, null, start).GetLineSegments();
 
-            var p2 = mid + axis * width / 2f;
+            var p2 = (mid + axis * width / 2f);
             var postSegs = end.GeneratePointsAlong(50f, 10f, true, null, p2).GetLineSegments();
             var rSeg = new LineSegment(p1, p2);
             var newSegs = preSegs.ToList();
             newSegs.Add(rSeg);
             newSegs.AddRange(postSegs);
-            newSegs = newSegs.OrderEndToStart(_data, rBorder.HighId.Ref());
+            newSegs = newSegs.OrderEndToStart(_data, rBorder.HighId.Entity());
             
             if(newSegs.IsContinuous() == false)
             {
@@ -99,7 +101,7 @@ public class PolyTriGenerator
         {
             DoSeaPoly(poly, key);
         }
-        else if (poly.Neighbors.Refs().Any(n => _riverBorders.ContainsKey(poly.GetBorder(n, key.Data))))
+        else if (poly.Neighbors.Refs().Any(n => _riverBorders.ContainsKey(poly.GetBorder(n, _data))))
         {
             DoRiverPoly(poly, key);
         }
@@ -112,44 +114,53 @@ public class PolyTriGenerator
     private void DoSeaPoly(MapPolygon poly, GenWriteKey key)
     {
         var borderSegsRel = poly.BorderSegments;
-        var lf = key.Data.Models.Landforms;
-        var v = key.Data.Models.Vegetation;
+        var lf = _data.Models.Landforms;
+        var v = _data.Models.Vegetation;
         var points = new List<Vector2> {Vector2.Zero};
         points.AddRange(borderSegsRel.GetPoints());
         
         var tris = DelaunayTriangulator.TriangulatePoints(points)
             .Select(t =>
             {
-                return new PolyTri(t.A, t.B, t.C, LandformManager.Sea, VegetationManager.Barren);
+                return new PolyTri(_id.GetID(), t.A, t.B, t.C, LandformManager.Sea, VegetationManager.Barren);
             })
             .ToList();
-        var polyTerrainTris = PolyTerrainTris.Construct(
+        var polyTerrainTris = PolyTerrainTris.Construct(poly,
             tris.ToList(), 
-            key.Data);
+            _data);
         poly.SetTris(polyTerrainTris, key);
     }
     
     private void DoLandPolyNoRivers(MapPolygon poly, GenWriteKey key)
     {
-        var borderSegsRel = poly.BorderSegments;
-        var lf = key.Data.Models.Landforms;
-        var v = key.Data.Models.Vegetation;
-        var points = borderSegsRel.GenerateInteriorPoints(50f, 10f)
+        var borderSegs = poly.BorderSegments;
+        var lf = _data.Models.Landforms;
+        var v = _data.Models.Vegetation;
+        var points = borderSegs.GenerateInteriorPoints(50f, 10f)
             .ToList();
-        points.AddRange(borderSegsRel.GetPoints());
-        
-        var tris = DelaunayTriangulator.PolyTriangulatePoints(poly, points, _data);
-        var polyTerrainTris = PolyTerrainTris.Construct(
-            tris.ToList(), 
-            key.Data);
+        points.AddRange(borderSegs.GetPoints());
+
+
+        var tris  = DelaunayTriangulator.TriangulatePoints(points)
+            .Select(t =>
+            {
+                var tlf = lf.GetAtPoint(poly, t.GetCentroid(), _data);
+                var tv = v.GetAtPoint(poly, t.GetCentroid(), tlf, _data);
+                return new PolyTri(_id.GetID(), t.A, t.B, t.C, tlf, tv);
+            })
+            .ToList();
+
+        var polyTerrainTris = PolyTerrainTris.Construct(poly,
+            tris, 
+            _data);
         poly.SetTris(polyTerrainTris, key);
     }
     private void DoRiverPoly(MapPolygon poly, GenWriteKey key)
     {
-        var lf = key.Data.Models.Landforms;
-        var v = key.Data.Models.Vegetation;
+        var lf = _data.Models.Landforms;
+        var v = _data.Models.Vegetation;
         var tris = new List<PolyTri>();
-        var borders = poly.Neighbors.Refs().Select(n => poly.GetBorder(n, key.Data));
+        var borders = poly.Neighbors.Refs().Select(n => poly.GetBorder(n, _data));
         var rBorders = borders
             .Where(b => _riverBorders.ContainsKey(b)).ToList();
         var riverSegs = rBorders
@@ -164,9 +175,9 @@ public class PolyTriGenerator
         {
             DoRiverJunction(poly, rBorders, tris, key);
         }
-        var polyTerrainTris = PolyTerrainTris.Construct(
+        var polyTerrainTris = PolyTerrainTris.Construct(poly,
             tris.ToList(), 
-            key.Data);
+            _data);
         poly.SetTris(polyTerrainTris, key);
     }
 
@@ -198,7 +209,7 @@ public class PolyTriGenerator
         }
         if (between.Contains(rSeg)) throw new Exception();
 
-        var rTri = new PolyTri(rSeg.From, rSeg.To, Vector2.Zero, LandformManager.River, VegetationManager.Barren);
+        var rTri = new PolyTri(_id.GetID(), rSeg.From, rSeg.To, Vector2.Zero, LandformManager.River, VegetationManager.Barren);
         tris.Add(rTri);
         var outline = GetOutline(poly, Vector2.Zero, between);
         TriangulateArbitrary(poly, outline, tris, key);
@@ -221,8 +232,8 @@ public class PolyTriGenerator
         var firstRSegIndex = borderSegs.IndexOf(firstRSeg);
 
         var junctionPoints = new List<Vector2>();
-        var lf = key.Data.Models.Landforms;
-        var veg = key.Data.Models.Vegetation;
+        var lf = _data.Models.Landforms;
+        var veg = _data.Models.Vegetation;
         
         for (var i = 0; i < riverSegs.Count; i++)
         {
@@ -231,28 +242,26 @@ public class PolyTriGenerator
             var lAvg = (rSeg.Length() + nextRSeg.Length()) / 2f;
 
             var angle = rSeg.To.GetClockwiseAngleTo(nextRSeg.From) / 2f;
-            var nextIntersect = rSeg.To.Rotated(angle).Normalized() * lAvg;
-            // var nextBetween = nextRSeg.Mid().Rotated(nextRSeg.Mid().GetClockwiseAngleTo(rSeg.Mid()) / 2f);
-            // var nextIntersect = 
-            //     -nextBetween.Normalized() * lAvg / 2f;
+            var nextIntersect = (rSeg.To.Rotated(angle).Normalized() * lAvg);
+            
             junctionPoints.Add(nextIntersect);
 
             if (riverSegs.Count == 2)
             {
-                tris.Add(new PolyTri(rSeg.From, rSeg.To, nextIntersect,
+                tris.Add(new PolyTri(_id.GetID(), rSeg.From, rSeg.To, nextIntersect,
                     LandformManager.River, VegetationManager.Barren));
-                tris.Add(new PolyTri(rSeg.From, nextIntersect, -nextIntersect,
+                tris.Add(new PolyTri(_id.GetID(), rSeg.From, nextIntersect, -nextIntersect,
                     LandformManager.River, VegetationManager.Barren));
             }
             else
             {
-                tris.Add(new PolyTri(rSeg.From, rSeg.To, Vector2.Zero,
+                tris.Add(new PolyTri(_id.GetID(), rSeg.From, rSeg.To, Vector2.Zero,
                     LandformManager.River, VegetationManager.Barren));
                 
-                tris.Add(new PolyTri(-nextIntersect, Vector2.Zero, nextRSeg.To, 
+                tris.Add(new PolyTri(_id.GetID(), -nextIntersect, Vector2.Zero, nextRSeg.To, 
                     LandformManager.River, VegetationManager.Barren));
                 
-                tris.Add(new PolyTri(rSeg.From, -nextIntersect, Vector2.Zero,
+                tris.Add(new PolyTri(_id.GetID(), rSeg.From, -nextIntersect, Vector2.Zero,
                     LandformManager.River, VegetationManager.Barren));
             }
         }
@@ -269,28 +278,13 @@ public class PolyTriGenerator
         }
     }
 
-    private void TriangulateArbitrary(MapPolygon poly, List<LineSegment> outline, List<PolyTri> tris, GenWriteKey key)
+    private void TriangulateArbitrary(MapPolygon poly, IReadOnlyList<LineSegment> outline, List<PolyTri> tris, GenWriteKey key)
     {
-        var lf = key.Data.Models.Landforms;
-        var veg = key.Data.Models.Vegetation;
+        var lf = _data.Models.Landforms;
+        var veg = _data.Models.Vegetation;
 
-        var interior = outline.GenerateInteriorPoints(50f, 10f).ToHashSet();
-        tris.AddRange(outline.PolyTriangulate(key.GenData, poly, interior));
-    }
-    private Vector2 GetIntersection(LineSegment from, LineSegment to)
-    {
-        if (to.Mid().Normalized() == -from.Mid().Normalized())
-        {
-            throw new Exception();
-        }
-            
-        var has = Vector2Ext.GetLineIntersection(to.From, to.From - to.Mid(),
-            from.To, from.To - from.Mid(), 
-            out var intersect);
-
-        if (Mathf.IsNaN(intersect.x) || Mathf.IsNaN(intersect.y)) throw new Exception();
-
-        return intersect;
+        var interior = outline.GenerateInteriorPoints(30f, 10f).ToHashSet();
+        tris.AddRange(outline.PolyTriangulate(key.GenData, poly, _id, interior));
     }
 
     private List<LineSegment> GetOutline(MapPolygon poly, Vector2 fanPoint, List<LineSegment> between)

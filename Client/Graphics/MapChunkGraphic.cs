@@ -35,7 +35,7 @@ public class MapChunkGraphic : Node2D
         Regimes = SetupPolygonGraphic(polys, data, 
             p => p.Regime.Empty()  
                 ? Colors.Transparent
-                : p.Regime.Ref().PrimaryColor, 
+                : p.Regime.Entity().PrimaryColor, 
             4);
         
         Roads = new RoadChunkGraphic();

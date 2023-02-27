@@ -14,8 +14,8 @@ public class PeepHomeAuxData : RepoAuxData<Peep>
         repo.RegisterForValueChangeCallback<EntityRef<MapPolygon>>(nameof(Peep.Home),
         n =>
         {
-            RemovePeepFromPoly(n.Entity, n.OldVal.Ref());
-            AddPeepToPoly(n.Entity, n.NewVal.Ref());
+            RemovePeepFromPoly(n.Entity, n.OldVal.Entity());
+            AddPeepToPoly(n.Entity, n.NewVal.Entity());
         });
     }
 
@@ -26,11 +26,11 @@ public class PeepHomeAuxData : RepoAuxData<Peep>
     }
     public override void HandleAdded(Peep added)
     {
-        AddPeepToPoly(added, added.Home.Ref());
+        AddPeepToPoly(added, added.Home.Entity());
     }
     public override void HandleRemoved(Peep removing)
     {
-        RemovePeepFromPoly(removing, removing.Home.Ref());
+        RemovePeepFromPoly(removing, removing.Home.Entity());
     }
     private void AddPeepToPoly(Peep added, MapPolygon poly)
     {

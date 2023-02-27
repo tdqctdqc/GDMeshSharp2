@@ -10,13 +10,14 @@ public class PolyTerrainTris
     public PolyTri[] Tris;
     private static int _numSections = 4; //could be by how many tris
     private static float _sectionAngle => Mathf.Pi * 2f / _numSections;
-    
-    
-    
     public int[] SectionTriStartIndices;
     public int[] SectionTriCounts;
+    //can do with bitmask? max 200 tris in poly, so 40000 possible arrangements
+    public Dictionary<PolyTri, HashSet<PolyTri>> NeighborsInside { get; private set; }
+    public Dictionary<PolyTri, Tuple<PolyTri, MapPolygon>> FirstNeighborOutside { get; private set; }
+    public Dictionary<PolyTri, Tuple<PolyTri, MapPolygon>> SecondNeighborOutside { get; private set; }
     
-    public static PolyTerrainTris Construct(List<PolyTri> tris, 
+    public static PolyTerrainTris Construct(MapPolygon poly, List<PolyTri> tris, 
         Data data)
     {
         var vertexIndices = new Dictionary<Vector2, int>();
@@ -53,20 +54,39 @@ public class PolyTerrainTris
             orderedTris.AddRange(exclusive);
         }
 
-        return new PolyTerrainTris(orderedTris.ToArray(), sectionTriStartIndices, sectionTriCounts);
+        return new PolyTerrainTris(poly, orderedTris.ToArray(), sectionTriStartIndices, sectionTriCounts);
     }
 
-    
+    private static int _maxTris;
     [SerializationConstructor] 
-    private PolyTerrainTris(PolyTri[] tris, int[] sectionTriStartIndices, 
+    private PolyTerrainTris(MapPolygon poly, PolyTri[] tris, int[] sectionTriStartIndices, 
         int[] sectionTriCounts)
     {
         Tris = tris;
-
+        if (tris.Distinct().Count() > _maxTris)
+        {
+            _maxTris = tris.Distinct().Count();
+            GD.Print($"most poly tris " + _maxTris + " at " + poly.Id);
+        }
         SectionTriStartIndices = sectionTriStartIndices;
         SectionTriCounts = sectionTriCounts;
+        var sw = new Stopwatch();
+        sw.Start();
+        ConstructNetwork();
+        sw.Stop();
     }
 
+    private void ConstructNetwork()
+    {
+        NeighborsInside = new Dictionary<PolyTri, HashSet<PolyTri>>();
+        var hasEvenNumberNs = new HashSet<PolyTri>();
+        foreach (var tri in Tris)
+        {
+            var ns = Tris
+                .Where(n => n.AnyPoint(tri.HasPoint) && tri != n);
+            NeighborsInside.AddOrUpdateRange(tri, ns.ToArray());
+        }
+    }
     public PolyTri GetTriAndSection(Vector2 point, out int section)
     {
         return FindByAngle(point, out section);

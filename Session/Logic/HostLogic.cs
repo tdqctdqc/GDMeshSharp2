@@ -46,14 +46,14 @@ public class HostLogic : ILogic
 
     public async void DoFrame()
     {
-        var procs = await Task.Run(_frames[_frameIter].Calculate);
+        var procs = await Task.Run(() => _frames[_frameIter].Calculate(_data));
         _frameIter = (_frameIter + 1) % _frames.Length;
 
         for (var i = 0; i < procs.Count; i++)
         {
             procs[i].Enact(_pKey);
         }
-
+        
         _calculating = false;
     }
 }

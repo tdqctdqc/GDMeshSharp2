@@ -10,15 +10,16 @@ public class Regime : Entity
     public EntityRef<MapPolygon> Capital { get; private set; }
     public Color PrimaryColor { get; private set; }
     public Color SecondaryColor { get; private set; }
-
+    public Wallet<Resource> Resources { get; private set; }
     public string Name { get; private set; }
-    // public RegimeTerritory Territory { get; private set; }
     public EntityRefCollection<MapPolygon> Polygons { get; private set; }
 
 
     [SerializationConstructor] private Regime(int id, string name, Color primaryColor, Color secondaryColor, 
-        EntityRefCollection<MapPolygon> polygons, EntityRef<MapPolygon> capital) : base(id)
+        EntityRefCollection<MapPolygon> polygons, EntityRef<MapPolygon> capital,
+        Wallet<Resource> resources) : base(id)
     {
+        Resources = resources;
         PrimaryColor = primaryColor;
         SecondaryColor = secondaryColor;
         Polygons = polygons;
@@ -31,7 +32,8 @@ public class Regime : Entity
     {
         var polygons = new EntityRefCollection<MapPolygon>(new HashSet<int>());
         polygons.AddRef(seed, key.Data);
-        var r = new Regime(id, name, primaryColor, secondaryColor, polygons, new EntityRef<MapPolygon>(seed.Id));
+        var r = new Regime(id, name, primaryColor, secondaryColor, polygons, new EntityRef<MapPolygon>(seed.Id),
+            new Wallet<Resource>(new Dictionary<Resource, float>()));
         key.Create(r);
         
         r.Polygons.AddRef(seed, key.Data);

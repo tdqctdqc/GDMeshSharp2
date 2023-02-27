@@ -7,6 +7,33 @@ using GeometRi;
 
 public static class TriangleExt 
 {
+    public static List<Vector2> GetPoissonPointsInside(this Triangle t, float radius)
+    {
+        var dim = t.GetDimensions();
+        var shift = t.GetCentroid() - dim / 2f;
+        return PointsGenerator.GeneratePoissonPoints(radius, dim, 10)
+            .Where(p => t.ContainsPoint(p + shift))
+            .Select(p => p + shift)
+            .ToList();
+    }
+
+    public static bool SharesEdge(this Triangle t, Triangle r)
+    {
+        int pointsShared = 0;
+        t.ForEachPoint(v =>
+        {
+            if (r.HasPoint(v)) pointsShared++;
+        });
+        if (pointsShared > 1) return true;
+        return t.AnyPointPairs((p, q) =>
+        {
+            return r.AnyPointPairs((v, w) =>
+            {
+                return Vector2Ext.PointIsInLineSegment(p, v, w)
+                    && Vector2Ext.PointIsInLineSegment(q, v, w);
+            });
+        });
+    }
     public static List<LineSegment> GetSegments(this Triangle t)
     {
         var res = new List<LineSegment>();

@@ -43,7 +43,11 @@ public static class MapPolygonExt
 
     public static int GetNumPeeps(this MapPolygon poly, Data data)
     {
-        return data.Society.Peeps.Homes.GetNumPeepsInPoly(poly);
+        if (data.Planet.Polygons.PeepsInPoly[poly] is HashSet<Peep> h)
+        {
+            return h.Count;
+        }
+        return 0;
     }
 
     public static float GetArea(this MapPolygon poly, Data data)
