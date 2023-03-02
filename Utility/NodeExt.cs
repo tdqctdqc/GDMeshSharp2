@@ -31,4 +31,12 @@ public static class NodeExt
         n.Visible = n.Visible == false;
         return n.Visible;
     }
+
+    public static void ClearChildren(this Node n)
+    {
+        while (n.GetChildCount() > 0)
+        {
+            n.RemoveChild(n.GetChild(0));
+        }
+    }
 }

@@ -8,4 +8,5 @@ public interface IRepo
     IReadOnlyCollection<Entity> Entities { get; }
     void AddEntity(Entity e, StrongWriteKey key);
     void RemoveEntity(Entity e, StrongWriteKey key);
+    Type EntityType { get; }
 }

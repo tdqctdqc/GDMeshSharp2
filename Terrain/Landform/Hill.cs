@@ -4,7 +4,7 @@
     public class Hill : Landform, IDecaledTerrain
     {
         public Hill() : 
-            base("Hill", .4f, .3f, Colors.Brown)
+            base("Hill", .4f, .3f, Colors.Brown, .2f)
         {
         }
 
@@ -13,8 +13,6 @@
             var color = pt.Vegetation == VegetationManager.Barren
                 ? Colors.Gray
                 : pt.Vegetation.Color.Darkened(.4f);
-            mb.AddTri(pt.Transpose(offset), pt.Vegetation.Color.Darkened(.2f));
-            
             
             var size = 20f;
             offset += Vector2.Down * size / 2f;

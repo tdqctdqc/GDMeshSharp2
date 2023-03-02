@@ -15,7 +15,7 @@ public class Vegetation : TerrainAspect
 
     public bool Ground { get; private set; }
     public Vegetation(HashSet<Landform> allowedLandforms, float minMoisture, float fertilityMod, 
-        Color color, string name, bool ground, ITriBuilder triBuilder)
+        Color color, string name, bool ground)
     {
         Ground = ground;
         FertilityMod = fertilityMod;

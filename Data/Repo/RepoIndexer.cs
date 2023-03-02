@@ -22,11 +22,13 @@ public class RepoIndexer<TEntity, TKey> : RepoAuxData<TEntity>
     }
     public override void HandleAdded(TEntity added)
     {
-        _dic[_get(added)] = added;
+        var val = _get(added);
+        if(val != null) _dic[val] = added;
     }
 
     public override void HandleRemoved(TEntity removing)
     {
-        _dic.Remove(_get(removing));
+        var val = _get(removing);
+        if (val != null) _dic.Remove(val);
     }
 }

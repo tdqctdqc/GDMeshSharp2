@@ -11,7 +11,8 @@ public class Repository<T> : IRepo where T : Entity
     IReadOnlyCollection<Entity> IRepo.Entities => _entities;
     public IReadOnlyCollection<T> Entities => _entities;
     private HashSet<T> _entities;
-    private ClientWriteKey _weakKey;
+    protected ClientWriteKey _weakKey;
+    Type IRepo.EntityType => typeof(T);
     
     public Repository(Domain domain, Data data)
     {

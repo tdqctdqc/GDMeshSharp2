@@ -9,6 +9,7 @@ public class SocietyDomain : Domain
     public RoadRepository Roads { get; private set; }
     public RegimeRepository Regimes { get; private set; }
     public PeepRepository Peeps { get; private set; }
+    public RegimeRelationRepo Relations { get; private set; }
     public SocietyDomain(Data data) : base(data)
     {
         Settlements = new SettlementRepository(this, data);
@@ -22,5 +23,8 @@ public class SocietyDomain : Domain
 
         Peeps = new PeepRepository(this, data);
         AddRepo(Peeps);
+
+        Relations = new RegimeRelationRepo(this, data);
+        AddRepo(Relations);
     }
 }

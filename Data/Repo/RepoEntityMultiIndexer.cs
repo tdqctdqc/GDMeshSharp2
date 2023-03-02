@@ -33,7 +33,8 @@ public class RepoEntityMultiIndexer<TSingle, TMult> : RepoAuxData<TMult>
     
     public override void HandleAdded(TMult added)
     {
-        _dic.AddOrUpdate(_getSingle(added), added.Id);
+        var single = _getSingle(added);
+        if(single != null) _dic.AddOrUpdate(single, added.Id);
     }
 
     private void HandleTSingleRemoved(TSingle s)
@@ -42,6 +43,7 @@ public class RepoEntityMultiIndexer<TSingle, TMult> : RepoAuxData<TMult>
     }
     public override void HandleRemoved(TMult removing)
     {
-        _dic[_getSingle(removing)].Remove(removing.Id);
+        var single = _getSingle(removing);
+        if(single != null) _dic[single].Remove(removing.Id);
     }
 }

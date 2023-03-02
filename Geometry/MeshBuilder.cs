@@ -137,6 +137,12 @@ public class MeshBuilder
             AddTri(toOut, to, from, outColor);
         });
     }
+
+    public void AddBorder(List<Vector2> points)
+    {
+        
+    }
+    
     public void AddLines(List<Vector2> froms,
         List<Vector2> tos, float thickness, List<Color> colors)
     {

@@ -7,8 +7,7 @@ public class Swamp : Vegetation
 {
     public Swamp() 
         : base(new HashSet<Landform>{LandformManager.Plain}, .7f, .25f, Colors.DarkOliveGreen, "Swamp",
-            true,
-            new BlobTriBuilder())
+            true)
     {
     }
 

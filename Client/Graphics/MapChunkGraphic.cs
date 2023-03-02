@@ -7,69 +7,86 @@ public class MapChunkGraphic : Node2D
 {
     [Toggleable] public PolygonChunkGraphic Regimes { get; private set; }
     [Toggleable] public PolygonChunkGraphic Polys { get; private set; }
-    [Toggleable] public PolygonChunkGraphic PolyWheelTris { get; private set; }
     [Toggleable] public TerrainTriChunkGraphic Landform { get; private set; }
     [Toggleable] public TerrainTriChunkGraphic Tris { get; private set; }
     [Toggleable] public TerrainTriChunkGraphic Vegetation { get; private set; }
     [Toggleable] public ChunkDecalGraphic Decals { get; private set; }
     [Toggleable] public RoadChunkGraphic Roads { get; private set; }
+    [Toggleable] public BordersChunkGraphic Borders { get; private set; }
 
     public void Setup(MapChunk chunk, Data data)
     {
         var first = chunk.Polys.First();
+        Position = first.Center;
+
         var polys = chunk.Polys.ToList();
         Polys = SetupPolygonGraphic(polys, data, 
-            p => p.IsLand() ? Colors.SaddleBrown : Colors.Blue, 
-            0
+            p => p.IsLand() ? Colors.SaddleBrown : Colors.Blue
         );
-        Landform = SetupTerrainTriGraphic(polys, data, t => t.Landform.Color, 1);
+        Polys.Visible = false;
+        
+        Landform = SetupTerrainTriGraphic(polys, data, t => t.Landform.Color);
 
-        Tris = SetupTerrainTriGraphic(polys, data, t => ColorsExt.GetRandomColor(), 5);
+        Tris = SetupTerrainTriGraphic(polys, data, t => ColorsExt.GetRandomColor());
+        Tris.Visible = false;
 
         Vegetation = new TerrainTriChunkGraphic();
-        Vegetation.Setup(polys, data, pt => pt.Vegetation.Color);
+        Vegetation.Setup(polys, data, pt => pt.Vegetation.Color.Darkened(pt.Landform.DarkenFactor));
         AddChild(Vegetation);
-        Vegetation.ZAsRelative = false;
-        Vegetation.ZIndex = 2;
 
         Regimes = SetupPolygonGraphic(polys, data, 
             p => p.Regime.Empty()  
                 ? Colors.Transparent
-                : p.Regime.Entity().PrimaryColor, 
-            4);
+                : p.Regime.Entity().PrimaryColor
+            );
         
         Roads = new RoadChunkGraphic();
         Roads.Setup(polys, data);
         AddChild(Roads);
         
-        Position = first.Center;
-        PolyWheelTris = SetupPolygonWheelGraphic(polys, data, i => Colors.Orange.GetPeriodicShade(i), 9);
-        
-        
-        
-        Roads.ZAsRelative = false;
-        Roads.ZIndex = 3;
-
         Decals = new ChunkDecalGraphic();
         Decals.Setup(chunk, first, data);
         AddChild(Decals);
-        Decals.ZAsRelative = false;
-        Decals.ZIndex = 12;
+
+        Borders = new BordersChunkGraphic();
+        Borders.Setup(
+            new List<List<LineSegment>>
+            {
+                
+            },
+            new List<float>{},
+            new List<Color>{}
+        );
+        Order(
+            Tris, 
+            Polys,
+            Landform,
+            Vegetation,
+            Regimes,
+            Decals,
+            Roads
+        );
     }
 
+    private void Order(params Node2D[] nodes)
+    {
+        for (var i = 0; i < nodes.Length; i++)
+        {
+            nodes[i].ZIndex = i;
+        }
+    }
     private TerrainTriChunkGraphic SetupTerrainTriGraphic(List<MapPolygon> polys, Data data, 
-        Func<PolyTri, Color> getColor, int z)
+        Func<PolyTri, Color> getColor)
     {
         var t = new TerrainTriChunkGraphic();
         t.Setup(polys, data, getColor);
         AddChild(t);
         t.ZAsRelative = false;
-        t.ZIndex = z;
         return t;
     }
 
     private PolygonChunkGraphic SetupPolygonGraphic(List<MapPolygon> polys, Data data,
-        Func<MapPolygon, Color> getColor, int z)
+        Func<MapPolygon, Color> getColor)
     {
         var g = new PolygonChunkGraphic();
         g.Setup
@@ -78,12 +95,10 @@ public class MapChunkGraphic : Node2D
             false
         );
         AddChild(g);
-        g.ZAsRelative = false;
-        g.ZIndex = z;
         return g;
     }
     private PolygonChunkGraphic SetupPolygonWheelGraphic(List<MapPolygon> polys, Data data,
-        Func<int, Color> getColor, int z)
+        Func<int, Color> getColor)
     {
         var g = new PolygonChunkGraphic();
         g.SetupWheel
@@ -92,8 +107,6 @@ public class MapChunkGraphic : Node2D
             false
         );
         AddChild(g);
-        g.ZAsRelative = false;
-        g.ZIndex = z;
         return g;
     }
 }

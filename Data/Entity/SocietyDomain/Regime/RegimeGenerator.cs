@@ -42,7 +42,7 @@ public class RegimeGenerator
         {
             var prim = ColorsExt.GetRandomColor();
             var sec = prim.Inverted();
-            var regime = Regime.Create(_id.GetID(), NameGenerator.GetName(), prim, sec, seeds[i], _key);
+            var regime = Regime.Create(_id, NameGenerator.GetName(), prim, sec, seeds[i], _key);
             var wand = new RegimeWanderer(regime, seeds[i], picker);
             seeds[i].SetRegime(regime, _key);
         }
@@ -70,7 +70,7 @@ public class RegimeGenerator
             if (union.Count == 0) continue;
             var prim = ColorsExt.GetRandomColor();
             var sec = prim.Inverted();
-            var regime = Regime.Create(_id.GetID(), NameGenerator.GetName(), prim, sec, union[0], _key);
+            var regime = Regime.Create(_id, NameGenerator.GetName(), prim, sec, union[0], _key);
             for (var i = 1; i < union.Count; i++)
             {
                 var p = union[i];

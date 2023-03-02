@@ -5,16 +5,13 @@ using Godot;
 public class Forest : Vegetation, IDecaledTerrain
 {
     public Forest() : base(new HashSet<Landform>{LandformManager.Hill, LandformManager.Plain}, 
-        .5f, .25f, Colors.Limegreen, "Forest", false, new BlobTriBuilder())
+        .5f, .25f, Colors.Limegreen, "Forest", false)
     {
         
     }
 
     public void GetDecal(MeshBuilder mb, PolyTri pt, Vector2 offset)
     {
-        var areaPer = 100f;
-        var num = Mathf.FloorToInt(pt.GetArea() / areaPer);
-        if (num < 1) return;
         var ps = pt.GetPoissonPointsInside(5f);
         var size = 3f;
         offset += Vector2.Down * size;
