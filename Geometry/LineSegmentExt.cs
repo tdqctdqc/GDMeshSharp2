@@ -226,10 +226,6 @@ public static class LineSegmentExt
             points.AddRange(interiorPoints.Select(p => p.GetPoly2TriTriPoint()));
             hash.AddRange(interiorPoints);
         }
-        points.ForEach(p =>
-        {
-            if (p == null) throw new Exception();
-        });
         var con = new ConstrainedPointSet(points, constraints);
         Poly2Tri.P2T.Triangulate(con);
 

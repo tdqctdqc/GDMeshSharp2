@@ -70,9 +70,9 @@ public class Serializer
         }
     }
 
-    public void TestSerialization(Data data, HostWriteKey key)
+    public void TestSerialization(HostWriteKey key)
     {
-        foreach (var keyValuePair in data.Domains)
+        foreach (var keyValuePair in key.Data.Domains)
         {
             foreach (var valueRepo in keyValuePair.Value.Repos)
             {
@@ -88,7 +88,7 @@ public class Serializer
     
     private void TestEntitySerialization(Entity e, HostWriteKey key)
     {
-        // GD.Print("testing serialization for " + e.GetType().Name);
+        GD.Print("testing serialization for " + e.GetType().Name);
         var eType = e.GetType();
         var props = e.GetType().GetProperties();
         foreach (var p in props)
@@ -96,14 +96,10 @@ public class Serializer
             TestProperty(p, e);
         }
         
-        
-        // var constructors = e.GetType().GetConstructors();
-        // if (constructors.Any(c => IsGoodConstructor(c, e.GetType())) == false) throw new Exception();
-        //
         var eBytes = Game.I.Serializer.MP.Serialize(e, eType);
         var e2 = (Entity)Game.I.Serializer.MP.Deserialize(eBytes, eType);
         
-        var u = EntityCreationUpdate.GetForTest(e, key);
+        var u = EntityCreationUpdate.Create(e, key);
         var uBytes = Game.I.Serializer.MP.Serialize<EntityCreationUpdate>(u);
         var u2 = Game.I.Serializer.MP.Deserialize<EntityCreationUpdate>(uBytes);
         for (var j = 0; j < u.EntityBytes.Length; j++)
@@ -145,7 +141,13 @@ public class Serializer
         GD.Print("\ttesting arg " + pType + " " + prop.Name);
         var get = prop.GetGetMethod();
         var arg = get.Invoke(e, null);
-        if (arg.GetType() != pType) throw new Exception();
+        if (arg == null) return;
+        if (arg.GetType() != pType)
+        {
+            GD.Print(arg.GetType());
+            GD.Print(pType);
+            throw new Exception();
+        }
         var argBytes = MP.Serialize(arg, pType);
         var arg2 = MP.Deserialize(argBytes, pType);
         
@@ -200,9 +202,16 @@ public class Serializer
             
         var get = prop.GetGetMethod();
         var pType = prop.PropertyType;
+        
         var arg = get.Invoke(e1, null);
+        if (arg == null) return;
+        
         var arg2 = get.Invoke(e2, null);
+        if (arg2 == null) return;
+
         var arg3 = get.Invoke(e3, null);
+        if (arg3 == null) return;
+
         var argBytes = MP.Serialize(arg, pType);
         var arg4 = MP.Deserialize(argBytes, pType);
         

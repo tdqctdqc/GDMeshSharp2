@@ -18,10 +18,16 @@ margin_right = 112.0
 margin_bottom = 40.0
 text = "Entity Overview"
 
-[node name="HostOrClient" type="Label" parent="HBoxContainer"]
+[node name="TestSerialization" type="Button" parent="HBoxContainer"]
 margin_left = 116.0
+margin_right = 237.0
+margin_bottom = 40.0
+text = "Test Serialization"
+
+[node name="HostOrClient" type="Label" parent="HBoxContainer"]
+margin_left = 241.0
 margin_top = 13.0
-margin_right = 207.0
+margin_right = 332.0
 margin_bottom = 27.0
 text = "Host Or Client"
 

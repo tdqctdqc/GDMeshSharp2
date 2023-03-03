@@ -9,6 +9,7 @@ public class GameSession : Node, ISession
     public Data Data { get; private set; }
     public IClient Client { get; private set; }
     private ILogic _logic;
+    private IServer _server;
     public UserCredential UserCredential { get; private set; }
     public override void _Process(float delta)
     {
@@ -20,6 +21,7 @@ public class GameSession : Node, ISession
     {
         SetCredential(userCredential);
         var hServer = new HostServer();
+        _server = hServer;
         var logic = new HostLogic();
         _logic = logic;
         data.ClearAuxData();
@@ -39,6 +41,7 @@ public class GameSession : Node, ISession
         var logic = new RemoteLogic(Data);
         _logic = logic;
         var server = new RemoteServer();
+        _server = server;
         Data.Notices.FinishedStateSync += () => StartClient(server);
         server.Setup(this, logic, Data);
         StartServer(server);
@@ -63,12 +66,17 @@ public class GameSession : Node, ISession
     {
         var client = new GameClient();
         Client = client;
-        client.Setup(Data, server);
+        client.Setup(this, server);
         AddChild((Node)Client);
     }
     public override void _UnhandledInput(InputEvent e)
     {
         var delta = GetProcessDeltaTime();
         Client?.HandleInput(e, delta);
+    }
+
+    public void TestSerialization()
+    {
+        if(_server is HostServer h) Game.I.Serializer.TestSerialization(new HostWriteKey(h, Data));
     }
 }

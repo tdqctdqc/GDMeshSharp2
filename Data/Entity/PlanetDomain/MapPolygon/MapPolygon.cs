@@ -10,7 +10,7 @@ public partial class MapPolygon : Entity
     public Vector2 Center { get; protected set; }
     
     //todo check this works w serialization, or put in local cache
-    public IReadOnlyList<LineSegment> BorderSegments { get; private set; }
+    public List<LineSegment> BorderSegments { get; private set; }
     public EntityRefCollection<MapPolygon> Neighbors { get; protected set; }
     public Color Color { get; protected set; }
     public float Altitude { get; private set; }
@@ -57,7 +57,7 @@ public partial class MapPolygon : Entity
             0f,
             0f,
             new EntityRef<Regime>(-1),
-            null,
+            null, 
             new List<LineSegment>()
         );
         key.Create(p);

@@ -1,6 +1,7 @@
 
 using System;
 using System.Collections.Generic;
+using Godot;
 
 public class MessageManager
 {
@@ -41,7 +42,14 @@ public class MessageManager
         var wrapper = typeManager.WrapAsMessage(t, _markers[typeof(T)]);
         var bytes = Game.I.Serializer.MP.Serialize(wrapper);
         var wrapper2 = Game.I.Serializer.MP.Deserialize<MessageWrapper>(bytes);
-        if (bytes.Length > short.MaxValue - 1) throw new Exception($"Message size of {bytes.Length} is too big");
+        if (bytes.Length > short.MaxValue - 1)
+        {
+            if (t is EntityCreationUpdate u)
+            {
+                GD.Print(u.EntityTypeName);
+            }
+            throw new Exception($"Message size of {bytes.Length} for {t.GetType()} is too big");
+        }
         return bytes;
     }
     private void AddType<T>(Action<T> handler)

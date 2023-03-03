@@ -5,31 +5,25 @@ using MessagePack;
 
 public class Wallet<T>
 {
-    public IReadOnlyDictionary<T, float> Contents => _contents;
-    private Dictionary<T, float> _contents;
+    public Dictionary<T, float> Contents { get; private set; }
 
     [SerializationConstructor] public Wallet(Dictionary<T, float> contents)
     {
-        _contents = contents;
-    }
-
-    public Wallet()
-    {
-        _contents = new Dictionary<T, float>();
+        Contents = contents;
     }
 
     public void Add(T t, float amount)
     {
         if (amount < 0f) throw new Exception("Trying to add negative amount to wallet");
-        if(_contents.ContainsKey(t) == false) _contents.Add(t, 0f);
-        _contents[t] += amount;
+        if(Contents.ContainsKey(t) == false) Contents.Add(t, 0f);
+        Contents[t] += amount;
     }
     public void Remove(T t, float amount)
     {
         if (amount < 0f) throw new Exception("Trying to remove negative amount from wallet");
-        if(_contents.ContainsKey(t) == false) throw new Exception("Trying to remove whats not in wallet");
-        if(_contents[t] < amount) throw new Exception("Trying to remove more than in wallet");
-        _contents[t] -= amount;
+        if(Contents.ContainsKey(t) == false) throw new Exception("Trying to remove whats not in wallet");
+        if(Contents[t] < amount) throw new Exception("Trying to remove more than in wallet");
+        Contents[t] -= amount;
     }
 
     public void Transfer<R>(R t, float amount, Wallet<R> destination) where R : T

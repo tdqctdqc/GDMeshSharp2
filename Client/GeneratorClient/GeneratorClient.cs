@@ -35,6 +35,7 @@ public class GeneratorClient : Node, IClient
         
         _generate = ButtonToken.Get(this, "Generate", () => PressedGenerate());
         _done = ButtonToken.Get(this, "Done", GoToGameSession);
+        
     }
 
     public void Setup(GeneratorSession session)

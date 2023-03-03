@@ -5,6 +5,7 @@ public class GameClient : Node, IClient
 {
     private EntityOverview _entityOverview;
     public GameUi Ui { get; private set; }
+    public GameSession Session { get; private set; }
     private IServer _server;
     public CameraController Cam { get; private set; }
     public GameGraphics Graphics { get; private set; }
@@ -19,19 +20,20 @@ public class GameClient : Node, IClient
         if (GetParent() == null) return;
         Graphics?.Process(delta, Data);
     }
-    public void Setup(Data data, IServer server)
+    public void Setup(GameSession session, IServer server)
     {
-        Data = data;
+        Session = session;
+        Data = Session.Data;
         //todo let just transfer graphics from gen
         Cam = new CameraController();
         AddChild(Cam);
         Cam.Current = true;
         
-        BuildGraphics(data);
-        BuildUi(data, server);
+        BuildGraphics(Session.Data);
+        BuildUi(Session.Data, server);
         if (server is RemoteServer r)
         {
-            r.ReceivedStateTransfer += () => Graphics.Setup(this, data);
+            r.ReceivedStateTransfer += () => Graphics.Setup(this, Session.Data);
         }
     }
 
@@ -45,7 +47,7 @@ public class GameClient : Node, IClient
     private void BuildUi(Data data, IServer server)
     {
         Ui = SceneManager.Instance<GameUi>();
-        Ui.Setup(server is HostServer, data, Graphics, Cam);
+        Ui.Setup(server is HostServer, data, Graphics, Cam, this);
         _server = server;
         _entityOverview = EntityOverview.Get(data);
         AddChild(_entityOverview);

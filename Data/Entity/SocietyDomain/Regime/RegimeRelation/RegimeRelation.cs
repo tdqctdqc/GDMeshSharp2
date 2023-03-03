@@ -13,15 +13,15 @@ public class RegimeRelation : Entity
     public bool OpenBorders { get; private set; }
     public bool Alliance { get; private set; }
 
-    [SerializationConstructor] private RegimeRelation(int id, EntityRef<Regime> r1, EntityRef<Regime> r2,
+    [SerializationConstructor] private RegimeRelation(int id, EntityRef<Regime> lowId, EntityRef<Regime> highId,
         bool atWar, bool openBorders, bool alliance) : base(id)
     {
         AtWar = atWar;
         OpenBorders = openBorders;
         Alliance = alliance;
-        if (r1.RefId == r2.RefId) throw new Exception();
-        HighId = r1.RefId > r2.RefId ? r1 : r2;
-        LowId = r1.RefId > r2.RefId ? r2 : r1;
+        if (lowId.RefId == highId.RefId) throw new Exception();
+        HighId = lowId.RefId > highId.RefId ? lowId : highId;
+        LowId = lowId.RefId > highId.RefId ? highId : lowId;
     }
 
     public static RegimeRelation Create(int id, EntityRef<Regime> r1, EntityRef<Regime> r2, CreateWriteKey key)

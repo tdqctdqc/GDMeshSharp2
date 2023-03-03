@@ -130,15 +130,6 @@ public static class PointsGenerator
         if(points.Contains(tr) == false) points.Add(tr);
     }
 
-    public static List<Vector2> GetCircleOutlinePoints(Vector2 center, float radius, int resolution)
-    {
-        var points = new List<Vector2>();
-        for (int i = 0; i < 10; i++)
-        {
-            points.Add(radius * Vector2.Up.Rotated(-i * (Mathf.Pi * 2f / 20f)));
-        }
-        return points;
-    }
 
     public static List<Vector2> GenerateInteriorPoints(this IReadOnlyList<LineSegment> border, float cellSize, float margin)
     {
@@ -161,14 +152,9 @@ public static class PointsGenerator
             {
                 mod = mod.Rotated(Game.I.Random.RandfRange(0f, Mathf.Pi * 2f));
                 var p = new Vector2(minX + cellSize * i, minY + cellSize * j) + mod + shift;
-                
-                foreach (var b in border)
-                {
-                    // if(b.DistanceTo(p) > 500f) GD.Print("dist is " + b.DistanceTo(p));
-                }
                 if(border.All(b => 
-                        b.LeftOf(p)
-                        && b.DistanceTo(p) > margin
+                        b.LeftOf(p) && 
+                        b.DistanceTo(p) > margin
                         )
                    )
                 {

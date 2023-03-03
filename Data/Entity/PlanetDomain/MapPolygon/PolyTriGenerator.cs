@@ -134,21 +134,9 @@ public class PolyTriGenerator
     private void DoLandPolyNoRivers(MapPolygon poly, GenWriteKey key)
     {
         var borderSegs = poly.BorderSegments;
-        var lf = _data.Models.Landforms;
-        var v = _data.Models.Vegetation;
         var points = borderSegs.GenerateInteriorPoints(50f, 10f)
-            .ToList();
-        points.AddRange(borderSegs.GetPoints());
-
-
-        var tris  = DelaunayTriangulator.TriangulatePoints(points)
-            .Select(t =>
-            {
-                var tlf = lf.GetAtPoint(poly, t.GetCentroid(), _data);
-                var tv = v.GetAtPoint(poly, t.GetCentroid(), tlf, _data);
-                return new PolyTri(_id.GetID(), t.A, t.B, t.C, tlf, tv);
-            })
-            .ToList();
+            .ToHashSet();
+        var tris = borderSegs.PolyTriangulate(key.GenData, poly, _id, points);
 
         var polyTerrainTris = PolyTerrainTris.Construct(poly,
             tris, 
@@ -185,34 +173,29 @@ public class PolyTriGenerator
         List<PolyTri> tris, GenWriteKey key)
     {
         var borderSegs = poly.BorderSegments;
-        var rSeg = borderSegs.First(s => s.Mid().GetClockwiseAngle() == rBorder.GetRiverSegment(poly).Mid().GetClockwiseAngle());
-        
+        var rSeg = borderSegs
+            .First(s => Mathf.Abs(s.Mid().Angle() 
+                                  - rBorder.GetRiverSegment(poly).Mid().Angle()) < .01f);
         
         var rSegIndex = borderSegs.IndexOf(rSeg);
         var between = Enumerable.Range(1, borderSegs.Count - 1)
             .Select(i => borderSegs.Modulo(rSegIndex + i))
             .ToList();
-        // if (between.IsClockwise() == false)
-        // {
-        //     between.OrderByClockwise(Vector2.Zero, ls => ls.From);
-        // }
-        if (between.Count != borderSegs.Count - 1) throw new Exception();
-        if (between.Contains(rSeg)) throw new Exception();
-        if (between.First().From != rSeg.To || between.Last().To != rSeg.From)
-        {
-            GD.Print($"{between.First().From} between first");
-            GD.Print($"{between.Last().To} between last");
-            GD.Print($"rSeg is {rSeg.ToString()}");
-            throw new SegmentsNotConnectedException(_data, poly, poly.BorderSegments.ToList(), 
-                between, 
-                new List<LineSegment>{rSeg});
-        }
-        if (between.Contains(rSeg)) throw new Exception();
 
         var rTri = new PolyTri(_id.GetID(), rSeg.From, rSeg.To, Vector2.Zero, LandformManager.River, VegetationManager.Barren);
         tris.Add(rTri);
         var outline = GetOutline(poly, Vector2.Zero, between);
-        TriangulateArbitrary(poly, outline, tris, key);
+        var count1 = outline.Count / 2;
+        var count2 = outline.Count - count1;
+        
+        var o1 = outline.GetRange(0, count1);
+        o1.Add(new LineSegment(o1.Last().To, o1.First().From));
+        
+        var o2 = outline.GetRange(count1, count2);
+        o2.Add(new LineSegment(o2.Last().To, o2.First().From));
+
+        TriangulateArbitrary(poly, o1, tris, key);
+        TriangulateArbitrary(poly, o2, tris, key);
     }
 
     private void DoRiverJunction(MapPolygon poly, List<MapPolygonBorder> riverBorders,
@@ -278,11 +261,9 @@ public class PolyTriGenerator
         }
     }
 
-    private void TriangulateArbitrary(MapPolygon poly, IReadOnlyList<LineSegment> outline, List<PolyTri> tris, GenWriteKey key)
+    private void TriangulateArbitrary(MapPolygon poly, IReadOnlyList<LineSegment> outline, 
+        List<PolyTri> tris, GenWriteKey key)
     {
-        var lf = _data.Models.Landforms;
-        var veg = _data.Models.Vegetation;
-
         var interior = outline.GenerateInteriorPoints(30f, 10f).ToHashSet();
         tris.AddRange(outline.PolyTriangulate(key.GenData, poly, _id, interior));
     }
@@ -296,11 +277,11 @@ public class PolyTriGenerator
                 .ToList();
         }
         
-        var start = generateBlade(between.Last().To, fanPoint);
-        var end = generateBlade(fanPoint, between[0].From);
+        var end = generateBlade(between.Last().To, fanPoint);
+        var start = generateBlade(fanPoint, between[0].From);
         var res = new List<LineSegment>();
-        res.AddRange(between);
         res.AddRange(start);
+        res.AddRange(between);
         res.AddRange(end);
 
         if (res.IsCircuit() == false)

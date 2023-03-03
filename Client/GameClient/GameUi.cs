@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class GameUi : CanvasLayer
 {
-    private ButtonToken _entityOverviewBtn, _generate;
+    private ButtonToken _entityOverviewBtn, _generate, _testSerialization;
     private EntityOverview _entityOverview;
     private MapDisplayOptionsUi _mapOptions;
     private Label _hostOrClient, _mousePos;
@@ -28,7 +28,7 @@ public class GameUi : CanvasLayer
         }
     }
 
-    public void Setup(bool host, Data data, GameGraphics graphics, CameraController cam)
+    public void Setup(bool host, Data data, GameGraphics graphics, CameraController cam, GameClient client)
     {
         this.AssignChildNode(ref _hostOrClient,"HostOrClient");
         this.AssignChildNode(ref _mousePos,"MousePos");
@@ -36,6 +36,8 @@ public class GameUi : CanvasLayer
         
         _entityOverviewBtn = ButtonToken.Get(this, "EntityOverviewBtn", () => _entityOverview.Popup_());
         _entityOverview = EntityOverview.Get(data);
+        
+        _testSerialization = ButtonToken.Get(this, "TestSerialization", () => client.Session.TestSerialization());
         
         AddChild(_entityOverview);
 

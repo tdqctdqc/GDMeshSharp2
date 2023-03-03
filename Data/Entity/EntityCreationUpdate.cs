@@ -23,10 +23,6 @@ public sealed partial class EntityCreationUpdate : Update
         EntityBytes = entityBytes;
         EntityTypeName = entityTypeName;
     }
-    public static EntityCreationUpdate GetForTest(Entity e, HostWriteKey key)
-    {
-        return new EntityCreationUpdate(e.GetType().Name, Game.I.Serializer.MP.Serialize(e, e.GetType()));
-    }
     public override void Enact(ServerWriteKey key)
     {
         var eType = Game.I.Serializer.Types[EntityTypeName];

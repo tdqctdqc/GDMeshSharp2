@@ -49,20 +49,25 @@ public class MapChunkGraphic : Node2D
         AddChild(Decals);
 
         Borders = new BordersChunkGraphic();
+        var borderCol = new Color(.75f, .75f, .75f, .5f);
         Borders.Setup(
             new List<List<LineSegment>>
             {
-                
+                chunk.Polys.SelectMany(p => p.BorderSegments.Select(bs => bs.Translate(first.GetOffsetTo(p, data)))).ToList(),
+                chunk.Polys.SelectMany(p => p.TerrainTris.Tris.SelectMany(t => t.Transpose(first.GetOffsetTo(p, data)).GetSegments())).ToList()
             },
-            new List<float>{},
-            new List<Color>{}
+            new List<float>{5f, 1f},
+            new List<Color>{borderCol, borderCol}
         );
+        AddChild(Borders);
+        Borders.Visible = false;
         Order(
             Tris, 
             Polys,
             Landform,
             Vegetation,
             Regimes,
+            Borders,
             Decals,
             Roads
         );
