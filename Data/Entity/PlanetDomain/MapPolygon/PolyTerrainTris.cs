@@ -5,20 +5,19 @@ using System.Linq;
 using Godot;
 using MessagePack;
 
-public class PolyTerrainTris
+public class PolyTerrainTris : Entity
 {
     public PolyTri[] Tris;
     private static int _numSections = 4; //could be by how many tris
     private static float _sectionAngle => Mathf.Pi * 2f / _numSections;
     public int[] SectionTriStartIndices;
     public int[] SectionTriCounts;
-    //can do with bitmask? max 200 tris in poly, so 40000 possible arrangements
+    public EntityRef<MapPolygon> Poly { get; private set; }
     [IgnoreMember] public Dictionary<PolyTri, HashSet<PolyTri>> NeighborsInside { get; private set; }
     [IgnoreMember] public Dictionary<PolyTri, Tuple<PolyTri, MapPolygon>> FirstNeighborOutside { get; private set; }
     [IgnoreMember] public Dictionary<PolyTri, Tuple<PolyTri, MapPolygon>> SecondNeighborOutside { get; private set; }
     
-    public static PolyTerrainTris Construct(MapPolygon poly, List<PolyTri> tris, 
-        Data data)
+    public static PolyTerrainTris Create(MapPolygon poly, List<PolyTri> tris, CreateWriteKey key)
     {
         var vertexIndices = new Dictionary<Vector2, int>();
         var vertices = new List<Vector2>();
@@ -54,11 +53,14 @@ public class PolyTerrainTris
             orderedTris.AddRange(exclusive);
         }
 
-        return new PolyTerrainTris(orderedTris.ToArray(), sectionTriStartIndices, sectionTriCounts);
+        var ts = new PolyTerrainTris(key.IdDispenser.GetID(), new EntityRef<MapPolygon>(poly.Id), orderedTris.ToArray(), sectionTriStartIndices, sectionTriCounts);
+        key.Create(ts);
+        return ts;
     }
-    [SerializationConstructor] private PolyTerrainTris(PolyTri[] tris, int[] sectionTriStartIndices, 
-        int[] sectionTriCounts)
+    [SerializationConstructor] private PolyTerrainTris(int id, EntityRef<MapPolygon> poly, PolyTri[] tris, int[] sectionTriStartIndices, 
+        int[] sectionTriCounts) : base(id)
     {
+        Poly = poly;
         Tris = tris;
         SectionTriStartIndices = sectionTriStartIndices;
         SectionTriCounts = sectionTriCounts;
@@ -110,4 +112,6 @@ public class PolyTerrainTris
         }
         return null;
     }
+
+    public override Type GetDomainType() => typeof(PlanetDomain);
 }

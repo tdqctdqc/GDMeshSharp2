@@ -19,10 +19,10 @@ public class ChunkDecalGraphic : Node2D
         foreach (var poly in chunk.Polys)
         {
             var offset = relTo.GetOffsetTo(poly, data);
-            var pts = poly.TerrainTris.Tris;
+            var pts = poly.GetTerrainTris(data).Tris;
             for (var i = 0; i < pts.Length; i++)
             {
-                var pt = poly.TerrainTris.Tris[i];
+                var pt = poly.GetTerrainTris(data).Tris[i];
                 if (pt.Landform is IDecaledTerrain d2)
                 {
                     iter++;

@@ -14,7 +14,7 @@ public class TerrainTriChunkGraphic : Node2D
         {
             var p = polys[i];
             var offset = first.GetOffsetTo(p, data);
-            var tris = p.TerrainTris.Tris;
+            var tris = p.GetTerrainTris(data).Tris;
             for (var j = 0; j < tris.Length; j++)
             {
                 var t = tris[j];

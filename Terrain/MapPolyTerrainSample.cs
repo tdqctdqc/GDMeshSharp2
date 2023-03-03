@@ -11,8 +11,8 @@ public class MapPolyTerrainSample
     {
         Poly = poly;
         var tris = poly.GetTrisRel(data);
-        var polyTri = poly.TerrainTris;
-        var polyTris = poly.TerrainTris.Tris;
+        var polyTri = poly.GetTerrainTris(data);
+        var polyTris = poly.GetTerrainTris(data).Tris;
         FertilityMod = polyTris.Count() > 0f 
             ? polyTris.Select(i => i.Landform.FertilityMod * i.Vegetation.FertilityMod).Average()
             : 0f;

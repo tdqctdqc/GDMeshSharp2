@@ -27,7 +27,7 @@ public class Regime : Entity
         Capital = capital;
     }
 
-    public static Regime Create(IDDispenser idd, string name, Color primaryColor, Color secondaryColor, 
+    public static Regime Create(IdDispenser idd, string name, Color primaryColor, Color secondaryColor, 
         MapPolygon seed, CreateWriteKey key)
     {
         var polygons = new EntityRefCollection<MapPolygon>(new HashSet<int>());

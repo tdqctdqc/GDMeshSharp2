@@ -37,7 +37,7 @@ public class MapPolyTooltip : Node2D
         if (mouseIn is MapPolygon poly)
         {
             var offset = poly.GetOffsetTo(mousePosMapSpace, data);
-            var tri = poly.TerrainTris.GetAtPoint(offset, data);
+            var tri = poly.GetTerrainTris(data).GetAtPoint(offset, data);
             if (poly != _mouseOverPoly)
             {
                 _mouseOverPoly = poly;
@@ -64,7 +64,7 @@ public class MapPolyTooltip : Node2D
         _numPops.Text = "Num Pops: " + poly.GetNumPeeps(data);
         _regime.Text = poly.Regime.Empty() ? "Neutral" : poly.Regime.Entity().Name;
 
-        var tri = poly.TerrainTris.GetAtPoint(offset, data);
+        var tri = poly.GetTerrainTris(data).GetAtPoint(offset, data);
         if (tri != null)
         {
             _landform.Text = "Landform: " + tri.Landform.Name;

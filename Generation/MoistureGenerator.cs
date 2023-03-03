@@ -7,8 +7,8 @@ public class MoistureGenerator
 {
     public GenData Data { get; private set; }
     private GenWriteKey _key;
-    private IDDispenser _id;
-    public MoistureGenerator(GenData data, IDDispenser id)
+    private IdDispenser _id;
+    public MoistureGenerator(GenData data, IdDispenser id)
     {
         Data = data;
         _id = id;

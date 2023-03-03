@@ -6,12 +6,12 @@ using System.Linq;
 public class GeologyGenerator
 {
     public GenData Data { get; private set; }
-    private IDDispenser _id;
+    private IdDispenser _id;
     private GenWriteKey _key;
     public static readonly float FaultRange = 200f,
         FrictionAltEffect = .1f,
         FrictionRoughnessEffect = 1f;
-    public GeologyGenerator(GenData data, IDDispenser id)
+    public GeologyGenerator(GenData data, IdDispenser id)
     {
         _id = id;
         Data = data;

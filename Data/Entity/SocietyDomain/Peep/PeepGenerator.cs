@@ -6,9 +6,9 @@ using Godot;
 public class PeepGenerator
 {
     public GenData Data { get; private set; }
-    private IDDispenser _id;
+    private IdDispenser _id;
     private GenWriteKey _key;
-    public PeepGenerator(IDDispenser id, GenWriteKey key, GenData data)
+    public PeepGenerator(IdDispenser id, GenWriteKey key, GenData data)
     {
         _id = id;
         _key = key;

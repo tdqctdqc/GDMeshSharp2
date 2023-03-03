@@ -6,9 +6,9 @@ using Godot;
 public class RegimeGenerator
 {
     private GenData _data;
-    private IDDispenser _id;
+    private IdDispenser _id;
     private GenWriteKey _key;
-    public RegimeGenerator(GenData data, IDDispenser id, GenWriteKey key)
+    public RegimeGenerator(GenData data, IdDispenser id, GenWriteKey key)
     {
         _id = id;
         _key = key;

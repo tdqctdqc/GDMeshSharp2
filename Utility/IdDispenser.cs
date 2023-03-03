@@ -2,11 +2,11 @@ using Godot;
 using System;
 using System.Collections.Generic;
 
-public class IDDispenser
+public class IdDispenser
 {
     private int _index = 0;
 
-    public IDDispenser()
+    public IdDispenser()
     {
         
     }

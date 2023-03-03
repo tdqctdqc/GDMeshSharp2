@@ -7,11 +7,11 @@ using DelaunatorSharp;
 public class PolygonGenerator
 {
     private static Vector2 _dimensions;
-    private static IDDispenser _id;
+    private static IdDispenser _id;
     private static Data _data;
     public static MapGenInfo GenerateMapPolygons(List<Vector2> innerPoints, Vector2 dimensions, 
         bool leftRightWrap, float polySize,
-        IDDispenser id,
+        IdDispenser id,
         GenWriteKey key)
     {
         _data = key.Data;

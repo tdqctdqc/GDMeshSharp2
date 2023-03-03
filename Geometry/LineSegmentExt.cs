@@ -187,7 +187,7 @@ public static class LineSegmentExt
         return true;
     }
     public static List<PolyTri> PolyTriangulate(this IReadOnlyList<LineSegment> boundarySegs, GenData data, 
-        MapPolygon poly, IDDispenser id,
+        MapPolygon poly, IdDispenser id,
         HashSet<Vector2> interiorPoints = null)
     {
         return boundarySegs.Triangulate(data, poly,

@@ -18,7 +18,6 @@ public partial class MapPolygon : Entity
     public float Moisture { get; private set; }
     public float SettlementSize { get; private set; }
     public EntityRef<Regime> Regime { get; private set; }
-    public PolyTerrainTris TerrainTris { get; private set; }
     public bool IsLand() => Altitude > .5f;
     public bool IsWater() => IsLand() == false;
     public bool IsCoast() => IsLand() && Neighbors.Refs().Any(n => n.IsWater());
@@ -30,9 +29,8 @@ public partial class MapPolygon : Entity
     [SerializationConstructor] private MapPolygon(int id, Vector2 center, EntityRefCollection<MapPolygon> neighbors, 
         Color color, float altitude, float roughness, 
         float moisture, float settlementSize, EntityRef<Regime> regime,
-        PolyTerrainTris terrainTris, List<LineSegment> borderSegments) : base(id)
+        List<LineSegment> borderSegments) : base(id)
     {
-        TerrainTris = terrainTris;
         Center = center;
         Neighbors = neighbors;
         Color = color;
@@ -57,7 +55,6 @@ public partial class MapPolygon : Entity
             0f,
             0f,
             new EntityRef<Regime>(-1),
-            null, 
             new List<LineSegment>()
         );
         key.Create(p);
@@ -67,13 +64,10 @@ public partial class MapPolygon : Entity
     {
         return Neighbors.Refs().Contains(p);
     }
-
-    public void SetTris(PolyTerrainTris tris, GenWriteKey key)
-    {
-        TerrainTris = tris;
-    }
     public IEnumerable<MapPolygonBorder> GetNeighborBorders(Data data) => Neighbors.Refs()
         .Select(n => GetBorder(n, data));
+
+    public PolyTerrainTris GetTerrainTris(Data data) => data.Planet.TerrainTris.ByPoly[this];
     public void AddNeighbor(MapPolygon poly, MapPolygonBorder border, GenWriteKey key)
     {
         if (Neighbors.Contains(poly)) return;

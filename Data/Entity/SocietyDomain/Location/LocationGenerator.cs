@@ -7,13 +7,13 @@ public class LocationGenerator
 {
     public GenData Data { get; private set; }
     private GenWriteKey _key;
-    private IDDispenser _id;
+    private IdDispenser _id;
     public LocationGenerator(GenData data)
     {
         Data = data;
     }
 
-    public void Generate(GenWriteKey key, IDDispenser id)
+    public void Generate(GenWriteKey key, IdDispenser id)
     {
         _key = key;
         _id = id;
@@ -67,7 +67,7 @@ public class LocationGenerator
                 
                 p.Set(nameof(MapPolygon.SettlementSize), size, _key);
                 _key.Create(Settlement.Create(_id.GetID(), NameGenerator.GetName(), p, size, _key));
-                var availTris = p.TerrainTris.Tris
+                var availTris = p.GetTerrainTris(Data).Tris
                     .Where(t => t.Landform != LandformManager.River
                         && t.Landform != LandformManager.Mountain
                         && t.Landform != LandformManager.Peak)

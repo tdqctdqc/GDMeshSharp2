@@ -7,7 +7,6 @@ using Godot;
 public class WorldGenerator
 {
     public GenData Data { get; private set; }
-    private IDDispenser _id;
     private GenWriteKey _key;
     private Stopwatch _sw;
     private GenerationParameters _genParams;
@@ -16,7 +15,6 @@ public class WorldGenerator
     public WorldGenerator(GenerationParameters genParams)
     {
         _genParams = genParams;
-        _id = new IDDispenser();
         Data = new GenData();
         Data.Setup();
         _key = new GenWriteKey(Data);
@@ -51,7 +49,7 @@ public class WorldGenerator
         var cellSize = 200f;
         var edgePointMargin = new Vector2(cellSize, cellSize);
 
-        var planetInfo = PlanetInfo.Create(_genParams.Dimensions, _id.GetID(), _key);
+        var planetInfo = PlanetInfo.Create(_genParams.Dimensions, _key.IdDispenser.GetID(), _key);
         
         _sw.Start();
 
@@ -64,7 +62,7 @@ public class WorldGenerator
         PolygonGenerator.GenerateMapPolygons
         (
             points, _genParams.Dimensions, true, cellSize,
-            _id,
+            _key.IdDispenser,
             _key
         );
         GenerationFeedback?.Invoke("Polygons", "");
@@ -75,10 +73,10 @@ public class WorldGenerator
         
         
         
-        new GeologyGenerator(Data, _id).GenerateTerrain(_key);
+        new GeologyGenerator(Data, _key.IdDispenser).GenerateTerrain(_key);
         GenerationFeedback?.Invoke("Geology", "");
 
-        new MoistureGenerator(Data, _id).Generate(_key);
+        new MoistureGenerator(Data, _key.IdDispenser).Generate(_key);
         GenerationFeedback?.Invoke("Moisture", "");
         
         
@@ -86,20 +84,20 @@ public class WorldGenerator
         GenerationFeedback?.Invoke("Edge split", "");
         
         
-        new PolyTriGenerator().BuildTris(_key, _id);
+        new PolyTriGenerator().BuildTris(_key, _key.IdDispenser);
         GD.Print("built tris");
         GenerationFeedback?.Invoke("Built tris", "");
         Data.Events.FinalizedPolyShapes?.Invoke();
 
         var locationGenerator = new LocationGenerator(Data);
-        locationGenerator.Generate(_key, _id);
+        locationGenerator.Generate(_key, _key.IdDispenser);
         GenerationFeedback?.Invoke("Locations", "");
 
-        var regimeGen = new RegimeGenerator(Data, _id, _key);
+        var regimeGen = new RegimeGenerator(Data, _key.IdDispenser, _key);
         regimeGen.Generate();
         GenerationFeedback?.Invoke("Regimes", "");
         
-        var peepGen = new PeepGenerator(_id, _key, Data);
+        var peepGen = new PeepGenerator(_key.IdDispenser, _key, Data);
         peepGen.Generate();
         GenerationFeedback?.Invoke("Peeps", "");
         _sw.Stop();

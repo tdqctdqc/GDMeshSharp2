@@ -5,6 +5,7 @@ using System.Linq;
 
 public class Data
 {
+    private IdDispenser _idDispenser;
     public DataNotices Notices { get; private set; }
     public LocalCache Cache { get; private set; }
     public Models Models { get; private set; }
@@ -27,6 +28,7 @@ public class Data
     }
     protected virtual void Init()
     {
+        _idDispenser = new IdDispenser();
         Notices = new DataNotices();
         RefFulfiller = new RefFulfiller(this);
         Models = new Models();
@@ -91,5 +93,10 @@ public class Data
     public T GetEntity<T>(int id) where T : Entity
     {
         return (T) Entities[id];
+    }
+
+    public void GetIdDispenser(CreateWriteKey key)
+    {
+        key.SetIdDispenser(_idDispenser);
     }
 }
