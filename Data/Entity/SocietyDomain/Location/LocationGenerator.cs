@@ -76,8 +76,8 @@ public class LocationGenerator
                 var numUrbanTris = Mathf.Min(availTris.Count(), Mathf.CeilToInt(size / 2f));
                 for (var j = 0; j < numUrbanTris; j++)
                 {
-                    availTris.ElementAt(j).Landform = LandformManager.Urban;
-                    availTris.ElementAt(j).Vegetation = VegetationManager.Barren;
+                    availTris.ElementAt(j).SetLandform(LandformManager.Urban, _key);
+                    availTris.ElementAt(j).SetVegetation(VegetationManager.Barren, _key);
                 }
             }
         });

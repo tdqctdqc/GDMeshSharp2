@@ -13,10 +13,6 @@ public class PolyTerrainTris : Entity
     public int[] SectionTriStartIndices;
     public int[] SectionTriCounts;
     public EntityRef<MapPolygon> Poly { get; private set; }
-    [IgnoreMember] public Dictionary<PolyTri, HashSet<PolyTri>> NeighborsInside { get; private set; }
-    [IgnoreMember] public Dictionary<PolyTri, Tuple<PolyTri, MapPolygon>> FirstNeighborOutside { get; private set; }
-    [IgnoreMember] public Dictionary<PolyTri, Tuple<PolyTri, MapPolygon>> SecondNeighborOutside { get; private set; }
-    
     public static PolyTerrainTris Create(MapPolygon poly, List<PolyTri> tris, CreateWriteKey key)
     {
         var vertexIndices = new Dictionary<Vector2, int>();
@@ -55,8 +51,21 @@ public class PolyTerrainTris : Entity
 
         var ts = new PolyTerrainTris(key.IdDispenser.GetID(), new EntityRef<MapPolygon>(poly.Id), orderedTris.ToArray(), sectionTriStartIndices, sectionTriCounts);
         key.Create(ts);
+
+        var bytes = Game.I.Serializer.MP.Serialize(ts).Count();
+        if (bytes > _maxBytes)
+        {
+            _maxBytes = bytes;
+            GD.Print($"max terraintri size {bytes}");
+            
+            GD.Print($"tris array size {Game.I.Serializer.MP.Serialize(ts.Tris).Count()}");
+            GD.Print($"tris indices size {Game.I.Serializer.MP.Serialize(ts.SectionTriStartIndices).Count()}");
+            GD.Print($"tris counts size {Game.I.Serializer.MP.Serialize(ts.SectionTriCounts).Count()}");
+        }
         return ts;
     }
+
+    private static int _maxBytes = 0;
     [SerializationConstructor] private PolyTerrainTris(int id, EntityRef<MapPolygon> poly, PolyTri[] tris, int[] sectionTriStartIndices, 
         int[] sectionTriCounts) : base(id)
     {
@@ -64,19 +73,18 @@ public class PolyTerrainTris : Entity
         Tris = tris;
         SectionTriStartIndices = sectionTriStartIndices;
         SectionTriCounts = sectionTriCounts;
-        NeighborsInside = new Dictionary<PolyTri, HashSet<PolyTri>>();
         // ConstructNetwork();
     }
 
     private void ConstructNetwork()
     {
-        NeighborsInside = new Dictionary<PolyTri, HashSet<PolyTri>>();
-        foreach (var tri in Tris)
-        {
-            var ns = Tris
-                .Where(n => n.AnyPoint(tri.HasPoint) && tri != n);
-            NeighborsInside.AddOrUpdateRange(tri, ns.ToArray());
-        }
+        // NeighborsInside = new Dictionary<PolyTri, HashSet<PolyTri>>();
+        // foreach (var tri in Tris)
+        // {
+        //     var ns = Tris
+        //         .Where(n => n.AnyPoint(tri.HasPoint) && tri != n);
+        //     NeighborsInside.AddOrUpdateRange(tri, ns.ToArray());
+        // }
     }
     public PolyTri GetTriAndSection(Vector2 point, out int section)
     {

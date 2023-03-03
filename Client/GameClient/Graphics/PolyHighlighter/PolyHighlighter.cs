@@ -48,21 +48,21 @@ public class PolyHighlighter : Node2D
     private void DrawPolyTriAndAdjacent(MapPolygon poly, PolyTri pt, MeshBuilder mb, Data data)
     {
         mb.AddTri(pt, Colors.White);
-        foreach (var n in poly.GetTerrainTris(data).NeighborsInside[pt])
-        {
-            mb.AddTri(n, Colors.Red);
-        }
+        // foreach (var n in poly.GetTerrainTris(data).NeighborsInside[pt])
+        // {
+        //     mb.AddTri(n, Colors.Red);
+        // }
     }
     private void DrawPolyTriNetwork(MeshBuilder mb, MapPolygon poly, Data data)
     {
         var pts = poly.GetTerrainTris(data).Tris;
         foreach (var polyTri in pts)
         {
-            var ns = poly.GetTerrainTris(data).NeighborsInside[polyTri];
-            foreach (var n in ns)
-            {
-                mb.AddArrow(polyTri.GetCentroid(), n.GetCentroid(), 1f, Colors.White);
-            }
+            // var ns = poly.GetTerrainTris(data).NeighborsInside[polyTri];
+            // foreach (var n in ns)
+            // {
+            //     mb.AddArrow(polyTri.GetCentroid(), n.GetCentroid(), 1f, Colors.White);
+            // }
         }
     }
     private void TakeFromMeshBuilder(MeshBuilder mb)

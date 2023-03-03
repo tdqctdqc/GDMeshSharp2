@@ -1,6 +1,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 
 public class MessageManager
@@ -47,7 +48,13 @@ public class MessageManager
             if (t is EntityCreationUpdate u)
             {
                 GD.Print(u.EntityTypeName);
+                if (u.EntityTypeName == nameof(PolyTerrainTris))
+                {
+                    var tt = Game.I.Serializer.MP.Deserialize<PolyTerrainTris>(u.EntityBytes);
+                    GD.Print($"{tt.Tris.Count()} tris");
+                }
             }
+            
             throw new Exception($"Message size of {bytes.Length} for {t.GetType()} is too big");
         }
         return bytes;
