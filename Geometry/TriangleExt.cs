@@ -7,11 +7,11 @@ using GeometRi;
 
 public static class TriangleExt 
 {
-    public static List<Vector2> GetPoissonPointsInside(this Triangle t, float radius)
+    public static List<Vector2> GetPoissonPointsInside(this Triangle t, float radius, float marginRatio = .5f)
     {
         var dim = t.GetDimensions();
         var shift = t.GetCentroid() - dim / 2f;
-        return PointsGenerator.GeneratePoissonPoints(radius, dim, 10)
+        return PointsGenerator.GeneratePoissonPoints(radius, dim, 30)
             .Where(p => t.ContainsPoint(p + shift))
             .Select(p => p + shift)
             .ToList();
@@ -122,34 +122,7 @@ public static class TriangleExt
         return t.A + arc1 * arc1Ratio + arc2 * arc2Ratio;
     }
 
-    public static List<Vector2> GenerateRegularPointsInside(this Triangle tri, float cellSize)
-    {
-        var res = new List<Vector2>();
-        
-        var mid = (tri.B + tri.C) / 2f;
-        var crossLength = tri.B.DistanceTo(tri.C);
-        var axis = mid - tri.A;
-        var numIter = Mathf.FloorToInt(axis.Length() / cellSize);
-        var step = axis.Length() / (numIter + 1);
-        for (int i = 1; i <= numIter; i++)
-        {
-            var ratioAlongAxis = i / ((float)numIter + 1);
-
-            var numPointsForStep = Mathf.FloorToInt((crossLength * ratioAlongAxis) / cellSize);
-            for (var j = 0; j <= numPointsForStep + 1; j++)
-            {
-                var mod = Vector2.Up.Rotated(Game.I.Random.RandfRange(0f, Mathf.Pi * 2f)) *
-                          Game.I.Random.RandfRange(0f, cellSize / 4f);
-                var crossRatio = j / ((float) numPointsForStep + 1);
-                var p = tri.A 
-                        + (tri.B - tri.A) * ratioAlongAxis 
-                        + (tri.C - tri.B) * ratioAlongAxis * crossRatio + mod;
-                if(tri.ContainsPoint(p)) res.Add(p);
-            }
-        }
-        
-        return res;
-    }
+    
 
     public static float GetArea(Vector2 p0, Vector2 p1, Vector2 p2)
     {
@@ -160,18 +133,7 @@ public static class TriangleExt
         return Mathf.Sqrt( semiPerim * (semiPerim - l0) * (semiPerim - l1) * (semiPerim - l2) );
     }
 
-    public static Vector2 GetCircumcenter(Vector2 a, Vector2 b, Vector2 c)
-    {
-        var ad = a[0] * a[0] + a[1] * a[1];
-        var bd = b[0] * b[0] + b[1] * b[1];
-        var cd = c[0] * c[0] + c[1] * c[1];
-        var D = 2 * (a[0] * (b[1] - c[1]) + b[0] * (c[1] - a[1]) + c[0] * (a[1] - b[1]));
-        return new Vector2
-        (
-            1 / D * (ad * (b[1] - c[1]) + bd * (c[1] - a[1]) + cd * (a[1] - b[1])),
-            1 / D * (ad * (c[0] - b[0]) + bd * (a[0] - c[0]) + cd * (b[0] - a[0]))
-        );
-    }
+    
 
     public static bool IsDegenerate(this Triangle tri)
     {

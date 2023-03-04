@@ -2,5 +2,7 @@ using Godot;
 
 public interface IDecaledTerrain
 {
-    void GetDecal(MeshBuilder mb, PolyTri pt, Vector2 offset);
+    Mesh GetDecal();
+    float DecalSpacing { get; }
+    Color GetDecalColor(PolyTri pt);
 }

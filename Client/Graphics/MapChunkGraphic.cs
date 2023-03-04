@@ -5,7 +5,8 @@ using Godot;
 
 public class MapChunkGraphic : Node2D
 {
-    [Toggleable] public PolygonChunkGraphic Regimes { get; private set; }
+    [Toggleable] public PolygonChunkGraphic RegimeFill { get; private set; }
+    [Toggleable] public PolygonBorderChunkGraphic RegimeBorders { get; private set; }
     [Toggleable] public PolygonChunkGraphic Polys { get; private set; }
     [Toggleable] public TerrainTriChunkGraphic Landform { get; private set; }
     [Toggleable] public TerrainTriChunkGraphic Tris { get; private set; }
@@ -33,8 +34,8 @@ public class MapChunkGraphic : Node2D
         Vegetation = new TerrainTriChunkGraphic();
         Vegetation.Setup(polys, data, pt => pt.Vegetation.Color.Darkened(pt.Landform.DarkenFactor));
         AddChild(Vegetation);
-
-        Regimes = SetupPolygonGraphic(polys, data, 
+        
+        RegimeFill = SetupPolygonGraphic(polys, data, 
             p => p.Regime.Empty()  
                 ? Colors.Transparent
                 : p.Regime.Entity().PrimaryColor
@@ -61,12 +62,27 @@ public class MapChunkGraphic : Node2D
         );
         AddChild(Borders);
         Borders.Visible = false;
+        
+        var regBorderSegs = polys.Select(p =>
+        {
+            return p.Neighbors.Refs().Where(n => n.Regime.Entity() != p.Regime.Entity())
+                .Select(n => n.GetBorder(p, data))
+                .SelectMany(b => b.GetSegsRel(p))
+                .Select(ls => ls.Translate(first.GetOffsetTo(p, data)))
+                .ToList();
+        }).ToList();
+        RegimeBorders = new PolygonBorderChunkGraphic();
+        RegimeBorders.SetupForRegime(first, polys,  
+            20f, data);
+        AddChild(RegimeBorders);
+        
         Order(
             Tris, 
             Polys,
             Landform,
             Vegetation,
-            Regimes,
+            RegimeFill,
+            RegimeBorders,
             Borders,
             Decals,
             Roads
@@ -95,18 +111,6 @@ public class MapChunkGraphic : Node2D
     {
         var g = new PolygonChunkGraphic();
         g.Setup
-        (polys, data, 
-            getColor,
-            false
-        );
-        AddChild(g);
-        return g;
-    }
-    private PolygonChunkGraphic SetupPolygonWheelGraphic(List<MapPolygon> polys, Data data,
-        Func<int, Color> getColor)
-    {
-        var g = new PolygonChunkGraphic();
-        g.SetupWheel
         (polys, data, 
             getColor,
             false

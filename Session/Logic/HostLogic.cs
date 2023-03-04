@@ -12,8 +12,8 @@ public class HostLogic : ILogic
     private Data _data;
     private readonly LogicFrame[] _frames;
     private int _frameIter = 0;
-    private float _framePeriod = .1f;
-    private float _frameTimer = .1f;
+    private float _framePeriod = 1f;
+    private float _frameTimer = 1f;
     private bool _calculating;
     
     public HostLogic()
@@ -21,7 +21,7 @@ public class HostLogic : ILogic
         CommandQueue = new Queue<Command>();
         _frames = new LogicFrame[]
         {
-            new LogicFrame()
+            new LogicFrame(new TickModule())
         };
     }
 

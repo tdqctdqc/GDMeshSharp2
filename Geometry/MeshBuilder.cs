@@ -84,21 +84,7 @@ public class MeshBuilder
             }
         }
     }
-    public void AddPolyWheelTrisRelative(MapPolygon relTo, List<MapPolygon> polys, 
-        Func<int, Color> getColor, Data data)
-    {
-        for (var i = 0; i < polys.Count; i++)
-        {
-            var p = polys[i];
-            var tris = p.BorderSegments.Select(b => new Triangle(b.From, b.To, Vector2.Zero));
-            var polyTris = tris.Select(v => v.Transpose(relTo.GetOffsetTo(p, data))).ToList();
-            for (int j = 0; j < polyTris.Count(); j++)
-            {
-                var color = getColor(j);
-                AddTri(polyTris[j], color);
-            }
-        }
-    }
+    
 
     public void AddPolyBorders(MapPolygon relTo, List<MapPolygonBorder> borders, float thickness,
         Func<MapPolygon, Color> getColor, Data data)
@@ -125,7 +111,7 @@ public class MeshBuilder
         {
             var from = seg.From;
             var to = seg.To;
-            var perpendicular = (from - to).Normalized().Rotated(Mathf.Pi / 2f);
+            var perpendicular = (from - to).Normalized().Rotated(-Mathf.Pi / 2f);
             var fromOut = from + perpendicular * outThickness;
             var toOut = to + perpendicular * outThickness;
             var fromIn = from - perpendicular * inThickness;

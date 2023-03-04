@@ -49,8 +49,8 @@ public class WorldGenerator
         var cellSize = 200f;
         var edgePointMargin = new Vector2(cellSize, cellSize);
 
-        var planetInfo = PlanetInfo.Create(_genParams.Dimensions, _key.IdDispenser.GetID(), _key);
-        
+        PlanetInfo.Create(_genParams.Dimensions, _key.IdDispenser.GetID(), _key);
+        GameClock.Create(_key);
         _sw.Start();
 
         var points = PointsGenerator
@@ -89,13 +89,15 @@ public class WorldGenerator
         GenerationFeedback?.Invoke("Built tris", "");
         Data.Events.FinalizedPolyShapes?.Invoke();
 
+        var regimeGen = new RegimeGenerator(Data, _key.IdDispenser, _key);
+        regimeGen.Generate();
+        GenerationFeedback?.Invoke("Regimes", "");
+        
         var locationGenerator = new LocationGenerator(Data);
         locationGenerator.Generate(_key, _key.IdDispenser);
         GenerationFeedback?.Invoke("Locations", "");
 
-        var regimeGen = new RegimeGenerator(Data, _key.IdDispenser, _key);
-        regimeGen.Generate();
-        GenerationFeedback?.Invoke("Regimes", "");
+        
         
         var peepGen = new PeepGenerator(_key.IdDispenser, _key, Data);
         peepGen.Generate();

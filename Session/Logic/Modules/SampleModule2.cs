@@ -9,7 +9,7 @@ public class SampleModule2 : LogicModule
     public override List<Procedure> Calculate(Data data)
     {
         System.Threading.Thread.Sleep(100);
-
+        
         return new List<Procedure>{ new SampleProc2() };
     }
 }

@@ -5,37 +5,68 @@ using Godot;
 
 public class ChunkDecalGraphic : Node2D
 {
-    private MultiMeshInstance2D _lfMi, _vegMi;
-    private Func<PolyTri, List<Vector2>> _getDecalPoses = pt => new List<Vector2> {pt.GetCentroid()};
-    private Dictionary<Landform, Mesh> _lfDecals;
-    private Dictionary<Landform, MultiMeshInstance2D> _lfMis;
-    private Dictionary<Vegetation, Mesh> _vegDecals;
-    private Dictionary<Vegetation, MultiMeshInstance2D> _vegMis;
-
     public void Setup(MapChunk chunk, MapPolygon relTo, Data data)
     {
-        var mb = new MeshBuilder();
-        int iter = 0;
-        foreach (var poly in chunk.Polys)
+        var tris = chunk.Polys
+            .SelectMany(p => p.GetTerrainTris(data).Tris.Select(t => t.Transpose(relTo.GetOffsetTo(p, data))));
+        var lfSort = tris.Sort(t => t.Landform);
+        var vegSort = tris.Sort(t => t.Vegetation);
+        foreach (var kvp in lfSort)
         {
-            var offset = relTo.GetOffsetTo(poly, data);
-            var pts = poly.GetTerrainTris(data).Tris;
-            for (var i = 0; i < pts.Length; i++)
+            if (kvp.Key is IDecaledTerrain d)
             {
-                var pt = poly.GetTerrainTris(data).Tris[i];
-                if (pt.Landform is IDecaledTerrain d2)
-                {
-                    iter++;
-                    d2.GetDecal(mb, pt, offset);
-                }
-                if (pt.Vegetation is IDecaledTerrain d1)
-                {
-                    iter++;
-                    d1.GetDecal(mb, pt, offset);
-                }
-                
+                SetupDecals(d, kvp.Value, relTo, data);
             }
         }
-        if(iter > 0) AddChild(mb.GetMeshInstance());
+        foreach (var kvp in vegSort)
+        {
+            if (kvp.Key is IDecaledTerrain d)
+            {
+                SetupDecals(d, kvp.Value, relTo, data);
+            }
+        }
+    }
+
+    private void SetupDecals<T>(T t, List<PolyTri> pts, MapPolygon relTo, Data data) where T : IDecaledTerrain
+    {
+        var mesh = t.GetDecal();
+        var mi = new MultiMeshInstance2D();
+        var mm = new MultiMesh();
+        mm.Mesh = mesh;
+        mm.ColorFormat = MultiMesh.ColorFormatEnum.Float;
+
+        mi.Multimesh = mm;
+
+        var allPs = pts.Select(pt => pt.GetPoissonPointsInside(t.DecalSpacing)).ToList();
+
+        mm.InstanceCount = allPs.Sum(ps => ps.Count);
+        int iter = 0;
+        for (var i = 0; i < pts.Count; i++)
+        {
+            var ps = allPs[i];
+            var pt = pts[i];
+            for (var j = 0; j < ps.Count; j++)
+            {
+                mm.SetInstanceTransform2d(iter, new Transform2D(0f, ps[j]));
+                mm.SetInstanceColor(iter, t.GetDecalColor(pt));
+                iter++;
+            }
+            
+        }
+        AddChild(mi);
+
+        
+        
+        
+        
+        
+        // var cols = new List<Color>();
+        
+        //
+        // for (var i = 0; i < allPs.Count; i++)
+        // {
+        //     mm.SetInstanceTransform2d(i, new Transform2D(0f, allPs[i] + pos));
+        // }
+
     }
 }

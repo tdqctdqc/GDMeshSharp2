@@ -7,7 +7,7 @@ public class GameUi : CanvasLayer
     private ButtonToken _entityOverviewBtn, _generate, _testSerialization;
     private EntityOverview _entityOverview;
     private MapDisplayOptionsUi _mapOptions;
-    private Label _hostOrClient, _mousePos;
+    private Label _hostOrClient, _mousePos, _tick;
     
     public override void _Ready()
     {
@@ -30,8 +30,12 @@ public class GameUi : CanvasLayer
 
     public void Setup(bool host, Data data, GameGraphics graphics, CameraController cam, GameClient client)
     {
-        this.AssignChildNode(ref _hostOrClient,"HostOrClient");
-        this.AssignChildNode(ref _mousePos,"MousePos");
+        this.AssignChildNode(ref _hostOrClient, "HostOrClient");
+        this.AssignChildNode(ref _tick, "Tick");
+        ValueChangedNotice<GameClock, int>.Register(nameof(GameClock.Tick),
+            n => _tick.Text = $"Tick: {n.NewVal}");
+        
+        this.AssignChildNode(ref _mousePos, "MousePos");
         _hostOrClient.Text = host ? "Host" : "Client";
         
         _entityOverviewBtn = ButtonToken.Get(this, "EntityOverviewBtn", () => _entityOverview.Popup_());

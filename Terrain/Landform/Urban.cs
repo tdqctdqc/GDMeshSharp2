@@ -32,4 +32,22 @@ public class Urban : Landform, IDecaledTerrain
             mb.AddTri(t2, Colors.DarkGray);
         });
     }
+    
+    
+    Mesh IDecaledTerrain.GetDecal()
+    {
+        var spacing = ((IDecaledTerrain) this).DecalSpacing;
+        var offset = Vector2.Down * spacing / 2f;
+        var size = 5f;
+        return MeshGenerator.GetArrayMesh(new Vector2[]{
+            Vector2.Left * size + offset,
+            Vector2.Right * size + offset,
+            Vector2.Up * size * 3f + Vector2.Left * size + offset,
+            Vector2.Right * size + offset,
+            Vector2.Up * size * 3f + Vector2.Left * size + offset,
+            Vector2.Up * size * 3f + Vector2.Right * size + offset
+        });
+    }
+    float IDecaledTerrain.DecalSpacing => 15f;
+    Color IDecaledTerrain.GetDecalColor(PolyTri pt) => Colors.DarkGray;
 }

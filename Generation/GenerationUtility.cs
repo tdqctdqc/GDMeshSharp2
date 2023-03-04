@@ -1,10 +1,22 @@
 using Godot;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 public static class GenerationUtility
 {
+    public static Dictionary<TKey, List<TValue>> Sort<TKey, TValue>(this IEnumerable<TValue> vals,
+        Func<TValue, TKey> getKey)
+    {
+        var dic = new Dictionary<TKey, List<TValue>>();
+        foreach (var val in vals)
+        {
+            var key = getKey(val);
+            dic.AddOrUpdate(key, val);
+        }
+        return dic;
+    }
     public static List<TSeed>[] PickSeeds<TSeed>(IEnumerable<TSeed> available, int[] seedNums)
     {
         var taken = new HashSet<TSeed>();
@@ -86,18 +98,6 @@ public static class GenerationUtility
         return els.Where(e => getNeighbors(e).Any(n => checkForeign(n)));
     }
 
-    public static List<TSub> GetOrderedBorder<TSub>(
-        IEnumerable<TSub> borderSubs, Func<TSub, IEnumerable<TSub>> getSubNeighbors,
-        Func<TSub, bool> checkForeign) where TSub : class
-    {
-        return GetOrderedBorderPairs(borderSubs, getSubNeighbors, checkForeign).Select(e => e.Native).ToList();
-    }
-    public static List<TSub> GetOrderedOuterBorder<TSub>(
-        IEnumerable<TSub> borderSubs, Func<TSub, IEnumerable<TSub>> getSubNeighbors,
-        Func<TSub, bool> checkForeign) where TSub : class
-    {
-        return GetOrderedBorderPairs(borderSubs, getSubNeighbors, checkForeign).Select(e => e.Foreign).ToList();
-    }
     public static List<BorderEdge<TSub>> GetOrderedBorderPairs<TSub>( 
         IEnumerable<TSub> borderSubs, Func<TSub, IEnumerable<TSub>> getSubNeighbors, 
         Func<TSub, bool> checkForeign) where TSub : class

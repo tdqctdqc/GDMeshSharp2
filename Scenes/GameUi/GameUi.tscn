@@ -27,9 +27,20 @@ text = "Test Serialization"
 [node name="HostOrClient" type="Label" parent="HBoxContainer"]
 margin_left = 241.0
 margin_top = 13.0
-margin_right = 332.0
+margin_right = 391.0
 margin_bottom = 27.0
+rect_min_size = Vector2( 150, 0 )
 text = "Host Or Client"
+align = 1
+
+[node name="Tick" type="Label" parent="HBoxContainer"]
+margin_left = 395.0
+margin_top = 13.0
+margin_right = 495.0
+margin_bottom = 27.0
+rect_min_size = Vector2( 100, 0 )
+text = "Tick: "
+align = 1
 
 [node name="MapDisplayOptionsUi" parent="." instance=ExtResource( 2 )]
 margin_left = 5.0

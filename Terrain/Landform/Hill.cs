@@ -8,19 +8,20 @@
         {
         }
 
-        public void GetDecal(MeshBuilder mb, PolyTri pt, Vector2 offset)
+        Mesh IDecaledTerrain.GetDecal()
         {
-            var color = pt.Vegetation == VegetationManager.Barren
+            var spacing = ((IDecaledTerrain) this).DecalSpacing;
+            var offset = Vector2.Down * spacing / 2f;
+            return MeshGenerator.GetArrayMesh(new Vector2[]{Vector2.Left * spacing + offset,
+                Vector2.Right * spacing + offset,
+                Vector2.Up * spacing + offset});
+        }
+
+        float IDecaledTerrain.DecalSpacing => 20f;
+        Color IDecaledTerrain.GetDecalColor(PolyTri pt)
+        {
+            return pt.Vegetation == VegetationManager.Barren
                 ? Colors.Gray
                 : pt.Vegetation.Color.Darkened(.4f);
-            
-            var size = 20f;
-            offset += Vector2.Down * size / 2f;
-            var p = pt.GetCentroid();
-            var t = new Triangle(
-                p + Vector2.Left * size + offset,
-                p + Vector2.Right * size + offset,
-                p + Vector2.Up * size + offset);
-            mb.AddTri(t, color);
         }
     }

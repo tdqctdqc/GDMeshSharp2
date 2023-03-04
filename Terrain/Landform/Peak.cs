@@ -7,17 +7,14 @@ public class Peak : Landform, IDecaledTerrain
     {
     }
 
-    public void GetDecal(MeshBuilder mb, PolyTri pt, Vector2 offset)
+    Mesh IDecaledTerrain.GetDecal()
     {
-        var size = 30f;
-        var color = Color.Darkened(.25f);
-        offset += Vector2.Down * size / 2f;
-
-        var p = pt.GetCentroid();
-        var t = new Triangle(
-            p + Vector2.Left * size + offset,
-            p + Vector2.Right * size + offset,
-            p + Vector2.Up * size + offset);
-        mb.AddTri(t, color);
+        var spacing = ((IDecaledTerrain) this).DecalSpacing;
+        var offset = Vector2.Down * spacing / 2f;
+        return MeshGenerator.GetArrayMesh(new Vector2[]{Vector2.Left * spacing + offset,
+            Vector2.Right * spacing + offset,
+            Vector2.Up * spacing + offset});
     }
+    float IDecaledTerrain.DecalSpacing => 30f;
+    Color IDecaledTerrain.GetDecalColor(PolyTri pt) => Color.Darkened(.25f);
 }

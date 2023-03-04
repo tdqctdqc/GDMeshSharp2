@@ -120,7 +120,7 @@ public static class MeshGenerator
         }
         return node;
     }
-    public static ArrayMesh GetArrayMesh(Vector2[] triPoints, Color[] triColors = null)
+    public static ArrayMesh GetArrayMesh(Vector2[] triPoints, Color[] triColors)
     {
         var arrayMesh = new ArrayMesh();
         var arrays = new Godot.Collections.Array();
@@ -128,6 +128,22 @@ public static class MeshGenerator
         arrays.Resize((int)ArrayMesh.ArrayType.Max);
 
         arrays[(int)ArrayMesh.ArrayType.Vertex] = triPoints;
+        if (triColors == null)
+            triColors = Enumerable.Range(0, triPoints.Length / 3).Select(i => Colors.White).ToArray();
+        arrays[(int)ArrayMesh.ArrayType.Color] = ConvertTriToVertexColors(triColors); 
+        arrayMesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays);
+
+        return arrayMesh; 
+    }
+    public static ArrayMesh GetArrayMesh(Vector2[] triPoints)
+    {
+        var arrayMesh = new ArrayMesh();
+        var arrays = new Godot.Collections.Array();
+        
+        arrays.Resize((int)ArrayMesh.ArrayType.Max);
+
+        arrays[(int)ArrayMesh.ArrayType.Vertex] = triPoints;
+        var triColors = Enumerable.Range(0, triPoints.Length / 3).Select(i => Colors.White).ToArray();
         arrays[(int)ArrayMesh.ArrayType.Color] = ConvertTriToVertexColors(triColors); 
         arrayMesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays);
 

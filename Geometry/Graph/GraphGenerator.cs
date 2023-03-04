@@ -113,7 +113,6 @@ public static class GraphGenerator
                 if (oP.x >= bounds.x) oP.x = bounds.x;
                 if (p == oP)
                 {
-                    GD.Print("degenerate");
                     return;
                 }
                 var tEdge = getEdgeFunc(p, oP, el1, el2);

@@ -13,16 +13,6 @@ public class PolygonChunkGraphic : Node2D
         AddChild(mesh);
         if (labels) AddLabels(polys, data);
     }
-    public void SetupWheel(List<MapPolygon> polys, Data data, Func<int, Color> getColor, bool labels = false)
-    {
-        var mb = new MeshBuilder();
-        
-        
-        mb.AddPolyWheelTrisRelative(polys.First(), polys, getColor, data);
-        var mesh = mb.GetMeshInstance();
-        AddChild(mesh);
-        if (labels) AddLabels(polys, data);
-    }
 
     private void AddLabels(List<MapPolygon> polys, Data data)
     {
