@@ -22,7 +22,7 @@ public class ValueChangedNotice<TEntity, TProperty>
 
     private static bool Register()
     {
-        ValueChangedMeta.Register(Clear);
+        NoticeMeta.Register(Clear);
         return true;
     }
     private static void Clear()
@@ -50,9 +50,20 @@ public class ValueChangedNotice<TEntity, TProperty>
         _changed[fieldName] -= callback;
     }
     
-    private static class ValueChangedMeta
+    private static class NoticeMeta
     {
         private static List<Action> _clears = new List<Action>();
+        
+        static NoticeMeta()
+        {
+            Game.I.NewSession += Clear;
+        }
+
+        private static void Clear()
+        {
+            _clears.ForEach(c => c?.Invoke());
+            _clears = new List<Action>();
+        }
         public static void Register(Action clear)
         {
             _clears.Add(clear);

@@ -1,5 +1,6 @@
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
@@ -9,19 +10,21 @@ public class PolygonBorderChunkGraphic : Node2D
     public void SetupForRegime(MapPolygon relTo, List<MapPolygon> polys, float thickness,
         Data data)
     {
-        if (polys.Count == 0) return;
         var mb = new MeshBuilder();
-
-        var borders = polys.SelectMany(p => p.GetNeighborBorders(data))
-            .Distinct()
-            .Where(b => b.LowId.Entity().Regime.RefId != b.HighId.Entity().Regime.RefId)
-            .ToList();
-        mb.AddPolyBorders(relTo, borders, thickness, 
-            p => p.Regime.Empty() 
-                ? Colors.Transparent 
-                : new Color(p.Regime.Entity().PrimaryColor, .5f),
-            data
-        );
+        var regPolys = polys.Where(p => p.Regime.Empty() == false);
+        foreach (var p in regPolys)
+        {
+            var color = p.Regime.Entity().PrimaryColor.Darkened(.2f);
+            var offset = relTo.GetOffsetTo(p, data);
+            foreach (var n in p.Neighbors.Refs())
+            {
+                
+                if (n.Regime.RefId == p.Regime.RefId) continue;
+                
+                mb.DrawBorder(p, p.GetBorder(n, data), data, 20f, color, offset);
+            }
+        }
+        
         if (mb.Tris.Count == 0) return;
         AddChild(mb.GetMeshInstance());
     }

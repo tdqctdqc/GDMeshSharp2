@@ -14,4 +14,10 @@ public struct Edge<T>
         T1 = larger(t1, t2) ? t1 : t2;
         T2 = T1.Equals(t1) ? t2 : t1;
     }
+    public Edge(T t1, T t2, Func<T,int> rank)
+    {
+        if (t1.Equals(t2)) throw new Exception();
+        T1 = rank(t1) > rank(t2) ? t1 : t2;
+        T2 = T1.Equals(t1) ? t2 : t1;
+    }
 }

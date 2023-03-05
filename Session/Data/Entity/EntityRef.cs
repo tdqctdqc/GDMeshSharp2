@@ -34,6 +34,16 @@ public class EntityRef<TRef> : IRef<int> where TRef : Entity
     {
         return RefId == -1;
     }
+
+    public bool Check(Data data)
+    {
+        if (data.Entities.TryGetValue(RefId, out var e))
+        {
+            return e is TRef;
+        }
+
+        return false;
+    }
     public void SyncRef(Data data)
     {
         _ref = (TRef) data[RefId];

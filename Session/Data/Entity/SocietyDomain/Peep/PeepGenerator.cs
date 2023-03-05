@@ -31,15 +31,10 @@ public class PeepGenerator
         );
         var byPoly = Data.Society.Settlements.ByPoly;
         var laborers = GeneratePeepType(PeepJobManager.Laborer,
-            p => (int)(byPoly.ContainsKey(p.Id)
-                ? byPoly[p.Id].Size * 100
+            p => (int)(byPoly.ContainsKey(p)
+                ? byPoly[p].Size * 100
                 : 0), 
             50, 50);
-        
-        GD.Print("num peeps " + (farmers.x + laborers.x));
-        GD.Print("num farmers " + farmers.x);
-        GD.Print("num laborers " + laborers.x);
-        // GD.Print("total pop " + _totalPop);
     }
     
     private Vector2 GeneratePeepType(PeepJob job, Func<MapPolygon, int> getPoints,

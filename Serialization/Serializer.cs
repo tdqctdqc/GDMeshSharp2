@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using MessagePack;
 
 public class Serializer
 {
@@ -95,6 +96,11 @@ public class Serializer
         {
             TestProperty(p, e);
         }
+
+        var constructors = eType.GetConstructors();
+        if (constructors.Count() != 1) throw new Exception();
+        if (constructors[0].IsPrivate == false) throw new Exception();
+        if (constructors[0].HasAttribute<SerializationConstructorAttribute>() == false) throw new Exception();
         
         var eBytes = Game.I.Serializer.MP.Serialize(e, eType);
         var e2 = (Entity)Game.I.Serializer.MP.Deserialize(eBytes, eType);

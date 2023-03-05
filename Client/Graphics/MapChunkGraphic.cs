@@ -5,117 +5,120 @@ using Godot;
 
 public class MapChunkGraphic : Node2D
 {
-    [Toggleable] public PolygonChunkGraphic RegimeFill { get; private set; }
-    [Toggleable] public PolygonBorderChunkGraphic RegimeBorders { get; private set; }
-    [Toggleable] public PolygonChunkGraphic Polys { get; private set; }
-    [Toggleable] public TerrainTriChunkGraphic Landform { get; private set; }
-    [Toggleable] public TerrainTriChunkGraphic Tris { get; private set; }
-    [Toggleable] public TerrainTriChunkGraphic Vegetation { get; private set; }
-    [Toggleable] public ChunkDecalGraphic Decals { get; private set; }
-    [Toggleable] public RoadChunkGraphic Roads { get; private set; }
-    [Toggleable] public BordersChunkGraphic Borders { get; private set; }
+    public Dictionary<string, Node2D> Modules { get; private set; }
+    public static ChunkGraphicFactory RegimeFill { get; private set; }
+        = new ChunkGraphicFactory(nameof(RegimeFill), false, (c, d) => SetupPolygonGraphic(c, d,
+            p => p.Regime.Empty()
+                ? Colors.Transparent
+                : p.Regime.Entity().PrimaryColor
+        ));
+
+    public static ChunkGraphicFactory RegimeBorders { get; private set; }
+        = new ChunkGraphicFactory(nameof(RegimeBorders), true, (c, d) =>
+        {
+            var r = new PolygonBorderChunkGraphic();
+            r.SetupForRegime(c.RelTo, c.Polys.ToList(),
+                20f, d);
+            return r;
+        });
+
+    public static ChunkGraphicFactory Landform { get; private set; }
+        = new ChunkGraphicFactory(nameof(Landform), true, (c, d) =>
+        {
+            return SetupTerrainTriGraphic(c, d, t => t.Landform.Color);
+        });
+    
+    public static ChunkGraphicFactory Vegetation { get; private set; }
+        = new ChunkGraphicFactory(nameof(Vegetation),true, (c, d) =>
+        {
+            var v = new TerrainTriChunkGraphic();
+            v.Setup(c, d, pt => pt.Vegetation.Color.Darkened(pt.Landform.DarkenFactor));
+            return v;
+        });
+    
+    public static ChunkGraphicFactory Tris { get; private set; }
+        = new ChunkGraphicFactory(nameof(Tris), false, (c, d) =>
+        {
+            return SetupTerrainTriGraphic(c, d, t => ColorsExt.GetRandomColor());
+        });
+    public static ChunkGraphicFactory Decals { get; private set; }
+        = new ChunkGraphicFactory(nameof(Decals), false, (c, d) =>
+        {
+            var g = new ChunkDecalGraphic();
+            g.Setup(c, d);
+            return g;
+        });
+    public static ChunkGraphicFactory Roads { get; private set; }
+        = new ChunkGraphicFactory(nameof(Roads),true, (c, d) =>
+        {
+            var r = new RoadChunkGraphic();
+            r.Setup(c, d);
+            return r;
+        });
+    public static ChunkGraphicFactory Borders { get; private set; }
+        = new ChunkGraphicFactory(nameof(Borders), false, (c, d) =>
+        {
+            var b = new BordersChunkGraphic();
+            var borderCol = new Color(.75f, .75f, .75f, .5f);
+            b.Setup(
+                new List<List<LineSegment>>
+                {
+                    c.Polys.SelectMany(p => p.BorderSegments.Select(bs => bs.Translate(c.RelTo.GetOffsetTo(p, d)))).ToList(),
+                    c.Polys.SelectMany(p => p.GetTerrainTris(d).Tris.SelectMany(t => t.Transpose(c.RelTo.GetOffsetTo(p, d)).GetSegments())).ToList()
+                },
+                new List<float>{5f, 1f},
+                new List<Color>{borderCol, borderCol}
+            );
+            return b;
+        });
 
     public void Setup(MapChunk chunk, Data data)
     {
-        var first = chunk.Polys.First();
-        Position = first.Center;
-
-        var polys = chunk.Polys.ToList();
-        Polys = SetupPolygonGraphic(polys, data, 
-            p => p.IsLand() ? Colors.SaddleBrown : Colors.Blue
-        );
-        Polys.Visible = false;
-        
-        Landform = SetupTerrainTriGraphic(polys, data, t => t.Landform.Color);
-
-        Tris = SetupTerrainTriGraphic(polys, data, t => ColorsExt.GetRandomColor());
-        Tris.Visible = false;
-
-        Vegetation = new TerrainTriChunkGraphic();
-        Vegetation.Setup(polys, data, pt => pt.Vegetation.Color.Darkened(pt.Landform.DarkenFactor));
-        AddChild(Vegetation);
-        
-        RegimeFill = SetupPolygonGraphic(polys, data, 
-            p => p.Regime.Empty()  
-                ? Colors.Transparent
-                : p.Regime.Entity().PrimaryColor
-            );
-        
-        Roads = new RoadChunkGraphic();
-        Roads.Setup(polys, data);
-        AddChild(Roads);
-        
-        Decals = new ChunkDecalGraphic();
-        Decals.Setup(chunk, first, data);
-        AddChild(Decals);
-
-        Borders = new BordersChunkGraphic();
-        var borderCol = new Color(.75f, .75f, .75f, .5f);
-        Borders.Setup(
-            new List<List<LineSegment>>
-            {
-                chunk.Polys.SelectMany(p => p.BorderSegments.Select(bs => bs.Translate(first.GetOffsetTo(p, data)))).ToList(),
-                chunk.Polys.SelectMany(p => p.GetTerrainTris(data).Tris.SelectMany(t => t.Transpose(first.GetOffsetTo(p, data)).GetSegments())).ToList()
-            },
-            new List<float>{5f, 1f},
-            new List<Color>{borderCol, borderCol}
-        );
-        AddChild(Borders);
-        Borders.Visible = false;
-        
-        var regBorderSegs = polys.Select(p =>
-        {
-            return p.Neighbors.Refs().Where(n => n.Regime.Entity() != p.Regime.Entity())
-                .Select(n => n.GetBorder(p, data))
-                .SelectMany(b => b.GetSegsRel(p))
-                .Select(ls => ls.Translate(first.GetOffsetTo(p, data)))
-                .ToList();
-        }).ToList();
-        RegimeBorders = new PolygonBorderChunkGraphic();
-        RegimeBorders.SetupForRegime(first, polys,  
-            20f, data);
-        AddChild(RegimeBorders);
-        
+        Position = chunk.RelTo.Center;
+        Modules = new Dictionary<string, Node2D>();
         Order(
+            chunk, data,
             Tris, 
-            Polys,
             Landform,
             Vegetation,
             RegimeFill,
             RegimeBorders,
+            Roads,
             Borders,
-            Decals,
-            Roads
+            Decals
         );
     }
 
-    private void Order(params Node2D[] nodes)
+    private void Order(MapChunk chunk, Data data, params ChunkGraphicFactory[] factories)
     {
-        for (var i = 0; i < nodes.Length; i++)
+        for (var i = 0; i < factories.Length; i++)
         {
-            nodes[i].ZIndex = i;
+            if (factories[i].Active == false) continue;
+            var node = factories[i].GetNode(chunk, data);
+            node.ZAsRelative = false;
+            node.ZIndex = i;
+            Modules.Add(factories[i].Name, node);
+            AddChild(node);
         }
     }
-    private TerrainTriChunkGraphic SetupTerrainTriGraphic(List<MapPolygon> polys, Data data, 
+    private static TerrainTriChunkGraphic SetupTerrainTriGraphic(MapChunk chunk, Data data, 
         Func<PolyTri, Color> getColor)
     {
         var t = new TerrainTriChunkGraphic();
-        t.Setup(polys, data, getColor);
-        AddChild(t);
+        t.Setup(chunk, data, getColor);
         t.ZAsRelative = false;
         return t;
     }
 
-    private PolygonChunkGraphic SetupPolygonGraphic(List<MapPolygon> polys, Data data,
+    private static PolygonChunkGraphic SetupPolygonGraphic(MapChunk chunk, Data data,
         Func<MapPolygon, Color> getColor)
     {
         var g = new PolygonChunkGraphic();
         g.Setup
-        (polys, data, 
+        (chunk, data, 
             getColor,
             false
         );
-        AddChild(g);
         return g;
     }
 }

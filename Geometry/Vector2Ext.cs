@@ -292,9 +292,18 @@ public static class Vector2Ext
         if (v == Vector2.Zero) return 0f;
         return (2f * Mathf.Pi + v.Angle()) % (2f * Mathf.Pi);
     }
+    public static float GetCCWAngle(this Vector2 v)
+    {
+        
+        return (2f * Mathf.Pi) - GetClockwiseAngle(v);
+    }
     public static float GetClockwiseAngleTo(this Vector2 v, Vector2 to)
     {
         if (v == to) return 0f;
         return (2f * Mathf.Pi + v.AngleTo(to)) % (2f * Mathf.Pi);
+    }
+    public static float GetCCWAngleTo(this Vector2 v, Vector2 to)
+    {
+        return 2f * Mathf.Pi - GetClockwiseAngleTo(v, to);
     }
 }

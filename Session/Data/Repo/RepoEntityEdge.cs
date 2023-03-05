@@ -6,6 +6,7 @@ using Poly2Tri.Triangulation;
 public class RepoEntityEdge<TEntity, TEnd> : RepoAuxData<TEntity>
     where TEntity : Entity
 {
+    public TEntity this[TEnd t1, TEnd t2] => Get(t1, t2);
     private Dictionary<Edge<TEnd>, TEntity> _byEdge;
     
     private Func<TEnd, int> _getId;
@@ -32,12 +33,17 @@ public class RepoEntityEdge<TEntity, TEnd> : RepoAuxData<TEntity>
     private Edge<TEnd> GetEdge(TEntity t)
     {
         var ends = _getEnds(t);
-        return new Edge<TEnd>(ends.Item1, ends.Item2, (end0, end1) => _getId(end0) > _getId(end1));
+        return new Edge<TEnd>(ends.Item1, ends.Item2, _getId);
     }
 
+    private TEntity Get(TEnd e1, TEnd e2)
+    {
+        var edge = new Edge<TEnd>(e1, e2, _getId);
+        return _byEdge[edge];
+    }
     public bool Contains(TEnd e1, TEnd e2)
     {
-        var edge = new Edge<TEnd>(e1, e2, (end0, end1) => _getId(end0) > _getId(end1));
+        var edge = new Edge<TEnd>(e1, e2, _getId);
         return _byEdge.ContainsKey(edge);
     }
 }

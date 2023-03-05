@@ -1,11 +1,13 @@
 using Godot;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 public class HostLogic : ILogic
 {
-    public Queue<Command> CommandQueue { get; private set; }
+    public ConcurrentQueue<Command> CommandQueue { get; private set; }
+    public Dictionary<Regime, RegimeAI> AIs { get; private set; }
     private HostServer _server;
     private HostWriteKey _hKey;
     private ProcedureWriteKey _pKey;
@@ -18,7 +20,8 @@ public class HostLogic : ILogic
     
     public HostLogic()
     {
-        CommandQueue = new Queue<Command>();
+        AIs = new Dictionary<Regime, RegimeAI>();
+        CommandQueue = new ConcurrentQueue<Command>();
         _frames = new LogicFrame[]
         {
             new LogicFrame(new TickModule())
@@ -35,25 +38,44 @@ public class HostLogic : ILogic
             _calculating = true;
             DoFrame();
         }
+        
     }
     public void SetDependencies(HostServer server, Data data)
     {
         _data = data;
         _server = server;
-        _hKey = new HostWriteKey(server, data);
+        _hKey = new HostWriteKey(server, this, data);
         _pKey = new ProcedureWriteKey(data);
     }
 
     public async void DoFrame()
     {
-        var procs = await Task.Run(() => _frames[_frameIter].Calculate(_data));
-        _frameIter = (_frameIter + 1) % _frames.Length;
-
-        for (var i = 0; i < procs.Count; i++)
+        var commandCount = CommandQueue.Count;
+        for (var i = 0; i < commandCount; i++)
         {
-            procs[i].Enact(_pKey);
+            if (CommandQueue.TryDequeue(out var command))
+            {
+                if(command.Valid(_data)) command.Enact(_hKey);
+            }
+        }
+        var logicResult = await Task.Run(() => _frames[_frameIter].Calculate(_data));
+        _frameIter = (_frameIter + 1) % _frames.Length;
+        
+        for (var i = 0; i < logicResult.Procedures.Count; i++)
+        {
+            logicResult.Procedures[i].Enact(_pKey);
+        }
+        for (var i = 0; i < logicResult.Decisions.Count; i++)
+        {
+            var d = logicResult.Decisions[i];
+            if(d.IsPlayerDecision(_data) == false)
+            {
+                logicResult.Decisions[i].AIDecide(_hKey);
+            }
         }
         
+        _server.ReceiveLogicResult(logicResult, _hKey);
+        _server.PushPackets(_hKey);
         _calculating = false;
     }
 }

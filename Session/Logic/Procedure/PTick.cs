@@ -1,7 +1,7 @@
 
 using Godot;
 
-public class TickProcedure : Procedure
+public class PTick : Procedure
 {
     public override bool Valid(Data data)
     {

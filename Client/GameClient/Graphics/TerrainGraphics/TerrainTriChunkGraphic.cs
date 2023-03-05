@@ -5,14 +5,13 @@ using Godot;
 
 public class TerrainTriChunkGraphic : Node2D
 {
-    public void Setup(List<MapPolygon> polys, Data data, 
+    public void Setup(MapChunk chunk, Data data, 
         Func<PolyTri, Color> getColor) 
     {
-        var first = polys.First();
+        var first = chunk.RelTo;
         var mb = new MeshBuilder();
-        for (var i = 0; i < polys.Count; i++)
+        foreach (var p in chunk.Polys)
         {
-            var p = polys[i];
             var offset = first.GetOffsetTo(p, data);
             var tris = p.GetTerrainTris(data).Tris;
             for (var j = 0; j < tris.Length; j++)

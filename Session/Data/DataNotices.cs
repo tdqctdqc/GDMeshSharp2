@@ -6,16 +6,15 @@ using Godot;
 public class DataNotices
 {
     public Action FinishedStateSync { get; set; }
+    public Action<Decision> NeedDecision { get; set; }
     private Dictionary<Type, object> _addedActions;
     //todo danger if entities are derived types? 
     private Dictionary<Type, object> _removingActions;
-    private Dictionary<Type, Dictionary<string, object>> _varUpdatedActions;
     
     public DataNotices()
     {
         _addedActions = new Dictionary<Type, object>();
         _removingActions = new Dictionary<Type, object>();
-        _varUpdatedActions = new Dictionary<Type, Dictionary<string, object>>();
     }
 
     public void RegisterEntityAddedCallback<TEntity>(Action<TEntity> callback)
@@ -26,7 +25,7 @@ public class DataNotices
             Action<TEntity> a = (TEntity e) => { };
             _addedActions.Add(eType, a);
         }
-        var action = ((Action<TEntity>) _addedActions[eType]);
+        var action = (Action<TEntity>) _addedActions[eType];
         action += callback;
         _addedActions[eType] = action;
     }

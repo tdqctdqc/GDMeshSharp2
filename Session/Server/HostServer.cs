@@ -8,10 +8,8 @@ public class HostServer : Node, IServer
     public int NetworkId => 1;
     private HostWriteKey _key;
     private HostLogic _logic;
-    private List<int> _clients;
     private List<HostSyncer> _peers;
-    private List<StreamPeerTCP> _connections;
-    private Queue<byte[]> _wrappedPacketsToSend;
+    private Dictionary<Guid, HostSyncer> _peersByGuid;
     public Queue<Command> QueuedCommands { get; private set; }
     private TCP_Server _tcp;
     private MessageManager _msg;
@@ -20,9 +18,8 @@ public class HostServer : Node, IServer
     private int _maxPlayers = 100;
     public override void _Ready()
     {
-        _connections = new List<StreamPeerTCP>();
-        _clients = new List<int>();
         _peers = new List<HostSyncer>();
+        _peersByGuid = new Dictionary<Guid, HostSyncer>();
         _tcp = new TCP_Server();
         _tcp.Listen((ushort)_port);
     }
@@ -39,8 +36,6 @@ public class HostServer : Node, IServer
 
     private void HandleNewPeer(StreamPeerTCP peer)
     {
-
-        // peer.ConnectToHost(_ip, _port);
         var packet = new PacketPeerStream();
         packet.StreamPeer = peer;
 
@@ -54,8 +49,11 @@ public class HostServer : Node, IServer
     public void SetDependencies(HostLogic logic, Data data)
     {
         _logic = logic;
-        _key = new HostWriteKey(this, data);
-        _msg = new MessageManager(u => { }, p => { }, logic.CommandQueue.Enqueue);
+        _key = new HostWriteKey(this, logic, data);
+        _msg = new MessageManager(u => { }, 
+            p => { }, 
+            logic.CommandQueue.Enqueue,
+            d => { });
     }
 
     public void QueueUpdate(Update u)
@@ -66,25 +64,53 @@ public class HostServer : Node, IServer
             _peers[i].QueuePacket(bytes);
         }
     }
-
-    public void ReceiveLogicMessages(List<Procedure> procs, List<Update> updates, HostWriteKey key)
+    public void ReceiveLogicResult(LogicResult result, HostWriteKey key)
     {
-        for (var i = 0; i < procs.Count; i++)
+        for (var i = 0; i < result.Procedures.Count; i++)
         {
-            var bytes = _msg.WrapProcedure(procs[i]);
+            var bytes = _msg.WrapProcedure(result.Procedures[i]);
             for (var j = 0; j < _peers.Count; j++)
             {
                 _peers[j].QueuePacket(bytes);
             }
         }
 
-        for (var i = 0; i < updates.Count; i++)
+        for (var i = 0; i < result.Updates.Count; i++)
         {
-            var bytes = _msg.WrapUpdate(updates[i]);
+            var bytes = _msg.WrapUpdate(result.Updates[i]);
             for (var j = 0; j < _peers.Count; j++)
             {
                 _peers[j].QueuePacket(bytes);
             }
         }
+        
+        for (var i = 0; i < result.Decisions.Count; i++)
+        {
+            var d = result.Decisions[i];
+            if (d.Decided) continue;
+            if (d.IsPlayerDecision(_key.Data))
+            {
+                var p = d.Decider.Entity().GetPlayer(_key.Data);
+                if (p.PlayerGuid == Game.I.PlayerGuid)
+                {
+                    _key.Data.Notices.NeedDecision?.Invoke(d);
+                }
+                else
+                {
+                    var bytes = _msg.WrapDecision(d);
+                    var peer = _peersByGuid[p.PlayerGuid];
+                    peer.QueuePacket(bytes);
+                }
+            }
+        }
+    }
+
+    public void PushPackets(HostWriteKey key)
+    {
+        _peers.ForEach(p => p.PushPackets(key));
+    }
+    public void QueueCommand(Command c, ClientWriteKey key)
+    {
+        _logic.CommandQueue.Enqueue(c);
     }
 }

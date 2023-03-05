@@ -5,12 +5,18 @@ using Godot;
 
 public static class MapPolygonExt
 {
-    public static bool IsEdgePoly(this MapPolygon p, Data data)
+    
+    public static List<List<LineSegment>> GetBorders(this IEnumerable<MapPolygon> polys, Data data)
     {
-        return p.Neighbors.Refs().Any(
-            n => Mathf.Abs(
-                n.Center.DistanceTo(p.Center) - p.GetOffsetTo(n, data).Length()) 
-                 > 10f);
+        var unions = UnionFind<MapPolygon>.DoUnionFind(polys.ToList(), (p, q) => true, p => p.Neighbors.Refs());
+        var res = new List<List<LineSegment>>();
+        foreach (var union in unions)
+        {
+            var hash = union.ToHashSet();
+            var firstBorder = union.First(p => p.Neighbors.Refs().Any(n => hash.Contains(n)));
+            
+        }
+        return res;
     }
     public static List<Triangle> GetTrisRel(this MapPolygon poly, Data data)
     {

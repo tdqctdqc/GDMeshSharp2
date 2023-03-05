@@ -1,5 +1,6 @@
 
 using System;
+using MessagePack;
 
 public class GameClock : Entity
 {
@@ -10,7 +11,7 @@ public class GameClock : Entity
         key.Create(gc);
         return gc;
     }
-    private GameClock(int id, int tick) : base(id)
+    [SerializationConstructor] private GameClock(int id, int tick) : base(id)
     {
         Tick = tick;
     }

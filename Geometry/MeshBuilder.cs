@@ -71,11 +71,10 @@ public class MeshBuilder
         AddTri(toIn, toOut, fromIn, color);
     }
 
-    public void AddPolysRelative(MapPolygon relTo, List<MapPolygon> polys, Func<MapPolygon, Color> getColor, Data data)
+    public void AddPolysRelative(MapPolygon relTo, IEnumerable<MapPolygon> polys, Func<MapPolygon, Color> getColor, Data data)
     {
-        for (var i = 0; i < polys.Count; i++)
+        foreach (var p in polys)
         {
-            var p = polys[i];
             var color = getColor(p);
             var polyTris = data.Cache.PolyRelWheelTris[p].Select(v => v.Transpose(relTo.GetOffsetTo(p, data))).ToList();
             for (int j = 0; j < polyTris.Count(); j++)
@@ -84,51 +83,42 @@ public class MeshBuilder
             }
         }
     }
-    
 
-    public void AddPolyBorders(MapPolygon relTo, List<MapPolygonBorder> borders, float thickness,
-        Func<MapPolygon, Color> getColor, Data data)
+    public void DrawBorder(MapPolygon poly, MapPolygonBorder border, Data data, float innerThickness, Color color, Vector2 offset)
     {
-        foreach (var border in borders)
+        var segs = border.GetSegsRel(poly);
+        var borders = poly.GetNeighborBorders(data);
+        var first = segs[0].From;
+        var firstPrev = borders
+            .FirstOrDefault(b => b.GetSegsRel(poly).Last().To == first)
+            ?.GetSegsRel(poly).Last();
+        var last = segs.Last().To;
+        var lastNext = borders
+            .FirstOrDefault(b => b.GetSegsRel(poly)[0].From == last)
+            ?.GetSegsRel(poly)[0];
+        
+        var firstInner = segs[0].From + segs[0].GetNormalizedPerpendicular() * innerThickness;
+        if (firstPrev != null) firstInner = firstPrev.GetCornerPoint(segs[0], innerThickness);
+
+        var lastInner = segs.Last().To + segs.Last().GetNormalizedPerpendicular() * innerThickness;
+        if (lastNext != null) lastInner = segs.Last().GetCornerPoint(lastNext, innerThickness);
+
+        var currInner = firstInner;
+        for (var i = 0; i < segs.Count; i++)
         {
-            var highId = border.HighId.Entity();
-            var highColor = getColor(highId);
             
-            var lowId = border.LowId.Entity();
-            var lowColor = getColor(lowId);
+            var seg = segs[i];
+            var axis = (seg.To - seg.From).Normalized();
+            var nextInner = i == segs.Count - 1
+                ? lastInner
+                : seg.GetCornerPoint(segs[i + 1], innerThickness);
             
-            var segs = border.GetSegsRel(highId)
-                .ChangeOrigin(highId, relTo, data)
-                .ToList();
+            AddTri(seg.From + offset, currInner + offset, seg.To + offset, color);
+            AddTri(nextInner + offset, currInner + offset, seg.To + offset, color);
             
-            AddBordersTris(segs, thickness, thickness, highColor, lowColor);
+            currInner = nextInner;
         }
     }
-    public void AddBordersTris(List<LineSegment> segs, float inThickness, float outThickness, 
-        Color inColor, Color outColor)
-    {
-        segs.ForEach(seg =>
-        {
-            var from = seg.From;
-            var to = seg.To;
-            var perpendicular = (from - to).Normalized().Rotated(-Mathf.Pi / 2f);
-            var fromOut = from + perpendicular * outThickness;
-            var toOut = to + perpendicular * outThickness;
-            var fromIn = from - perpendicular * inThickness;
-            var toIn = to - perpendicular * inThickness;
-            
-            AddTri(fromIn, from, to, inColor);
-            AddTri(to, toIn, fromIn, inColor);
-            AddTri(fromOut, toOut, from, outColor);
-            AddTri(toOut, to, from, outColor);
-        });
-    }
-
-    public void AddBorder(List<Vector2> points)
-    {
-        
-    }
-    
     public void AddLines(List<Vector2> froms,
         List<Vector2> tos, float thickness, List<Color> colors)
     {

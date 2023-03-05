@@ -141,6 +141,7 @@ public static class GenerationUtility
         }
         var firstSub = borderSubs.First();
         var firstEdges = nativeEdgeDic[firstSub];
+        if (firstEdges.Count == 0) return null;
         var firstEdge = firstEdges[0];
         var firstEdgeNeighbors = getAdjEdges(firstEdge);
         

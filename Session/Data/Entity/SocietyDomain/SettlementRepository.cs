@@ -4,6 +4,6 @@
         public RepoEntityIndexer<Settlement, MapPolygon> ByPoly { get; private set; }
         public SettlementRepository(Domain domain, Data data) : base(domain, data)
         {
-            ByPoly = new RepoEntityIndexer<Settlement, MapPolygon>(data, s => s.Poly.Entity());
+            ByPoly = RepoEntityIndexer<Settlement, MapPolygon>.CreateStatic(data, s => s.Poly.Entity());
         }
     }

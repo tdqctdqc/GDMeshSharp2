@@ -73,6 +73,8 @@ public class MapPolygonBorder : Entity
             if (t.Length() > 1000f || f.Length() > 1000f) throw new Exception();
             res.Add(alter ?  new LineSegment(t, f) : new LineSegment(f, t));
         }
+
+        if (res.IsContinuous() == false) res.Reverse();
         return res;
     }
     public void ReplacePoints(List<LineSegment> newSegmentsAbs, 
@@ -80,8 +82,6 @@ public class MapPolygonBorder : Entity
     {
         HighSegsRel = OrderAndRelativizeSegments(newSegmentsAbs, HighId.Entity(), key.Data);
         LowSegsRel = OrderAndRelativizeSegments(newSegmentsAbs, LowId.Entity(), key.Data);
-        var stitch1 = HighSegsRel.OrderEndToStart(key.GenData, HighId.Entity());
-        var stitch2 = LowSegsRel.OrderEndToStart(key.GenData, LowId.Entity());
         if (HighSegsRel.Count != LowSegsRel.Count) throw new Exception();
     }
     
@@ -151,5 +151,9 @@ public static class PolyBorderExt
         return b.HighSegsRel.GetPoints().Select(p => p + b.HighId.Entity().Center).ToList();
     }
 
+    public static bool IsRegimeBorder(this MapPolygonBorder b)
+    {
+        return b.HighId.Entity().Regime.RefId != b.LowId.Entity().Regime.RefId;
+    }
     
 }

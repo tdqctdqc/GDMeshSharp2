@@ -11,7 +11,6 @@ public class FaultLine
     public List<MapPolygon> PolyFootprint { get; private set; }
     public float Friction { get; private set; }
     public MapPolygon Origin => HighId.GetSeedPoly();
-    public List<BorderEdge<MapPolygon>> Edges { get; private set; }
     public FaultLine(float friction, GenPlate highId, 
         GenPlate lowId, List<BorderEdge<MapPolygon>> edgesHi,
         GenData data)
@@ -27,7 +26,6 @@ public class FaultLine
                 .ToList())
             .ToList();
         Segments.ForEach(ss => ss.ForEach(s => s.Clamp(data.Planet.Width)));
-        Edges = edgesHi;
     }
 
     public float GetDist(MapPolygon poly, GenData data)

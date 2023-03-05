@@ -73,6 +73,14 @@ public class LineSegment
         return (To.x - From.x)*(point.y - From.y) - (To.y - From.y)*(point.x - From.x) > 0;
     }
 
+    public Vector2 GetNormalizedAxis()
+    {
+        return (To - From).Normalized();
+    }
+    public Vector2 GetNormalizedPerpendicular()
+    {
+        return (To - From).Perpendicular().Normalized();
+    }
     public override string ToString()
     {
         return $"[from {From} to {To}] \b";

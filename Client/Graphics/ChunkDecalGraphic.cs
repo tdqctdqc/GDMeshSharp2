@@ -5,24 +5,24 @@ using Godot;
 
 public class ChunkDecalGraphic : Node2D
 {
-    public void Setup(MapChunk chunk, MapPolygon relTo, Data data)
+    public void Setup(MapChunk chunk, Data data)
     {
         var tris = chunk.Polys
-            .SelectMany(p => p.GetTerrainTris(data).Tris.Select(t => t.Transpose(relTo.GetOffsetTo(p, data))));
+            .SelectMany(p => p.GetTerrainTris(data).Tris.Select(t => t.Transpose(chunk.RelTo.GetOffsetTo(p, data))));
         var lfSort = tris.Sort(t => t.Landform);
         var vegSort = tris.Sort(t => t.Vegetation);
         foreach (var kvp in lfSort)
         {
             if (kvp.Key is IDecaledTerrain d)
             {
-                SetupDecals(d, kvp.Value, relTo, data);
+                SetupDecals(d, kvp.Value, chunk.RelTo, data);
             }
         }
         foreach (var kvp in vegSort)
         {
             if (kvp.Key is IDecaledTerrain d)
             {
-                SetupDecals(d, kvp.Value, relTo, data);
+                SetupDecals(d, kvp.Value, chunk.RelTo, data);
             }
         }
     }
@@ -37,7 +37,13 @@ public class ChunkDecalGraphic : Node2D
 
         mi.Multimesh = mm;
 
-        var allPs = pts.Select(pt => pt.GetPoissonPointsInside(t.DecalSpacing)).ToList();
+        var allPs = pts.Select(pt =>
+                {
+                    var poisson = pt.GetPoissonPointsInside(t.DecalSpacing);
+                    if (poisson.Count > 0) return poisson;
+                    else return new List<Vector2>{pt.GetCentroid()};
+                })
+            .ToList();
 
         mm.InstanceCount = allPs.Sum(ps => ps.Count);
         int iter = 0;

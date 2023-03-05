@@ -31,7 +31,7 @@ public class HostSyncer : Syncer
                 }
             }
         }
-
+        
         var done = FinishedStateSyncUpdate.Create(key);
         var bytes2 = _msg.WrapUpdate(done);
         QueuePacket(bytes2);
@@ -43,15 +43,12 @@ public class HostSyncer : Syncer
         _peerQueue.Enqueue(packet);
     }
 
-    private int _packetsSent = 0;
     public void PushPackets(HostWriteKey key)
     {
         bool push = true;
         while (push && _peerQueue.Count > 0)
         {
-            _packetsSent++;
             PushPacket(_peerQueue.Dequeue());
         }
-        GD.Print(_packetsSent);
     }
 }

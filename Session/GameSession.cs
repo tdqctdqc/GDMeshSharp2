@@ -8,6 +8,7 @@ public class GameSession : Node, ISession
     RefFulfiller ISession.RefFulfiller => Data.RefFulfiller;
     public Data Data { get; private set; }
     public IClient Client { get; private set; }
+    public Guid PlayerGuid { get; private set; }
     private ILogic _logic;
     private IServer _server;
     public UserCredential UserCredential { get; private set; }
@@ -35,7 +36,6 @@ public class GameSession : Node, ISession
     public void StartAsRemote(UserCredential userCredential = null)
     {
         SetCredential(userCredential);
-        
         Data = new Data();
         Data.Setup();
         var logic = new RemoteLogic(Data);
@@ -54,6 +54,7 @@ public class GameSession : Node, ISession
             userCredential = new UserCredential("doot", "doot");
         }
         UserCredential = userCredential;
+        PlayerGuid = UserCredential.Guid;
     }
 
     private void StartServer(IServer server)
@@ -77,6 +78,6 @@ public class GameSession : Node, ISession
 
     public void TestSerialization()
     {
-        if(_server is HostServer h) Game.I.Serializer.TestSerialization(new HostWriteKey(h, Data));
+        if(_server is HostServer h) Game.I.Serializer.TestSerialization(new HostWriteKey(h, null, Data));
     }
 }

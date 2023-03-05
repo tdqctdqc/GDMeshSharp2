@@ -8,4 +8,5 @@ public abstract class Command
         
     }
     public abstract void Enact(HostWriteKey key);
+    public abstract bool Valid(Data data);
 }

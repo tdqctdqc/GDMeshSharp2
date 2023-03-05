@@ -121,7 +121,7 @@ public class LocationGenerator
         //generate delaunay triangulation from that, build graph, find edge paths
         Data.LandSea.Landmasses.ForEach(lm =>
         {
-            var settlements = lm.Where(p => Data.Society.Settlements.ByPoly.ContainsKey(p.Id));
+            var settlements = lm.Where(p => Data.Society.Settlements.ByPoly.ContainsKey(p));
             if (settlements.Count() == 0) return;
             var first = settlements.First();
             var points = settlements.Select(s => first.GetOffsetTo(s, Data)).ToList();

@@ -26,13 +26,14 @@ public class MapDisplayOptionsUi : Container
         _data = data;
         _mousePos = new Label();
         AddChild(_mousePos);
-        var mapChunkGraphicType = typeof(MapChunkGraphic);
-        var toggleable = mapChunkGraphicType
-            .GetProperties()
-            .Where(p => p.HasAttribute<ToggleableAttribute>());
+        var chunkFactories = typeof(MapChunkGraphic)
+            .GetProperties(BindingFlags.Static | BindingFlags.Public)
+            .Where(p => p.PropertyType == typeof(ChunkGraphicFactory))
+            .Select(p => (ChunkGraphicFactory)p.GetMethod.Invoke(null, null));
         
-        foreach (var pi in toggleable)
+        foreach (var pi in chunkFactories)
         {
+            if (pi.Active == false) continue;
             var name = pi.Name;
             var btn = new Button();
             btn.Text = "Showing " + name;
@@ -40,7 +41,7 @@ public class MapDisplayOptionsUi : Container
             {
                 foreach (var mc in graphics.MapChunkGraphics)
                 {
-                    var n = (Node2D) pi.GetMethod.Invoke(mc, null);
+                    var n = mc.Modules[name];
                     Toggle(mc, n, btn, name);
                 }
             };

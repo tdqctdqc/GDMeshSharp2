@@ -9,7 +9,7 @@ using Godot;
 public class MessageTypeManager<T> : IMessageTypeManager
 {
     private Dictionary<byte, Func<byte[], T>> _unwrappers;
-    private Dictionary<Type, byte> _markers;
+    private Dictionary<Type, byte> _subTypeMarkers;
     private Action<T> _handle;
 
     
@@ -17,7 +17,7 @@ public class MessageTypeManager<T> : IMessageTypeManager
     {
         _handle = handle;
         _unwrappers = new Dictionary<byte, Func<byte[], T>>();
-        _markers = new Dictionary<Type, byte>();
+        _subTypeMarkers = new Dictionary<Type, byte>();
         var types = Assembly.GetExecutingAssembly().GetConcreteTypesOfType<T>().OrderBy(t => t.Name).ToList();
         if (types.Count > 254) throw new Exception();
         for (var i = 0; i < types.Count; i++)
@@ -25,7 +25,7 @@ public class MessageTypeManager<T> : IMessageTypeManager
             var subType = types[i];
             var marker = Convert.ToByte(i);
             Func<byte[], T> unwrapper = bytes => (T) Game.I.Serializer.MP.Deserialize(bytes, subType);
-            _markers.Add(subType, marker);
+            _subTypeMarkers.Add(subType, marker);
             _unwrappers.Add(marker, unwrapper);
         }
     }
@@ -38,6 +38,6 @@ public class MessageTypeManager<T> : IMessageTypeManager
     
     public MessageWrapper WrapAsMessage(T t, byte marker)
     {
-        return new MessageWrapper(marker, _markers[t.GetType()], Game.I.Serializer.MP.Serialize(t, t.GetType()));
+        return new MessageWrapper(marker, _subTypeMarkers[t.GetType()], Game.I.Serializer.MP.Serialize(t, t.GetType()));
     }
 }

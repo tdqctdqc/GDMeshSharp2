@@ -7,7 +7,6 @@ public class RemoteLogic : ILogic
 {
     private ServerWriteKey _sKey;
     private ProcedureWriteKey _pKey;
-
     public RemoteLogic(Data data)
     {
         _sKey = new ServerWriteKey(data);
@@ -27,5 +26,13 @@ public class RemoteLogic : ILogic
     public void ProcessProcedure(Procedure p)
     {
         p.Enact(_pKey);
+    }
+
+    public void ProcessDecision(Decision d)
+    {
+        if (d.Decided) return;
+        if (d.IsPlayerDecision(_sKey.Data) == false
+            || d.Decider.Entity().GetPlayer(_sKey.Data).PlayerGuid != Game.I.PlayerGuid) return;
+        _sKey.Data.Notices.NeedDecision?.Invoke(d);
     }
 }

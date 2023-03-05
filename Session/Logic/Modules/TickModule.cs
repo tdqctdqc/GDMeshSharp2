@@ -1,10 +1,13 @@
 
 using System.Collections.Generic;
+using System.Reflection;
 
 public class TickModule : LogicModule
 {
-    public override List<Procedure> Calculate(Data data)
+    public override LogicResult Calculate(Data data)
     {
-        return new List<Procedure> {new TickProcedure()};
+        return new LogicResult(new List<Procedure> {new PTick()}, 
+            new List<Decision>(),
+            new List<Update>()) ;
     }
 }

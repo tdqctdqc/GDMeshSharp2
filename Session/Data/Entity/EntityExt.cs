@@ -4,11 +4,8 @@ using System.Collections.Generic;
 
 public static class EntityExt
 {
-    public static void Log(this Entity e, int outOf, string msg)
+    public static EntityRef<T> MakeRef<T>(this T t) where T : Entity
     {
-        if (e.Id % outOf == 0)
-        {
-            GD.Print(msg);
-        }
+        return new EntityRef<T>(t.Id);
     }
 }

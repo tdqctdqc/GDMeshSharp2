@@ -12,12 +12,17 @@ public class Syncer
     protected bool _listening;
     private Stopwatch _sw;
 
-    public Syncer(PacketPeerStream packetStream, Action<Update> handleUpdate,
-        Action<Procedure> handleProcedure, Action<Command> handleCommand)
+    public Syncer(PacketPeerStream packetStream, Action<Update> handleUpdateReceived,
+        Action<Procedure> handleProcedureReceived, 
+        Action<Command> handleCommandReceived,
+        Action<Decision> handleDecisionReceived)
     {
         _sw = new Stopwatch();
         _packetStream = packetStream;
-        _msg = new MessageManager(handleUpdate, handleProcedure, handleCommand);
+        _msg = new MessageManager(handleUpdateReceived, 
+            handleProcedureReceived, 
+            handleCommandReceived,
+            handleDecisionReceived);
         _protocol = new PacketProtocol(0);
         _protocol.MessageArrived += _msg.HandleIncoming;
         Task.Run(Listen);

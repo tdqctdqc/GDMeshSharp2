@@ -8,8 +8,10 @@ public class Game : Node
 {
     public static Game I { get; private set; }
     public Serializer Serializer { get; private set; }
+    public Guid PlayerGuid => _session.PlayerGuid;
     public RandomNumberGenerator Random = new RandomNumberGenerator();
     private ISession _session;
+    public Action NewSession { get; set; }
 
     public RefFulfiller RefFulfiller => _session.RefFulfiller;
     public override void _Ready()
@@ -51,5 +53,6 @@ public class Game : Node
         session.Name = "Session";
         _session = (ISession)session;
         AddChild(session);
+        NewSession?.Invoke();
     }
 }

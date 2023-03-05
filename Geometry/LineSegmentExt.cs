@@ -132,7 +132,6 @@ public static class LineSegmentExt
     public static bool IsClockwise(this LineSegment seg, Vector2 center)
     {
         return (center - seg.From).Cross(seg.To - seg.From) > 0f;
-
     }
     public static List<LineSegment> OrderEndToStart(this List<LineSegment> segs, Data data, MapPolygon poly = null)
     {
@@ -298,7 +297,12 @@ public static class LineSegmentExt
 
         throw new Exception();
     }
-    
+
+    public static Vector2 GetPointAtLength(this LineSegment ls, float length)
+    {
+        if (length > ls.Length()) return ls.To;
+        return ls.From + (ls.To - ls.From).Normalized() * length;
+    }
     public static Vector2 GetPointAtLength(this IEnumerable<LineSegment> pairs, float length)
     {
         var totalLength = pairs.GetLength();
@@ -343,6 +347,66 @@ public static class LineSegmentExt
         }
 
         throw new Exception();
+    }
+
+    public static Vector2 GetCornerPoint(this LineSegment l1, LineSegment l2, float thickness)
+    {
+        var angle = l1.AngleBetween(l2);
+        var axis = l1.GetNormalizedAxis();
+        var perp = axis.Perpendicular() * thickness;
+        if (angle > Mathf.Pi) angle = -angle;
+
+        var d = thickness / Mathf.Tan(angle / 2f);
+        
+        var p = l1.To - axis * d + perp; 
+
+        return p;
+    }
+    public static float AngleBetween(this LineSegment l1, LineSegment l2)
+    {
+        if (l1.To != l2.From) throw new Exception();
+        return (l1.From - l1.To).GetCCWAngleTo(l2.To - l2.From);
+    }
+    public static List<List<LineSegment>> DecomposeIntoContinuous(this List<LineSegment> segs)
+    {
+        if (segs.IsContinuous()) return new List<List<LineSegment>> {segs.ToList()};
+        var res = new List<List<LineSegment>>();
+        int iter = 1;
+        int place = 0;
+        while (iter < segs.Count)
+        {
+            int thisIter = 1;
+            var hash = new HashSet<int>{place};
+            var first = place;
+            while (segs.Prev(first).To == segs[first].From)
+            {
+                first = (first - 1 + segs.Count) % segs.Count;
+                if (hash.Contains(first)) break;
+                hash.Add(first);
+                iter++;
+                thisIter++;
+            }
+            
+            var last = place;
+            while (segs.Next(last).From == segs[last].To)
+            {
+                last = (last + 1) % segs.Count;
+                if (hash.Contains(last)) break;
+                hash.Add(last);
+                iter++;
+                thisIter++;
+                place = (last + 1) % segs.Count;
+            }
+
+            var thisRes = new List<LineSegment>();
+            for (var i = 0; i < thisIter; i++)
+            {
+                thisRes.Add(segs.Modulo(i + first));
+            }
+            res.Add(thisRes);
+        }
+
+        return res;
     }
 
 }

@@ -10,7 +10,10 @@ public class MessageManager
     private Dictionary<Type, IMessageTypeManager> _managersByType;
     private Dictionary<Type, byte> _markers;
     private PacketProtocol _protocol;
-    public MessageManager(Action<Update> handleUpdate, Action<Procedure> handleProcedure, Action<Command> handleCommand)
+    public MessageManager(Action<Update> handleUpdate, 
+        Action<Procedure> handleProcedure, 
+        Action<Command> handleCommand,
+        Action<Decision> handleDecision)
     {
         _managersByByte = new Dictionary<byte, IMessageTypeManager>();
         _managersByType = new Dictionary<Type, IMessageTypeManager>();
@@ -18,6 +21,7 @@ public class MessageManager
         AddType<Update>(handleUpdate);
         AddType<Procedure>(handleProcedure);
         AddType<Command>(handleCommand);
+        AddType<Decision>(handleDecision);
     }
     public void HandleIncoming(byte[] packet)
     {
@@ -37,24 +41,18 @@ public class MessageManager
     {
         return WrapMessage<Command>(t);
     }
+
+    public byte[] WrapDecision(Decision d)
+    {
+        return WrapMessage<Decision>(d);
+    }
     private byte[] WrapMessage<T>(T t)
     {
         var typeManager = (MessageTypeManager<T>)_managersByType[typeof(T)];
         var wrapper = typeManager.WrapAsMessage(t, _markers[typeof(T)]);
         var bytes = Game.I.Serializer.MP.Serialize(wrapper);
-        var wrapper2 = Game.I.Serializer.MP.Deserialize<MessageWrapper>(bytes);
         if (bytes.Length > short.MaxValue - 1)
         {
-            if (t is EntityCreationUpdate u)
-            {
-                GD.Print(u.EntityTypeName);
-                if (u.EntityTypeName == nameof(PolyTerrainTris))
-                {
-                    var tt = Game.I.Serializer.MP.Deserialize<PolyTerrainTris>(u.EntityBytes);
-                    GD.Print($"{tt.Tris.Count()} tris");
-                }
-            }
-            
             throw new Exception($"Message size of {bytes.Length} for {t.GetType()} is too big");
         }
         return bytes;

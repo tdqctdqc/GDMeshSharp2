@@ -7,13 +7,34 @@ public class RepoIndexer<TEntity, TKey> : RepoAuxData<TEntity>
     where TEntity : Entity
 {
     public TEntity this[TKey e] => _dic.ContainsKey(e) ? _dic[e] : null;
-    private Dictionary<TKey, TEntity> _dic;
-    private Func<TEntity, TKey> _get;
-
-    public RepoIndexer(Data data, Func<TEntity, TKey> get) : base(data)
+    protected Dictionary<TKey, TEntity> _dic;
+    protected Func<TEntity, TKey> _get;
+    
+    
+    
+    public static RepoIndexer<TEntity, TKey> CreateStatic(Data data, Func<TEntity, TKey> get)
+    {
+        return new RepoIndexer<TEntity, TKey>(data, get);
+    }
+    public static RepoIndexer<TEntity, TKey> CreateDynamic(Data data, Func<TEntity, TKey> get, string keyFieldName)
+    {
+        return new RepoIndexer<TEntity, TKey>(data, get, keyFieldName);
+    }
+    protected RepoIndexer(Data data, Func<TEntity, TKey> get) : base(data)
     {
         _get = get;
         _dic = new Dictionary<TKey, TEntity>();
+    }
+    private RepoIndexer(Data data, Func<TEntity, TKey> get, string keyFieldName) : base(data)
+    {
+        _get = get;
+        _dic = new Dictionary<TKey, TEntity>();
+        Action<ValueChangedNotice<TEntity, TKey>> callback = n =>
+        {
+            _dic.Remove(n.OldVal);
+            _dic[n.NewVal] = n.Entity;
+        };
+        ValueChangedNotice<TEntity, TKey>.Register(keyFieldName, callback);
     }
 
     public bool ContainsKey(TKey e)
