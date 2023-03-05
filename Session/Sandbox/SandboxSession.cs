@@ -8,6 +8,7 @@ public class SandboxSession : Node, ISession
     public RefFulfiller RefFulfiller => null;
     private Vector2 _home;
     IClient ISession.Client => Client;
+    public Guid PlayerGuid => default;
     public SandboxClient Client { get;  set; }
     public override void _Ready()
     {

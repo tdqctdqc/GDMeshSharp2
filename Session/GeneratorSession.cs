@@ -8,6 +8,7 @@ public class GeneratorSession : Node, ISession
     RefFulfiller ISession.RefFulfiller => Data.RefFulfiller;
     public GenData Data => WorldGen.Data;
     IClient ISession.Client => Client;
+    public Guid PlayerGuid => default;
     public GeneratorClient Client { get; private set; }
     public WorldGenerator WorldGen { get; private set; }
     public Action<DisplayableException> GenerationFailed { get; set; }
