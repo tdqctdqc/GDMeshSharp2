@@ -12,31 +12,16 @@ public class Syncer
     protected bool _listening;
     private Stopwatch _sw;
 
-    public Syncer(PacketPeerStream packetStream, Action<Update> handleUpdateReceived,
-        Action<Procedure> handleProcedureReceived, 
-        Action<Command> handleCommandReceived,
-        Action<Decision> handleDecisionReceived)
-    {
-        _sw = new Stopwatch();
-        _packetStream = packetStream;
-        _msg = new MessageManager(handleUpdateReceived, 
-            handleProcedureReceived, 
-            handleCommandReceived,
-            handleDecisionReceived);
-        _protocol = new PacketProtocol(0);
-        _protocol.MessageArrived += _msg.HandleIncoming;
-        Task.Run(Listen);
-    }
-    public Syncer(PacketPeerStream packetStream, MessageManager msg)
+    public Syncer(PacketPeerStream packetStream, MessageManager msg, Guid fromGuid)
     {
         _sw = new Stopwatch();
         _packetStream = packetStream;
         _msg = msg;
         _protocol = new PacketProtocol(0);
-        _protocol.MessageArrived += _msg.HandleIncoming;
+        _protocol.MessageArrived += b => _msg.HandleIncoming(b, fromGuid);
         Task.Run(Listen);
     }
-
+    
     private int _packetsReceived = 0;
     private async void Listen()
     {
@@ -60,20 +45,9 @@ public class Syncer
     protected void PushPacket(byte[] bytes)
     {
         if (bytes.Length > short.MaxValue - 1) throw new Exception($"packet too big at {bytes.Length} bytes");
-
         var lengthBytes = BitConverter.GetBytes(Convert.ToInt16(bytes.Length));
         
         var e1 = _packetStream.PutPacket(lengthBytes);
-        if (e1 != Error.Ok)
-        {
-            GD.Print(e1);
-            throw new Exception();
-        }
         var e2 = _packetStream.PutPacket(bytes);
-        if (e2 != Error.Ok)
-        {
-            GD.Print(e2);
-            throw new Exception();
-        }
     }
 }

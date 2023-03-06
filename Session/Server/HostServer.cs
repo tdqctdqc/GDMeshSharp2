@@ -38,12 +38,11 @@ public class HostServer : Node, IServer
     {
         var packet = new PacketPeerStream();
         packet.StreamPeer = peer;
-
-        var syncer = new HostSyncer(packet, _msg);
+        var newPlayerGuid = Guid.NewGuid();
+        var syncer = new HostSyncer(packet, _logic, newPlayerGuid);
         GD.Print("started syncing");
-        syncer.Sync(_key);
+        syncer.Sync(newPlayerGuid, _key);
         GD.Print("Done syncing");
-
         _peers.Add(syncer);
     }
     public void SetDependencies(HostLogic logic, Data data, GameSession session)
@@ -109,8 +108,9 @@ public class HostServer : Node, IServer
     {
         _peers.ForEach(p => p.PushPackets(key));
     }
-    public void QueueCommand(Command c, WriteKey key)
+    public void QueueCommandLocal(Command c, WriteKey key)
     {
+        c.SetGuid(Game.I.PlayerGuid);
         _logic.CommandQueue.Enqueue(c);
     }
 }

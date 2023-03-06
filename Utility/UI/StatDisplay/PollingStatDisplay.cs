@@ -11,6 +11,7 @@ public class PollingStatDisplay : Node
         string name, Label label,
         Func<TEntity, TProperty> getStat, float timerPeriod)
     {
+        
         var d = new PollingStatDisplay();
         d.Setup(e, name, label, getStat, timerPeriod);
         return d;

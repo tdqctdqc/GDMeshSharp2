@@ -14,11 +14,22 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Data\Entity\MapPoly\**" />
+    <Compile Remove="Client\GameClient\Ui\DecisionWindow\**" />
+    <Compile Remove="Client\GameClient\Ui\MapPolyTooltip\**" />
+    <Compile Remove="Client\GameClient\Ui\TopBar\**" />
+    <Compile Remove="Client\GeneratorClient\**" />
+    <Compile Remove="Client\MapDisplayOptionsUi\**" />
+    <Compile Remove="Client\SandboxClient\**" />
+    <Compile Remove="Client\StartScene\**" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Remove="Data\Entity\MapPoly\**" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Client\GameClient\Ui\DecisionWindow" />
+    <EmbeddedResource Remove="Client\GameClient\Ui\DecisionWindow\**" />
+    <EmbeddedResource Remove="Client\GameClient\Ui\MapPolyTooltip\**" />
+    <EmbeddedResource Remove="Client\GameClient\Ui\TopBar\**" />
+    <EmbeddedResource Remove="Client\GeneratorClient\**" />
+    <EmbeddedResource Remove="Client\MapDisplayOptionsUi\**" />
+    <EmbeddedResource Remove="Client\SandboxClient\**" />
+    <EmbeddedResource Remove="Client\StartScene\**" />
   </ItemGroup>
 </Project>

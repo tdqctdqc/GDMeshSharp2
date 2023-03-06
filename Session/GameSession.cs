@@ -68,9 +68,8 @@ public class GameSession : Node, ISession
         else
         {
             var regime = Data.Society.Regimes.Entities.Where(r => r.IsPlayerRegime(Data) == false).First();
-            var com = new CreatePlayerCommand(_key, 
-                Game.I.PlayerGuid, "Doot");
-            Server.QueueCommand(com, _key);
+            var com = CreatePlayerCommand.Construct(Game.I.PlayerGuid, "Doot");
+            Server.QueueCommandLocal(com, _key);
         }
     }
 

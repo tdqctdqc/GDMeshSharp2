@@ -55,4 +55,9 @@ public class Game : Node
         AddChild(session);
         NewSession?.Invoke();
     }
+
+    public void SetPlayerGuid(Guid guid, WriteKey key)
+    {
+        PlayerGuid = guid;
+    }
 }

@@ -17,8 +17,8 @@ public class DecisionPrompt : IPrompt
             {
                 Action a = () =>
                 {
-                    var com = new ChooseDecisionCommand(key, d, o.Name);
-                    key.Session.Server.QueueCommand(com, key);
+                    var com = new ChooseDecisionCommand(d, o.Name);
+                    key.Session.Server.QueueCommandLocal(com, key);
                 };
                 return a;
             }).ToList();

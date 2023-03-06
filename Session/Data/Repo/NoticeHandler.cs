@@ -18,6 +18,7 @@ public abstract class NoticeHandler<TNotice>
         _oneTime = n => { };
         Clear += () =>
         {
+            //todo fix, or make sure things deregister themselves 
             // _action = n => { };
             // _oneTime = n => { };
         };

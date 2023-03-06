@@ -7,9 +7,12 @@ public class RemoteSyncer : Syncer
 {
     public RemoteSyncer(PacketPeerStream packetStream, RemoteLogic logic) 
         : base(packetStream, 
-        logic.ProcessUpdate, logic.ProcessProcedure, 
-        c => {},
-        logic.ProcessDecision)
+            new MessageManager(
+                logic.ProcessUpdate, 
+                logic.ProcessProcedure, 
+                c => {},
+                logic.ProcessDecision), 
+            new Guid())
     {
     }
 

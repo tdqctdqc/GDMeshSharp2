@@ -1,17 +1,18 @@
 
+using System;
 using Godot;
 
 public class ChooseRegimeCommand : Command
 {
     public EntityRef<Regime> Regime { get; private set; }
-    public ChooseRegimeCommand(EntityRef<Regime> regime, WriteKey key) : base(key)
+    public ChooseRegimeCommand(EntityRef<Regime> regime) : base()
     {
         Regime = regime;
     }
 
     public override void Enact(HostWriteKey key)
     {
-        var player = key.Data.BaseDomain.Players.ByGuid[PlayerGuid];
+        var player = key.Data.BaseDomain.Players.ByGuid[CommandingPlayerGuid];
         player.Set(nameof(player.Regime), Regime, key);
     }
 

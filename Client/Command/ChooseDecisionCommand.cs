@@ -1,10 +1,12 @@
 
+using System;
+
 public class ChooseDecisionCommand : Command
 {
     public Decision Decision { get; private set; }
     public string Choice { get; private set; }
 
-    public ChooseDecisionCommand(WriteKey key, Decision decision, string choice) : base(key)
+    public ChooseDecisionCommand(Decision decision, string choice) : base()
     {
         Decision = decision;
         Choice = choice;

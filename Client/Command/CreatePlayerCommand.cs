@@ -7,7 +7,11 @@ public class CreatePlayerCommand : Command
     public Guid Guid { get; private set; }
     public string Name { get; private set; }
 
-    public CreatePlayerCommand(WriteKey key, Guid guid, string name) : base(key)
+    public static CreatePlayerCommand Construct(Guid guid, string name)
+    {
+        return new CreatePlayerCommand(guid, name);
+    }
+    private CreatePlayerCommand(Guid guid, string name) : base()
     {
         Guid = guid;
         Name = name;

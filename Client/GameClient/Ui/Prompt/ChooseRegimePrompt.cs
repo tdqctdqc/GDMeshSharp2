@@ -17,10 +17,10 @@ public class ChooseRegimePrompt : IPrompt
             .Where(r => r.IsPlayerRegime(data) == false);
         Actions = availRegimes.Select(r => 
         {
-            var com = new ChooseRegimeCommand(r.MakeRef(), key);
+            var com = new ChooseRegimeCommand(r.MakeRef());
             Action a = () =>
             {
-                key.Session.Server.QueueCommand(com, key);
+                key.Session.Server.QueueCommandLocal(com, key);
             };
             return a;
         }).ToList();

@@ -4,7 +4,7 @@ using System;
 public class RepoEntityIndexer<TEntity, TKey> : RepoIndexer<TEntity, TKey>
     where TEntity : Entity where TKey : Entity
 {
-
+    //todo make so can reference entity that is in the middle of being added
     public static RepoEntityIndexer<TEntity, TKey> CreateStatic(Data data, Func<TEntity, TKey> get)
     {
         return new RepoEntityIndexer<TEntity, TKey>(data, get);

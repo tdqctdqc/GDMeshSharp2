@@ -7,12 +7,22 @@ using Godot;
 public class HostSyncer : Syncer
 {
     private Queue<byte[]> _peerQueue;
-    public HostSyncer(PacketPeerStream packetStream, MessageManager msg) : base(packetStream, msg)
+    public HostSyncer(PacketPeerStream packetStream, HostLogic logic, Guid fromGuid) 
+        : base(packetStream, 
+            new MessageManager(u => { }, 
+                p => { }, 
+                c =>
+                {
+                    c.SetGuid(fromGuid);
+                    logic.CommandQueue.Enqueue(c);
+                },
+                d => { }),
+            fromGuid)
     {
         _peerQueue = new Queue<byte[]>();
     }
 
-    public void Sync(HostWriteKey key)
+    public void Sync(Guid newPlayerGuid, HostWriteKey key)
     {
         GD.Print("Syncing");
         var data = key.Data;
@@ -31,8 +41,9 @@ public class HostSyncer : Syncer
                 }
             }
         }
-        
-        var done = FinishedStateSyncUpdate.Create(key);
+
+        Player.Create(key.IdDispenser.GetID(), newPlayerGuid, "doot", key);
+        var done = FinishedStateSyncUpdate.Create(newPlayerGuid, key);
         var bytes2 = _msg.WrapUpdate(done);
         QueuePacket(bytes2);
         PushPackets(key);

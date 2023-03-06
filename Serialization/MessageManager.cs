@@ -23,7 +23,7 @@ public class MessageManager
         AddType<Command>(handleCommand);
         AddType<Decision>(handleDecision);
     }
-    public void HandleIncoming(byte[] packet)
+    public void HandleIncoming(byte[] packet, Guid fromGuid)
     {
         var msg = Game.I.Serializer.MP.Deserialize<MessageWrapper>(packet);
         _managersByByte[msg.Marker].HandleIncoming(msg.SubMarker, msg.Data);

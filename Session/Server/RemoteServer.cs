@@ -52,7 +52,7 @@ public class RemoteServer : Node, IServer
         GD.Print("connection failed");
     }
 
-    public void QueueCommand(Command c, WriteKey key)
+    public void QueueCommandLocal(Command c, WriteKey key)
     {
         _syncer.SendCommand(c);
     }

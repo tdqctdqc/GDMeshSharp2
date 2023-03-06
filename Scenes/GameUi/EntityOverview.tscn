@@ -1,9 +1,8 @@
 [gd_scene load_steps=2 format=2]
 
-[ext_resource path="res://Client/EntityOverview/EntityOverview.cs" type="Script" id=1]
+[ext_resource path="res://Scenes/GameUi/EntityOverview.cs" type="Script" id=1]
 
 [node name="EntityOverview" type="WindowDialog"]
-visible = true
 margin_right = 635.0
 margin_bottom = 460.0
 script = ExtResource( 1 )
