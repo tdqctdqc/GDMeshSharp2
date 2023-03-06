@@ -8,7 +8,7 @@ public class Game : Node
 {
     public static Game I { get; private set; }
     public Serializer Serializer { get; private set; }
-    public Guid PlayerGuid => _session.PlayerGuid;
+    public Guid PlayerGuid { get; private set; } = Guid.NewGuid();
     public RandomNumberGenerator Random = new RandomNumberGenerator();
     private ISession _session;
     public Action NewSession { get; set; }

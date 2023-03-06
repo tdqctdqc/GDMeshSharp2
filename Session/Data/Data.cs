@@ -58,12 +58,12 @@ public class Data
         {
             hKey.HostServer.QueueUpdate(EntityCreationUpdate.Create(e, hKey));
         }
-        Notices.RaiseAddedEntity(e);
+        EntityCreatedHandler<TEntity>.Raise(new EntityCreatedNotice<TEntity>(e));
     }
 
     public void RemoveEntity<TEntity>(TEntity e, StrongWriteKey key) where TEntity : Entity
     {
-        Notices.RaiseRemovingEntity(e);
+        EntityDestroyedHandler<TEntity>.Raise(e);
         EntityRepos[e.Id].RemoveEntity(e, key);
         Entities.Remove(e.Id);
         EntityRepos.Remove(e.Id);

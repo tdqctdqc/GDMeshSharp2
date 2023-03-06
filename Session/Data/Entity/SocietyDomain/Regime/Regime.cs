@@ -51,4 +51,6 @@ public class Regime : Entity
         
         return r;
     }
+
+    public override string ToString() => Name;
 }

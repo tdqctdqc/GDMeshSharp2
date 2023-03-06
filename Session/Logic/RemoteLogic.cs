@@ -7,10 +7,10 @@ public class RemoteLogic : ILogic
 {
     private ServerWriteKey _sKey;
     private ProcedureWriteKey _pKey;
-    public RemoteLogic(Data data)
+    public RemoteLogic(Data data, GameSession session)
     {
-        _sKey = new ServerWriteKey(data);
-        _pKey = new ProcedureWriteKey(data);
+        _sKey = new ServerWriteKey(data, session);
+        _pKey = new ProcedureWriteKey(data, session);
     }
 
     public void Process(float delta)

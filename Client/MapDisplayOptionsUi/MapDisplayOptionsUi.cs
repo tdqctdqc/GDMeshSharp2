@@ -46,7 +46,7 @@ public class MapDisplayOptionsUi : Container
                 }
             };
             
-            var token = ButtonToken.Get(btn, toggle);
+            var token = ButtonToken.Create(btn, toggle);
             AddChild(btn);
         }
     }

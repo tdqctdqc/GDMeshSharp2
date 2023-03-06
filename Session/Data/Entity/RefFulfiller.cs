@@ -6,7 +6,7 @@ using Godot;
 public class RefFulfiller
 {
     private Data _data;
-
+    
     public RefFulfiller(Data data)
     {
         _data = data;

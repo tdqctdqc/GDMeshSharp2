@@ -11,7 +11,6 @@ public class Repository<T> : IRepo where T : Entity
     IReadOnlyCollection<Entity> IRepo.Entities => _entities;
     public IReadOnlyCollection<T> Entities => _entities;
     private HashSet<T> _entities;
-    protected ClientWriteKey _weakKey;
     Type IRepo.EntityType => typeof(T);
     
     public Repository(Domain domain, Data data)
@@ -20,7 +19,6 @@ public class Repository<T> : IRepo where T : Entity
         _entityValueUpdatedActions = new Dictionary<string, object>();
         _entitiesById = new Dictionary<int, T>();
         _entities = new HashSet<T>();
-        _weakKey = new ClientWriteKey(data);
     }
     
     public void AddEntity(Entity e, StrongWriteKey key)

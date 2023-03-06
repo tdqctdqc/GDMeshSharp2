@@ -12,12 +12,12 @@ public class WorldGenerator
     private GenerationParameters _genParams;
     public Action<DisplayableException> GenerationFailed { get; set; }
     public Action<string, string> GenerationFeedback { get; set; }
-    public WorldGenerator(GenerationParameters genParams)
+    public WorldGenerator(GeneratorSession session, GenerationParameters genParams)
     {
         _genParams = genParams;
         Data = new GenData();
         Data.Setup();
-        _key = new GenWriteKey(Data);
+        _key = new GenWriteKey(Data, session);
         _sw = new Stopwatch();
     }
     public bool Generate()

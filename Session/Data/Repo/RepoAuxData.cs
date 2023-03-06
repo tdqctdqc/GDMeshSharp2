@@ -11,7 +11,7 @@ public abstract class RepoAuxData<TEntity>
 
     public RepoAuxData(Data data)
     {
-        data.Notices.RegisterEntityAddedCallback<TEntity>(HandleAdded);
-        data.Notices.RegisterEntityRemovingCallback<TEntity>(HandleRemoved);
+        EntityCreatedHandler<TEntity>.Register(n => HandleAdded(n.Entity));
+        EntityDestroyedHandler<TEntity>.Register(n => HandleRemoved(n.Entity));
     }
 }

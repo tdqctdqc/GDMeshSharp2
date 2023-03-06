@@ -8,9 +8,9 @@ public class StartScene : Node
     private ButtonToken _genBtn, _remoteBtn, _sandbox;
     public override void _Ready()
     {
-        _genBtn = ButtonToken.Get(this, "Generate", StartGenerator); 
-        _remoteBtn = ButtonToken.Get(this, "Remote", StartAsClient); 
-        _sandbox = ButtonToken.Get(this, "Sandbox", StartSandbox); 
+        _genBtn = ButtonToken.Create(this, "Generate", StartGenerator); 
+        _remoteBtn = ButtonToken.Create(this, "Remote", StartAsClient); 
+        _sandbox = ButtonToken.Create(this, "Sandbox", StartSandbox); 
     }
 
     private void StartGenerator()

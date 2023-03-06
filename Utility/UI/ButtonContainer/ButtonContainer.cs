@@ -15,7 +15,7 @@ public class ButtonContainer : Container
     {
         var button = new Button();
         button.Text = buttonName;
-        var token = ButtonToken.Get(button, buttonAction);
+        var token = ButtonToken.Create(button, buttonAction);
         AddChild(button);
         _buttons.Add(button);
     }

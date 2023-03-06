@@ -33,8 +33,8 @@ public class GeneratorClient : Node, IClient
         this.AssignChildNode(ref _mapOptions, "MapDisplayOptionsUi");
         _mapOptions.Setup(_graphics, Cam, _session.Data);
         
-        _generate = ButtonToken.Get(this, "Generate", () => PressedGenerate());
-        _done = ButtonToken.Get(this, "Done", GoToGameSession);
+        _generate = ButtonToken.Create(this, "Generate", () => PressedGenerate());
+        _done = ButtonToken.Create(this, "Done", GoToGameSession);
         
     }
 

@@ -8,14 +8,14 @@ public class ButtonToken : Node
     private List<Action> _actions;
     public Button Button { get; private set; }
 
-    public static ButtonToken Get(Node node, string buttonName, params Action[] actions)
+    public static ButtonToken Create(Node node, string buttonName, params Action[] actions)
     {
         var button = (Button) node.FindNode(buttonName);
         var token = new ButtonToken();
         token.Setup(button, actions);
         return token;
     }
-    public static ButtonToken Get(Button button, params Action[] actions)
+    public static ButtonToken Create(Button button, params Action[] actions)
     {
         var token = new ButtonToken();
         token.Setup(button, actions);

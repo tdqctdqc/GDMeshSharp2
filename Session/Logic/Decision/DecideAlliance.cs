@@ -27,7 +27,7 @@ public class DecideAlliance : Decision
         return $"{Offerer.Entity().Name} is offering an alliance";
     }
 
-    protected override List<DecisionOption> GetOptions()
+    public override List<DecisionOption> GetOptions()
     {
         var accept = new DecisionOption(
             "Accept",

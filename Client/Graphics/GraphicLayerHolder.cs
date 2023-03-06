@@ -49,7 +49,7 @@ public class GraphicLayerHolder : Control
             ? "Selected " + name
             : "Turn on " + name;
         _viewButtonsContainer.AddChild(button);
-        var token = ButtonToken.Get(button, () => _views[name].Toggle(vis));
+        var token = ButtonToken.Create(button, () => _views[name].Toggle(vis));
         _viewTokens.Add(name, token);
     }
 

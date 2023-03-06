@@ -19,7 +19,7 @@ public class RemoteServer : Node, IServer
 
     public void Setup(ISession session, RemoteLogic logic, Data data)
     {
-        _key = new ServerWriteKey(data);
+        _key = new ServerWriteKey(data, session);
         _streamPeer = new StreamPeerTCP();
         if (_streamPeer.IsConnectedToHost() == false)
         {
@@ -41,11 +41,6 @@ public class RemoteServer : Node, IServer
     public override void _Process(float delta)
     {
     }
-    
-    public void ReceiveDependencies(ISession session, Data data)
-    {
-        _key = new ServerWriteKey(data);
-    }
     [Remote] public void OnConnectionSucceeded()
     {
         NetworkId = _network.GetUniqueId();
@@ -57,7 +52,7 @@ public class RemoteServer : Node, IServer
         GD.Print("connection failed");
     }
 
-    public void QueueCommand(Command c, ClientWriteKey key)
+    public void QueueCommand(Command c, WriteKey key)
     {
         _syncer.SendCommand(c);
     }

@@ -8,53 +8,70 @@ public class GameSession : Node, ISession
     RefFulfiller ISession.RefFulfiller => Data.RefFulfiller;
     public Data Data { get; private set; }
     public IClient Client { get; private set; }
-    public Guid PlayerGuid { get; private set; }
     private ILogic _logic;
-    private IServer _server;
+    public IServer Server { get; private set; }
     public UserCredential UserCredential { get; private set; }
+    private WriteKey _key;
     public override void _Process(float delta)
     {
         _logic?.Process(delta);
         Client?.Process(delta);
     }
     
-    public void StartAsHost(GenData data, UserCredential userCredential = null)
+    public void StartAsHost(GenData data)
     {
-        SetCredential(userCredential);
+        Data = data;
         var hServer = new HostServer();
-        _server = hServer;
+        Server = hServer;
         var logic = new HostLogic();
         _logic = logic;
+        _key = new HostWriteKey(hServer, logic, data, this);
+
         data.ClearAuxData();
-        Data = data;
-        hServer.SetDependencies(logic, Data);
-        logic.SetDependencies(hServer, Data);
+        hServer.SetDependencies(logic, Data, this);
+        logic.SetDependencies(hServer, this, Data);
         StartServer(hServer);
+        CreatePlayer(_key);
         StartClient(hServer);
     }
     
-    public void StartAsRemote(UserCredential userCredential = null)
+    public void StartAsRemote()
     {
-        SetCredential(userCredential);
         Data = new Data();
         Data.Setup();
-        var logic = new RemoteLogic(Data);
+
+        var logic = new RemoteLogic(Data, this);
         _logic = logic;
         var server = new RemoteServer();
-        _server = server;
-        Data.Notices.FinishedStateSync += () => StartClient(server);
+        Server = server;
+        _key = new WriteKey(Data, this);
+
+        Data.Notices.FinishedStateSync += () =>
+        {
+            CreatePlayer(_key);
+            StartClient(server);
+        };
         server.Setup(this, logic, Data);
         StartServer(server);
+        
     }
 
-    private void SetCredential(UserCredential userCredential)
+    private void CreatePlayer(WriteKey key)
     {
-        if (userCredential == null)
+        if (key is HostWriteKey h)
         {
-            userCredential = new UserCredential("doot", "doot");
+            GD.Print("creating player");
+            Player.Create(h.IdDispenser.GetID(), Game.I.PlayerGuid, "Doot", h);
+            GD.Print(Data.BaseDomain.Players.Entities.Count);
+            GD.Print(Data.BaseDomain.Players.LocalPlayer == null);
         }
-        UserCredential = userCredential;
-        PlayerGuid = UserCredential.Guid;
+        else
+        {
+            var regime = Data.Society.Regimes.Entities.Where(r => r.IsPlayerRegime(Data) == false).First();
+            var com = new CreatePlayerCommand(_key, 
+                Game.I.PlayerGuid, "Doot");
+            Server.QueueCommand(com, _key);
+        }
     }
 
     private void StartServer(IServer server)
@@ -78,6 +95,7 @@ public class GameSession : Node, ISession
 
     public void TestSerialization()
     {
-        if(_server is HostServer h) Game.I.Serializer.TestSerialization(new HostWriteKey(h, null, Data));
+        if(Server is HostServer h) 
+            Game.I.Serializer.TestSerialization(new HostWriteKey(h, null, Data, this));
     }
 }

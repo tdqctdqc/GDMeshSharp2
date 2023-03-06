@@ -46,10 +46,10 @@ public class HostServer : Node, IServer
 
         _peers.Add(syncer);
     }
-    public void SetDependencies(HostLogic logic, Data data)
+    public void SetDependencies(HostLogic logic, Data data, GameSession session)
     {
         _logic = logic;
-        _key = new HostWriteKey(this, logic, data);
+        _key = new HostWriteKey(this, logic, data, session);
         _msg = new MessageManager(u => { }, 
             p => { }, 
             logic.CommandQueue.Enqueue,
@@ -109,7 +109,7 @@ public class HostServer : Node, IServer
     {
         _peers.ForEach(p => p.PushPackets(key));
     }
-    public void QueueCommand(Command c, ClientWriteKey key)
+    public void QueueCommand(Command c, WriteKey key)
     {
         _logic.CommandQueue.Enqueue(c);
     }

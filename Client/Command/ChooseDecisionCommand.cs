@@ -12,7 +12,7 @@ public class ChooseDecisionCommand : Command
 
     public override void Enact(HostWriteKey key)
     {
-        Decision.PlayerDecide(Choice, key);
+        Decision.PlayerEnact(Choice, key);
     }
 
     public override bool Valid(Data data)

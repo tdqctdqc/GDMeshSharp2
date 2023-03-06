@@ -17,7 +17,7 @@ public class RepoEntityMultiIndexer<TSingle, TMult> : RepoAuxData<TMult>
     {
         _dic = new Dictionary<int, HashSet<int>>();
         _getSingle = getSingle;
-        ValueChangedNotice<TMult, EntityRef<TSingle>>.Register(
+        ValueChangedHandler<TMult, EntityRef<TSingle>>.RegisterForAll(
             fieldNameOnMult,
             n => 
             {
@@ -28,7 +28,7 @@ public class RepoEntityMultiIndexer<TSingle, TMult> : RepoAuxData<TMult>
                 _dic.AddOrUpdate(n.NewVal.RefId, n.Entity.Id);
             }
         );
-        data.Notices.RegisterEntityRemovingCallback<TSingle>(HandleTSingleRemoved);
+        EntityDestroyedHandler<TSingle>.Register(HandleTSingleRemoved);
     }
     
     public override void HandleAdded(TMult added)
@@ -37,9 +37,9 @@ public class RepoEntityMultiIndexer<TSingle, TMult> : RepoAuxData<TMult>
         if(single != null) _dic.AddOrUpdate(single.RefId, added.Id);
     }
 
-    private void HandleTSingleRemoved(TSingle s)
+    private void HandleTSingleRemoved(EntityDestroyedNotice<TSingle> n)
     {
-        _dic.Remove(s.Id);
+        _dic.Remove(n.Entity.Id);
     }
     public override void HandleRemoved(TMult removing)
     {

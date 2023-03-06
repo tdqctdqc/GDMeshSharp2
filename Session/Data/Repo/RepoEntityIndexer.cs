@@ -18,10 +18,10 @@ public class RepoEntityIndexer<TEntity, TKey> : RepoIndexer<TEntity, TKey>
     {
         Action<ValueChangedNotice<TEntity, TKey>> callback = n =>
         {
-            _dic.Remove(n.OldVal);
-            _dic[n.NewVal] = n.Entity;
+            if(n.OldVal != null) _dic.Remove(n.OldVal);
+            if(n.NewVal != null) _dic[n.NewVal] = n.Entity;
         };
-        ValueChangedNotice<TEntity, TKey>.Register(keyFieldName, callback);
+        ValueChangedHandler<TEntity, TKey>.RegisterForAll(keyFieldName, callback);
     }
     private RepoEntityIndexer(Data data, Func<TEntity, TKey> get) 
         : base(data, e => get(e))

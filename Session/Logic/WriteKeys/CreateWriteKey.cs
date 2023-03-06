@@ -6,7 +6,7 @@ using Godot;
 public class CreateWriteKey : StrongWriteKey
 {
     public IdDispenser IdDispenser { get; private set; }
-    public CreateWriteKey(Data data) : base(data)
+    public CreateWriteKey(Data data, ISession session) : base(data, session)
     {
         data.GetIdDispenser(this);
     }

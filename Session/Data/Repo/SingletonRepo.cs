@@ -8,7 +8,7 @@ public class SingletonRepo<T> : Repository<T> where T : Entity
     public T Value => Entities.First();
     public SingletonRepo(Domain domain, Data data) : base(domain, data)
     {
-        data.Notices.RegisterEntityAddedCallback<T>(
+        EntityCreatedHandler<T>.Register(
             entity => { if (Entities.Count > 1) throw new Exception(); }
         );
     }

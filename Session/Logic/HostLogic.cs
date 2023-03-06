@@ -39,17 +39,6 @@ public class HostLogic : ILogic
             DoFrame();
         }
         
-    }
-    public void SetDependencies(HostServer server, Data data)
-    {
-        _data = data;
-        _server = server;
-        _hKey = new HostWriteKey(server, this, data);
-        _pKey = new ProcedureWriteKey(data);
-    }
-
-    public async void DoFrame()
-    {
         var commandCount = CommandQueue.Count;
         for (var i = 0; i < commandCount; i++)
         {
@@ -58,6 +47,19 @@ public class HostLogic : ILogic
                 if(command.Valid(_data)) command.Enact(_hKey);
             }
         }
+        
+    }
+    public void SetDependencies(HostServer server, GameSession session, Data data)
+    {
+        _data = data;
+        _server = server;
+        _hKey = new HostWriteKey(server, this, data, session);
+        _pKey = new ProcedureWriteKey(data, session);
+    }
+
+    public async void DoFrame()
+    {
+        
         var logicResult = await Task.Run(() => _frames[_frameIter].Calculate(_data));
         _frameIter = (_frameIter + 1) % _frames.Length;
         

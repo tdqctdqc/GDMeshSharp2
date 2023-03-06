@@ -10,8 +10,6 @@ public class RepoIndexer<TEntity, TKey> : RepoAuxData<TEntity>
     protected Dictionary<TKey, TEntity> _dic;
     protected Func<TEntity, TKey> _get;
     
-    
-    
     public static RepoIndexer<TEntity, TKey> CreateStatic(Data data, Func<TEntity, TKey> get)
     {
         return new RepoIndexer<TEntity, TKey>(data, get);
@@ -31,10 +29,10 @@ public class RepoIndexer<TEntity, TKey> : RepoAuxData<TEntity>
         _dic = new Dictionary<TKey, TEntity>();
         Action<ValueChangedNotice<TEntity, TKey>> callback = n =>
         {
-            _dic.Remove(n.OldVal);
-            _dic[n.NewVal] = n.Entity;
+            if(n.OldVal != null) _dic.Remove(n.OldVal);
+            if(n.NewVal != null) _dic[n.NewVal] = n.Entity;
         };
-        ValueChangedNotice<TEntity, TKey>.Register(keyFieldName, callback);
+        ValueChangedHandler<TEntity, TKey>.RegisterForAll(keyFieldName, callback);
     }
 
     public bool ContainsKey(TKey e)

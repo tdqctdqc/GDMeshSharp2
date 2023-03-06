@@ -10,6 +10,7 @@ public class GameClient : Node, IClient
     public CameraController Cam { get; private set; }
     public GameGraphics Graphics { get; private set; }
     public Data Data { get; private set; }
+    public ClientWriteKey Key { get; private set; }
     public override void _Ready()
     {
         
@@ -19,24 +20,33 @@ public class GameClient : Node, IClient
     {
         if (GetParent() == null) return;
         Graphics?.Process(delta, Data);
+        Ui?.Process(delta, Key);
     }
     public void Setup(GameSession session, IServer server)
     {
+        Key = new ClientWriteKey(session.Data, session);
         Session = session;
         Data = Session.Data;
-        //todo let just transfer graphics from gen
         Cam = new CameraController();
         AddChild(Cam);
         Cam.Current = true;
         
-        BuildGraphics(Session.Data);
-        BuildUi(Session.Data, server);
         if (server is RemoteServer r)
         {
-            r.ReceivedStateTransfer += () => Graphics.Setup(this, Session.Data);
+            r.ReceivedStateTransfer += DataLoaded;
+        }
+        else
+        {
+            DataLoaded(); 
         }
     }
 
+    private void DataLoaded()
+    {
+        BuildGraphics(Session.Data);
+        BuildUi(Session.Data, Key.Session.Server);
+        Graphics.Setup(this, Session.Data);
+    }
     private void BuildGraphics(Data data)
     {
         Graphics = GameGraphics.Get();

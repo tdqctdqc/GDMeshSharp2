@@ -8,6 +8,7 @@ public static class NodeExt
     public static void AssignChildNode<T>(this Node n, ref T node, string name) where T : Node
     {
         node = (T) n.FindNode(name);
+        if (node == null) throw new Exception();
     }
     public static void ChildAndCenterOn(this Node2D parent, Control toCenter, Vector2 parentDim)
     {

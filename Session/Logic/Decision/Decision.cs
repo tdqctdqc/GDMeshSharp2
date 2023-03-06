@@ -5,6 +5,7 @@ using System.Linq;
 
 public abstract class Decision
 {
+    private IPrompt _promptImplementation;
     public EntityRef<Regime> Decider { get; private set; }
     public bool Decided { get; private set; }
     protected Decision(EntityRef<Regime> decider, bool decided)
@@ -27,11 +28,11 @@ public abstract class Decision
     }
 
     public bool IsPlayerDecision(Data data) => Decider.Entity().IsPlayerRegime(data);
-    public void PlayerDecide(string option, HostWriteKey key)
+    public void PlayerEnact(string option, HostWriteKey key)
     {
         Decided = true;
         if (Valid(key.Data) == false) return;
         GetOptions().First(o => o.Name == option).Enact(key);
     }
-    protected abstract List<DecisionOption> GetOptions();
+    public abstract List<DecisionOption> GetOptions();
 }

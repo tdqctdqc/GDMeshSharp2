@@ -48,4 +48,9 @@ public class EntityRef<TRef> : IRef<int> where TRef : Entity
     {
         _ref = (TRef) data[RefId];
     }
+
+    public override string ToString()
+    {
+        return Empty() ? "Empty" : Entity().ToString();
+    }
 }

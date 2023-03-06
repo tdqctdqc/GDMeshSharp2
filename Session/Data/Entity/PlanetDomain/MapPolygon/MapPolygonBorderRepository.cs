@@ -9,9 +9,10 @@ public class MapPolygonBorderRepository : Repository<MapPolygonBorder>
     public MapPolygonBorderRepository(Domain domain, Data data) : base(domain, data)
     {
         BordersByEdge = new Dictionary<Edge<MapPolygon>, MapPolygonBorder>();
-        data.Notices.RegisterEntityAddedCallback<MapPolygonBorder>(
-            border =>
+        EntityCreatedHandler<MapPolygonBorder>.Register(
+            n =>
             {
+                var border = n.Entity;
                 var edge = MakeEdge(border.HighId.Entity(), border.LowId.Entity());
                 BordersByEdge[edge] = border;
             }
