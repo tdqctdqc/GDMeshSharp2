@@ -31,22 +31,11 @@ public class GameClient : Node, IClient
         AddChild(Cam);
         Cam.Current = true;
         
-        if (server is RemoteServer r)
-        {
-            r.ReceivedStateTransfer += DataLoaded;
-        }
-        else
-        {
-            DataLoaded(); 
-        }
-    }
-
-    private void DataLoaded()
-    {
         BuildGraphics(Session.Data);
         BuildUi(Session.Data, Key.Session.Server);
         Graphics.Setup(this, Session.Data);
     }
+    
     private void BuildGraphics(Data data)
     {
         Graphics = GameGraphics.Get();

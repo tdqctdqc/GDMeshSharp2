@@ -14,7 +14,7 @@ public class Settlement : Location
     
     public static Settlement Create(int id, string name, MapPolygon poly, float size, CreateWriteKey key)
     {
-        var s = new Settlement(id, new EntityRef<MapPolygon>(poly.Id), size, name);
+        var s = new Settlement(id, poly.MakeRef(), size, name);
         key.Create(s);
         return s;
     }

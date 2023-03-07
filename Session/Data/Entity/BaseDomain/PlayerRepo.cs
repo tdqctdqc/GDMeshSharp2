@@ -9,7 +9,7 @@
         public PlayerRepo(Domain domain, Data data) : base(domain, data)
         {
             ByRegime = RepoEntityIndexer<Player, Regime>.CreateDynamic(data, 
-                p => p.Regime.Entity(), 
+                p => p.Regime, 
                 nameof(Player.Regime));
             ByGuid = RepoIndexer<Player, Guid>.CreateStatic(data, p => p.PlayerGuid);
         }

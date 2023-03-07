@@ -6,6 +6,7 @@ using Godot;
 public class RepoIndexer<TEntity, TKey> : RepoAuxData<TEntity>
     where TEntity : Entity
 {
+    public Action<TEntity, TKey> Added { get; set; }
     public TEntity this[TKey e] => _dic.ContainsKey(e) ? _dic[e] : null;
     protected Dictionary<TKey, TEntity> _dic;
     protected Func<TEntity, TKey> _get;
@@ -42,7 +43,11 @@ public class RepoIndexer<TEntity, TKey> : RepoAuxData<TEntity>
     public override void HandleAdded(TEntity added)
     {
         var val = _get(added);
-        if(val != null) _dic[val] = added;
+        if(val != null)
+        {
+            Added?.Invoke(added, val);
+            _dic[val] = added;
+        }
     }
 
     public override void HandleRemoved(TEntity removing)

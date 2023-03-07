@@ -25,6 +25,7 @@ public class RoadChunkGraphic : Node2D
             }
         }
         if (froms.Count == 0) return;
+        GD.Print("adding roads");
         var mesh = MeshGenerator.GetLinesMesh(froms, tos, 10f);
         mesh.Modulate = Colors.LightGray;
         AddChild(mesh);

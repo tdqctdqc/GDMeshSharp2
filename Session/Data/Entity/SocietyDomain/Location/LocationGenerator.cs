@@ -117,8 +117,6 @@ public class LocationGenerator
     }
     private void GenerateRoadNetwork()
     {
-        //get points of offsets from given poly
-        //generate delaunay triangulation from that, build graph, find edge paths
         Data.LandSea.Landmasses.ForEach(lm =>
         {
             var settlements = lm.Where(p => Data.Society.Settlements.ByPoly.ContainsKey(p));
@@ -141,11 +139,13 @@ public class LocationGenerator
                 if (e.T1.GetOffsetTo(e.T2, Data).Length() > 1000f) continue;
                 var path = PathFinder<MapPolygon>.FindPath(e.T1, e.T2, p => p.Neighbors.Refs(),
                     edgeCost, (p1, p2) => p1.GetOffsetTo(p2, Data).Length());
+
                 for (var i = 0; i < path.Count - 1; i++)
                 {
                     var border = path[i].GetBorder(path[i + 1], Data);
+
                     if(Data.Society.Roads.ByBorderId.ContainsKey(border.Id)) continue;
-                    var road = RoadSegment.Create(_id.GetID(), border, _key);
+                    RoadSegment.Create(_id.GetID(), border, _key);
                 }
             }
         });

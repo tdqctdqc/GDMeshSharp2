@@ -17,8 +17,7 @@ public class RoadSegment : Entity
     
     public static RoadSegment Create(int id, MapPolygonBorder border, CreateWriteKey key)
     {
-        var borderRef = new EntityRef<MapPolygonBorder>(border, key);
-        var rs =  new RoadSegment(id, borderRef);
+        var rs =  new RoadSegment(id, border.MakeRef());
         key.Create(rs);
         return rs;
     }

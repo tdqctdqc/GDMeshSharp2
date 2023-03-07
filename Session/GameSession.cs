@@ -25,13 +25,15 @@ public class GameSession : Node, ISession
         Server = hServer;
         var logic = new HostLogic();
         _logic = logic;
-        _key = new HostWriteKey(hServer, logic, data, this);
+        var hKey = new HostWriteKey(hServer, logic, data, this);
+        _key = hKey;
 
         data.ClearAuxData();
         hServer.SetDependencies(logic, Data, this);
         logic.SetDependencies(hServer, this, Data);
         StartServer(hServer);
-        CreatePlayer(_key);
+        Player.Create(hKey.IdDispenser.GetID(), Game.I.PlayerGuid, "Doot", hKey);
+
         StartClient(hServer);
     }
     
@@ -48,29 +50,11 @@ public class GameSession : Node, ISession
 
         Data.Notices.FinishedStateSync += () =>
         {
-            CreatePlayer(_key);
             StartClient(server);
         };
         server.Setup(this, logic, Data);
         StartServer(server);
         
-    }
-
-    private void CreatePlayer(WriteKey key)
-    {
-        if (key is HostWriteKey h)
-        {
-            GD.Print("creating player");
-            Player.Create(h.IdDispenser.GetID(), Game.I.PlayerGuid, "Doot", h);
-            GD.Print(Data.BaseDomain.Players.Entities.Count);
-            GD.Print(Data.BaseDomain.Players.LocalPlayer == null);
-        }
-        else
-        {
-            var regime = Data.Society.Regimes.Entities.Where(r => r.IsPlayerRegime(Data) == false).First();
-            var com = CreatePlayerCommand.Construct(Game.I.PlayerGuid, "Doot");
-            Server.QueueCommandLocal(com, _key);
-        }
     }
 
     private void StartServer(IServer server)
@@ -81,6 +65,7 @@ public class GameSession : Node, ISession
 
     private void StartClient(IServer server)
     {
+        GD.Print("starting client");
         var client = new GameClient();
         Client = client;
         client.Setup(this, server);

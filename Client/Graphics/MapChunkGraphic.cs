@@ -49,7 +49,7 @@ public class MapChunkGraphic : Node2D
             return g;
         });
     public static ChunkGraphicFactory Roads { get; private set; }
-        = new ChunkGraphicFactory(nameof(Roads),true, (c, d) =>
+        = new ChunkGraphicFactory(nameof(Roads), true, (c, d) =>
         {
             var r = new RoadChunkGraphic();
             r.Setup(c, d);
@@ -83,9 +83,9 @@ public class MapChunkGraphic : Node2D
             Vegetation,
             RegimeFill,
             RegimeBorders,
-            Roads,
             Borders,
-            Decals
+            Decals,
+            Roads
         );
     }
 

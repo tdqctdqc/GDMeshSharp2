@@ -79,7 +79,13 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
     public void UpdateEntityVarServer<TProperty>(string fieldName, Entity t, ServerWriteKey key, TProperty newValue)
     {
         var repo = key.Data.EntityRepos[t.Id];
-        var oldValue = (TProperty)_vars[fieldName].GetForSerialize((T)t);
+        
+        var prop = _vars[fieldName].GetForSerialize((T)t);
+        if (prop is TProperty == false)
+        {
+            GD.Print($"{fieldName} is not {typeof(TProperty)}");
+        }
+        var oldValue = (TProperty)prop;
         _vars[fieldName].Set((T)t, newValue, key);
         ValueChangedHandler<T, TProperty>.Raise(fieldName, (T)t, oldValue, newValue, key);
     }

@@ -25,6 +25,8 @@ public class HostSyncer : Syncer
     public void Sync(Guid newPlayerGuid, HostWriteKey key)
     {
         GD.Print("Syncing");
+        Player.Create(key.IdDispenser.GetID(), newPlayerGuid, "doot", key);
+
         var data = key.Data;
         foreach (var kvp1 in data.Domains)
         {
@@ -42,7 +44,7 @@ public class HostSyncer : Syncer
             }
         }
 
-        Player.Create(key.IdDispenser.GetID(), newPlayerGuid, "doot", key);
+        
         var done = FinishedStateSyncUpdate.Create(newPlayerGuid, key);
         var bytes2 = _msg.WrapUpdate(done);
         QueuePacket(bytes2);
