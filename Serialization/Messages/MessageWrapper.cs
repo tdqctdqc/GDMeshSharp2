@@ -11,4 +11,10 @@ public class MessageWrapper
         SubMarker = subMarker;
         Data = data;
     }
+    
+    public Message Unwrap()
+    {
+        var subType = Message.GetSubType(Marker, SubMarker);
+        return (Message)Game.I.Serializer.MP.Deserialize(Data, subType);
+    }
 }

@@ -7,18 +7,13 @@ public class RemoteSyncer : Syncer
 {
     public RemoteSyncer(PacketPeerStream packetStream, RemoteLogic logic) 
         : base(packetStream, 
-            new MessageManager(
-                logic.ProcessUpdate, 
-                logic.ProcessProcedure, 
-                c => {},
-                logic.ProcessDecision), 
-            new Guid())
+            m => m.HandleRemote(logic))
     {
     }
 
     public void SendCommand(Command command)
     {
-        var bytes = _msg.WrapCommand(command);
+        var bytes = command.Wrap();
         PushPacket(bytes);
     }
     

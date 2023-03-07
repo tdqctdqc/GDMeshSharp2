@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public abstract class Decision
+public abstract class Decision : Message
 {
     private IPrompt _promptImplementation;
     public EntityRef<Regime> Decider { get; private set; }
@@ -35,4 +35,20 @@ public abstract class Decision
         GetOptions().First(o => o.Name == option).Enact(key);
     }
     public abstract List<DecisionOption> GetOptions();
+    public override void HandleHost(HostLogic logic)
+    {
+        return;
+    }
+    public override void HandleRemote(RemoteLogic logic)
+    {
+        logic.ProcessDecision(this);
+    }
+    protected override byte GetSubMarker()
+    {
+        return _typeManagers[typeof(Decision)].GetMarkerFromMessageType(GetType());
+    }
+    protected override byte GetMarker()
+    {
+        return _markers[typeof(Decision)];
+    }
 }

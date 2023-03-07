@@ -8,17 +8,23 @@ public class Syncer
 {
     protected PacketPeerStream _packetStream;
     protected PacketProtocol _protocol;
-    protected MessageManager _msg;
     protected bool _listening;
     private Stopwatch _sw;
+    private Action<Message> _handle;
 
-    public Syncer(PacketPeerStream packetStream, MessageManager msg, Guid fromGuid)
+
+    protected Syncer(PacketPeerStream packetStream,
+        Action<Message> handle)
     {
+        _handle = handle;
         _sw = new Stopwatch();
         _packetStream = packetStream;
-        _msg = msg;
         _protocol = new PacketProtocol(0);
-        _protocol.MessageArrived += b => _msg.HandleIncoming(b, fromGuid);
+        _protocol.MessageArrived += b =>
+        {
+            var m = Game.I.Serializer.MP.Deserialize<MessageWrapper>(b).Unwrap();
+            _handle(m);
+        };
         Task.Run(Listen);
     }
     

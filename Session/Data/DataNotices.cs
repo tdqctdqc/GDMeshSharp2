@@ -7,7 +7,6 @@ public class DataNotices
 {
     public Action FinishedStateSync { get; set; }
     public Action<Decision> NeedDecision { get; set; }
-    //todo danger if entities are derived types? 
     
     public DataNotices()
     {

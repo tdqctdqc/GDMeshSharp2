@@ -5,17 +5,16 @@ using System.Linq;
 using System.Reflection;
 using MessagePack;
 
-[MessagePackObject(keyAsPropertyName: true)] 
 
 public sealed partial class EntityCreationUpdate : Update
 {
+    //todo can make just type?
     public string EntityTypeName { get; private set; }
     public byte[] EntityBytes { get; private set; }
     
     public static EntityCreationUpdate Create(Entity entity, HostWriteKey key)
     {
         var entityBytes = Game.I.Serializer.MP.Serialize(entity, entity.GetType());
-
         return new EntityCreationUpdate(entity.GetType().Name, entityBytes);
     }
     [SerializationConstructor] public EntityCreationUpdate(string entityTypeName, byte[] entityBytes) 

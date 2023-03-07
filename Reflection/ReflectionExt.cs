@@ -16,6 +16,11 @@ public static class ReflectionExt
         return assembly.GetTypes()
             .Where(t => t.IsInterface == false && t.IsAbstract == false && abstractType.IsAssignableFrom(t)).ToList();
     }
+
+    public static List<Type> GetDirectlyDerivedTypes(this Type baseType, Type[] types)
+    {
+        return baseType.GetDerivedTypes(types).Where(t => t.BaseType == baseType).ToList();
+    }
     public static List<Type> GetDerivedTypes(this Type baseType, Type[] types)
     {
         // Get all types from the given assembly

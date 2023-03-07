@@ -39,19 +39,10 @@ public class MessagePackManager
             StandardResolver.Instance
         );
         _options = MessagePackSerializerOptions.Standard.WithResolver(resolver);
-        
-
-// Pass options every time or set as default
+        // Pass options every time or set as default
         MessagePackSerializer.DefaultOptions = _options;
-        
-        
-        
-        var types = Assembly.GetExecutingAssembly().GetTypes();
-        var formatterTypes = types.Where(typeof(IMessagePackFormatter).IsAssignableFrom).ToList();
-        formatterTypes.ForEach(f =>
-        {
-        });
     }
+    
 }
 
 //supported types

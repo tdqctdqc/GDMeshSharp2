@@ -95,7 +95,6 @@ public class LocationGenerator
 
         var numSettlements = Mathf.Min(settlementPolys.Count, settlementSizes.Count);
         
-        
         for (var i = 0; i < numSettlements; i++)
         {
             var p = settlementPolys[i];

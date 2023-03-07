@@ -7,14 +7,11 @@ using Godot;
 public class SandboxClient : Node, IClient
 {
     public CameraController Cam { get; private set; }
-    private Vector2 _home;
     private Label _degrees, _mousePos;
     private Dictionary<int, Node2D> _triGraphics;
     private Node2D _mouseOverTriGraphics;
     private Line2D _mouseLine;
     private CanvasLayer _canvas;
-    private Node2D _hook;
-    private PolyTri _prevMouseOver;
     private List<int> _sectionTriIndices;
     
     public SandboxClient()
@@ -30,12 +27,10 @@ public class SandboxClient : Node, IClient
 
     public void Setup(Vector2 home)
     {
-        _hook = new Node2D();
-        AddChild(_hook);
+        
         this.AssignChildNode(ref _canvas, "Canvas");
-        _home = home;
         var mb = new MeshBuilder();
-        mb.AddPointMarkers(new List<Vector2>{_home}, 20f, Colors.Red);
+        mb.AddPointMarkers(new List<Vector2> {Vector2.Zero}, 20f, Colors.Red);
         AddChild(mb.GetMeshInstance());
         
         Cam = new CameraController();

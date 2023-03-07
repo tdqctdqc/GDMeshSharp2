@@ -9,15 +9,13 @@ public class HostSyncer : Syncer
     private Queue<byte[]> _peerQueue;
     public HostSyncer(PacketPeerStream packetStream, HostLogic logic, Guid fromGuid) 
         : base(packetStream, 
-            new MessageManager(u => { }, 
-                p => { }, 
-                c =>
+            m => {
+                if (m is Command c)
                 {
                     c.SetGuid(fromGuid);
-                    logic.CommandQueue.Enqueue(c);
-                },
-                d => { }),
-            fromGuid)
+                }
+                m.HandleHost(logic);
+            })
     {
         _peerQueue = new Queue<byte[]>();
     }
@@ -38,28 +36,25 @@ public class HostSyncer : Syncer
                 foreach (var e in repo.Entities)
                 {
                     var u = EntityCreationUpdate.Create(e, key);
-                    var bytes = _msg.WrapUpdate(u);
-                    QueuePacket(bytes);
+                    QueuePacket(u.Wrap());
                 }
             }
         }
-
         
         var done = FinishedStateSyncUpdate.Create(newPlayerGuid, key);
-        var bytes2 = _msg.WrapUpdate(done);
-        QueuePacket(bytes2);
+        var bytes = done.Wrap();
+        QueuePacket(bytes);
         PushPackets(key);
     }
-
     public void QueuePacket(byte[] packet)
     {
         _peerQueue.Enqueue(packet);
     }
-
     public void PushPackets(HostWriteKey key)
     {
         bool push = true;
-        while (push && _peerQueue.Count > 0)
+        var count = _peerQueue.Count;
+        for (var i = 0; i < count; i++)
         {
             PushPacket(_peerQueue.Dequeue());
         }

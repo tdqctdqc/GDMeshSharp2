@@ -5,17 +5,12 @@ using System.Linq;
 
 public class HostServer : Node, IServer
 {
-    public int NetworkId => 1;
     private HostWriteKey _key;
     private HostLogic _logic;
     private List<HostSyncer> _peers;
     private Dictionary<Guid, HostSyncer> _peersByGuid;
-    public Queue<Command> QueuedCommands { get; private set; }
     private TCP_Server _tcp;
-    private MessageManager _msg;
-    private string _ip = "127.0.0.1";
     private int _port = 3306;
-    private int _maxPlayers = 100;
     public override void _Ready()
     {
         _peers = new List<HostSyncer>();
@@ -44,20 +39,17 @@ public class HostServer : Node, IServer
         syncer.Sync(newPlayerGuid, _key);
         GD.Print("Done syncing");
         _peers.Add(syncer);
+        _peersByGuid.Add(newPlayerGuid, syncer);
     }
     public void SetDependencies(HostLogic logic, Data data, GameSession session)
     {
         _logic = logic;
         _key = new HostWriteKey(this, logic, data, session);
-        _msg = new MessageManager(u => { }, 
-            p => { }, 
-            logic.CommandQueue.Enqueue,
-            d => { });
     }
 
     public void QueueUpdate(Update u)
     {
-        var bytes = _msg.WrapUpdate(u);
+        var bytes = u.Wrap();
         for (var i = 0; i < _peers.Count; i++)
         {
             _peers[i].QueuePacket(bytes);
@@ -67,7 +59,7 @@ public class HostServer : Node, IServer
     {
         for (var i = 0; i < result.Procedures.Count; i++)
         {
-            var bytes = _msg.WrapProcedure(result.Procedures[i]);
+            var bytes = result.Procedures[i].Wrap();
             for (var j = 0; j < _peers.Count; j++)
             {
                 _peers[j].QueuePacket(bytes);
@@ -76,7 +68,7 @@ public class HostServer : Node, IServer
 
         for (var i = 0; i < result.Updates.Count; i++)
         {
-            var bytes = _msg.WrapUpdate(result.Updates[i]);
+            var bytes = result.Updates[i].Wrap();
             for (var j = 0; j < _peers.Count; j++)
             {
                 _peers[j].QueuePacket(bytes);
@@ -96,7 +88,7 @@ public class HostServer : Node, IServer
                 }
                 else
                 {
-                    var bytes = _msg.WrapDecision(d);
+                    var bytes = d.Wrap();
                     var peer = _peersByGuid[p.PlayerGuid];
                     peer.QueuePacket(bytes);
                 }

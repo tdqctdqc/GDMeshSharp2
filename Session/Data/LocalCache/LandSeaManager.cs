@@ -30,7 +30,6 @@ public class LandSeaManager
             m.ForEach(p => LandmassDic.Add(p, hash));
         });
         
-        //todo is union find only doing elements inside the input list?
         Seas = new List<HashSet<MapPolygon>>();
         SeaDic = new Dictionary<MapPolygon, HashSet<MapPolygon>>();
         var seamasses =

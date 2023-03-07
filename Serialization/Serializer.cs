@@ -12,22 +12,6 @@ public class Serializer
     public Dictionary<string, Type> Types { get; private set; }
     public Dictionary<Type, IEntityMeta> _entityMetas;
     public IEntityMeta GetEntityMeta(Type type) => _entityMetas[type];
-    public IEntityMeta GetEntityMeta(string typeName)  
-    {
-        if (Types.ContainsKey(typeName) == false)
-        {
-            throw new Exception("no entity types of name " + typeName);
-        }
-        if (_entityMetas.ContainsKey(Types[typeName]) == false)
-        {
-            throw new Exception("no entity types of type " + Types[typeName].Name);
-        }
-        if (_entityMetas[Types[typeName]] == null)
-        {
-            throw new Exception("null meta for " + Types[typeName].Name);
-        }
-        return _entityMetas[Types[typeName]];
-    }
     public EntityMeta<T> GetEntityMeta<T>() where T : Entity
     {
         return (EntityMeta<T>)_entityMetas[typeof(T)];
@@ -37,14 +21,9 @@ public class Serializer
     {
         MP = new MessagePackManager();
         MP.Setup();
-        
+        Message.Setup();
         SetupEntityMetas();
-        AddTypeToDic<Update>();
-        AddTypeToDic<Procedure>();
-        AddTypeToDic<Command>();
-        AddTypeToDic<Domain>();
     }
-
     private void SetupEntityMetas()
     {
         Types = new Dictionary<string, Type>();
@@ -60,14 +39,6 @@ public class Serializer
             var constructor = genericMeta.GetConstructors()[0];
             var meta = constructor.Invoke(new object[]{});
             _entityMetas.Add(entityType, (IEntityMeta)meta);
-        }
-    }
-    private void AddTypeToDic<T>()
-    {
-        var metaSubTypes = Assembly.GetExecutingAssembly().GetConcreteTypesOfType<T>();
-        foreach (var metaSubType in metaSubTypes)
-        {
-            Types.Add(metaSubType.Name, metaSubType);
         }
     }
 
