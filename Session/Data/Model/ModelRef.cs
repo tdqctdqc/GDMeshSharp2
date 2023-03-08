@@ -5,7 +5,7 @@ using Godot;
 using MessagePack;
 
 [RefAttribute] 
-public class ModelRef<T> : IRef<string> where T : IModel
+public class ModelRef<T> : IRef where T : IModel
 {
     public string ModelName { get; private set; }
     private T _ref;

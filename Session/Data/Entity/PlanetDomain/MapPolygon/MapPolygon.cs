@@ -4,13 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 using MessagePack;
 
-public partial class MapPolygon : Entity
+public partial class MapPolygon : Entity, IGraphNode<MapPolygon, bool>
 {
+    public static ImplicitGraph<MapPolygon, bool> Graph { get; private set; } = ImplicitGraph.Get<MapPolygon, bool>();
     public override Type GetDomainType() => typeof(PlanetDomain);
     public Vector2 Center { get; protected set; }
     
-    //todo check this works w serialization, or put in local cache
-    public List<LineSegment> BorderSegments { get; private set; }
     public EntityRefCollection<MapPolygon> Neighbors { get; protected set; }
     public Color Color { get; protected set; }
     public float Altitude { get; private set; }
@@ -27,8 +26,7 @@ public partial class MapPolygon : Entity
     
     [SerializationConstructor] private MapPolygon(int id, Vector2 center, EntityRefCollection<MapPolygon> neighbors, 
         Color color, float altitude, float roughness, 
-        float moisture, EntityRef<Regime> regime,
-        List<LineSegment> borderSegments) : base(id)
+        float moisture, EntityRef<Regime> regime) : base(id)
     {
         Center = center;
         Neighbors = neighbors;
@@ -37,7 +35,6 @@ public partial class MapPolygon : Entity
         Roughness = roughness;
         Moisture = moisture;
         Regime = regime;
-        BorderSegments = borderSegments;
     }
 
     public static MapPolygon Create(int id, Vector2 center, float mapWidth, GenWriteKey key)
@@ -51,8 +48,7 @@ public partial class MapPolygon : Entity
             0f,
             0f,
             0f,
-            new EntityRef<Regime>(-1),
-            new List<LineSegment>()
+            new EntityRef<Regime>(-1)
         );
         key.Create(p);
         return p;
@@ -68,32 +64,36 @@ public partial class MapPolygon : Entity
     public void AddNeighbor(MapPolygon poly, MapPolygonBorder border, GenWriteKey key)
     {
         if (Neighbors.Contains(poly)) return;
-        Neighbors.AddRef(poly, key.Data);
+        Neighbors.AddRef(poly, key);
     }
     public void RemoveNeighbor(MapPolygon poly, GenWriteKey key)
     {
         //only use in merging left-right wrap
-        Neighbors.RemoveRef(poly, key.Data);
+        Neighbors.RemoveRef(poly, key);
     }
     public void SetRegime(Regime r, CreateWriteKey key)
     {
         GetMeta().UpdateEntityVar<EntityRef<Regime>>(nameof(Regime), this, key, new EntityRef<Regime>(r.Id));
     }
 
-    public void SetBorderSegments(GenWriteKey key)
+    public List<LineSegment> GetBorderSegments(Data data)
+    {
+        return data.Cache.PolyBorderSegments[this];
+    }
+    public List<LineSegment> BuildBorderSegments(Data data)
     {
         var neighborSegs = Neighbors.Refs().Select(n => GetBorder(
-                n, key.Data))
+                n, data))
             .SelectMany(b => b.GetSegsRel(this))
             .ToList();
         
         neighborSegs.CorrectSegmentsToClockwise(Vector2.Zero);
         neighborSegs.OrderByClockwise(Vector2.Zero, ls => ls.From);
-        neighborSegs = neighborSegs.OrderEndToStart(key.GenData, this);
+        neighborSegs = neighborSegs.OrderEndToStart(data, this);
 
-        var before = BorderSegments.Count > 0
-            ? BorderSegments.ToList() 
-            : neighborSegs.ToList();
+        var before = data.Cache.PolyBorderSegments != null 
+            ? data.Cache.PolyBorderSegments[this]
+            : new List<LineSegment>();
 
         if (neighborSegs.IsCircuit() == false)
         {
@@ -104,9 +104,12 @@ public partial class MapPolygon : Entity
         if (neighborSegs.IsCircuit() == false || neighborSegs.IsContinuous() == false)
         {
             GD.Print("still not circuit");
-            throw new SegmentsNotConnectedException(key.GenData, this, before, neighborSegs);
+            throw new SegmentsNotConnectedException(data, this, before, neighborSegs);
         }
-
-        BorderSegments = neighborSegs;
+        return neighborSegs;
     }
+    
+    bool IGraphNode<MapPolygon, bool>.GetEdge(MapPolygon n) => true;
+    bool IGraphNode<MapPolygon, bool>.HasEdge(MapPolygon n) => Neighbors.Contains(n);
+    IReadOnlyCollection<MapPolygon> IGraphNode<MapPolygon, bool>.Neighbors => Neighbors;
 }

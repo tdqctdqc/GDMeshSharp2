@@ -170,7 +170,6 @@ public class MoistureGenerator
     {
         var pathToSea = new Dictionary<MapPolygon, List<MapPolygon>>();
         var additional = new Dictionary<MapPolygon, float>();
-        //todo check if double adding
         var polys = Data.Planet.Polygons.Entities.Distinct().ToList();
             
         polys.ForEach(p =>

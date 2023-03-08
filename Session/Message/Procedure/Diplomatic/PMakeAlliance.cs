@@ -14,7 +14,7 @@ public class PMakeAlliance : Procedure
     }
     public override bool Valid(Data data)
     {
-        return Offerer.Check(data) && Accepter.Check(data);
+        return Offerer.CheckExists(data) && Accepter.CheckExists(data);
     }
     public override void Enact(ProcedureWriteKey key)
     {

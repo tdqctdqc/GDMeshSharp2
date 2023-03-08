@@ -10,7 +10,6 @@ public class MapPolyTerrainSample
     public MapPolyTerrainSample(MapPolygon poly, Data data)
     {
         Poly = poly;
-        var tris = poly.GetTrisRel(data);
         var polyTri = poly.GetTerrainTris(data);
         var polyTris = poly.GetTerrainTris(data).Tris;
         FertilityMod = polyTris.Count() > 0f 

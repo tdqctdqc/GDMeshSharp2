@@ -31,7 +31,6 @@ public class UnionFind<T>
             }
         }
     }
-
     public static List<List<T>> DoUnionFind(IReadOnlyCollection<T> elements, 
         Func<T,T,bool> compare, 
         Func<T, IEnumerable<T>> neighborFunc)
@@ -47,7 +46,6 @@ public class UnionFind<T>
 
     private void CheckRoots()
     {
-        //todo fix so dont need this
         foreach (var element in _ranks.Keys)
         {
             _parents[element] = FindRoot(element);

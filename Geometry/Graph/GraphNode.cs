@@ -6,9 +6,10 @@ public class GraphNode<TNode, TEdge> : IGraphNode<TNode, TEdge>
 {
     public TNode Element {get; private set;}
     private Dictionary<TNode, GraphNode<TNode, TEdge>> _nodeDic;
-    IReadOnlyList<TNode> IGraphNode<TNode, TEdge>.Neighbors => Neighbors;
-    TEdge IGraphNode<TNode, TEdge>.GetPolyBorder(TNode neighbor) => _costs[neighbor];
-    
+    IReadOnlyCollection<TNode> IGraphNode<TNode, TEdge>.Neighbors => Neighbors;
+    TEdge IGraphNode<TNode, TEdge>.GetEdge(TNode neighbor) => _costs[neighbor];
+    bool IGraphNode<TNode, TEdge>.HasEdge(TNode neighbor) => HasNeighbor(neighbor);
+
 
     public List<TNode> Neighbors { get; private set; }
     private Dictionary<TNode, TEdge> _costs;

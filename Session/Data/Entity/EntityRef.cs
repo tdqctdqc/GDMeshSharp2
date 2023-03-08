@@ -5,7 +5,7 @@ using MessagePack;
 
 [RefAttribute] 
 [MessagePackObject(keyAsPropertyName: true)] 
-public class EntityRef<TRef> : IRef<int> where TRef : Entity
+public class EntityRef<TRef> : IRef where TRef : Entity
 {
     public int RefId { get; private set; }
     private TRef _ref;
@@ -35,7 +35,7 @@ public class EntityRef<TRef> : IRef<int> where TRef : Entity
         return RefId == -1;
     }
 
-    public bool Check(Data data)
+    public bool CheckExists(Data data)
     {
         if (data.Entities.TryGetValue(RefId, out var e))
         {

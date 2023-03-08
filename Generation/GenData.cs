@@ -8,13 +8,15 @@ public class GenData : Data
     public GenAuxiliaryData GenAuxData { get; private set; }
     public GeneratorEvents Events { get; private set; }
     public MapGenInfo GenInfo { get; set; }
-    public GenData()
+    public GenerationParameters GenParams { get; private set; }
+    public GenData(GenerationParameters genParams)
     {
+        GenParams = genParams;
     }
 
     protected override void Init()
     {
-        GenAuxData = new GenAuxiliaryData();
+        GenAuxData = new GenAuxiliaryData(this);
         LandSea = new LandSeaManager();
         Events = new GeneratorEvents();
         base.Init();

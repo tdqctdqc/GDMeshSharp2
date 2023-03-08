@@ -3,15 +3,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public sealed class GenCell : ISuper<GenCell, MapPolygon>
+public sealed class GenCell : IGraphNode<GenCell, bool>
 {
+    public static ImplicitGraph<GenCell, bool> Graph { get; private set; } = ImplicitGraph.Get<GenCell, bool>();
     public MapPolygon Seed { get; private set; }
     public GenPlate Plate { get; private set; }
     public HashSet<MapPolygon> PolyGeos { get; private set; }
     public HashSet<MapPolygon> NeighboringPolyGeos { get; private set; }
     public List<GenCell> Neighbors { get; private set; }
+    
+
     public Vector2 Center { get; private set; }
     private Dictionary<MapPolygon, GenCell> _polyCells;
+
     public GenCell(MapPolygon seed, GenWriteKey key, Dictionary<MapPolygon, GenCell> polyCells, GenData data)
     {
         _polyCells = polyCells;
@@ -53,8 +57,7 @@ public sealed class GenCell : ISuper<GenCell, MapPolygon>
         Neighbors = NeighboringPolyGeos
             .Select(t => key.GenData.GenAuxData.PolyCells[t]).Distinct().ToList();
     }
-    IReadOnlyCollection<GenCell> ISuper<GenCell, MapPolygon>.Neighbors => Neighbors;
-    IReadOnlyCollection<MapPolygon> ISuper<GenCell, MapPolygon>.GetSubNeighbors(MapPolygon poly) => poly.Neighbors.Refs();
-    GenCell ISuper<GenCell, MapPolygon>.GetSubSuper(MapPolygon poly) => _polyCells[poly];
-    IReadOnlyCollection<MapPolygon> ISuper<GenCell, MapPolygon>.Subs => PolyGeos;
+    IReadOnlyCollection<GenCell> IGraphNode<GenCell, bool>.Neighbors => Neighbors;
+    bool IGraphNode<GenCell, bool>.GetEdge(GenCell neighbor) => true;
+    bool IGraphNode<GenCell, bool>.HasEdge(GenCell neighbor) => Neighbors.Contains(neighbor);
 }

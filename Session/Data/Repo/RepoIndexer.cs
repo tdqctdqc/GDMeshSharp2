@@ -1,6 +1,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 
 public class RepoIndexer<TEntity, TKey> : RepoAuxData<TEntity>
@@ -23,6 +24,7 @@ public class RepoIndexer<TEntity, TKey> : RepoAuxData<TEntity>
     {
         _get = get;
         _dic = new Dictionary<TKey, TEntity>();
+        Initialize(data);
     }
     private RepoIndexer(Data data, Func<TEntity, TKey> get, string keyFieldName) : base(data)
     {
@@ -34,8 +36,19 @@ public class RepoIndexer<TEntity, TKey> : RepoAuxData<TEntity>
             if(n.NewVal != null) _dic[n.NewVal] = n.Entity;
         };
         ValueChangedHandler<TEntity, TKey>.RegisterForAll(keyFieldName, callback);
+        Initialize(data);
     }
 
+    private void Initialize(Data data)
+    {
+        foreach (var repo in data.EntityRepos.Values.Where(v => v.EntityType == typeof(TEntity)))
+        {
+            foreach (var e in repo.Entities)
+            {
+                _dic.Add(_get((TEntity)e), (TEntity)e);
+            }
+        }
+    }
     public bool ContainsKey(TKey e)
     {
         return _dic.ContainsKey(e);

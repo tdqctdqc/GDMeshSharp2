@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public class GenMass : ISuper<GenMass, GenPlate>
+public class GenMass
 {
     public int Id { get; private set; }
     public GenContinent GenContinent { get; private set; }
@@ -52,8 +52,4 @@ public class GenMass : ISuper<GenMass, GenPlate>
     {
         Neighbors = NeighboringPlates.Select(t => t.Mass).ToHashSet();
     }
-    IReadOnlyCollection<GenMass> ISuper<GenMass, GenPlate>.Neighbors => Neighbors;
-    IReadOnlyCollection<GenPlate> ISuper<GenMass, GenPlate>.GetSubNeighbors(GenPlate plate) => plate.Neighbors;
-    GenMass ISuper<GenMass, GenPlate>.GetSubSuper(GenPlate plate) => plate.Mass;
-    IReadOnlyCollection<GenPlate> ISuper<GenMass, GenPlate>.Subs => Plates;
 }

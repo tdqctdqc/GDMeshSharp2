@@ -12,7 +12,7 @@ public abstract class NoticeHandler<TNotice>
     static NoticeHandler()
     {
         //todo fix 
-        Game.I.NewSession += () => Clear?.Invoke();
+        Game.I.ClearNotices += () => Clear?.Invoke();
 
         _action = n => { };
         _oneTime = n => { };

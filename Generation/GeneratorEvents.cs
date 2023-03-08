@@ -5,5 +5,5 @@ using Godot;
 
 public class GeneratorEvents
 {
-    public Action FinalizedPolyShapes { get; set; }
+    public Action SetPolyShapes { get; set; }
 }

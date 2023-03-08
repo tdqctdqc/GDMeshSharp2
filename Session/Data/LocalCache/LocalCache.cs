@@ -9,26 +9,25 @@ public class LocalCache
     public HashSet<MapChunk> Chunks { get; private set; }
     public Dictionary<MapPolygon, List<Triangle>> PolyRelWheelTris { get; private set; }
     public PolyGrid MapPolyGrid { get; private set; }
+    public Dictionary<MapPolygon, List<LineSegment>> PolyBorderSegments { get; private set; }
     public LocalCache(Data data)
     {
         _data = data;
         if (data is GenData g)
         {
-            g.Events.FinalizedPolyShapes += FinalizedPolyShapes;
+            g.Events.SetPolyShapes += () => SetPolyShapes(data);
         }
         else
         {
-            data.Notices.FinishedStateSync += Init;
+            data.Notices.FinishedStateSync += () => SetPolyShapes(data);
         }
     }
 
-    private void Init()
-    {
-        FinalizedPolyShapes();
-    }
 
-    private void FinalizedPolyShapes()
+    private void SetPolyShapes(Data data)
     {
+        GD.Print("setting poly shapes");
+        PolyBorderSegments = data.Planet.Polygons.Entities.ToDictionary(p => p, p => p.BuildBorderSegments(data));
         BuildPolyGrid();
         BuildChunks();
         BuildPolyRelTris();

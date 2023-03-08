@@ -54,7 +54,7 @@ public class RegimeGenerator
             var r = ((RegimeWanderer) w).Regime;
             foreach (var p in w.Picked)
             {
-                r.Polygons.AddRef(p, _key.Data);
+                r.Polygons.AddRef(p, _key);
                 p.SetRegime(r, _key);
             }
         }
@@ -74,7 +74,7 @@ public class RegimeGenerator
             for (var i = 1; i < union.Count; i++)
             {
                 var p = union[i];
-                regime.Polygons.AddRef(p, _key.Data);
+                regime.Polygons.AddRef(p, _key);
                 p.SetRegime(regime, _key);
             }
         }

@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public class GenContinent : ISuper<GenContinent, GenMass>
+public class GenContinent
 {
     public int Id { get; private set; }
     public GenMass Seed { get; private set; }
@@ -51,8 +51,4 @@ public class GenContinent : ISuper<GenContinent, GenMass>
         Neighbors = NeighboringMasses.Select(t => t.GenContinent).ToHashSet();
     }
     
-    IReadOnlyCollection<GenContinent> ISuper<GenContinent, GenMass>.Neighbors => Neighbors;
-    IReadOnlyCollection<GenMass> ISuper<GenContinent, GenMass>.GetSubNeighbors(GenMass mass) => mass.Neighbors;
-    GenContinent ISuper<GenContinent, GenMass>.GetSubSuper(GenMass mass) => mass.GenContinent;
-    IReadOnlyCollection<GenMass> ISuper<GenContinent, GenMass>.Subs => Masses;
 }

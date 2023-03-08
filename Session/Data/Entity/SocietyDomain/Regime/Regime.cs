@@ -30,13 +30,10 @@ public class Regime : Entity
     public static Regime Create(IdDispenser idd, string name, Color primaryColor, Color secondaryColor, 
         MapPolygon seed, CreateWriteKey key)
     {
-        var polygons = new EntityRefCollection<MapPolygon>(new HashSet<int>());
-        polygons.AddRef(seed, key.Data);
+        var polygons = new EntityRefCollection<MapPolygon>(new HashSet<int>{seed.Id});
         var r = new Regime(idd.GetID(), name, primaryColor, secondaryColor, polygons, new EntityRef<MapPolygon>(seed.Id),
             new Wallet<Resource>(new Dictionary<Resource, float>()));
         key.Create(r);
-        
-        r.Polygons.AddRef(seed, key.Data);
         seed.SetRegime(r, key);
         
         var regimes = key.Data.Society.Regimes.Entities;

@@ -22,9 +22,9 @@ public class MeshBuilder
         Colors.Clear();
     }
 
-    public void AddPoly(MapPolygon poly, Vector2 offset, float insetFactor)
+    public void AddPoly(MapPolygon poly, Data data, Vector2 offset, float insetFactor)
     {
-        var inscribed = poly.BorderSegments.GetInscribed(Vector2.Zero, insetFactor)
+        var inscribed = poly.GetBorderSegments(data).GetInscribed(Vector2.Zero, insetFactor)
             .Select(ls => ls.Translate(offset))
             .ToList();
         var col = ColorsExt.GetRandomColor();

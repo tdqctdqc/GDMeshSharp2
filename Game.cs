@@ -11,7 +11,7 @@ public class Game : Node
     public Guid PlayerGuid { get; private set; } = Guid.NewGuid();
     public RandomNumberGenerator Random = new RandomNumberGenerator();
     private ISession _session;
-    public Action NewSession { get; set; }
+    public Action ClearNotices { get; set; }
 
     public RefFulfiller RefFulfiller => _session.RefFulfiller;
     public override void _Ready()
@@ -53,7 +53,7 @@ public class Game : Node
         session.Name = "Session";
         _session = (ISession)session;
         AddChild(session);
-        NewSession?.Invoke();
+        ClearNotices?.Invoke();
     }
 
     public void SetPlayerGuid(Guid guid, WriteKey key)

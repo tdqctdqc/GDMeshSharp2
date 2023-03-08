@@ -9,13 +9,13 @@ public class WorldGenerator
     public GenData Data { get; private set; }
     private GenWriteKey _key;
     private Stopwatch _sw;
-    private GenerationParameters _genParams;
+    // private GenerationParameters _genParams;
     public Action<DisplayableException> GenerationFailed { get; set; }
     public Action<string, string> GenerationFeedback { get; set; }
     public WorldGenerator(GeneratorSession session, GenerationParameters genParams)
     {
-        _genParams = genParams;
-        Data = new GenData();
+        // _genParams = genParams;
+        Data = new GenData(genParams);
         Data.Setup();
         _key = new GenWriteKey(Data, session);
         _sw = new Stopwatch();
@@ -49,19 +49,19 @@ public class WorldGenerator
         var cellSize = 200f;
         var edgePointMargin = new Vector2(cellSize, cellSize);
 
-        PlanetInfo.Create(_genParams.Dimensions, _key.IdDispenser.GetID(), _key);
+        PlanetInfo.Create(Data.GenParams.Dimensions, _key.IdDispenser.GetID(), _key);
         GameClock.Create(_key);
         _sw.Start();
 
         var points = PointsGenerator
             .GenerateConstrainedSemiRegularPoints
-                (_genParams.Dimensions - edgePointMargin, cellSize, cellSize * .75f, false, true)
+                (Data.GenParams.Dimensions - edgePointMargin, cellSize, cellSize * .75f, false, true)
             .Select(v => v + edgePointMargin / 2f).ToList();
         GenerationFeedback?.Invoke("Points", "");
 
         PolygonGenerator.GenerateMapPolygons
         (
-            points, _genParams.Dimensions, true, cellSize,
+            points, Data.GenParams.Dimensions, true, cellSize,
             _key.IdDispenser,
             _key
         );
@@ -69,9 +69,6 @@ public class WorldGenerator
 
         // EdgeDisturber.DisturbEdges(Data.Planet.Polygons.Entities, 
         //     Data.Planet.PlanetInfo.Value.Dimensions, _key);
-        
-        
-        
         
         new GeologyGenerator(Data, _key.IdDispenser).GenerateTerrain(_key);
         GenerationFeedback?.Invoke("Geology", "");
@@ -87,7 +84,7 @@ public class WorldGenerator
         new PolyTriGenerator().BuildTris(_key, _key.IdDispenser);
         GD.Print("built tris");
         GenerationFeedback?.Invoke("Built tris", "");
-        Data.Events.FinalizedPolyShapes?.Invoke();
+        Data.Events.SetPolyShapes?.Invoke();
 
         var regimeGen = new RegimeGenerator(Data, _key.IdDispenser, _key);
         regimeGen.Generate();

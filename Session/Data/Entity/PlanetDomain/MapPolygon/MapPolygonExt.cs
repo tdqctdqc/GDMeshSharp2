@@ -6,27 +6,10 @@ using Godot;
 public static class MapPolygonExt
 {
     
-    public static List<List<LineSegment>> GetBorders(this IEnumerable<MapPolygon> polys, Data data)
-    {
-        var unions = UnionFind<MapPolygon>.DoUnionFind(polys.ToList(), (p, q) => true, p => p.Neighbors.Refs());
-        var res = new List<List<LineSegment>>();
-        foreach (var union in unions)
-        {
-            var hash = union.ToHashSet();
-            var firstBorder = union.First(p => p.Neighbors.Refs().Any(n => hash.Contains(n)));
-            
-        }
-        return res;
-    }
-    public static List<Triangle> GetTrisRel(this MapPolygon poly, Data data)
-    {
-        return data.Cache.PolyRelWheelTris[poly];
-    }
     public static bool PointInPoly(this MapPolygon poly, Vector2 posAbs, Data data)
     {
         return data.Cache.PolyRelWheelTris[poly].Any(t => t.ContainsPoint(poly.GetOffsetTo(posAbs, data)));
     }
-    
     
     public static Vector2 GetOffsetTo(this MapPolygon poly, MapPolygon p, Data data)
     {
@@ -58,7 +41,7 @@ public static class MapPolygonExt
 
     public static float GetArea(this MapPolygon poly, Data data)
     {
-        return poly.GetTrisRel(data).Sum(t => t.GetArea());
+        return data.Cache.PolyRelWheelTris[poly].Sum(t => t.GetArea());
     }
     
     

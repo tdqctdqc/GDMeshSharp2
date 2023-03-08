@@ -30,7 +30,6 @@ public class GeologyGenerator
         BuildContinents();
         DoContinentFriction();
         HandleIsthmusAndInlandSeas();
-        BuildLandformTris();
         Data.LandSea.SetLandmasses(Data);
     }
 
@@ -45,12 +44,12 @@ public class GeologyGenerator
         var polysPerCell = 3;
         var numCells = Data.Planet.Polygons.Entities.Count / polysPerCell;
         var polyCellDic = Data.GenAuxData.PolyCells;
-        var cellSeeds = GenerationUtility.PickSeeds(Data.Planet.Polygons.Entities, new int[] {numCells})[0];
+        var cellSeeds = Picker.PickSeeds(Data.Planet.Polygons.Entities, new int[] {numCells})[0];
         var cells = cellSeeds.Select(p => new GenCell(p, _key, polyCellDic, Data)).ToList();
         Data.GenAuxData.Cells.AddRange(cells);
         var polysNotTaken =
             Data.Planet.Polygons.Entities.Except(cellSeeds);
-        var remainder = GenerationUtility.PickInTurn(polysNotTaken, cells, 
+        var remainder = Picker.PickInTurn(polysNotTaken, cells, 
             cell => cell.NeighboringPolyGeos, 
             (cell, poly) => cell.AddPolygon(poly, _key));
         if (remainder.Count > 0)
@@ -66,12 +65,12 @@ public class GeologyGenerator
     {
         var cellsPerPlate = 3;
         var numPlates = Data.GenAuxData.Cells.Count / cellsPerPlate;
-        var plateSeeds = GenerationUtility.PickSeeds(Data.GenAuxData.Cells, new[] {numPlates})[0];
+        var plateSeeds = Picker.PickSeeds(Data.GenAuxData.Cells, new[] {numPlates})[0];
         var plates = plateSeeds.Select(s => new GenPlate(s, _id.GetID(), _key)).ToList();
         
         Data.GenAuxData.Plates.AddRange(plates);
         var cellsNotTaken = Data.GenAuxData.Cells.Except(plateSeeds);
-        var remainder = GenerationUtility.PickInTurnHeuristic(cellsNotTaken, plates, 
+        var remainder = Picker.PickInTurnHeuristic(cellsNotTaken, plates, 
             plate => plate.NeighboringCells,
             (plate, cell) => plate.AddCell(cell, _key),
             ((cell, plate) => plate.NeighboringCellsAdjCount[cell]));
@@ -91,11 +90,11 @@ public class GeologyGenerator
     {
         var platesPerMass = 3;
         var numMasses = Data.GenAuxData.Plates.Count / 3;
-        var massSeeds = GenerationUtility.PickSeeds(Data.GenAuxData.Plates, new int[] {numMasses})[0];
+        var massSeeds = Picker.PickSeeds(Data.GenAuxData.Plates, new int[] {numMasses})[0];
         var masses = massSeeds.Select(s => new GenMass(s, _id.GetID())).ToList();
 
         var platesNotTaken = Data.GenAuxData.Plates.Except(massSeeds);
-        var remainder = GenerationUtility.PickInTurnHeuristic(platesNotTaken, masses,
+        var remainder = Picker.PickInTurnHeuristic(platesNotTaken, masses,
             mass => mass.NeighboringPlates,
             (mass, plate) => mass.AddPlate(plate),
             (plate, mass) => mass.NeighboringPlatesAdjCount[plate]);
@@ -112,7 +111,7 @@ public class GeologyGenerator
         var numLandmasses = numMasses / 4;
         var numSeas = numMasses * 3 / 4;
         if (numLandmasses + numSeas > Data.GenAuxData.Masses.Count) throw new Exception();
-        var seeds = GenerationUtility.PickSeeds(Data.GenAuxData.Masses, new int[] {numLandmasses, numSeas});
+        var seeds = Picker.PickSeeds(Data.GenAuxData.Masses, new int[] {numLandmasses, numSeas});
         var landSeeds = seeds[0].ToHashSet();
         var waterSeeds = seeds[1].ToHashSet();
         var allSeeds = landSeeds.Union(waterSeeds);
@@ -120,7 +119,7 @@ public class GeologyGenerator
             .Union(waterSeeds.Select(s => new GenContinent(s, _id.GetID(), Game.I.Random.RandfRange(.1f, .45f))))
             .ToList();
 
-        var remainder = GenerationUtility.PickInTurn(Data.GenAuxData.Masses.Except(allSeeds), conts,
+        var remainder = Picker.PickInTurn(Data.GenAuxData.Masses.Except(allSeeds), conts,
             cont => cont.NeighboringMasses,
             (cont, mass) => cont.AddMass(mass));
 
@@ -138,9 +137,9 @@ public class GeologyGenerator
                 .SelectMany(c => c.PolyGeos);
             foreach (var poly in polys)
             {
-                var altValue = Game.I.Random.RandfRange(.8f * cont.Altitude, 1.2f * cont.Altitude);
+                var altNoise = Data.GenAuxData.GetAltPerlin(poly.Center);
+                var altValue = cont.Altitude + .2f * altNoise;
                 poly.Set(nameof(MapPolygon.Altitude), altValue, _key);
-                //todo make this sample perlin
             }
         });
     }
@@ -217,16 +216,5 @@ public class GeologyGenerator
 
             return polysInRange;
         }
-    }
-    private void BuildLandformTris()
-    {
-        //todo fix
-        // var polys = Data.GenAuxData
-        //     .FaultLines.FaultLines.SelectMany(f => f.PolyFootprint)
-        //     .Where(p => p.IsLand()).ToHashSet();
-        // foreach (var poly in Data.Planet.Polygons.Entities)
-        // {
-        //     poly.BuildTrisForAspects(Data.Models.Landforms, _key);
-        // }
     }
 }

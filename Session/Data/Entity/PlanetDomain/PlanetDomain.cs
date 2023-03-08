@@ -9,8 +9,6 @@ public class PlanetDomain : Domain
     public MapPolygonBorderRepository PolyBorders { get; private set; }
     public SingletonRepo<PlanetInfo> PlanetInfo { get; private set; }
     public PolyTerrainTriRepo TerrainTris { get; private set; }
-    
-    //todo fix this to be properly synced
     public float Width => PlanetInfo.Value.Dimensions.x;
     public float Height => PlanetInfo.Value.Dimensions.y;
     public PlanetDomain(Data data) : base(data)

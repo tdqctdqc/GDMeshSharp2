@@ -15,7 +15,7 @@ public class DecideAlliance : Decision
     }
     public override bool Valid(Data data)
     {
-        if (Offerer.Check(data) && Decider.Check(data) == false) return false;
+        if (Offerer.CheckExists(data) && Decider.CheckExists(data) == false) return false;
         var relation = Offerer.Entity().RelationWith(Decider.Entity(), data);
         if (relation.AtWar) return false;
         if (relation.Alliance) return false;

@@ -26,9 +26,9 @@ public class PolyHighlighter : Node2D
         mb.AddNumMarkers(lines.Select(ls => ls.Mid()).ToList(), 20f, 
             Colors.Transparent, Colors.White, Vector2.Zero);
     }
-    private void DrawBorderSegments(MapPolygon poly, MeshBuilder mb)
+    private void DrawBorderSegments(MapPolygon poly, MeshBuilder mb, Data data)
     {
-        var lines = poly.BorderSegments;
+        var lines = poly.GetBorderSegments(data);
         mb.AddArrowsRainbow(lines.ToList(), 5f);
         mb.AddNumMarkers(lines.Select(ls => ls.Mid()).ToList(), 20f, 
             Colors.Transparent, Colors.White, Vector2.Zero);

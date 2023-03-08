@@ -91,11 +91,6 @@ public class Graph<TNode, TEdge>
         from.AddNeighbor(to, edge);
         to.AddNeighbor(from, edge);
     }
-    public bool CheckIfEdge(GraphNode<TNode, TEdge> from, 
-        GraphNode<TNode, TEdge> to)
-    {
-        return from.HasNeighbor(to.Element);
-    }
     public bool Contains(TNode value)
     {
         return _nodeDic.ContainsKey(value);

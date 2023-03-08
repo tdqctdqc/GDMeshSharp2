@@ -1,12 +1,13 @@
 using Godot;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using MessagePack;
 
 [MessagePackObject(keyAsPropertyName: true)] 
 public partial class EntityRefCollection<TRef>
-    : IRef<List<int>> where TRef : Entity
+    : IRefCollection, IReadOnlyHash<TRef> where TRef : Entity
 {
     public HashSet<int> RefIds { get; private set; }
     private Dictionary<int, TRef> _refs;
@@ -17,11 +18,6 @@ public partial class EntityRefCollection<TRef>
         col._refs = col.RefIds.ToDictionary(id => id, id => (TRef) key.Data[id]);
         return col;
     }
-    // public EntityRefCollection(List<int> refIds = null)
-    // {
-    //     RefIds = refIds == null ? new HashSet<int>() : new HashSet<int>(refIds);
-    //     _refs = new Dictionary<int, TRef>();
-    // }
     [SerializationConstructor] public EntityRefCollection(HashSet<int> refIds)
     {
         RefIds = refIds == null ? new HashSet<int>() : new HashSet<int>(refIds);
@@ -40,21 +36,13 @@ public partial class EntityRefCollection<TRef>
     {
         return RefIds.Contains(entity.Id);
     }
-    public void AddRef(TRef t, Data data)
+    public void AddRef(TRef t, GenWriteKey key)
     {
-        //todo need to make this procedure
         RefIds.Add(t.Id);
         _refs?.Add(t.Id, t);
     }
-    public void AddRef(int id, Data data)
+    public void RemoveRef(TRef t, GenWriteKey key)
     {
-        //todo need to make this procedure
-        RefIds.Add(id);
-        _refs.Add(id, (TRef)data[id]);
-    }
-    public void RemoveRef(TRef t, Data data)
-    {
-        //todo need to make this procedure
         RefIds.Remove(t.Id);
         _refs?.Remove(t.Id);
     }
@@ -68,4 +56,26 @@ public partial class EntityRefCollection<TRef>
             _refs.Add(id, refer);
         }
     }
+
+    public void AddByProcedure(List<int> ids, ProcedureWriteKey key)
+    {
+        RefIds.AddRange(ids);
+    }
+
+    public void RemoveByProcedure(List<int> ids, ProcedureWriteKey key)
+    {
+        ids.ForEach(id => RefIds.Remove(id));
+    }
+
+    public IEnumerator<TRef> GetEnumerator()
+    {
+        return _refs.Values.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
+
+    int IReadOnlyCollection<TRef>.Count => RefIds.Count;
 }

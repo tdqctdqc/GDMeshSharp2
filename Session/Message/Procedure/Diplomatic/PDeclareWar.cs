@@ -1,4 +1,6 @@
 
+using MessagePack;
+
 public class PDeclareWar : Procedure
 {
     public EntityRef<Regime> Declarer { get; private set; }
@@ -7,14 +9,14 @@ public class PDeclareWar : Procedure
     {
         return new PDeclareWar(declarer.MakeRef(), declaree.MakeRef());
     }
-    private PDeclareWar(EntityRef<Regime> declarer, EntityRef<Regime> declaree)
+    [SerializationConstructor] private PDeclareWar(EntityRef<Regime> declarer, EntityRef<Regime> declaree)
     {
         Declarer = declarer;
         Declaree = declaree;
     }
     public override bool Valid(Data data)
     {
-        return Declarer.Check(data) && Declaree.Check(data);
+        return Declarer.CheckExists(data) && Declaree.CheckExists(data);
     }
 
     public override void Enact(ProcedureWriteKey key)

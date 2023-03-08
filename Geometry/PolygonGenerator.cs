@@ -94,11 +94,8 @@ public class PolygonGenerator
                 MapPolygonBorder.Create(_id.GetID(), mp, nMp, new List<LineSegment> {edge}, key);
             });
         });
+        key.GenData.Events.SetPolyShapes?.Invoke();
         
-        foreach (var poly in _data.Planet.Polygons.Entities)
-        {
-            poly.SetBorderSegments(key);
-        }
     }
 }
 public class MapGenInfo

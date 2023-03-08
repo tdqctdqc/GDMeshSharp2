@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public class GenPlate : ISuper<GenPlate, GenCell>
+public class GenPlate 
 {
     public int Id { get; private set; }
     public GenCell Seed { get; private set; }
@@ -54,20 +54,8 @@ public class GenPlate : ISuper<GenPlate, GenCell>
     
     public List<BorderEdge<MapPolygon>> GetOrderedBorderRelative(GenPlate aPlate, GenData data)
     {
-        var polyCells = data.GenAuxData.PolyCells;
-        var borderCellPolys = this
-            .GetBorderElements()
+        var borderCellPolys = GenCell.Graph.GetBorderElements(Cells.ReadOnly())
             .SelectMany(c => c.PolyGeos);
-        var borderPolys = GenerationUtility
-            .GetBorderElements(borderCellPolys, p => p.Neighbors.Refs(), n => polyCells[n].Plate == aPlate);
-        var commonPolyBorders = GenerationUtility.GetOrderedBorderPairs(borderPolys, c => c.Neighbors.Refs(),
-            p => polyCells[p].Plate == aPlate);
-        
-        return commonPolyBorders;
+        return MapPolygon.Graph.GetOrderedBorderPairs(borderCellPolys);
     }
-    
-    IReadOnlyCollection<GenPlate> ISuper<GenPlate, GenCell>.Neighbors => Neighbors;
-    IReadOnlyCollection<GenCell> ISuper<GenPlate, GenCell>.GetSubNeighbors(GenCell cell) => cell.Neighbors;
-    GenPlate ISuper<GenPlate, GenCell>.GetSubSuper(GenCell cell) => cell.Plate;
-    IReadOnlyCollection<GenCell> ISuper<GenPlate, GenCell>.Subs => Cells;
 }

@@ -68,6 +68,11 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
         return args;
     }
 
+    public IRefCollection GetRefCollection(string fieldName, Entity t, ProcedureWriteKey key)
+    {
+        return (IRefCollection)_vars[fieldName].GetForSerialize((T)t);
+    }
+
     public void AddToData(Entity e, StrongWriteKey key)
     {
         key.Data.AddEntity<T>((T)e, key);

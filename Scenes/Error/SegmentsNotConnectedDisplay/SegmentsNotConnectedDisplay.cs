@@ -54,8 +54,8 @@ public class SegmentsNotConnectedDisplay : Control
         
         foreach (var n in e.Data.Planet.Polygons.Entities)
         {
-            if (n.BorderSegments.Count == 0) continue;
-            mb.AddPoly(n, e.Poly.GetOffsetTo(n, e.Data), .9f);
+            if (n.GetBorderSegments(e.Data).Count == 0) continue;
+            mb.AddPoly(n, e.Data, e.Poly.GetOffsetTo(n, e.Data), .9f);
         }
         AddChild(mb.GetMeshInstance());
     }

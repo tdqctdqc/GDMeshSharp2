@@ -8,24 +8,22 @@ using MessagePack;
 
 public sealed partial class EntityCreationUpdate : Update
 {
-    //todo can make just type?
-    public string EntityTypeName { get; private set; }
+    public Type EntityType { get; private set; }
     public byte[] EntityBytes { get; private set; }
     
     public static EntityCreationUpdate Create(Entity entity, HostWriteKey key)
     {
         var entityBytes = Game.I.Serializer.MP.Serialize(entity, entity.GetType());
-        return new EntityCreationUpdate(entity.GetType().Name, entityBytes);
+        return new EntityCreationUpdate(entity.GetType(), entityBytes);
     }
-    [SerializationConstructor] public EntityCreationUpdate(string entityTypeName, byte[] entityBytes) 
+    [SerializationConstructor] public EntityCreationUpdate(Type entityType, byte[] entityBytes) 
     {
         EntityBytes = entityBytes;
-        EntityTypeName = entityTypeName;
+        EntityType = entityType;
     }
     public override void Enact(ServerWriteKey key)
     {
-        var eType = Game.I.Serializer.Types[EntityTypeName];
-        var e = (Entity)Game.I.Serializer.MP.Deserialize(EntityBytes, eType);
+        var e = (Entity)Game.I.Serializer.MP.Deserialize(EntityBytes, EntityType);
         e.GetMeta().AddToData(e, key);
     }
 }

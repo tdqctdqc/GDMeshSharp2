@@ -6,11 +6,13 @@ using Godot;
 public interface IRef
 {
     void SyncRef(Data data);
-
 }
 
-public interface IRef<TUnderlying> : IRef
+
+public interface IRefCollection : IRef
 {
+    void AddByProcedure(List<int> ids, ProcedureWriteKey key);
+    void RemoveByProcedure(List<int> ids, ProcedureWriteKey key);
 }
 
 public class RefAttribute : Attribute
