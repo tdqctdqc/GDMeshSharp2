@@ -87,7 +87,7 @@ public partial class MapPolygon : Entity, IGraphNode<MapPolygon, bool>
         
         neighborSegs.CorrectSegmentsToClockwise(Vector2.Zero);
         neighborSegs.OrderByClockwise(Vector2.Zero, ls => ls.From);
-        neighborSegs = neighborSegs.OrderEndToStart(data, this);
+        neighborSegs = neighborSegs.OrderEndToStart();
 
         var before = data.Cache.PolyBoundarySegments != null 
             ? data.Cache.PolyBoundarySegments[this]

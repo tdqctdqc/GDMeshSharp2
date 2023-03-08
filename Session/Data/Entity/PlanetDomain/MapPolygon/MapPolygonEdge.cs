@@ -134,7 +134,7 @@ public static class PolyBorderExt
     {
         return b.HighSegsRel
             .Select(s => s.Translate(b.HighId.Entity().Center))
-            .ToList().OrderEndToStart(data);
+            .ToList().OrderEndToStart();
     }
     public static Vector2 GetOffsetToOtherPoly(this MapPolygonEdge b, MapPolygon p)
     {

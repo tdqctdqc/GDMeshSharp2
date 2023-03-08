@@ -12,7 +12,6 @@ public class LineSegment : ISegment<Vector2>
 {
     public Vector2 From { get; set; }
     public Vector2 To { get; set; }
-    ISegment<Vector2> ISegment<Vector2>.Reverse() => Reverse();
 
     public Vector2 Mid() => (From + To) / 2f;
     public LineSegment(Vector2 from, Vector2 to)
@@ -83,5 +82,10 @@ public class LineSegment : ISegment<Vector2>
     {
         return $"[from {From} to {To}] \b";
     }
+    
+    object ISegment.From => From;
+    object ISegment.To => To;
+    ISegment ISegment.ReverseGeneric() => Reverse();
+    ISegment<Vector2> ISegment<Vector2>.ReverseGeneric() => Reverse();
 }
 

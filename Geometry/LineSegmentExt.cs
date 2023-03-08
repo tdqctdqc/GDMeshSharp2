@@ -133,58 +133,60 @@ public static class LineSegmentExt
     {
         return (center - seg.From).Cross(seg.To - seg.From) > 0f;
     }
-    public static List<LineSegment> OrderEndToStart(this List<LineSegment> segs, Data data, MapPolygon poly = null)
-    {
-        var segsSample = segs.ToList();
-        var res = new List<LineSegment>{segs[0]};
-        segsSample.Remove(segs[0]);
-        //scan for next
-        var currLast = res.Last();
-        var next = segsSample.FirstOrDefault(s => s.From == currLast.To);
-        while (next != null && res.Count < segs.Count)
-        {
-            res.Add(next);
-            segsSample.Remove(next);
-            currLast = next;
-            next = segsSample.FirstOrDefault(s => s.From == currLast.To);
-        }
-        
-        var currFirst = res[0];
-        var prevRes = new List<LineSegment>();
-        var prev = segsSample.FirstOrDefault(s => s.To == currFirst.From);
-        while (prev != null && prevRes.Count + res.Count < segs.Count)
-        {
-            prevRes.Add(prev);
-            segsSample.Remove(prev);
-            currFirst = prev;
-            prev = segsSample.FirstOrDefault(s => s.To == currFirst.From);
-        }
-
-        prevRes.Reverse();
-        prevRes.AddRange(res);
-        if (prevRes.Count != segs.Count)
-        {
-            if (prevRes.IsContinuous()) return prevRes;
-            GD.Print($"res is {prevRes.Count} segments source is {segs.Count}");
-            // GD.Print($"degen count {segs.Where(s => s.From == s.To).Count()}");
-            GD.Print("SOURCE");
-            GD.Print(segs.Select(ls => ls.ToString()).ToArray());
-            GD.Print("RESULT");
-            GD.Print(prevRes.Select(ls => ls.ToString()).ToArray());
-            
-            throw new SegmentsNotConnectedException(data, poly, segs, prevRes, null);
-        }
-        
-        return prevRes;
-    }
-    public static bool IsContinuous(this IReadOnlyList<LineSegment> segs)
-    {
-        for (var i = 0; i < segs.Count - 1; i++)
-        {
-            if (segs[i].To != segs[i + 1].From) return false;
-        }
-        return true;
-    }
+    
+    // public static List<LineSegment> OrderEndToStart(this List<LineSegment> segs, Data data, MapPolygon poly = null)
+    // {
+    //     var segsSample = segs.ToList();
+    //     var res = new List<LineSegment>{segs[0]};
+    //     segsSample.Remove(segs[0]);
+    //     //scan for next
+    //     var currLast = res.Last();
+    //     var next = segsSample.FirstOrDefault(s => s.From == currLast.To);
+    //     while (next != null && res.Count < segs.Count)
+    //     {
+    //         res.Add(next);
+    //         segsSample.Remove(next);
+    //         currLast = next;
+    //         next = segsSample.FirstOrDefault(s => s.From == currLast.To);
+    //     }
+    //     
+    //     var currFirst = res[0];
+    //     var prevRes = new List<LineSegment>();
+    //     var prev = segsSample.FirstOrDefault(s => s.To == currFirst.From);
+    //     while (prev != null && prevRes.Count + res.Count < segs.Count)
+    //     {
+    //         prevRes.Add(prev);
+    //         segsSample.Remove(prev);
+    //         currFirst = prev;
+    //         prev = segsSample.FirstOrDefault(s => s.To == currFirst.From);
+    //     }
+    //
+    //     prevRes.Reverse();
+    //     prevRes.AddRange(res);
+    //     if (prevRes.Count != segs.Count)
+    //     {
+    //         if (prevRes.IsContinuous()) return prevRes;
+    //         GD.Print($"res is {prevRes.Count} segments source is {segs.Count}");
+    //         // GD.Print($"degen count {segs.Where(s => s.From == s.To).Count()}");
+    //         GD.Print("SOURCE");
+    //         GD.Print(segs.Select(ls => ls.ToString()).ToArray());
+    //         GD.Print("RESULT");
+    //         GD.Print(prevRes.Select(ls => ls.ToString()).ToArray());
+    //         
+    //         throw new SegmentsNotConnectedException(data, poly, segs, prevRes, null);
+    //     }
+    //     
+    //     return prevRes;
+    // }
+    
+    // public static bool IsContinuous(this IReadOnlyList<LineSegment> segs)
+    // {
+    //     for (var i = 0; i < segs.Count - 1; i++)
+    //     {
+    //         if (segs[i].To != segs[i + 1].From) return false;
+    //     }
+    //     return true;
+    // }
     public static List<PolyTri> PolyTriangulate(this IReadOnlyList<LineSegment> boundarySegs, GenData data, 
         MapPolygon poly, IdDispenser id,
         HashSet<Vector2> interiorPoints = null)

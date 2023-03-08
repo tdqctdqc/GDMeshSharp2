@@ -75,7 +75,7 @@ public class PolyTriGenerator
             var newSegs = preSegs.ToList();
             newSegs.Add(rSeg);
             newSegs.AddRange(postSegs);
-            newSegs = newSegs.OrderEndToStart(_data, rBorder.HighId.Entity());
+            newSegs = newSegs.OrderEndToStart();
             
             if(newSegs.IsContinuous() == false)
             {

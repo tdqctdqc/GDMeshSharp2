@@ -1,29 +1,19 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Godot;
 
-public interface ISegment<T>
+public interface ISegment
+{
+    object From { get; }
+    object To { get; }
+    ISegment ReverseGeneric();
+}
+public interface ISegment<T> : ISegment
 {
     T From { get; }
     T To { get; }
-    ISegment<T> Reverse();
-    
+    ISegment<T> ReverseGeneric();
 }
 
-public static class ISegmentExt
-{
-    public static bool ConnectsToStart<T>(this ISegment<T> seg, ISegment<T> connect)
-    {
-        return connect.To.Equals(seg.From);
-    }
-
-    public static bool ConnectsToEnd<T>(this ISegment<T> seg, ISegment<T> connect)
-    {
-        return connect.From.Equals(seg.To);
-    }
-
-    public static IBorder<T, TRegion> Sort<T, TRegion>(this IEnumerable<ISegment<T>> segs)
-    {
-        throw new NotImplementedException();
-    }
-}

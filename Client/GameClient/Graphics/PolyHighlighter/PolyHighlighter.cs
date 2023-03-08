@@ -16,8 +16,24 @@ public class PolyHighlighter : Node2D
         Clear();
         Move(data, client, poly);
         var mb = new MeshBuilder();
-        DrawPolyBorderSegments(poly, mb, data);
+        // DrawPolyBorderSegments(poly, mb, data);
+        DrawBorderTest(poly, mb, data);
         TakeFromMeshBuilder(mb);
+    }
+
+    private void DrawBorderTest(MapPolygon poly, MeshBuilder mb, Data data)
+    {
+        var edgeBorders = poly.GetNeighborEdges(data)
+            .Select(edge =>
+                Border<LineSegment, Vector2, MapPolygon>.Construct(poly, 
+                    edge.GetOtherPoly(poly),
+                    edge.GetSegsRel(poly)))
+            .OrderEndToStart()
+            .SelectMany(b => b.Segments).ToList();
+        
+        mb.AddArrowsRainbow(edgeBorders, 5f);
+        mb.AddNumMarkers(edgeBorders.Select(ls => ls.Mid()).ToList(), 20f, 
+            Colors.Transparent, Colors.White, Vector2.Zero);
     }
     private void DrawPolyBorderSegments(MapPolygon poly, MeshBuilder mb, Data data)
     {
@@ -26,7 +42,7 @@ public class PolyHighlighter : Node2D
         mb.AddNumMarkers(lines.Select(ls => ls.Mid()).ToList(), 20f, 
             Colors.Transparent, Colors.White, Vector2.Zero);
     }
-    private void DrawBorderSegments(MapPolygon poly, MeshBuilder mb, Data data)
+    private void DrawBoundarySegments(MapPolygon poly, MeshBuilder mb, Data data)
     {
         var lines = poly.GetBoundarySegments(data);
         mb.AddArrowsRainbow(lines.ToList(), 5f);
@@ -67,6 +83,7 @@ public class PolyHighlighter : Node2D
     }
     private void TakeFromMeshBuilder(MeshBuilder mb)
     {
+        if (mb.Tris.Count == 0) return;
         var mi = mb.GetMeshInstance();
         mb.Clear();
         AddChild(mi);
