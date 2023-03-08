@@ -20,7 +20,7 @@ public class FaultLine
         LowId = lowId;
         PolyFootprint = new List<MapPolygon>();
         Segments = edgesHi.Select(
-            e => e.Native.GetBorder(e.Foreign, data)
+            e => e.Native.GetEdge(e.Foreign, data)
                 .GetSegsRel(e.Native)
                 .Select(l => l.ChangeOrigin(e.Native.Center, Origin.Center))
                 .ToList())

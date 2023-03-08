@@ -6,10 +6,9 @@ using MessagePack;
 
 public partial class MapPolygon : Entity, IGraphNode<MapPolygon, bool>
 {
-    public static ImplicitGraph<MapPolygon, bool> Graph { get; private set; } = ImplicitGraph.Get<MapPolygon, bool>();
     public override Type GetDomainType() => typeof(PlanetDomain);
+    public static ImplicitGraph<MapPolygon, bool> Graph { get; private set; } = ImplicitGraph.Get<MapPolygon, bool>();
     public Vector2 Center { get; protected set; }
-    
     public EntityRefCollection<MapPolygon> Neighbors { get; protected set; }
     public Color Color { get; protected set; }
     public float Altitude { get; private set; }
@@ -19,9 +18,8 @@ public partial class MapPolygon : Entity, IGraphNode<MapPolygon, bool>
     public bool IsLand() => Altitude > .5f;
     public bool IsWater() => IsLand() == false;
     public bool IsCoast() => IsLand() && Neighbors.Refs().Any(n => n.IsWater());
-    public MapPolygonBorder GetBorder(MapPolygon neighbor, Data data) 
-        => data.Planet.PolyBorders.GetBorder(this, neighbor);
-    public LineSegment OutsideEdge { get; private set; }
+    public MapPolygonEdge GetEdge(MapPolygon neighbor, Data data) 
+        => data.Planet.PolyEdges.GetEdge(this, neighbor);
     
     
     [SerializationConstructor] private MapPolygon(int id, Vector2 center, EntityRefCollection<MapPolygon> neighbors, 
@@ -57,11 +55,11 @@ public partial class MapPolygon : Entity, IGraphNode<MapPolygon, bool>
     {
         return Neighbors.Refs().Contains(p);
     }
-    public IEnumerable<MapPolygonBorder> GetNeighborBorders(Data data) => Neighbors.Refs()
-        .Select(n => GetBorder(n, data));
+    public IEnumerable<MapPolygonEdge> GetNeighborEdges(Data data) => Neighbors.Refs()
+        .Select(n => GetEdge(n, data));
 
     public PolyTerrainTris GetTerrainTris(Data data) => data.Planet.TerrainTris.ByPoly[this];
-    public void AddNeighbor(MapPolygon poly, MapPolygonBorder border, GenWriteKey key)
+    public void AddNeighbor(MapPolygon poly, MapPolygonEdge edge, GenWriteKey key)
     {
         if (Neighbors.Contains(poly)) return;
         Neighbors.AddRef(poly, key);
@@ -76,13 +74,13 @@ public partial class MapPolygon : Entity, IGraphNode<MapPolygon, bool>
         GetMeta().UpdateEntityVar<EntityRef<Regime>>(nameof(Regime), this, key, new EntityRef<Regime>(r.Id));
     }
 
-    public List<LineSegment> GetBorderSegments(Data data)
+    public List<LineSegment> GetBoundarySegments(Data data)
     {
-        return data.Cache.PolyBorderSegments[this];
+        return data.Cache.PolyBoundarySegments[this];
     }
-    public List<LineSegment> BuildBorderSegments(Data data)
+    public List<LineSegment> BuildBoundarySegments(Data data)
     {
-        var neighborSegs = Neighbors.Refs().Select(n => GetBorder(
+        var neighborSegs = Neighbors.Refs().Select(n => GetEdge(
                 n, data))
             .SelectMany(b => b.GetSegsRel(this))
             .ToList();
@@ -91,8 +89,8 @@ public partial class MapPolygon : Entity, IGraphNode<MapPolygon, bool>
         neighborSegs.OrderByClockwise(Vector2.Zero, ls => ls.From);
         neighborSegs = neighborSegs.OrderEndToStart(data, this);
 
-        var before = data.Cache.PolyBorderSegments != null 
-            ? data.Cache.PolyBorderSegments[this]
+        var before = data.Cache.PolyBoundarySegments != null 
+            ? data.Cache.PolyBoundarySegments[this]
             : new List<LineSegment>();
 
         if (neighborSegs.IsCircuit() == false)

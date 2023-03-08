@@ -55,7 +55,7 @@ public static class GraphGenerator
             {
                 var discardN = ns[i];
                 check.Add(discardN);
-                var border = discard.GetBorder(discardN, key.Data);
+                var border = discard.GetEdge(discardN, key.Data);
                 discardN.RemoveNeighbor(discard, key);
                 discard.RemoveNeighbor(discardN, key);
                 key.Delete(border);

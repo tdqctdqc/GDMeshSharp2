@@ -89,9 +89,9 @@ public class PolygonGenerator
 
                 if (edge.IsClockwise(mp.Center))
                 {
-                    edge = edge.GetReverse();
+                    edge = edge.Reverse();
                 }
-                MapPolygonBorder.Create(_id.GetID(), mp, nMp, new List<LineSegment> {edge}, key);
+                MapPolygonEdge.Create(_id.GetID(), mp, nMp, new List<LineSegment> {edge}, key);
             });
         });
         key.GenData.Events.SetPolyShapes?.Invoke();

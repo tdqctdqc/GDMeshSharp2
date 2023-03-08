@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class MapPolygonBorderRepository : Repository<MapPolygonBorder>
+public class MapPolygonEdgeRepo : Repository<MapPolygonEdge>
 {
-    public Dictionary<Edge<MapPolygon>, MapPolygonBorder> BordersByEdge { get; private set; }
-    public MapPolygonBorderRepository(Domain domain, Data data) : base(domain, data)
+    public Dictionary<Edge<MapPolygon>, MapPolygonEdge> BordersByEdge { get; private set; }
+    public MapPolygonEdgeRepo(Domain domain, Data data) : base(domain, data)
     {
-        BordersByEdge = new Dictionary<Edge<MapPolygon>, MapPolygonBorder>();
-        EntityCreatedHandler<MapPolygonBorder>.Register(
+        BordersByEdge = new Dictionary<Edge<MapPolygon>, MapPolygonEdge>();
+        EntityCreatedHandler<MapPolygonEdge>.Register(
             n =>
             {
                 var border = n.Entity;
@@ -24,7 +24,7 @@ public class MapPolygonBorderRepository : Repository<MapPolygonBorder>
     {
         return new Edge<MapPolygon>(mp1, mp2, (p1, p2) => p1.Id > p2.Id);
     }
-    public MapPolygonBorder GetBorder(MapPolygon p1, MapPolygon p2)
+    public MapPolygonEdge GetEdge(MapPolygon p1, MapPolygon p2)
     {
         if (p1.HasNeighbor(p2) == false) throw new Exception();
         if (p2.HasNeighbor(p1) == false) throw new Exception();

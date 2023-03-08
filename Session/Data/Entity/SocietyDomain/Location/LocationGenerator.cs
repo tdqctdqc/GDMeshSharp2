@@ -141,10 +141,10 @@ public class LocationGenerator
 
                 for (var i = 0; i < path.Count - 1; i++)
                 {
-                    var border = path[i].GetBorder(path[i + 1], Data);
+                    var edge = path[i].GetEdge(path[i + 1], Data);
 
-                    if(Data.Society.Roads.ByBorderId.ContainsKey(border.Id)) continue;
-                    RoadSegment.Create(_id.GetID(), border, _key);
+                    if(Data.Society.Roads.ByEdgeId.ContainsKey(edge.Id)) continue;
+                    RoadSegment.Create(_id.GetID(), edge, _key);
                 }
             }
         });

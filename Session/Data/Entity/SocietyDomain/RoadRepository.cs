@@ -5,9 +5,9 @@ using Godot;
 
 public class RoadRepository : Repository<RoadSegment>
 {
-    public RepoEntityIndexer<RoadSegment, MapPolygonBorder> ByBorderId { get; private set; }
+    public RepoEntityIndexer<RoadSegment, MapPolygonEdge> ByEdgeId { get; private set; }
     public RoadRepository(Domain domain, Data data) : base(domain, data)
     {
-        ByBorderId = RepoEntityIndexer<RoadSegment, MapPolygonBorder>.CreateStatic(data, rs => rs.Border);
+        ByEdgeId = RepoEntityIndexer<RoadSegment, MapPolygonEdge>.CreateStatic(data, rs => rs.Edge);
     }
 }

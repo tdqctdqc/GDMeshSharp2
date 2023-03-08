@@ -15,8 +15,8 @@ public class RoadChunkGraphic : Node2D
             {
                 if (p.Id > n.Id)
                 {
-                    var border = p.GetBorder(n, data);
-                    if (data.Society.Roads.ByBorderId.ContainsKey(border.Id))
+                    var border = p.GetEdge(n, data);
+                    if (data.Society.Roads.ByEdgeId.ContainsKey(border.Id))
                     {
                         froms.Add(chunk.RelTo.GetOffsetTo(p.Center, data));
                         tos.Add(chunk.RelTo.GetOffsetTo(n.Center, data));

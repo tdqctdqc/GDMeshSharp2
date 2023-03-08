@@ -22,7 +22,7 @@ public static class LineSegmentExt
     }
     public static IEnumerable<LineSegment> GetOpposing(this IEnumerable<LineSegment> segs, Vector2 offset)
     {
-        return segs.Select(s => s.Translate(-offset).GetReverse()).Reverse();
+        return segs.Select(s => s.Translate(-offset).Reverse()).Reverse();
     }
 
     public static IEnumerable<LineSegment> ChangeOrigin(this IEnumerable<LineSegment> segs, Vector2 oldOrigin,
@@ -39,11 +39,11 @@ public static class LineSegmentExt
             l.To + offset));
     }
 
-    public static void SplitToMinLength(this MapPolygonBorder border, float minLength, GenWriteKey key)
+    public static void SplitToMinLength(this MapPolygonEdge edge, float minLength, GenWriteKey key)
     {
         var newSegsAbs = new List<LineSegment>();
-        var segs = border.GetSegsAbs(key.Data);
-        var offset = border.HighId.Entity().GetOffsetTo(border.LowId.Entity(), key.Data);
+        var segs = edge.GetSegsAbs(key.Data);
+        var offset = edge.HighId.Entity().GetOffsetTo(edge.LowId.Entity(), key.Data);
         for (var i = 0; i < segs.Count; i++)
         {
             var seg = segs[i];
@@ -70,7 +70,7 @@ public static class LineSegmentExt
             }
         }
 
-        border.ReplacePoints(newSegsAbs,
+        edge.ReplacePoints(newSegsAbs,
             key);
     }
 
@@ -95,7 +95,7 @@ public static class LineSegmentExt
         if (segs.IsConvexAround(center) == false) throw new Exception();
         for (var i = 0; i < segs.Count; i++)
         {
-            if (IsClockwise(segs[i], center)) segs[i] = segs[i].GetReverse();
+            if (IsClockwise(segs[i], center)) segs[i] = segs[i].Reverse();
         }
     }
     public static Vector2 GetHullPoint(this List<LineSegment> segs, out int hullPointIndex)

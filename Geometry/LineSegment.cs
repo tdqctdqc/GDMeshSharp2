@@ -8,10 +8,12 @@ using Poly2Tri.Triangulation.Sets;
 using Poly2Tri.Utility;
 
 
-public class LineSegment
+public class LineSegment : ISegment<Vector2>
 {
     public Vector2 From { get; set; }
     public Vector2 To { get; set; }
+    ISegment<Vector2> ISegment<Vector2>.Reverse() => Reverse();
+
     public Vector2 Mid() => (From + To) / 2f;
     public LineSegment(Vector2 from, Vector2 to)
     {
@@ -19,7 +21,7 @@ public class LineSegment
         To = to;
     }
     
-    public LineSegment GetReverse()
+    public LineSegment Reverse()
     {
         return new LineSegment(To, From);
     }
@@ -47,10 +49,6 @@ public class LineSegment
             From += Vector2.Right * mapWidth;
             To += Vector2.Right * mapWidth;
         }
-    }
-    public bool PointsTo(LineSegment l)
-    {
-        return l.From == To;
     }
 
     public float DistanceTo(Vector2 point)

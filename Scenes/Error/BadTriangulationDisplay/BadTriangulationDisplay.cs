@@ -12,7 +12,7 @@ public class BadTriangulationDisplay : Control
         
         var mb = new MeshBuilder();
         mb.AddPointMarkers(new List<Vector2>{Vector2.Zero}, 10f, Colors.Red);
-        mb.AddPointMarkers(new List<Vector2>{err.Poly.GetBorderSegments(err.Data).Average()}, 10f, Colors.Green);
+        mb.AddPointMarkers(new List<Vector2>{err.Poly.GetBoundarySegments(err.Data).Average()}, 10f, Colors.Green);
         for (var i = 0; i < err.Tris.Count; i++)
         {
             var inscribe = err.Tris[i].GetInscribed(1f);

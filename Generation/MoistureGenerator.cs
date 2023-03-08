@@ -107,18 +107,18 @@ public class MoistureGenerator
                 foreach (var n in ns)
                 {
                     if (e.Id < n.Id) continue;
-                    var border = e.GetBorder(n, Data);
+                    var edge = e.GetEdge(n, Data);
                     var flow = graph.GetEdge(e, n);
-                    border.SetFlow(graph.GetEdge(e, n), _key);
+                    edge.SetFlow(graph.GetEdge(e, n), _key);
                 }
             });
             
             foreach (var coast in coastPolys)
             {
-                var flowIn = coast.Neighbors.Refs().Sum(n => coast.GetBorder(n, Data).MoistureFlow);
+                var flowIn = coast.Neighbors.Refs().Sum(n => coast.GetEdge(n, Data).MoistureFlow);
                 var sea = coast.Neighbors.Refs().Where(n => n.IsWater())
                     .First();
-                coast.GetBorder(sea, Data).SetFlow(flowIn, _key);
+                coast.GetEdge(sea, Data).SetFlow(flowIn, _key);
             }
         }
     }
@@ -157,9 +157,9 @@ public class MoistureGenerator
                 foreach (var n in node.Neighbors)
                 {
                     if (node.Element.Id < n.Id) continue;
-                    var border = node.Element.GetBorder(n, Data);
+                    var edge = node.Element.GetEdge(n, Data);
                     var cost = node.GetEdgeCost(n);
-                    border.IncrementFlow(cost, _key);
+                    edge.IncrementFlow(cost, _key);
                 }
             }
         }
@@ -195,7 +195,7 @@ public class MoistureGenerator
             for (var i = 0; i < path.Count - 1; i++)
             {
                 water += path[i].Moisture;
-                path[i].GetBorder(path[i + 1], Data).IncrementFlow(water, _key);
+                path[i].GetEdge(path[i + 1], Data).IncrementFlow(water, _key);
             }
             while (path != null)
             {
@@ -220,7 +220,7 @@ public class MoistureGenerator
             var path = pathToSea[origin];
             for (var i = 0; i < path.Count - 1; i++)
             {
-                path[i].GetBorder(path[i + 1], Data).IncrementFlow(add, _key);
+                path[i].GetEdge(path[i + 1], Data).IncrementFlow(add, _key);
             }
         }
 

@@ -5,16 +5,17 @@ using System.Linq;
 using MessagePack;
 
 
-public class MapPolygonBorder : Entity
+public class MapPolygonEdge : Entity
 {
     public override Type GetDomainType() => typeof(PlanetDomain);
     public float MoistureFlow { get; private set; }
+    //todo change these to borders
     public List<LineSegment> LowSegsRel { get; private set; }
     public List<LineSegment> HighSegsRel { get; private set; }
     public EntityRef<MapPolygon> LowId { get; private set; }
     public EntityRef<MapPolygon> HighId { get; private set; }
     private int _riverSegIndexHi = -1;
-    [SerializationConstructor] private MapPolygonBorder(int id, float moistureFlow, List<LineSegment> lowSegsRel, 
+    [SerializationConstructor] private MapPolygonEdge(int id, float moistureFlow, List<LineSegment> lowSegsRel, 
         List<LineSegment> highSegsRel, EntityRef<MapPolygon> lowId, 
         EntityRef<MapPolygon> highId) : base(id)
     {
@@ -26,7 +27,7 @@ public class MapPolygonBorder : Entity
         HighId = highId;
     }
 
-    public static MapPolygonBorder Create(int id, MapPolygon poly1, MapPolygon poly2, 
+    public static MapPolygonEdge Create(int id, MapPolygon poly1, MapPolygon poly2, 
         List<LineSegment> segments, GenWriteKey key)
     {
         EntityRef<MapPolygon> lowId;
@@ -46,7 +47,7 @@ public class MapPolygonBorder : Entity
         var highSegsRel = OrderAndRelativizeSegments(segments, highId.Entity(), key.Data);
         var lowSegsRel = OrderAndRelativizeSegments(segments, lowId.Entity(), key.Data);
         
-        var b =  new MapPolygonBorder(
+        var b =  new MapPolygonEdge(
             id, 0f, lowSegsRel, highSegsRel, lowId, highId);
         poly1.AddNeighbor(poly2, b, key);
         poly2.AddNeighbor(poly1, b, key);
@@ -110,50 +111,49 @@ public class MapPolygonBorder : Entity
         }
         else throw new Exception("poly is not part of this border");
     }
+
 }
 
 public static class PolyBorderExt
 {
     
-    public static List<Vector2> GetPointsRel(this MapPolygonBorder b, MapPolygon p)
+    public static List<Vector2> GetPointsRel(this MapPolygonEdge b, MapPolygon p)
     {
         if (p == b.LowId.Entity()) return b.LowSegsRel.GetPoints().ToList();
         if (p == b.HighId.Entity()) return b.HighSegsRel.GetPoints().ToList();
         throw new Exception();
     }
 
-    public static List<LineSegment> GetSegsRel(this MapPolygonBorder b, MapPolygon p)
+    public static List<LineSegment> GetSegsRel(this MapPolygonEdge b, MapPolygon p)
     {
         if (p == b.LowId.Entity()) return b.LowSegsRel;
         if (p == b.HighId.Entity()) return b.HighSegsRel;
         throw new Exception();
     }
-    public static List<LineSegment> GetSegsAbs(this MapPolygonBorder b, Data data)
+    public static List<LineSegment> GetSegsAbs(this MapPolygonEdge b, Data data)
     {
         return b.HighSegsRel
             .Select(s => s.Translate(b.HighId.Entity().Center))
             .ToList().OrderEndToStart(data);
     }
-    public static Vector2 GetOffsetToOtherPoly(this MapPolygonBorder b, MapPolygon p)
+    public static Vector2 GetOffsetToOtherPoly(this MapPolygonEdge b, MapPolygon p)
     {
         var other = b.GetOtherPoly(p);
         var otherCount = b.GetSegsRel(other).Count;
         return b.GetSegsRel(p)[0].From - b.GetSegsRel(other)[otherCount - 1].To;
     }
-    public static MapPolygon GetOtherPoly(this MapPolygonBorder b, MapPolygon p)
+    public static MapPolygon GetOtherPoly(this MapPolygonEdge b, MapPolygon p)
     {
         if (p == b.LowId.Entity()) return b.HighId.Entity();
         if (p == b.HighId.Entity()) return b.LowId.Entity();
         throw new Exception();
     }
-    public static List<Vector2> GetPointsAbs(this MapPolygonBorder b)
+    public static List<Vector2> GetPointsAbs(this MapPolygonEdge b)
     {
         return b.HighSegsRel.GetPoints().Select(p => p + b.HighId.Entity().Center).ToList();
     }
-
-    public static bool IsRegimeBorder(this MapPolygonBorder b)
+    public static bool IsRegimeBorder(this MapPolygonEdge b)
     {
         return b.HighId.Entity().Regime.RefId != b.LowId.Entity().Regime.RefId;
     }
-    
 }

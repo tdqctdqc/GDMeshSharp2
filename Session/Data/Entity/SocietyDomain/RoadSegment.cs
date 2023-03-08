@@ -8,16 +8,16 @@ public class RoadSegment : Entity
 {
     public override Type GetDomainType() => typeof(SocietyDomain);
 
-    public EntityRef<MapPolygonBorder> Border { get; private set; }
+    public EntityRef<MapPolygonEdge> Edge { get; private set; }
 
-    [SerializationConstructor] private RoadSegment(int id, EntityRef<MapPolygonBorder> border) : base(id)
+    [SerializationConstructor] private RoadSegment(int id, EntityRef<MapPolygonEdge> edge) : base(id)
     {
-        Border = border;
+        Edge = edge;
     }
     
-    public static RoadSegment Create(int id, MapPolygonBorder border, CreateWriteKey key)
+    public static RoadSegment Create(int id, MapPolygonEdge edge, CreateWriteKey key)
     {
-        var rs =  new RoadSegment(id, border.MakeRef());
+        var rs =  new RoadSegment(id, edge.MakeRef());
         key.Create(rs);
         return rs;
     }

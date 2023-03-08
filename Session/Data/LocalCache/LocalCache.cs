@@ -9,7 +9,7 @@ public class LocalCache
     public HashSet<MapChunk> Chunks { get; private set; }
     public Dictionary<MapPolygon, List<Triangle>> PolyRelWheelTris { get; private set; }
     public PolyGrid MapPolyGrid { get; private set; }
-    public Dictionary<MapPolygon, List<LineSegment>> PolyBorderSegments { get; private set; }
+    public Dictionary<MapPolygon, List<LineSegment>> PolyBoundarySegments { get; private set; }
     public LocalCache(Data data)
     {
         _data = data;
@@ -27,7 +27,7 @@ public class LocalCache
     private void SetPolyShapes(Data data)
     {
         GD.Print("setting poly shapes");
-        PolyBorderSegments = data.Planet.Polygons.Entities.ToDictionary(p => p, p => p.BuildBorderSegments(data));
+        PolyBoundarySegments = data.Planet.Polygons.Entities.ToDictionary(p => p, p => p.BuildBoundarySegments(data));
         BuildPolyGrid();
         BuildChunks();
         BuildPolyRelTris();
@@ -70,7 +70,7 @@ public class LocalCache
             }
             foreach (var n in p.Neighbors.Refs())
             {
-                var edge = p.GetBorder(n, _data);
+                var edge = p.GetEdge(n, _data);
                 var segs = edge.GetSegsRel(p);
                 for (var j = 0; j < segs.Count; j++)
                 {

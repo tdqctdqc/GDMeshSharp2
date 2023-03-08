@@ -9,14 +9,14 @@ using Poly2Tri.Utility;
 
 public class PolyTriGenerator
 {
-    private Dictionary<MapPolygonBorder, int> _riverBorders;
+    private Dictionary<MapPolygonEdge, int> _riverBorders;
     private GenData _data;
     private IdDispenser _idd;
     public void BuildTris(GenWriteKey key, IdDispenser id)
     {
         _idd = id;
         _data = key.GenData;
-        _riverBorders = new Dictionary<MapPolygonBorder, int>();
+        _riverBorders = new Dictionary<MapPolygonEdge, int>();
         var polys = _data.Planet.Polygons.Entities;
         FindAndSizeRiverSegs(key);
         foreach (var p in polys)
@@ -28,7 +28,7 @@ public class PolyTriGenerator
     private void FindAndSizeRiverSegs(GenWriteKey key)
     {
         var polys = _data.Planet.Polygons.Entities;
-        var borders = _data.Planet.PolyBorders.Entities;
+        var borders = _data.Planet.PolyEdges.Entities;
         
         _riverBorders = borders.Where(b => b.MoistureFlow > River.FlowFloor).ToDictionary(s => s, s => -1);
         
@@ -79,7 +79,7 @@ public class PolyTriGenerator
             
             if(newSegs.IsContinuous() == false)
             {
-                throw new SegmentsNotConnectedException(key.GenData, hi, hi.GetBorderSegments(_data).ToList(), newSegs, null);
+                throw new SegmentsNotConnectedException(key.GenData, hi, hi.GetBoundarySegments(_data).ToList(), newSegs, null);
             }
             
             var newIndex = preSegs.Count();
@@ -97,7 +97,7 @@ public class PolyTriGenerator
         {
             DoSeaPoly(poly, key);
         }
-        else if (poly.Neighbors.Refs().Any(n => _riverBorders.ContainsKey(poly.GetBorder(n, _data))))
+        else if (poly.Neighbors.Refs().Any(n => _riverBorders.ContainsKey(poly.GetEdge(n, _data))))
         {
             DoRiverPoly(poly, key);
         }
@@ -109,7 +109,7 @@ public class PolyTriGenerator
 
     private void DoSeaPoly(MapPolygon poly, GenWriteKey key)
     {
-        var borderSegsRel = poly.GetBorderSegments(key.Data);
+        var borderSegsRel = poly.GetBoundarySegments(key.Data);
         var lf = _data.Models.Landforms;
         var v = _data.Models.Vegetation;
         var points = new List<Vector2> {Vector2.Zero};
@@ -127,7 +127,7 @@ public class PolyTriGenerator
     
     private void DoLandPolyNoRivers(MapPolygon poly, GenWriteKey key)
     {
-        var borderSegs = poly.GetBorderSegments(key.Data);
+        var borderSegs = poly.GetBoundarySegments(key.Data);
         var points = borderSegs.GenerateInteriorPoints(50f, 10f)
             .ToHashSet();
         var tris = borderSegs.PolyTriangulate(key.GenData, poly, _idd, points);
@@ -139,7 +139,7 @@ public class PolyTriGenerator
         var lf = _data.Models.Landforms;
         var v = _data.Models.Vegetation;
         var tris = new List<PolyTri>();
-        var borders = poly.Neighbors.Refs().Select(n => poly.GetBorder(n, _data));
+        var borders = poly.Neighbors.Refs().Select(n => poly.GetEdge(n, _data));
         var rBorders = borders
             .Where(b => _riverBorders.ContainsKey(b)).ToList();
         var riverSegs = rBorders
@@ -158,13 +158,13 @@ public class PolyTriGenerator
             tris.ToList(), key);
     }
 
-    private void DoRiverSource(MapPolygon poly, MapPolygonBorder rBorder, 
+    private void DoRiverSource(MapPolygon poly, MapPolygonEdge rEdge, 
         List<PolyTri> tris, GenWriteKey key)
     {
-        var borderSegs = poly.GetBorderSegments(key.Data);;
+        var borderSegs = poly.GetBoundarySegments(key.Data);;
         var rSeg = borderSegs
             .First(s => Mathf.Abs(s.Mid().Angle() 
-                                  - rBorder.GetRiverSegment(poly).Mid().Angle()) < .01f);
+                                  - rEdge.GetRiverSegment(poly).Mid().Angle()) < .01f);
         
         var rSegIndex = borderSegs.IndexOf(rSeg);
         var between = Enumerable.Range(1, borderSegs.Count - 1)
@@ -188,10 +188,10 @@ public class PolyTriGenerator
         TriangulateArbitrary(poly, o2, tris, key);
     }
 
-    private void DoRiverJunction(MapPolygon poly, List<MapPolygonBorder> riverBorders,
+    private void DoRiverJunction(MapPolygon poly, List<MapPolygonEdge> riverBorders,
         List<PolyTri> tris, GenWriteKey key)
     {
-        var borderSegs = poly.GetBorderSegments(key.Data);;
+        var borderSegs = poly.GetBoundarySegments(key.Data);;
         var avg = borderSegs.Average();
         var riverSegs = riverBorders.Select(b => b.GetRiverSegment(poly))
             .Select(rs => 

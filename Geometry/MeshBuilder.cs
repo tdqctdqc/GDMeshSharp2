@@ -24,7 +24,7 @@ public class MeshBuilder
 
     public void AddPoly(MapPolygon poly, Data data, Vector2 offset, float insetFactor)
     {
-        var inscribed = poly.GetBorderSegments(data).GetInscribed(Vector2.Zero, insetFactor)
+        var inscribed = poly.GetBoundarySegments(data).GetInscribed(Vector2.Zero, insetFactor)
             .Select(ls => ls.Translate(offset))
             .ToList();
         var col = ColorsExt.GetRandomColor();
@@ -84,16 +84,16 @@ public class MeshBuilder
         }
     }
 
-    public void DrawBorder(MapPolygon poly, MapPolygonBorder border, Data data, float innerThickness, Color color, Vector2 offset)
+    public void DrawMapPolyEdge(MapPolygon poly, MapPolygonEdge edge, Data data, float innerThickness, Color color, Vector2 offset)
     {
-        var segs = border.GetSegsRel(poly);
-        var borders = poly.GetNeighborBorders(data);
+        var segs = edge.GetSegsRel(poly);
+        var edges = poly.GetNeighborEdges(data);
         var first = segs[0].From;
-        var firstPrev = borders
+        var firstPrev = edges
             .FirstOrDefault(b => b.GetSegsRel(poly).Last().To == first)
             ?.GetSegsRel(poly).Last();
         var last = segs.Last().To;
-        var lastNext = borders
+        var lastNext = edges
             .FirstOrDefault(b => b.GetSegsRel(poly)[0].From == last)
             ?.GetSegsRel(poly)[0];
         

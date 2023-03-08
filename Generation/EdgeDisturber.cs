@@ -10,11 +10,11 @@ public static class EdgeDisturber
     public static void SplitEdges(IReadOnlyCollection<MapPolygon> polys, GenWriteKey key, float minLength)
     {
         _key = key;
-        var edges = new HashSet<MapPolygonBorder>();
+        var edges = new HashSet<MapPolygonEdge>();
 
         void AddEdge(MapPolygon p1, MapPolygon p2)
         {
-            edges.Add(p1.GetBorder(p2, key.Data));
+            edges.Add(p1.GetEdge(p2, key.Data));
         }
 
         int iter = 0;
@@ -22,14 +22,14 @@ public static class EdgeDisturber
         {
             foreach (var n in poly.Neighbors.Refs())
             {
-                var border = poly.GetBorder(n, key.Data);
-                if (edges.Contains(border)) continue;
-                edges.Add(border);
+                var edge = poly.GetEdge(n, key.Data);
+                if (edges.Contains(edge)) continue;
+                edges.Add(edge);
 
-                if (border.HighSegsRel.Any(s => s.Length() > minLength * 2f))
+                if (edge.HighSegsRel.Any(s => s.Length() > minLength * 2f))
                 {
                     iter++;
-                    border.SplitToMinLength(minLength, _key);
+                    edge.SplitToMinLength(minLength, _key);
                 }
             }
         }
