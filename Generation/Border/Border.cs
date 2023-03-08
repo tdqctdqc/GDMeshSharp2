@@ -10,7 +10,6 @@ public class Border<TSeg, TPrim, TRegion>
     public TRegion Native { get; private set; }
     public TRegion Foreign { get; private set; }
     public List<TSeg> Segments { get; private set; }
-    
 
     public static Border<TSeg, TPrim, TRegion> Construct(TRegion native, 
         TRegion foreign, List<TSeg> elements)

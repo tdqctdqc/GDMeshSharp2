@@ -161,14 +161,14 @@ public class PolyTriGenerator
     private void DoRiverSource(MapPolygon poly, MapPolygonEdge rEdge, 
         List<PolyTri> tris, GenWriteKey key)
     {
-        var borderSegs = poly.GetBoundarySegments(key.Data);;
-        var rSeg = borderSegs
+        var boundarySegs = poly.GetBoundarySegments(key.Data);
+        var rSeg = boundarySegs
             .First(s => Mathf.Abs(s.Mid().Angle() 
                                   - rEdge.GetRiverSegment(poly).Mid().Angle()) < .01f);
         
-        var rSegIndex = borderSegs.IndexOf(rSeg);
-        var between = Enumerable.Range(1, borderSegs.Count - 1)
-            .Select(i => borderSegs.Modulo(rSegIndex + i))
+        var rSegIndex = boundarySegs.IndexOf(rSeg);
+        var between = Enumerable.Range(1, boundarySegs.Count - 1)
+            .Select(i => boundarySegs.Modulo(rSegIndex + i))
             .ToList();
 
         var rTri = new PolyTri(_idd.GetID(), rSeg.From, rSeg.To, Vector2.Zero, LandformManager.River.GetRef(), 

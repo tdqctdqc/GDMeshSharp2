@@ -12,7 +12,7 @@ public class Triangle
         A = a;
         B = b;
         C = c;
-        if (TriangleExt.IsClockwise(a, b, c))
+        if (Clockwise.IsClockwise(a, b, c))
         {
             B = c;
             C = b;

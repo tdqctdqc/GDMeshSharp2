@@ -74,7 +74,7 @@ public class MapPolygonEdge : Entity
             if (t.Length() > 1000f || f.Length() > 1000f) throw new Exception();
             res.Add(alter ?  new LineSegment(t, f) : new LineSegment(f, t));
         }
-
+        res.CorrectSegmentsToCCW(Vector2.Zero);
         if (res.IsContinuous() == false) res.Reverse();
         return res;
     }

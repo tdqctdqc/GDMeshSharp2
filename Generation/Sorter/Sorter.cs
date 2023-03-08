@@ -23,18 +23,6 @@ public static class SorterExt
     }
     
 
-    public static void OrderByClockwise<T>(this List<T> elements, 
-        Vector2 center, 
-        Func<T, Vector2> elPos)
-    {
-        var first = elPos(elements.First()) - center;
-        
-        elements.Sort((i,j) => 
-            (elPos(i) - center).GetClockwiseAngleTo(first)
-            .CompareTo(
-                (elPos(j) - center).GetClockwiseAngleTo(first)
-            )
-        );
-    }
+    
     
 }

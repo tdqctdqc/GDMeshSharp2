@@ -51,12 +51,7 @@ public static class TriangleExt
     }
     public static bool IsClockwise(this Triangle tri)
     {
-        return IsClockwise(tri.A, tri.B, tri.C);
-    }
-    public static bool IsClockwise(Vector2 a, Vector2 b, Vector2 c)
-    {
-        var cross = (a - b).Cross(c - b);
-        return (a - b).Cross(c - b) < 0f;
+        return Clockwise.IsClockwise(tri.A, tri.B, tri.C);
     }
     public static List<Vector2> GetTriPoints(this List<Triangle> tris)
     {

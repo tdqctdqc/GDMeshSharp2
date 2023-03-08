@@ -74,30 +74,14 @@ public static class LineSegmentExt
             key);
     }
 
-    public static bool IsCircuit(this IReadOnlyList<LineSegment> segs)
-    {
-        for (int i = 0; i < segs.Count - 1; i++)
-        {
-            if (segs[i].To != segs[i + 1].From) return false;
-        }
-        if (segs[segs.Count - 1].To != segs[0].From) return false;
-
-        return true;
-    }
+    
 
     public static bool IsConvexAround(this List<LineSegment> segs, Vector2 center)
     {
         //todo implement
         return true;
     }
-    public static void CorrectSegmentsToClockwise(this List<LineSegment> segs, Vector2 center)
-    {
-        if (segs.IsConvexAround(center) == false) throw new Exception();
-        for (var i = 0; i < segs.Count; i++)
-        {
-            if (IsClockwise(segs[i], center)) segs[i] = segs[i].Reverse();
-        }
-    }
+    
     public static Vector2 GetHullPoint(this List<LineSegment> segs, out int hullPointIndex)
     {
         Vector2 hullPoint = segs[0].From;
@@ -119,74 +103,10 @@ public static class LineSegmentExt
 
         return hullPoint;
     }
-    public static bool IsClockwise(this List<LineSegment> segs)
-    {
-        var hullPoint = GetHullPoint(segs, out var index);
-        var prev = segs.Prev(index);
-        var seg = segs[index];
-        var a = prev.From;
-        var c = seg.To;
-        return (a - hullPoint).Cross(c - hullPoint) < 0f;
-    }
-
-    public static bool IsClockwise(this LineSegment seg, Vector2 center)
-    {
-        return (center - seg.From).Cross(seg.To - seg.From) > 0f;
-    }
     
-    // public static List<LineSegment> OrderEndToStart(this List<LineSegment> segs, Data data, MapPolygon poly = null)
-    // {
-    //     var segsSample = segs.ToList();
-    //     var res = new List<LineSegment>{segs[0]};
-    //     segsSample.Remove(segs[0]);
-    //     //scan for next
-    //     var currLast = res.Last();
-    //     var next = segsSample.FirstOrDefault(s => s.From == currLast.To);
-    //     while (next != null && res.Count < segs.Count)
-    //     {
-    //         res.Add(next);
-    //         segsSample.Remove(next);
-    //         currLast = next;
-    //         next = segsSample.FirstOrDefault(s => s.From == currLast.To);
-    //     }
-    //     
-    //     var currFirst = res[0];
-    //     var prevRes = new List<LineSegment>();
-    //     var prev = segsSample.FirstOrDefault(s => s.To == currFirst.From);
-    //     while (prev != null && prevRes.Count + res.Count < segs.Count)
-    //     {
-    //         prevRes.Add(prev);
-    //         segsSample.Remove(prev);
-    //         currFirst = prev;
-    //         prev = segsSample.FirstOrDefault(s => s.To == currFirst.From);
-    //     }
-    //
-    //     prevRes.Reverse();
-    //     prevRes.AddRange(res);
-    //     if (prevRes.Count != segs.Count)
-    //     {
-    //         if (prevRes.IsContinuous()) return prevRes;
-    //         GD.Print($"res is {prevRes.Count} segments source is {segs.Count}");
-    //         // GD.Print($"degen count {segs.Where(s => s.From == s.To).Count()}");
-    //         GD.Print("SOURCE");
-    //         GD.Print(segs.Select(ls => ls.ToString()).ToArray());
-    //         GD.Print("RESULT");
-    //         GD.Print(prevRes.Select(ls => ls.ToString()).ToArray());
-    //         
-    //         throw new SegmentsNotConnectedException(data, poly, segs, prevRes, null);
-    //     }
-    //     
-    //     return prevRes;
-    // }
     
-    // public static bool IsContinuous(this IReadOnlyList<LineSegment> segs)
-    // {
-    //     for (var i = 0; i < segs.Count - 1; i++)
-    //     {
-    //         if (segs[i].To != segs[i + 1].From) return false;
-    //     }
-    //     return true;
-    // }
+    
+    
     public static List<PolyTri> PolyTriangulate(this IReadOnlyList<LineSegment> boundarySegs, GenData data, 
         MapPolygon poly, IdDispenser id,
         HashSet<Vector2> interiorPoints = null)
@@ -369,46 +289,4 @@ public static class LineSegmentExt
         if (l1.To != l2.From) throw new Exception();
         return (l1.From - l1.To).GetCCWAngleTo(l2.To - l2.From);
     }
-    public static List<List<LineSegment>> DecomposeIntoContinuous(this List<LineSegment> segs)
-    {
-        if (segs.IsContinuous()) return new List<List<LineSegment>> {segs.ToList()};
-        var res = new List<List<LineSegment>>();
-        int iter = 1;
-        int place = 0;
-        while (iter < segs.Count)
-        {
-            int thisIter = 1;
-            var hash = new HashSet<int>{place};
-            var first = place;
-            while (segs.Prev(first).To == segs[first].From)
-            {
-                first = (first - 1 + segs.Count) % segs.Count;
-                if (hash.Contains(first)) break;
-                hash.Add(first);
-                iter++;
-                thisIter++;
-            }
-            
-            var last = place;
-            while (segs.Next(last).From == segs[last].To)
-            {
-                last = (last + 1) % segs.Count;
-                if (hash.Contains(last)) break;
-                hash.Add(last);
-                iter++;
-                thisIter++;
-                place = (last + 1) % segs.Count;
-            }
-
-            var thisRes = new List<LineSegment>();
-            for (var i = 0; i < thisIter; i++)
-            {
-                thisRes.Add(segs.Modulo(i + first));
-            }
-            res.Add(thisRes);
-        }
-
-        return res;
-    }
-
 }

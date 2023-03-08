@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using MessagePack;
@@ -58,6 +59,17 @@ public partial class MapPolygon : Entity, IGraphNode<MapPolygon, bool>
     public IEnumerable<MapPolygonEdge> GetNeighborEdges(Data data) => Neighbors.Refs()
         .Select(n => GetEdge(n, data));
 
+    public IEnumerable<LineSegment> GetNeighborEdgeSegments(Data data)
+    {
+        return GetNeighborEdges(data)
+            .Select(edge =>
+                Border<LineSegment, Vector2, MapPolygon>.Construct(this, 
+                    edge.GetOtherPoly(this),
+                    edge.GetSegsRel(this)))
+            .OrderEndToStart()
+            .SelectMany(b => b.Segments).ToList();
+    }
+
     public PolyTerrainTris GetTerrainTris(Data data) => data.Planet.TerrainTris.ByPoly[this];
     public void AddNeighbor(MapPolygon poly, MapPolygonEdge edge, GenWriteKey key)
     {
@@ -80,14 +92,7 @@ public partial class MapPolygon : Entity, IGraphNode<MapPolygon, bool>
     }
     public List<LineSegment> BuildBoundarySegments(Data data)
     {
-        var neighborSegs = Neighbors.Refs().Select(n => GetEdge(
-                n, data))
-            .SelectMany(b => b.GetSegsRel(this))
-            .ToList();
-        
-        neighborSegs.CorrectSegmentsToClockwise(Vector2.Zero);
-        neighborSegs.OrderByClockwise(Vector2.Zero, ls => ls.From);
-        neighborSegs = neighborSegs.OrderEndToStart();
+        var neighborSegs = GetNeighborEdgeSegments(data).ToList();
 
         var before = data.Cache.PolyBoundarySegments != null 
             ? data.Cache.PolyBoundarySegments[this]
