@@ -9,10 +9,10 @@ public interface ISegment
     bool PointsTo(ISegment s);
     bool ComesFrom(ISegment s);
 }
-public interface ISegment<T> : ISegment
+public interface ISegment<TEnd> : ISegment
 {
-    T From { get; }
-    T To { get; }
-    ISegment<T> ReverseGeneric();
+    TEnd From { get; }
+    TEnd To { get; }
+    ISegment<TEnd> ReverseGeneric();
 }
 

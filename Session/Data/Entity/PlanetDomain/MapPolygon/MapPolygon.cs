@@ -10,8 +10,6 @@ public partial class MapPolygon : Entity, IGraphNode<MapPolygon, PolyBorderChain
     public static IReadOnlyGraph<MapPolygon, PolyBorderChain> BorderGraph
         = new ImplicitGraph<MapPolygon, PolyBorderChain>(p => true, p => p.Neighbors,
             (p, q) => p.HasNeighbor(q), (p, q) => p.GetBorder(q));
-    
-    
     public override Type GetDomainType() => typeof(PlanetDomain);
     public Vector2 Center { get; protected set; }
     public EntityRefCollection<MapPolygon> Neighbors { get; protected set; }
