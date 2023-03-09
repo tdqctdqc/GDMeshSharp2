@@ -47,8 +47,8 @@ public class MapPolygonEdge : Entity, IBorderChain<LineSegment, MapPolygon>
         
         var highSegsRel = RelativizeSegments(segments, highId.Entity(), key.Data);
         var lowSegsRel = RelativizeSegments(segments, lowId.Entity(), key.Data);
-        var lowBorder = new PolyBorderChain(lowId.Entity(), highId.Entity(), lowSegsRel);
-        var highBorder = new PolyBorderChain(highId.Entity(), lowId.Entity(), highSegsRel);
+        var lowBorder = PolyBorderChain.Construct(lowId.Entity(), highId.Entity(), lowSegsRel);
+        var highBorder = PolyBorderChain.Construct(highId.Entity(), lowId.Entity(), highSegsRel);
         
         var b =  new MapPolygonEdge(
             id, 0f, lowBorder, highBorder, lowId, highId);
@@ -83,8 +83,8 @@ public class MapPolygonEdge : Entity, IBorderChain<LineSegment, MapPolygon>
     {
         var highBorderSegs = RelativizeSegments(newSegmentsAbs, HighId.Entity(), key.Data);
         var lowBorderSegs = RelativizeSegments(newSegmentsAbs, LowId.Entity(), key.Data);
-        LowSegsRel = new PolyBorderChain(LowId.Entity(), HighId.Entity(), lowBorderSegs);
-        HighSegsRel = new PolyBorderChain(HighId.Entity(), LowId.Entity(), highBorderSegs);
+        LowSegsRel = PolyBorderChain.Construct(LowId.Entity(), HighId.Entity(), lowBorderSegs);
+        HighSegsRel = PolyBorderChain.Construct(HighId.Entity(), LowId.Entity(), highBorderSegs);
         if (HighSegsRel.Count != LowSegsRel.Count) throw new Exception();
     }
     
