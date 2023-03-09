@@ -16,4 +16,10 @@ public interface IReadOnlyGraph<TNode, TEdge>
     TEdge GetEdge(TNode from, TNode to);
     bool HasNode(TNode value);
     IReadOnlyCollection<TNode> GetNeighbors(TNode value);
+    
+}
+
+public static class GraphExt
+{
+    
 }

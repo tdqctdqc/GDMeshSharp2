@@ -26,7 +26,7 @@ public static class EdgeDisturber
                 if (edges.Contains(edge)) continue;
                 edges.Add(edge);
 
-                if (edge.HighSegsRel.Any(s => s.Length() > minLength * 2f))
+                if (edge.HighSegsRel.Segments.Any(s => s.Length() > minLength * 2f))
                 {
                     iter++;
                     edge.SplitToMinLength(minLength, _key);

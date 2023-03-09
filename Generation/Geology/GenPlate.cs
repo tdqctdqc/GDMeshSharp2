@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public class GenPlate 
+public class GenPlate : IRegion<MapPolygon>
 {
     public int Id { get; private set; }
     public GenCell Seed { get; private set; }
@@ -51,11 +51,6 @@ public class GenPlate
         if (Mass != null) throw new Exception();
         Mass = c;
     }
-    
-    public List<BorderEdge<MapPolygon>> GetOrderedBorderRelative(GenPlate aPlate, GenData data)
-    {
-        var borderCellPolys = GenCell.Graph.GetBorderElements(Cells.ReadOnly())
-            .SelectMany(c => c.PolyGeos);
-        return MapPolygon.Graph.GetOrderedBorderPairs(borderCellPolys);
-    }
+
+    IReadOnlyHash<MapPolygon> IRegion<MapPolygon>.Elements => Cells.SelectMany(c => c.PolyGeos).ToHashSet().ReadOnly();
 }

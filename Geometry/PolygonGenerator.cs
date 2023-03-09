@@ -87,7 +87,7 @@ public class PolygonGenerator
                     return;
                 }
 
-                if (edge.IsClockwise(mp.Center))
+                if (edge.IsCCW(mp.Center))
                 {
                     edge = edge.Reverse();
                 }

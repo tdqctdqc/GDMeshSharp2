@@ -6,9 +6,8 @@ using Godot;
 
 public interface ISegment
 {
-    object From { get; }
-    object To { get; }
-    ISegment ReverseGeneric();
+    bool PointsTo(ISegment s);
+    bool ComesFrom(ISegment s);
 }
 public interface ISegment<T> : ISegment
 {

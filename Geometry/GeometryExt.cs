@@ -46,7 +46,7 @@ public static class GeometryExt
 
             var ray = seg.To - anchor;
 
-            if (startRay.GetClockwiseAngleTo(ray) > Mathf.Pi)
+            if (startRay.GetCCWAngleTo(ray) > Mathf.Pi)
             {
                 partitionIndices.Add(i);
                 var newPs = seg.To.GeneratePointsAlong(50f, 5f, false, null, anchor).Select(p => p.Intify()).ToList();;

@@ -1,11 +1,6 @@
 
-using System.Collections.Generic;
-
-public interface IBorder<TSeg, TPrim, TRegion>
+public interface IBorder<TNode>
 {
-    TRegion Native { get; }
-    TRegion Foreign { get; }
-    IReadOnlyList<TSeg> Elements { get; }
+    TNode Native { get; }
+    TNode Foreign { get; }
 }
-
-

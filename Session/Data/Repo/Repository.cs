@@ -20,7 +20,6 @@ public class Repository<T> : IRepo where T : Entity
         _entitiesById = new Dictionary<int, T>();
         _entities = new HashSet<T>();
     }
-    
     public void AddEntity(Entity e, StrongWriteKey key)
     {
         if (e is T t == false) throw new Exception();
@@ -35,26 +34,9 @@ public class Repository<T> : IRepo where T : Entity
         _entities.Remove(t);
     }
 
-    public void RegisterForValueChangeCallback<TProperty>
-        (string valueName, Action<ValueChangedNotice<T, TProperty>> callback) 
+    public bool Contains(T t)
     {
-        if (_entityValueUpdatedActions.ContainsKey(valueName) == false)
-        {
-            Action<ValueChangedNotice<T, TProperty>> sendNotice = n => { };
-            _entityValueUpdatedActions.Add(valueName, sendNotice); 
-        }
-        var notice = (Action<ValueChangedNotice<T, TProperty>>)_entityValueUpdatedActions[valueName];
-        notice += callback;
+        return _entities.Contains(t);
     }
-    public void RaiseValueChangedNotice<TProperty>(string valueName, T t, 
-        TProperty oldVal, TProperty newVal,
-        WriteKey key)
-    {
-        if (_entities.Contains(t) == false) throw new Exception();
-        if (_entityValueUpdatedActions.ContainsKey(valueName))
-        {
-            var sendNotice = (Action<ValueChangedNotice<T, TProperty>>)_entityValueUpdatedActions[valueName];
-            sendNotice(new ValueChangedNotice<T, TProperty>(t, newVal, oldVal));
-        }
-    }
+
 }

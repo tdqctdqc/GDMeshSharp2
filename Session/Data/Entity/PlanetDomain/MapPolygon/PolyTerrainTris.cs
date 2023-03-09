@@ -86,7 +86,7 @@ public class PolyTerrainTris : Entity
     
     private PolyTri FindByAngle(Vector2 pos, out int section)
     {
-        section = (Mathf.FloorToInt(Vector2.Right.GetClockwiseAngleTo(pos) / _sectionAngle) + _numSections) % _numSections;
+        section = (Mathf.FloorToInt(Vector2.Right.GetCCWAngleTo(pos) / _sectionAngle) + _numSections) % _numSections;
         var sectionStart = SectionTriStartIndices[section];
         var sectionCount = SectionTriCounts[section];
         for (var i = 0; i < sectionCount; i++)

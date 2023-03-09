@@ -12,7 +12,7 @@ public class Triangle
         A = a;
         B = b;
         C = c;
-        if (Clockwise.IsClockwise(a, b, c))
+        if (Clockwise.IsCCW(a, b, c))
         {
             B = c;
             C = b;
@@ -88,9 +88,9 @@ public class Triangle
     public bool InSection(Vector2 startRot, Vector2 endRot)
     {
         
-        return startRot.GetClockwiseAngleTo(A) < startRot.GetClockwiseAngleTo(endRot)
-               || startRot.GetClockwiseAngleTo(B) < startRot.GetClockwiseAngleTo(endRot)
-               || startRot.GetClockwiseAngleTo(C) < startRot.GetClockwiseAngleTo(endRot);
+        return startRot.GetCCWAngleTo(A) < startRot.GetCCWAngleTo(endRot)
+               || startRot.GetCCWAngleTo(B) < startRot.GetCCWAngleTo(endRot)
+               || startRot.GetCCWAngleTo(C) < startRot.GetCCWAngleTo(endRot);
         // return startRot.AngleTo(A) > 0f && endRot.AngleTo(A) < 0f
         //        || startRot.AngleTo(B) > 0f && endRot.AngleTo(B) < 0f
         //        || startRot.AngleTo(C) > 0f && endRot.AngleTo(C) < 0f;

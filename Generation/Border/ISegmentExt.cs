@@ -8,9 +8,9 @@ public static class ISegmentExt
     {
         for (int i = 0; i < segs.Count - 1; i++)
         {
-            if (segs[i].To.Equals(segs[i + 1].From) == false) return false;
+            if (segs[i].PointsTo(segs[i + 1]) == false) return false;
         }
-        if (segs[segs.Count - 1].To.Equals(segs[0].From) == false) return false;
+        if (segs[segs.Count - 1].PointsTo(segs[0]) == false) return false;
 
         return true;
     }
@@ -38,24 +38,24 @@ public static class ISegmentExt
         segsSample.Remove(segs.First());
         //scan for next
         var currLast = res.Last();
-        var next = segsSample.FirstOrDefault(s => s.From.Equals(currLast.To));
+        var next = segsSample.FirstOrDefault(s => s.ComesFrom(currLast));
         while (next != null && res.Count < segCount)
         {
             res.Add(next);
             segsSample.Remove(next);
             currLast = next;
-            next = segsSample.FirstOrDefault(s => s.From.Equals(currLast.To));
+            next = segsSample.FirstOrDefault(s => s.ComesFrom(currLast));
         }
         
         var currFirst = res[0];
         var prevRes = new List<TSeg>();
-        var prev = segsSample.FirstOrDefault(s => s.To.Equals(currFirst.From));
+        var prev = segsSample.FirstOrDefault(s => s.PointsTo(currFirst));
         while (prev != null && prevRes.Count + res.Count < segCount)
         {
             prevRes.Add(prev);
             segsSample.Remove(prev);
             currFirst = prev;
-            prev = segsSample.FirstOrDefault(s => s.To.Equals(currFirst.From));
+            prev = segsSample.FirstOrDefault(s => s.PointsTo(currFirst));
         }
 
         prevRes.Reverse();
@@ -82,7 +82,7 @@ public static class ISegmentExt
     {
         for (var i = 0; i < segs.Count - 1; i++)
         {
-            if (segs[i].To.Equals(segs[i + 1].From) == false) return false;
+            if (segs[i].PointsTo(segs[i + 1]) == false) return false;
         }
         return true;
     }
@@ -90,7 +90,7 @@ public static class ISegmentExt
     {
         for (var i = 0; i < segs.Count - 1; i++)
         {
-            if (segs[i].To.Equals(segs[i + 1].From) == false) return false;
+            if (segs[i].PointsTo(segs[i + 1]) == false) return false;
         }
         return true;
     }
@@ -105,7 +105,7 @@ public static class ISegmentExt
             int thisIter = 1;
             var hash = new HashSet<int>{place};
             var first = place;
-            while (segs.Prev(first).To == segs[first].From)
+            while (segs.Prev(first).PointsTo(segs[first]))
             {
                 first = (first - 1 + segs.Count) % segs.Count;
                 if (hash.Contains(first)) break;
@@ -115,7 +115,7 @@ public static class ISegmentExt
             }
             
             var last = place;
-            while (segs.Next(last).From == segs[last].To)
+            while (segs.Next(last).ComesFrom(segs[last]))
             {
                 last = (last + 1) % segs.Count;
                 if (hash.Contains(last)) break;

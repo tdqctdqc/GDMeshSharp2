@@ -196,7 +196,7 @@ public class PolyTriGenerator
         var riverSegs = riverBorders.Select(b => b.GetRiverSegment(poly))
             .Select(rs => 
                 borderSegs
-                        .OrderBy(s => Mathf.Abs(s.Mid().GetClockwiseAngle() - rs.Mid().GetClockwiseAngle()))
+                        .OrderBy(s => Mathf.Abs(s.Mid().GetCCWAngle() - rs.Mid().GetCCWAngle()))
                 .First()
                 )
             .ToList();
@@ -214,7 +214,7 @@ public class PolyTriGenerator
             var nextRSeg = riverSegs.Next(i);
             var lAvg = (rSeg.Length() + nextRSeg.Length()) / 2f;
 
-            var angle = rSeg.To.GetClockwiseAngleTo(nextRSeg.From) / 2f;
+            var angle = rSeg.To.GetCCWAngleTo(nextRSeg.From) / 2f;
             var nextIntersect = (rSeg.To.Rotated(angle).Normalized() * lAvg);
             
             junctionPoints.Add(nextIntersect);

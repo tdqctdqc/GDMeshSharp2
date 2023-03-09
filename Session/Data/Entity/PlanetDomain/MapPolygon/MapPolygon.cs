@@ -8,7 +8,6 @@ using MessagePack;
 public partial class MapPolygon : Entity, IGraphNode<MapPolygon, bool>
 {
     public override Type GetDomainType() => typeof(PlanetDomain);
-    public static ImplicitGraph<MapPolygon, bool> Graph { get; private set; } = ImplicitGraph.Get<MapPolygon, bool>();
     public Vector2 Center { get; protected set; }
     public EntityRefCollection<MapPolygon> Neighbors { get; protected set; }
     public Color Color { get; protected set; }
@@ -61,13 +60,7 @@ public partial class MapPolygon : Entity, IGraphNode<MapPolygon, bool>
 
     public IEnumerable<LineSegment> GetNeighborEdgeSegments(Data data)
     {
-        return GetNeighborEdges(data)
-            .Select(edge =>
-                Border<LineSegment, Vector2, MapPolygon>.Construct(this, 
-                    edge.GetOtherPoly(this),
-                    edge.GetSegsRel(this)))
-            .OrderEndToStart()
-            .SelectMany(b => b.Segments).ToList();
+        return GetNeighborEdges(data).Select(e => e.GetBorder(this)).UnionSegs<PolyBorderChain, LineSegment>();
     }
 
     public PolyTerrainTris GetTerrainTris(Data data) => data.Planet.TerrainTris.ByPoly[this];

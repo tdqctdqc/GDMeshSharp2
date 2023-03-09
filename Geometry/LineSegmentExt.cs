@@ -287,6 +287,6 @@ public static class LineSegmentExt
     public static float AngleBetween(this LineSegment l1, LineSegment l2)
     {
         if (l1.To != l2.From) throw new Exception();
-        return (l1.From - l1.To).GetCCWAngleTo(l2.To - l2.From);
+        return (l1.From - l1.To).GetClockwiseAngleTo(l2.To - l2.From);
     }
 }

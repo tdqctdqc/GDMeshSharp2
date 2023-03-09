@@ -5,18 +5,19 @@ using System.Linq;
 using MessagePack;
 
 
-public class MapPolygonEdge : Entity
+public class MapPolygonEdge : Entity, IBorderChain<LineSegment, MapPolygon>
 {
     public override Type GetDomainType() => typeof(PlanetDomain);
     public float MoistureFlow { get; private set; }
-    //todo change these to borders
-    public List<LineSegment> LowSegsRel { get; private set; }
-    public List<LineSegment> HighSegsRel { get; private set; }
+    public PolyBorderChain SegsAbs { get; private set; }
+    public PolyBorderChain LowSegsRel { get; private set; }
+    public PolyBorderChain HighSegsRel { get; private set; }
     public EntityRef<MapPolygon> LowId { get; private set; }
     public EntityRef<MapPolygon> HighId { get; private set; }
     private int _riverSegIndexHi = -1;
-    [SerializationConstructor] private MapPolygonEdge(int id, float moistureFlow, List<LineSegment> lowSegsRel, 
-        List<LineSegment> highSegsRel, EntityRef<MapPolygon> lowId, 
+
+    [SerializationConstructor] private MapPolygonEdge(int id, float moistureFlow, PolyBorderChain lowSegsRel, 
+        PolyBorderChain highSegsRel, EntityRef<MapPolygon> lowId, 
         EntityRef<MapPolygon> highId) : base(id)
     {
         MoistureFlow = moistureFlow;
@@ -44,45 +45,46 @@ public class MapPolygonEdge : Entity
             highId = new EntityRef<MapPolygon>(poly1, key);
         }
         
-        var highSegsRel = OrderAndRelativizeSegments(segments, highId.Entity(), key.Data);
-        var lowSegsRel = OrderAndRelativizeSegments(segments, lowId.Entity(), key.Data);
+        var highSegsRel = RelativizeSegments(segments, highId.Entity(), key.Data);
+        var lowSegsRel = RelativizeSegments(segments, lowId.Entity(), key.Data);
+        var lowBorder = new PolyBorderChain(lowId.Entity(), highId.Entity(), lowSegsRel);
+        var highBorder = new PolyBorderChain(highId.Entity(), lowId.Entity(), highSegsRel);
         
         var b =  new MapPolygonEdge(
-            id, 0f, lowSegsRel, highSegsRel, lowId, highId);
+            id, 0f, lowBorder, highBorder, lowId, highId);
         poly1.AddNeighbor(poly2, b, key);
         poly2.AddNeighbor(poly1, b, key);
         key.Create(b);
         return b;
     }
 
-    private static List<LineSegment> OrderAndRelativizeSegments(List<LineSegment> abs, MapPolygon poly, Data data)
+    private static List<LineSegment> RelativizeSegments(List<LineSegment> abs, MapPolygon poly, Data data)
     {
         var res = new List<LineSegment>();
-        
-        var first = abs[0];
-        var leg1 = first.From - poly.Center;
-        var leg2 = first.To - poly.Center;
-        var leg1Angle = leg1.GetClockwiseAngleTo(leg2).RadToDegrees();
-        var leg2Angle = leg2.GetClockwiseAngleTo(leg1).RadToDegrees();
-        bool alter = leg1Angle < leg2Angle;
-        
         for (var i = 0; i < abs.Count; i++)
         {
-            var seg = abs[i];
-            var t = poly.GetOffsetTo(seg.To, data);
-            var f = poly.GetOffsetTo(seg.From, data);
-            if (t.Length() > 1000f || f.Length() > 1000f) throw new Exception();
-            res.Add(alter ?  new LineSegment(t, f) : new LineSegment(f, t));
+            var absSeg = abs[i];
+            var t = poly.GetOffsetTo(absSeg.To, data);
+            var f = poly.GetOffsetTo(absSeg.From, data);
+            var relSeg = Clockwise.IsClockwise(t, f, Vector2.Zero)
+                ? new LineSegment(t, f)
+                : new LineSegment(f, t);
+            res.Add(relSeg);
         }
-        res.CorrectSegmentsToCCW(Vector2.Zero);
-        if (res.IsContinuous() == false) res.Reverse();
+
+        if (res.IsContinuous() == false)
+        {
+            res.Reverse();
+        }
         return res;
     }
     public void ReplacePoints(List<LineSegment> newSegmentsAbs, 
         GenWriteKey key)
     {
-        HighSegsRel = OrderAndRelativizeSegments(newSegmentsAbs, HighId.Entity(), key.Data);
-        LowSegsRel = OrderAndRelativizeSegments(newSegmentsAbs, LowId.Entity(), key.Data);
+        var highBorderSegs = RelativizeSegments(newSegmentsAbs, HighId.Entity(), key.Data);
+        var lowBorderSegs = RelativizeSegments(newSegmentsAbs, LowId.Entity(), key.Data);
+        LowSegsRel = new PolyBorderChain(LowId.Entity(), HighId.Entity(), lowBorderSegs);
+        HighSegsRel = new PolyBorderChain(HighId.Entity(), LowId.Entity(), highBorderSegs);
         if (HighSegsRel.Count != LowSegsRel.Count) throw new Exception();
     }
     
@@ -112,48 +114,8 @@ public class MapPolygonEdge : Entity
         else throw new Exception("poly is not part of this border");
     }
 
+    MapPolygon IBorder<MapPolygon>.Native => HighId.Entity();
+    MapPolygon IBorder<MapPolygon>.Foreign => LowId.Entity();
+    IReadOnlyList<LineSegment> IChain<LineSegment>.Elements => ((IChain<LineSegment>)SegsAbs).Elements;
 }
 
-public static class PolyBorderExt
-{
-    
-    public static List<Vector2> GetPointsRel(this MapPolygonEdge b, MapPolygon p)
-    {
-        if (p == b.LowId.Entity()) return b.LowSegsRel.GetPoints().ToList();
-        if (p == b.HighId.Entity()) return b.HighSegsRel.GetPoints().ToList();
-        throw new Exception();
-    }
-
-    public static List<LineSegment> GetSegsRel(this MapPolygonEdge b, MapPolygon p)
-    {
-        if (p == b.LowId.Entity()) return b.LowSegsRel;
-        if (p == b.HighId.Entity()) return b.HighSegsRel;
-        throw new Exception();
-    }
-    public static List<LineSegment> GetSegsAbs(this MapPolygonEdge b, Data data)
-    {
-        return b.HighSegsRel
-            .Select(s => s.Translate(b.HighId.Entity().Center))
-            .ToList().OrderEndToStart();
-    }
-    public static Vector2 GetOffsetToOtherPoly(this MapPolygonEdge b, MapPolygon p)
-    {
-        var other = b.GetOtherPoly(p);
-        var otherCount = b.GetSegsRel(other).Count;
-        return b.GetSegsRel(p)[0].From - b.GetSegsRel(other)[otherCount - 1].To;
-    }
-    public static MapPolygon GetOtherPoly(this MapPolygonEdge b, MapPolygon p)
-    {
-        if (p == b.LowId.Entity()) return b.HighId.Entity();
-        if (p == b.HighId.Entity()) return b.LowId.Entity();
-        throw new Exception();
-    }
-    public static List<Vector2> GetPointsAbs(this MapPolygonEdge b)
-    {
-        return b.HighSegsRel.GetPoints().Select(p => p + b.HighId.Entity().Center).ToList();
-    }
-    public static bool IsRegimeBorder(this MapPolygonEdge b)
-    {
-        return b.HighId.Entity().Regime.RefId != b.LowId.Entity().Regime.RefId;
-    }
-}
