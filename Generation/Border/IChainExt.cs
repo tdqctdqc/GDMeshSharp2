@@ -9,20 +9,11 @@ public static class IChainExt
     {
         return els.Where(e => graph.GetNeighbors(e).Any(n => els.Contains(n) == false));
     }
-    public static IEnumerable<TSeg> UnionSegs<TBorder, TSeg>(this IEnumerable<TBorder> borders)
-        where TBorder : IChain<TSeg>, ISegment
+    public static IEnumerable<TSeg> UnionSegs<TChain, TSeg>(this IEnumerable<TChain> borders)
+        where TChain : IChain<TSeg>
     {
         return borders.OrderEndToStart().SelectMany(b => b.Elements);
     }
-    public static TBorder UnionBorder<TBorder, TSeg>(Func<IEnumerable<TSeg>, TBorder> construct, 
-        params TBorder[] borders)
-        where TBorder : IChain<TSeg>, ISegment<TSeg>
-    {
-        var ordered = borders.OrderEndToStart().SelectMany(b => b.Elements);
-        return construct(ordered);
-    }
-    
-    
     
     public static List<BorderEdge<TNode>> GetOrderedBorderPairs<TNode, TEdge>(this IReadOnlyGraph<TNode, TEdge> graph,
         IEnumerable<TNode> elements)
@@ -38,7 +29,7 @@ public static class IChainExt
             {
                 continue;
             }
-
+    
             var thisNodeEdges = graph.GetNeighbors(borderNode)
                 .Where(foreign)
                 .Select(foreignNode => new BorderEdge<TNode>(borderNode, foreignNode)).ToList();
@@ -68,7 +59,7 @@ public static class IChainExt
         {
             traverse(firstEdgeNeighbors.ElementAt(1), right);
         }
-
+    
         var result = new List<BorderEdge<TNode>>();
         for (int i = left.Count - 1; i >= 0; i--)
         {
@@ -87,7 +78,7 @@ public static class IChainExt
                 .Where(e => e.Equals(edge) == false && adjacentEdge(e, edge))
                 .Distinct();
         }
-
+    
         bool foreign(TNode node)
         {
             return nativeHash.Contains(node) == false;

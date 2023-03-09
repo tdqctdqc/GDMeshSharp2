@@ -1,9 +1,9 @@
 
 using System.Collections.Generic;
 
-public interface IChain<T>
+public interface IChain<TSegment> : ISegment
 {
-    IReadOnlyList<T> Elements { get; }
+    IReadOnlyList<TSegment> Elements { get; }
 }
 
 

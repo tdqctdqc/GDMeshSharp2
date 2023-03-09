@@ -17,24 +17,18 @@ public class PolyHighlighter : Node2D
         Move(data, client, poly);
         var mb = new MeshBuilder();
         // DrawBoundarySegments(poly, mb, data);
-        DrawPolyBorderSegments(poly, mb, data);
+        // DrawPolyBorderSegments(poly, mb, data);
         // DrawBoundaryTest(poly, mb, data);
+        DrawNeighborBorders(poly, mb, data);
         DrawPolyTriBorders(poly, mb, data);
         TakeFromMeshBuilder(mb);
     }
 
-    private void DrawNeighborEdges(MapPolygon poly, MeshBuilder mb, Data data)
+    private void DrawNeighborBorders(MapPolygon poly, MeshBuilder mb, Data data)
     {
         var edgeBorders = poly.GetNeighborEdgeSegments(data).ToList();
         mb.AddArrowsRainbow(edgeBorders, 5f);
         mb.AddNumMarkers(edgeBorders.Select(ls => ls.Mid()).ToList(), 20f, 
-            Colors.Transparent, Colors.White, Vector2.Zero);
-    }
-    private void DrawPolyBorderSegments(MapPolygon poly, MeshBuilder mb, Data data)
-    {
-        var lines = poly.Neighbors.Refs().Select(n => poly.GetBorder(n)).SelectMany(b => b.Segments);
-        mb.AddArrowsRainbow(lines.ToList(), 5f);
-        mb.AddNumMarkers(lines.Select(ls => ls.Mid()).ToList(), 20f, 
             Colors.Transparent, Colors.White, Vector2.Zero);
     }
     private void DrawBoundarySegments(MapPolygon poly, MeshBuilder mb, Data data)

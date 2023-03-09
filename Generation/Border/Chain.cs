@@ -2,28 +2,25 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Godot;
 
-public class Chain<TSeg, TPrim> : IChain<TSeg>, ISegment<TSeg> 
+public class Chain<TSeg, TPrim> : IChain<TSeg>, ISegment<TPrim> 
     where TSeg : ISegment<TPrim>
 {
     public TSeg this[int i] => Segments[i];
     public List<TSeg> Segments { get; private set; }
-    public static Chain<TSeg, TPrim> Construct(List<TSeg> elements)
-    {
-        return new Chain<TSeg, TPrim>(elements.OrderEndToStart());
-    }
     protected Chain(List<TSeg> segments)
     {
         Segments = segments;
     }
 
 
-    ISegment<TSeg> ISegment<TSeg>.ReverseGeneric()
+    ISegment<TPrim> ISegment<TPrim>.ReverseGeneric()
     {
         throw new NotImplementedException();
     }
 
-    public ISegment<TSeg> ReverseGeneric()
+    public ISegment<TPrim> ReverseGeneric()
     {
         var r = Segments.Select(e => e.Reverse<TSeg, TPrim>()).ToList();
         r.Reverse();
@@ -32,19 +29,27 @@ public class Chain<TSeg, TPrim> : IChain<TSeg>, ISegment<TSeg>
 
     IReadOnlyList<TSeg> IChain<TSeg>.Elements => Segments;
 
-    TSeg ISegment<TSeg>.From => Segments[0];
+    TPrim ISegment<TPrim>.From => Segments[0].From;
 
-    TSeg ISegment<TSeg>.To => Segments[Segments.Count - 1];
+    TPrim ISegment<TPrim>.To => Segments[Segments.Count - 1].To;
     bool ISegment.PointsTo(ISegment s)
     {
-        if (s is ISegment<TSeg> t == false) return false;
-        return Segments[Segments.Count - 1].To.Equals(t.From.From);
+        if (s is ISegment<TPrim> p)
+        {
+            return Segments[Segments.Count - 1].To.Equals(p.From);
+        }
+
+        return false;
     }
 
     bool ISegment.ComesFrom(ISegment s)
     {
-        if (s is ISegment<TSeg> t == false) return false;
-        return Segments[0].From.Equals(t.To.To);
+        if (s is ISegment<TPrim> p)
+        {
+            return Segments[0].From.Equals(p.To);
+        }
+        
+        return false;
     }
 
     public int Count => Segments.Count;

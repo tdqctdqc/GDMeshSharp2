@@ -84,7 +84,8 @@ public class MeshBuilder
         }
     }
 
-    public void DrawMapPolyEdge(MapPolygon poly, MapPolygon n, Data data, float innerThickness, Color color, Vector2 offset)
+    public void DrawMapPolyEdge(MapPolygon poly, MapPolygon n, Data data, float innerThickness, 
+        Color color, Vector2 offset)
     {
         var border = poly.GetBorder(n);
         var segs = border.Segments;
