@@ -83,10 +83,9 @@ public class PolyTriGenerator
             }
             
             var newIndex = preSegs.Count();
-            rBorder.ReplacePoints(newSegs, 
+            rBorder.ReplacePoints(newSegs, newIndex,
                 key);
             _riverBorders[rBorder] = newIndex;
-            rBorder.SetRiverIndexHi(newIndex, key);
         }
         _data.Events.SetPolyShapes?.Invoke();
     }

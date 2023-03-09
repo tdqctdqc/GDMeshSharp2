@@ -40,8 +40,8 @@ public class MapPolygonEdge : Entity, IBorderChain<LineSegment, MapPolygon>
             highId = new EntityRef<MapPolygon>(poly1, key);
         }
         
-        var highSegsRel = RelativizeSegments(segments, highId.Entity(), key.Data);
-        var lowSegsRel = RelativizeSegments(segments, lowId.Entity(), key.Data);
+        var highSegsRel = RelativizeSegments(segments, highId.Entity(), key.Data, out _);
+        var lowSegsRel = RelativizeSegments(segments, lowId.Entity(), key.Data, out _);
         var lowBorder = PolyBorderChain.Construct(lowId.Entity(), highId.Entity(), lowSegsRel);
         var highBorder = PolyBorderChain.Construct(highId.Entity(), lowId.Entity(), highSegsRel);
         
@@ -55,8 +55,9 @@ public class MapPolygonEdge : Entity, IBorderChain<LineSegment, MapPolygon>
         return b;
     }
 
-    private static List<LineSegment> RelativizeSegments(List<LineSegment> abs, MapPolygon poly, Data data)
+    private static List<LineSegment> RelativizeSegments(List<LineSegment> abs, MapPolygon poly, Data data, out bool reversed)
     {
+        reversed = false;
         var res = new List<LineSegment>();
         for (var i = 0; i < abs.Count; i++)
         {
@@ -72,17 +73,23 @@ public class MapPolygonEdge : Entity, IBorderChain<LineSegment, MapPolygon>
         if (res.IsContinuous() == false)
         {
             res.Reverse();
+            reversed = true;
         }
         return res;
     }
-    public void ReplacePoints(List<LineSegment> newSegmentsAbs, 
+    public void ReplacePoints(List<LineSegment> newSegmentsAbs, int riverSegIndex,
         GenWriteKey key)
     {
-        var highBorderSegs = RelativizeSegments(newSegmentsAbs, HighId.Entity(), key.Data);
-        var lowBorderSegs = RelativizeSegments(newSegmentsAbs, LowId.Entity(), key.Data);
-        var lowSegsRel = PolyBorderChain.Construct(LowId.Entity(), HighId.Entity(), lowBorderSegs);
-        var highSegsRel = PolyBorderChain.Construct(HighId.Entity(), LowId.Entity(), highBorderSegs);
+        var highBorderSegs = RelativizeSegments(newSegmentsAbs, HighId.Entity(), key.Data, out var hiRev);
+        var lowBorderSegs = RelativizeSegments(newSegmentsAbs, LowId.Entity(), key.Data, out var loRev);
+
+        var lowRiverIndex = loRev ? newSegmentsAbs.Count - riverSegIndex - 1 : riverSegIndex;
+        var hiRiverIndex = hiRev ? newSegmentsAbs.Count - riverSegIndex - 1 : riverSegIndex;
         
+        var lowSegsRel = PolyBorderChain.ConstructRiver(LowId.Entity(), HighId.Entity(), 
+            lowBorderSegs, lowRiverIndex);
+        var highSegsRel = PolyBorderChain.ConstructRiver(HighId.Entity(), LowId.Entity(), 
+            highBorderSegs, hiRiverIndex);
         HighId.Entity().SetNeighborBorder(LowId.Entity(), highSegsRel, key);
         LowId.Entity().SetNeighborBorder(HighId.Entity(), lowSegsRel, key);
     }
@@ -95,20 +102,17 @@ public class MapPolygonEdge : Entity, IBorderChain<LineSegment, MapPolygon>
     {
         MoistureFlow += increment;
     }
-    public void SetRiverIndexHi(int i, GenWriteKey key)
-    {
-        _riverSegIndexHi = i;
-    }
+    
 
     public LineSegment GetRiverSegment(MapPolygon poly)
     {
         if (poly == HighId.Entity())
         {
-            return HighSegsRel()[_riverSegIndexHi];
+            return HighId.Entity().GetBorder(LowId.Entity()).GetRiverSegment();
         }
         else if (poly == LowId.Entity())
         {
-            return LowSegsRel()[LowSegsRel().Count - 1 - _riverSegIndexHi];
+            return LowId.Entity().GetBorder(HighId.Entity()).GetRiverSegment();
         }
         else throw new Exception("poly is not part of this border");
     }

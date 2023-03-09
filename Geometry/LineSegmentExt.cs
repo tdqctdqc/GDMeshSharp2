@@ -69,19 +69,13 @@ public static class LineSegmentExt
                 newSegsAbs.Add(seg);
             }
         }
-
-        edge.ReplacePoints(newSegsAbs,
-            key);
+        edge.ReplacePoints(newSegsAbs, -1, key);
     }
-
-    
-
     public static bool IsConvexAround(this List<LineSegment> segs, Vector2 center)
     {
         //todo implement
         return true;
     }
-    
     public static Vector2 GetHullPoint(this List<LineSegment> segs, out int hullPointIndex)
     {
         Vector2 hullPoint = segs[0].From;
