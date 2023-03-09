@@ -70,8 +70,7 @@ public class LocalCache
             }
             foreach (var n in p.Neighbors.Refs())
             {
-                var edge = p.GetEdge(n, _data);
-                var segs = edge.GetSegsRel(p);
+                var segs = p.GetBorder(n).Segments;
                 for (var j = 0; j < segs.Count; j++)
                 {
                     var tri = new Triangle(Vector2.Zero, segs[j].From, segs[j].To);

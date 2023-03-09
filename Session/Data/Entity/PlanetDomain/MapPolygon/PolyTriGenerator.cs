@@ -139,7 +139,7 @@ public class PolyTriGenerator
         var lf = _data.Models.Landforms;
         var v = _data.Models.Vegetation;
         var tris = new List<PolyTri>();
-        var borders = poly.Neighbors.Refs().Select(n => poly.GetEdge(n, _data));
+        var borders = poly.GetNeighborEdges(key.Data);
         var rBorders = borders
             .Where(b => _riverBorders.ContainsKey(b)).ToList();
         var riverSegs = rBorders

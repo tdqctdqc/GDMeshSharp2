@@ -62,10 +62,11 @@ public partial class MapPolygon : Entity, IGraphNode<MapPolygon, bool>
     }
     public IEnumerable<MapPolygonEdge> GetNeighborEdges(Data data) => Neighbors.Refs()
         .Select(n => GetEdge(n, data));
-
+    public IEnumerable<PolyBorderChain> GetNeighborBorders() => Neighbors.Refs()
+        .Select(n => GetBorder(n));
     public IEnumerable<LineSegment> GetNeighborEdgeSegments(Data data)
     {
-        return GetNeighborEdges(data).Select(e => e.GetBorder(this)).UnionSegs<PolyBorderChain, LineSegment>();
+        return GetNeighborBorders().UnionSegs<PolyBorderChain, LineSegment>();
     }
     public PolyTerrainTris GetTerrainTris(Data data) => data.Planet.TerrainTris.ByPoly[this];
     public void AddNeighbor(MapPolygon poly, PolyBorderChain border, GenWriteKey key)

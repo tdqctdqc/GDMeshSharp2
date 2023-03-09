@@ -10,10 +10,11 @@
         public EntityRef<MapPolygon> Foreign { get; private set; }
         public static PolyBorderChain Construct(MapPolygon native, MapPolygon foreign, List<LineSegment> segments)
         {
-            return new PolyBorderChain(native.MakeRef(), foreign.MakeRef(), segments);
+            return new PolyBorderChain(native.MakeRef(), foreign.MakeRef(), segments, -1);
         }
         [SerializationConstructor] 
-        private PolyBorderChain(EntityRef<MapPolygon> native, EntityRef<MapPolygon> foreign, List<LineSegment> segments) 
+        private PolyBorderChain(EntityRef<MapPolygon> native, EntityRef<MapPolygon> foreign, 
+            List<LineSegment> segments, int riverSegmentIndex) 
             : base(segments)
         {
             Native = native;
@@ -24,6 +25,7 @@
         {
             return Segments.Select(ls => ls.Translate(Native.Entity().Center)).ToList();
         }
+
         MapPolygon IBorder<MapPolygon>.Native => Native.Entity();
         MapPolygon IBorder<MapPolygon>.Foreign => Foreign.Entity();
     }

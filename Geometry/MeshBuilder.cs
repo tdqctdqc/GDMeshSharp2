@@ -84,18 +84,19 @@ public class MeshBuilder
         }
     }
 
-    public void DrawMapPolyEdge(MapPolygon poly, MapPolygonEdge edge, Data data, float innerThickness, Color color, Vector2 offset)
+    public void DrawMapPolyEdge(MapPolygon poly, MapPolygon n, Data data, float innerThickness, Color color, Vector2 offset)
     {
-        var segs = edge.GetSegsRel(poly);
-        var edges = poly.GetNeighborEdges(data);
+        var border = poly.GetBorder(n);
+        var segs = border.Segments;
+        var edges = poly.GetNeighborBorders();
         var first = segs[0].From;
         var firstPrev = edges
-            .FirstOrDefault(b => b.GetSegsRel(poly).Last().To == first)
-            ?.GetSegsRel(poly).Last();
+            .FirstOrDefault(b => b.Segments.Last().To == first)
+            ?.Segments.Last();
         var last = segs.Last().To;
         var lastNext = edges
-            .FirstOrDefault(b => b.GetSegsRel(poly)[0].From == last)
-            ?.GetSegsRel(poly)[0];
+            .FirstOrDefault(b => b.Segments[0].From == last)
+            ?.Segments[0];
         
         var firstInner = segs[0].From + segs[0].GetNormalizedPerpendicular() * innerThickness;
         if (firstPrev != null) firstInner = firstPrev.GetCornerPoint(segs[0], innerThickness);

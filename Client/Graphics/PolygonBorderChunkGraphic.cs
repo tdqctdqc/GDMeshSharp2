@@ -21,7 +21,7 @@ public class PolygonBorderChunkGraphic : Node2D
                 
                 if (n.Regime.RefId == p.Regime.RefId) continue;
                 
-                mb.DrawMapPolyEdge(p, p.GetEdge(n, data), data, 20f, color, offset);
+                mb.DrawMapPolyEdge(p, n, data, 20f, color, offset);
             }
         }
         
