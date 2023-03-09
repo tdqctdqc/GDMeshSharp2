@@ -5,7 +5,7 @@ using System.Linq;
 using MessagePack;
 
 
-public class MapPolygonEdge : Entity, IBorderChain<LineSegment, MapPolygon>
+public class MapPolygonEdge : Entity
 {
     public override Type GetDomainType() => typeof(PlanetDomain);
     public float MoistureFlow { get; private set; }
@@ -13,7 +13,6 @@ public class MapPolygonEdge : Entity, IBorderChain<LineSegment, MapPolygon>
     public PolyBorderChain HighSegsRel() => HighId.Entity().NeighborBorders[LowId.RefId];
     public EntityRef<MapPolygon> LowId { get; private set; }
     public EntityRef<MapPolygon> HighId { get; private set; }
-    private int _riverSegIndexHi = -1;
 
     [SerializationConstructor] private MapPolygonEdge(int id, float moistureFlow, EntityRef<MapPolygon> lowId, 
         EntityRef<MapPolygon> highId) : base(id)
@@ -102,7 +101,6 @@ public class MapPolygonEdge : Entity, IBorderChain<LineSegment, MapPolygon>
     {
         MoistureFlow += increment;
     }
-    
 
     public LineSegment GetRiverSegment(MapPolygon poly)
     {
@@ -116,9 +114,5 @@ public class MapPolygonEdge : Entity, IBorderChain<LineSegment, MapPolygon>
         }
         else throw new Exception("poly is not part of this border");
     }
-
-    MapPolygon IBorder<MapPolygon>.Native => HighId.Entity();
-    MapPolygon IBorder<MapPolygon>.Foreign => LowId.Entity();
-    IReadOnlyList<LineSegment> IChain<LineSegment>.Elements => this.GetSegsAbs();
 }
 

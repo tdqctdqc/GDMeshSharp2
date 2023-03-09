@@ -9,17 +9,3 @@ public interface IGraph<TNode, TEdge>
     void AddNode(TNode element);
     bool Remove(TNode value);
 }
-
-public interface IReadOnlyGraph<TNode, TEdge>
-{
-    bool HasEdge(TNode from, TNode to);
-    TEdge GetEdge(TNode from, TNode to);
-    bool HasNode(TNode value);
-    IReadOnlyCollection<TNode> GetNeighbors(TNode value);
-    
-}
-
-public static class GraphExt
-{
-    
-}

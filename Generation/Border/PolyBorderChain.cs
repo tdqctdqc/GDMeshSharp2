@@ -28,12 +28,12 @@ public class PolyBorderChain : Chain<LineSegment, Vector2>, IBorderChain<LineSeg
         Foreign = foreign;
     }
 
-    public List<LineSegment> SegsAbs()
+    public IEnumerable<LineSegment> SegsAbs()
     {
-        return Segments.Select(ls => ls.Translate(Native.Entity().Center)).ToList();
+        return Segments.Select(ls => ls.Translate(Native.Entity().Center));
     }
     public LineSegment GetRiverSegment() => RiverSegmentIndex == -1 ? null : Segments[RiverSegmentIndex];
-
+    public bool HasRiver() => RiverSegmentIndex != -1;
     MapPolygon IBorder<MapPolygon>.Native => Native.Entity();
     MapPolygon IBorder<MapPolygon>.Foreign => Foreign.Entity();
 }

@@ -179,8 +179,8 @@ public class GeologyGenerator
                     var driftStr = (drift1 - drift2).Length() / 2f;
                     if (driftStr > .5f)
                     {
-                        var graph = Data.Planet.Polygons.Graph;
-                        var borders = hiPlate.GetBorderEdges<MapPolygon, MapPolygonEdge, LineSegment>(graph)
+                        var borders = MapPolygon.BorderGraph
+                            .GetBorderEdges(hiPlate.Cells.SelectMany(c => c.PolyGeos))
                             .ToList();
                         var friction = driftStr.ProjectToRange(1f, .5f, .5f);
                         var fault = new FaultLine(driftStr, hiPlate, loPlate, borders, Data);

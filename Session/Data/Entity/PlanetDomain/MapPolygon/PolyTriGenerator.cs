@@ -79,7 +79,8 @@ public class PolyTriGenerator
             
             if(newSegs.IsContinuous() == false)
             {
-                throw new SegmentsNotConnectedException(key.GenData, hi, hi.GetBoundarySegments(_data).ToList(), newSegs, null);
+                throw new SegmentsNotConnectedException(key.GenData, hi, 
+                    hi.GetBoundarySegments(_data).ToList(), newSegs, null);
             }
             
             var newIndex = preSegs.Count();

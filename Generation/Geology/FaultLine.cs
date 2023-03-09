@@ -12,14 +12,14 @@ public class FaultLine
     public float Friction { get; private set; }
     public MapPolygon Origin => HighId.GetSeedPoly();
     public FaultLine(float friction, GenPlate highId, 
-        GenPlate lowId, List<MapPolygonEdge> edgesHi,
+        GenPlate lowId, List<PolyBorderChain> edgesHi,
         GenData data)
     {
         Friction = friction;
         HighId = highId;
         LowId = lowId;
         PolyFootprint = new List<MapPolygon>();
-        Segments = edgesHi.Select(e => e.HighSegsRel().Segments).ToList();
+        Segments = edgesHi.Select(e => e.Segments).ToList();
         Segments.ForEach(ss => ss.ForEach(s => s.Clamp(data.Planet.Width)));
     }
 

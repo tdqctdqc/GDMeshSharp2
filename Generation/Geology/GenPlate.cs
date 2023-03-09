@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public class GenPlate : IRegion<MapPolygon>
+public class GenPlate 
 {
     public int Id { get; private set; }
     public GenCell Seed { get; private set; }
@@ -51,6 +51,4 @@ public class GenPlate : IRegion<MapPolygon>
         if (Mass != null) throw new Exception();
         Mass = c;
     }
-
-    IReadOnlyHash<MapPolygon> IRegion<MapPolygon>.Elements => Cells.SelectMany(c => c.PolyGeos).ToHashSet().ReadOnly();
 }
