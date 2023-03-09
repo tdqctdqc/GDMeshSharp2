@@ -52,7 +52,7 @@ public class PolyTriGenerator
             min = Mathf.Min(min, width);
             avg += width;
 
-            var segs = rBorder.GetSegsAbs(_data);
+            var segs = rBorder.GetSegsAbs();
             var numSegs = segs.Count;
 
             var start = segs[0].From;

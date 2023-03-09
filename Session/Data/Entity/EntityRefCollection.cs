@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using MessagePack;
 
-[MessagePackObject(keyAsPropertyName: true)] 
 public partial class EntityRefCollection<TRef>
     : IRefCollection, IReadOnlyHash<TRef> where TRef : Entity
 {

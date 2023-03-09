@@ -9,21 +9,16 @@ public class MapPolygonEdge : Entity, IBorderChain<LineSegment, MapPolygon>
 {
     public override Type GetDomainType() => typeof(PlanetDomain);
     public float MoistureFlow { get; private set; }
-    public PolyBorderChain SegsAbs { get; private set; }
-    public PolyBorderChain LowSegsRel { get; private set; }
-    public PolyBorderChain HighSegsRel { get; private set; }
+    public PolyBorderChain LowSegsRel() => LowId.Entity().NeighborBorders[HighId.RefId];
+    public PolyBorderChain HighSegsRel() => HighId.Entity().NeighborBorders[LowId.RefId];
     public EntityRef<MapPolygon> LowId { get; private set; }
     public EntityRef<MapPolygon> HighId { get; private set; }
     private int _riverSegIndexHi = -1;
 
-    [SerializationConstructor] private MapPolygonEdge(int id, float moistureFlow, PolyBorderChain lowSegsRel, 
-        PolyBorderChain highSegsRel, EntityRef<MapPolygon> lowId, 
+    [SerializationConstructor] private MapPolygonEdge(int id, float moistureFlow, EntityRef<MapPolygon> lowId, 
         EntityRef<MapPolygon> highId) : base(id)
     {
         MoistureFlow = moistureFlow;
-        LowSegsRel = lowSegsRel;
-        HighSegsRel = highSegsRel;
-        if (lowSegsRel.Count != highSegsRel.Count) throw new Exception();
         LowId = lowId;
         HighId = highId;
     }
@@ -50,10 +45,12 @@ public class MapPolygonEdge : Entity, IBorderChain<LineSegment, MapPolygon>
         var lowBorder = PolyBorderChain.Construct(lowId.Entity(), highId.Entity(), lowSegsRel);
         var highBorder = PolyBorderChain.Construct(highId.Entity(), lowId.Entity(), highSegsRel);
         
+        
+        lowId.Entity().AddNeighbor(highId.Entity(), lowBorder, key);
+        highId.Entity().AddNeighbor(lowId.Entity(), highBorder, key);
         var b =  new MapPolygonEdge(
-            id, 0f, lowBorder, highBorder, lowId, highId);
-        poly1.AddNeighbor(poly2, b, key);
-        poly2.AddNeighbor(poly1, b, key);
+            id, 0f, lowId, highId);
+
         key.Create(b);
         return b;
     }
@@ -83,9 +80,11 @@ public class MapPolygonEdge : Entity, IBorderChain<LineSegment, MapPolygon>
     {
         var highBorderSegs = RelativizeSegments(newSegmentsAbs, HighId.Entity(), key.Data);
         var lowBorderSegs = RelativizeSegments(newSegmentsAbs, LowId.Entity(), key.Data);
-        LowSegsRel = PolyBorderChain.Construct(LowId.Entity(), HighId.Entity(), lowBorderSegs);
-        HighSegsRel = PolyBorderChain.Construct(HighId.Entity(), LowId.Entity(), highBorderSegs);
-        if (HighSegsRel.Count != LowSegsRel.Count) throw new Exception();
+        var lowSegsRel = PolyBorderChain.Construct(LowId.Entity(), HighId.Entity(), lowBorderSegs);
+        var highSegsRel = PolyBorderChain.Construct(HighId.Entity(), LowId.Entity(), highBorderSegs);
+        
+        HighId.Entity().SetNeighborBorder(LowId.Entity(), highSegsRel, key);
+        LowId.Entity().SetNeighborBorder(HighId.Entity(), lowSegsRel, key);
     }
     
     public void SetFlow(float width, GenWriteKey key)
@@ -105,17 +104,17 @@ public class MapPolygonEdge : Entity, IBorderChain<LineSegment, MapPolygon>
     {
         if (poly == HighId.Entity())
         {
-            return HighSegsRel[_riverSegIndexHi];
+            return HighSegsRel()[_riverSegIndexHi];
         }
         else if (poly == LowId.Entity())
         {
-            return LowSegsRel[LowSegsRel.Count - 1 - _riverSegIndexHi];
+            return LowSegsRel()[LowSegsRel().Count - 1 - _riverSegIndexHi];
         }
         else throw new Exception("poly is not part of this border");
     }
 
     MapPolygon IBorder<MapPolygon>.Native => HighId.Entity();
     MapPolygon IBorder<MapPolygon>.Foreign => LowId.Entity();
-    IReadOnlyList<LineSegment> IChain<LineSegment>.Elements => ((IChain<LineSegment>)SegsAbs).Elements;
+    IReadOnlyList<LineSegment> IChain<LineSegment>.Elements => this.GetSegsAbs();
 }
 

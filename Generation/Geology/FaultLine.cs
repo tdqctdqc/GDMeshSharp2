@@ -19,7 +19,7 @@ public class FaultLine
         HighId = highId;
         LowId = lowId;
         PolyFootprint = new List<MapPolygon>();
-        Segments = edgesHi.Select(e => e.HighSegsRel.Segments).ToList();
+        Segments = edgesHi.Select(e => e.HighSegsRel().Segments).ToList();
         Segments.ForEach(ss => ss.ForEach(s => s.Clamp(data.Planet.Width)));
     }
 

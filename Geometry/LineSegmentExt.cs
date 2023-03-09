@@ -42,7 +42,7 @@ public static class LineSegmentExt
     public static void SplitToMinLength(this MapPolygonEdge edge, float minLength, GenWriteKey key)
     {
         var newSegsAbs = new List<LineSegment>();
-        var segs = edge.GetSegsAbs(key.Data);
+        var segs = edge.GetSegsAbs();
         var offset = edge.HighId.Entity().GetOffsetTo(edge.LowId.Entity(), key.Data);
         for (var i = 0; i < segs.Count; i++)
         {

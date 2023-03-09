@@ -1,5 +1,6 @@
 
     using System.Collections.Generic;
+    using System.Linq;
     using Godot;
     using MessagePack;
 
@@ -19,6 +20,10 @@
             Foreign = foreign;
         }
 
+        public List<LineSegment> SegsAbs()
+        {
+            return Segments.Select(ls => ls.Translate(Native.Entity().Center)).ToList();
+        }
         MapPolygon IBorder<MapPolygon>.Native => Native.Entity();
         MapPolygon IBorder<MapPolygon>.Foreign => Foreign.Entity();
     }

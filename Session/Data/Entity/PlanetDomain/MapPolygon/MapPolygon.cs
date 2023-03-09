@@ -10,6 +10,7 @@ public partial class MapPolygon : Entity, IGraphNode<MapPolygon, bool>
     public override Type GetDomainType() => typeof(PlanetDomain);
     public Vector2 Center { get; protected set; }
     public EntityRefCollection<MapPolygon> Neighbors { get; protected set; }
+    public Dictionary<int, PolyBorderChain> NeighborBorders { get; private set; }
     public Color Color { get; protected set; }
     public float Altitude { get; private set; }
     public float Roughness { get; private set; }
@@ -20,14 +21,17 @@ public partial class MapPolygon : Entity, IGraphNode<MapPolygon, bool>
     public bool IsCoast() => IsLand() && Neighbors.Refs().Any(n => n.IsWater());
     public MapPolygonEdge GetEdge(MapPolygon neighbor, Data data) 
         => data.Planet.PolyEdges.GetEdge(this, neighbor);
+
+    public PolyBorderChain GetBorder(MapPolygon neighbor) => NeighborBorders[neighbor.Id];
     
     
     [SerializationConstructor] private MapPolygon(int id, Vector2 center, EntityRefCollection<MapPolygon> neighbors, 
-        Color color, float altitude, float roughness, 
+        Dictionary<int, PolyBorderChain> neighborBorders, Color color, float altitude, float roughness, 
         float moisture, EntityRef<Regime> regime) : base(id)
     {
         Center = center;
         Neighbors = neighbors;
+        NeighborBorders = neighborBorders;
         Color = color;
         Altitude = altitude;
         Roughness = roughness;
@@ -42,6 +46,7 @@ public partial class MapPolygon : Entity, IGraphNode<MapPolygon, bool>
         if (mapCenter.x < 0f) mapCenter = new Vector2(mapCenter.x + mapWidth, center.y);
         var p = new MapPolygon(id, mapCenter,
             new EntityRefCollection<MapPolygon>(new HashSet<int>()),
+            new Dictionary<int, PolyBorderChain>(),
             ColorsExt.GetRandomColor(),
             0f,
             0f,
@@ -62,12 +67,18 @@ public partial class MapPolygon : Entity, IGraphNode<MapPolygon, bool>
     {
         return GetNeighborEdges(data).Select(e => e.GetBorder(this)).UnionSegs<PolyBorderChain, LineSegment>();
     }
-
     public PolyTerrainTris GetTerrainTris(Data data) => data.Planet.TerrainTris.ByPoly[this];
-    public void AddNeighbor(MapPolygon poly, MapPolygonEdge edge, GenWriteKey key)
+    public void AddNeighbor(MapPolygon poly, PolyBorderChain border, GenWriteKey key)
     {
         if (Neighbors.Contains(poly)) return;
         Neighbors.AddRef(poly, key);
+        NeighborBorders.Add(poly.Id, border);
+    }
+
+    public void SetNeighborBorder(MapPolygon poly, PolyBorderChain border, GenWriteKey key)
+    {
+        if (Neighbors.Contains(poly) == false) throw new Exception();
+        NeighborBorders[poly.Id] = border;
     }
     public void RemoveNeighbor(MapPolygon poly, GenWriteKey key)
     {
