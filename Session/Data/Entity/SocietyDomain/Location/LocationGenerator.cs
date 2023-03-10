@@ -25,7 +25,7 @@ public class LocationGenerator
     private void GenerateCities()
     {
         var landPolys = Data.Planet.Polygons.Entities.Where(p => p.IsLand());
-        var unions = UnionFind<MapPolygon>.DoUnionFind(landPolys.ToList(), (p, q) => p.Regime.Entity() == q.Regime.Entity(),
+        var unions = UnionFind.Find(landPolys.ToList(), (p, q) => p.Regime.Entity() == q.Regime.Entity(),
             p => p.Neighbors.Refs());
         unions.ForEach(u => GenerateCitiesForRegimeChunk(u));
     }

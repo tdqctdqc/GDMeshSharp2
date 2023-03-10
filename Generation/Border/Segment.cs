@@ -1,6 +1,12 @@
 
 public class Segment<TPrim> : ISegment<TPrim>
 {
+    public Segment(TPrim @from, TPrim to)
+    {
+        From = @from;
+        To = to;
+    }
+
     public TPrim From { get; }
     public TPrim To { get; }
     public ISegment<TPrim> ReverseGeneric()

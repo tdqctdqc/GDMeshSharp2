@@ -7,7 +7,7 @@ using MessagePack;
 
 public partial class MapPolygon : Entity, 
     IGraphNode<MapPolygon, PolyBorderChain>,
-    IStaticGraphNode<MapPolygon, PolyBorderChain>
+    IStaticNode<MapPolygon, PolyBorderChain>
 {
     public static IReadOnlyGraph<MapPolygon, PolyBorderChain> BorderGraph
         = new ImplicitGraph<MapPolygon, PolyBorderChain>(p => true, p => p.Neighbors,
@@ -126,8 +126,8 @@ public partial class MapPolygon : Entity,
     PolyBorderChain IGraphNode<MapPolygon, PolyBorderChain>.GetEdge(MapPolygon n) => GetBorder(n);
     bool IGraphNode<MapPolygon>.HasEdge(MapPolygon n) => Neighbors.Contains(n);
     IReadOnlyCollection<MapPolygon> IGraphNode<MapPolygon>.Neighbors => Neighbors;
-    MapPolygon IStaticGraphNode<MapPolygon>.Element => this;
+    MapPolygon IStaticNode<MapPolygon>.Element => this;
 
-    IReadOnlyGraph<MapPolygon, PolyBorderChain> IStaticGraphNode<MapPolygon, PolyBorderChain>.Graph => BorderGraph;
-    IReadOnlyGraph<MapPolygon> IStaticGraphNode<MapPolygon>.Graph => BorderGraph;
+    IReadOnlyGraph<MapPolygon, PolyBorderChain> IStaticNode<MapPolygon, PolyBorderChain>.Graph => BorderGraph;
+    IReadOnlyGraph<MapPolygon> IStaticNode<MapPolygon>.Graph => BorderGraph;
 }

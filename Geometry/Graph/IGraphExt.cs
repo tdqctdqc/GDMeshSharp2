@@ -5,14 +5,14 @@ using System.Linq;
 
 public static class IGraphExt
 {
-    public static IEnumerable<TSub> GetBorderElements<TSub, TEdge>(this IReadOnlyGraph<TSub, TEdge> graph,
-        IReadOnlyHash<TSub> els)
+    public static IEnumerable<TSub> GetBorderElements<TSub>(this IReadOnlyGraph<TSub> graph,
+        IEnumerable<TSub> els)
     {
         return els.Where(e => graph.GetNeighbors(e).Any(n => els.Contains(n) == false));
     }
 
     public static List<TEdge> GetBorderEdges<TEdge, TRegion>
-        (this IStaticGraphNode<TRegion, TEdge> node, IEnumerable<TRegion> elements)
+        (this IStaticNode<TRegion, TEdge> node, IEnumerable<TRegion> elements)
         where TEdge : IBorder<TRegion>
     {
         return GetBorderEdges<TEdge, TRegion>(node.Graph, elements);
@@ -126,8 +126,26 @@ public static class IGraphExt
             }
         }
     }
+
+    public static List<Segment<TNode>> GetOrderedBoundarySegs<TNode>(this IReadOnlyGraph<TNode> graph,
+        IEnumerable<TNode> regionElements)
+    {
+        var pairs = GetOrderedBorderPairs(graph, regionElements);
+        var res = new List<Segment<TNode>>();
+        var from = pairs[0].Native;
+        for (var i = 1; i < pairs.Count; i++)
+        {
+            if (from.Equals(pairs[i].Native) == false)
+            {
+                res.Add(new Segment<TNode>(from, pairs[i].Native));
+                from = pairs[i].Native;
+            }
+        }
+        return res;
+    }
     
-    public static List<BorderEdge<TNode>> GetOrderedBorderPairs<TNode, TEdge>(this IReadOnlyGraph<TNode, TEdge> graph,
+    //todo genericize this w/ transformation func<TNode, TNode, TResult>
+    public static List<BorderEdge<TNode>> GetOrderedBorderPairs<TNode>(this IReadOnlyGraph<TNode> graph,
         IEnumerable<TNode> elements)
     {
         var nativeHash = elements.ToHashSet().ReadOnly();

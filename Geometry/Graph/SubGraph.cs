@@ -59,13 +59,13 @@ public class SubGraph<TNode, TEdge>
         Graph.NodeSubGraphs[t] = this;
     }
 
-    public List<SubGraph<TNode, TEdge>> Split(int numNewGraphs)
+    public List<SubGraph<TNode, TEdge>> Split(int numNewGraphs, ICollection<SubGraph<TNode, TEdge>> subs)
     {
         if (numNewGraphs > Elements.Count) throw new Exception();
-        Graph.RemoveSubGraph(this);
+        subs.Remove(this);
         var newSubGraphs = Enumerable
             .Range(0, numNewGraphs)
-            .Select(i => Graph.AddSubGraph())
+            .Select(i => new SubGraph<TNode, TEdge>(Graph))
             .ToList();
         var result = newSubGraphs.ToList();
         
@@ -75,6 +75,7 @@ public class SubGraph<TNode, TEdge>
             var e = Elements.GetRandomElement();
             Elements.Remove(e);
             newSubGraph.AddNode(e);
+            subs.Add(newSubGraph);
         }
 
         while (newSubGraphs.Count > 0)

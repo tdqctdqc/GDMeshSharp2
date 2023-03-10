@@ -4,13 +4,12 @@ using Godot;
 public class RegionGraphic : Node2D
 {
     private Dictionary<Vector2, Node2D> _regionGraphics;
-    private IRegion<MockStaticGraphNode<Vector2>> _region;
+    private IRegion<MockNode<Vector2>> _region;
     private IReadOnlyGraph<Vector2, LineSegment> _graph;
 
     public void Draw()
     {
         Clear();
-        
     }
 
     public void Clear()

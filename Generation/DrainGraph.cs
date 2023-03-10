@@ -38,7 +38,7 @@ public class DrainGraph<T>
 
     private Graph<T, float> MakeGraph()
     {
-        var unions = UnionFind<T>.DoUnionFind(_sources.Union(_sinks).ToList(), 
+        var unions = UnionFind.Find(_sources.Union(_sinks).ToList(), 
             (t, r) => true,
             _getNeighbors);
         _nodes = new Dictionary<T, DrainGraphNode<T>>();

@@ -9,7 +9,6 @@ public class Graph<TNode, TEdge>
     private Dictionary<TNode, GraphNode<TNode, TEdge>> _nodeDic;
     public List<TNode> Elements { get; private set; }
     public List<GraphNode<TNode, TEdge>> Nodes { get; private set; }
-    public List<SubGraph<TNode, TEdge>> SubGraphs { get; private set; }
     public HashSet<TEdge> Edges { get; private set; }
     public Dictionary<TNode, SubGraph<TNode, TEdge>> NodeSubGraphs 
         { get; private set; }
@@ -18,7 +17,7 @@ public class Graph<TNode, TEdge>
         _nodeDic = new Dictionary<TNode, GraphNode<TNode, TEdge>>();
         Elements = new List<TNode>();
         Nodes = new List<GraphNode<TNode, TEdge>>();
-        SubGraphs = new List<SubGraph<TNode, TEdge>>();
+        // SubGraphs = new List<SubGraph<TNode, TEdge>>();
         NodeSubGraphs = new Dictionary<TNode, SubGraph<TNode, TEdge>>();
         Edges = new HashSet<TEdge>();
     }
@@ -83,7 +82,6 @@ public class Graph<TNode, TEdge>
         Nodes.Add(node);
     }
     
-    
     public void AddUndirectedEdge(GraphNode<TNode, TEdge> from, 
         GraphNode<TNode, TEdge> to, TEdge edge)
     {
@@ -113,21 +111,5 @@ public class Graph<TNode, TEdge>
     public HashSet<TNode> GetNeighbors(TNode value)
     {
         return _nodeDic[value].Neighbors;
-    }
-
-    public SubGraph<TNode, TEdge> AddSubGraph()
-    {
-        var sub = new SubGraph<TNode, TEdge>(this);
-        SubGraphs.Add(sub);
-        return sub;
-    }
-
-    public void RemoveSubGraph(SubGraph<TNode, TEdge> subGraph)
-    {
-        SubGraphs.Remove(subGraph);
-        foreach (var e in subGraph.Elements)
-        {
-            NodeSubGraphs.Remove(e);
-        }
     }
 }

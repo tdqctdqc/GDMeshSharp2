@@ -60,7 +60,7 @@ public class RegimeGenerator
         }
 
         var remainder = picker.NotTaken;
-        var unions = UnionFind<MapPolygon>.DoUnionFind(
+        var unions = UnionFind.Find(
             remainder, 
             (p1, p2) => p1.IsLand() == p2.IsLand(),
             p => p.Neighbors.Refs()

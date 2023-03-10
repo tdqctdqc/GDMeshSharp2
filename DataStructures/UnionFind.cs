@@ -4,6 +4,27 @@ using System.Collections;
 using System.Linq;
 using System.Collections.Generic;
 
+public static class UnionFind
+{
+    public static List<List<T>> Find<T>(IEnumerable<T> elements, 
+        Func<T,T,bool> compare)
+        where T : IGraphNode<T>
+    {
+        return Find(elements, compare, t => t.Neighbors);
+    }
+    public static List<List<T>> Find<T>(IEnumerable<T> elements, 
+        Func<T,T,bool> compare, 
+        Func<T, IEnumerable<T>> neighborFunc)
+    {
+        var unionFind = new UnionFind<T>(compare);
+        foreach (var element in elements)
+        {
+            unionFind.AddElement(element, neighborFunc(element));   
+        }
+        unionFind.CheckRoots();
+        return unionFind.GetUnions();
+    }
+}
 public class UnionFind<T>
 {
     private Dictionary<T, T> _parents;
@@ -31,20 +52,9 @@ public class UnionFind<T>
             }
         }
     }
-    public static List<List<T>> DoUnionFind(IReadOnlyCollection<T> elements, 
-        Func<T,T,bool> compare, 
-        Func<T, IEnumerable<T>> neighborFunc)
-    {
-        var unionFind = new UnionFind<T>(compare);
-        foreach (var element in elements)
-        {
-            unionFind.AddElement(element, neighborFunc(element));   
-        }
-        unionFind.CheckRoots();
-        return unionFind.GetUnions();
-    }
+    
 
-    private void CheckRoots()
+    public void CheckRoots()
     {
         foreach (var element in _ranks.Keys)
         {

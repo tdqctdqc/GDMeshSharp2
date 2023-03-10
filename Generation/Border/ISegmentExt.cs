@@ -85,45 +85,5 @@ public static class ISegmentExt
         }
         return true;
     }
-    // public static List<List<ISegment>> DecomposeIntoContinuous(this List<ISegment> segs)
-    // {
-    //     if (segs.IsContinuous()) return new List<List<ISegment>> {segs.ToList()};
-    //     var res = new List<List<ISegment>>();
-    //     int iter = 1;
-    //     int place = 0;
-    //     while (iter < segs.Count)
-    //     {
-    //         int thisIter = 1;
-    //         var hash = new HashSet<int>{place};
-    //         var first = place;
-    //         while (segs.Prev(first).PointsTo(segs[first]))
-    //         {
-    //             first = (first - 1 + segs.Count) % segs.Count;
-    //             if (hash.Contains(first)) break;
-    //             hash.Add(first);
-    //             iter++;
-    //             thisIter++;
-    //         }
-    //         
-    //         var last = place;
-    //         while (segs.Next(last).ComesFrom(segs[last]))
-    //         {
-    //             last = (last + 1) % segs.Count;
-    //             if (hash.Contains(last)) break;
-    //             hash.Add(last);
-    //             iter++;
-    //             thisIter++;
-    //             place = (last + 1) % segs.Count;
-    //         }
-    //
-    //         var thisRes = new List<ISegment>();
-    //         for (var i = 0; i < thisIter; i++)
-    //         {
-    //             thisRes.Add(segs.Modulo(i + first));
-    //         }
-    //         res.Add(thisRes);
-    //     }
-    //
-    //     return res;
-    // }
+    
 }
