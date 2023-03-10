@@ -1,10 +1,14 @@
 
 using System.Collections.Generic;
 
-public interface IChain<TSegment> : ISegment
+public interface IChain<TSegment, TPrim> : ISegment<TPrim> where TSegment : ISegment<TPrim>
 {
-    IReadOnlyList<TSegment> Elements { get; }
+    IReadOnlyList<TSegment> Segments { get; }
 }
 
+public interface IChain<TPrim> : IChain<Segment<TPrim>, TPrim>
+{
+    
+}
 
 

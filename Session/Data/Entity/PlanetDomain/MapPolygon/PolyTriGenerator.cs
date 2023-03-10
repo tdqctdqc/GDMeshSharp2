@@ -75,7 +75,7 @@ public class PolyTriGenerator
             var newSegs = preSegs.ToList();
             newSegs.Add(rSeg);
             newSegs.AddRange(postSegs);
-            newSegs = newSegs.OrderEndToStart();
+            newSegs = newSegs.OrderEndToStart<LineSegment, Vector2>();
             
             if(newSegs.IsContinuous() == false)
             {

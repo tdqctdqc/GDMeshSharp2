@@ -35,7 +35,7 @@ public class SubGraph<TNode, TEdge>
     {
         return _nodeDic.Values
             .Where(node => 
-                node.Neighbors.Exists(n => 
+                node.Neighbors.Any(n => 
                     _frontierDic.ContainsKey(n)))
             .Select(node => node.Element)
             .ToList();
@@ -98,13 +98,13 @@ public class SubGraph<TNode, TEdge>
         _nodeDic.Remove(t);
         for (var i = 0; i < node.Neighbors.Count; i++)
         {
-            var n = node.Neighbors[i];
+            var n = node.Neighbors.ElementAt(i);
             if (_nodeDic.ContainsKey(n)) continue;
             var nNode = Graph[n];
             bool stillHasNeighbor = false;
             for (var j = 0; j < nNode.Neighbors.Count; j++)
             {
-                if (_nodeDic.ContainsKey(nNode.Neighbors[j]))
+                if (_nodeDic.ContainsKey(nNode.Neighbors.ElementAt(j)))
                 {
                     stillHasNeighbor = true;
                     break;

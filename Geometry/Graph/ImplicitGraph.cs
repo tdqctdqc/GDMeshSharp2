@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MessagePack;
 
 
 public class ImplicitGraph
@@ -20,7 +21,7 @@ public class ImplicitGraph<TNode, TEdge> : IReadOnlyGraph<TNode, TEdge>
     private Func<TNode, TNode, TEdge> _getEdge;
     private Func<TNode, TNode, bool> _hasEdge;
     
-    public ImplicitGraph(Func<TNode, bool> contains, Func<TNode, IReadOnlyCollection<TNode>> getNeighbors, 
+    [SerializationConstructor] public ImplicitGraph(Func<TNode, bool> contains, Func<TNode, IReadOnlyCollection<TNode>> getNeighbors, 
         Func<TNode, TNode, bool> hasEdge,
         Func<TNode, TNode, TEdge> getEdge)
     {
@@ -29,6 +30,7 @@ public class ImplicitGraph<TNode, TEdge> : IReadOnlyGraph<TNode, TEdge>
         _getEdge = getEdge;
         _hasEdge = hasEdge;
     }
+    
     public bool HasEdge(TNode t1, TNode t2)
     {
         return _hasEdge(t1, t2);

@@ -168,7 +168,7 @@ public static class GraphGenerator
             var discardNeighbors = graph.GetNeighbors(discard);
             for (var j = 0; j < discardNeighbors.Count; j++)
             {
-                var discardNeighbor = discardNeighbors[j];
+                var discardNeighbor = discardNeighbors.ElementAt(j);
                 var oldEdge = graph.GetEdge(discard, discardNeighbor);
                 var newEdge = edgeConverter.Convert(discard, discardNeighbor, keep, oldEdge);
                 graph.AddEdge(keep, discardNeighbor, newEdge);

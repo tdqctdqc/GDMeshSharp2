@@ -4,7 +4,7 @@ using Godot;
 
 public static class ISegmentExt
 {
-    public static bool IsCircuit(this IReadOnlyList<ISegment> segs)
+    public static bool IsCircuit<TPrim>(this IReadOnlyList<ISegment<TPrim>> segs)
     {
         for (int i = 0; i < segs.Count - 1; i++)
         {
@@ -29,8 +29,8 @@ public static class ISegmentExt
         return connect.From.Equals(seg.To);
     }
 
-    public static List<TSeg> OrderEndToStart<TSeg>
-        (this IEnumerable<TSeg> segs) where TSeg : ISegment
+    public static List<TSeg> OrderEndToStart<TSeg, TPrim>
+        (this IEnumerable<TSeg> segs) where TSeg : ISegment<TPrim>
     {
         var segCount = segs.Count();
         var segsSample = segs.ToList();
@@ -62,7 +62,7 @@ public static class ISegmentExt
         prevRes.AddRange(res);
         if (prevRes.Count != segCount)
         {
-            if (prevRes.IsContinuous()) return prevRes;
+            if (((IReadOnlyList<ISegment<TPrim>>)prevRes).IsContinuous<TPrim>()) return prevRes;
             GD.Print($"res is {prevRes.Count} segments source is {segCount}");
             // GD.Print($"degen count {segs.Where(s => s.From == s.To).Count()}");
             GD.Print("SOURCE");
@@ -77,8 +77,7 @@ public static class ISegmentExt
     }
     
     
-    public static bool IsContinuous<TSeg>(this IReadOnlyList<TSeg> segs)
-        where TSeg : ISegment
+    public static bool IsContinuous<TPrim>(this IReadOnlyList<ISegment<TPrim>> segs)
     {
         for (var i = 0; i < segs.Count - 1; i++)
         {
@@ -86,53 +85,45 @@ public static class ISegmentExt
         }
         return true;
     }
-    public static bool IsContinuous(this IReadOnlyList<ISegment> segs)
-    {
-        for (var i = 0; i < segs.Count - 1; i++)
-        {
-            if (segs[i].PointsTo(segs[i + 1]) == false) return false;
-        }
-        return true;
-    }
-    public static List<List<ISegment>> DecomposeIntoContinuous(this List<ISegment> segs)
-    {
-        if (segs.IsContinuous()) return new List<List<ISegment>> {segs.ToList()};
-        var res = new List<List<ISegment>>();
-        int iter = 1;
-        int place = 0;
-        while (iter < segs.Count)
-        {
-            int thisIter = 1;
-            var hash = new HashSet<int>{place};
-            var first = place;
-            while (segs.Prev(first).PointsTo(segs[first]))
-            {
-                first = (first - 1 + segs.Count) % segs.Count;
-                if (hash.Contains(first)) break;
-                hash.Add(first);
-                iter++;
-                thisIter++;
-            }
-            
-            var last = place;
-            while (segs.Next(last).ComesFrom(segs[last]))
-            {
-                last = (last + 1) % segs.Count;
-                if (hash.Contains(last)) break;
-                hash.Add(last);
-                iter++;
-                thisIter++;
-                place = (last + 1) % segs.Count;
-            }
-
-            var thisRes = new List<ISegment>();
-            for (var i = 0; i < thisIter; i++)
-            {
-                thisRes.Add(segs.Modulo(i + first));
-            }
-            res.Add(thisRes);
-        }
-
-        return res;
-    }
+    // public static List<List<ISegment>> DecomposeIntoContinuous(this List<ISegment> segs)
+    // {
+    //     if (segs.IsContinuous()) return new List<List<ISegment>> {segs.ToList()};
+    //     var res = new List<List<ISegment>>();
+    //     int iter = 1;
+    //     int place = 0;
+    //     while (iter < segs.Count)
+    //     {
+    //         int thisIter = 1;
+    //         var hash = new HashSet<int>{place};
+    //         var first = place;
+    //         while (segs.Prev(first).PointsTo(segs[first]))
+    //         {
+    //             first = (first - 1 + segs.Count) % segs.Count;
+    //             if (hash.Contains(first)) break;
+    //             hash.Add(first);
+    //             iter++;
+    //             thisIter++;
+    //         }
+    //         
+    //         var last = place;
+    //         while (segs.Next(last).ComesFrom(segs[last]))
+    //         {
+    //             last = (last + 1) % segs.Count;
+    //             if (hash.Contains(last)) break;
+    //             hash.Add(last);
+    //             iter++;
+    //             thisIter++;
+    //             place = (last + 1) % segs.Count;
+    //         }
+    //
+    //         var thisRes = new List<ISegment>();
+    //         for (var i = 0; i < thisIter; i++)
+    //         {
+    //             thisRes.Add(segs.Modulo(i + first));
+    //         }
+    //         res.Add(thisRes);
+    //     }
+    //
+    //     return res;
+    // }
 }

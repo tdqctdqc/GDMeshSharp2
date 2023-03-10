@@ -3,9 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public sealed class GenCell : IGraphNode<GenCell, bool>
+public sealed class GenCell : IGraphNode<GenCell>
 {
-    public static ImplicitGraph<GenCell, bool> Graph { get; private set; } = ImplicitGraph.Get<GenCell, bool>();
     public MapPolygon Seed { get; private set; }
     public GenPlate Plate { get; private set; }
     public HashSet<MapPolygon> PolyGeos { get; private set; }
@@ -57,7 +56,6 @@ public sealed class GenCell : IGraphNode<GenCell, bool>
         Neighbors = NeighboringPolyGeos
             .Select(t => key.GenData.GenAuxData.PolyCells[t]).Distinct().ToList();
     }
-    IReadOnlyCollection<GenCell> IGraphNode<GenCell, bool>.Neighbors => Neighbors;
-    bool IGraphNode<GenCell, bool>.GetEdge(GenCell neighbor) => true;
-    bool IGraphNode<GenCell, bool>.HasEdge(GenCell neighbor) => Neighbors.Contains(neighbor);
+    IReadOnlyCollection<GenCell> IGraphNode<GenCell>.Neighbors => Neighbors;
+    bool IGraphNode<GenCell>.HasEdge(GenCell neighbor) => Neighbors.Contains(neighbor);
 }

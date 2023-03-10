@@ -2,29 +2,39 @@ using Godot;
 using System;
 using System.Collections.Generic;
 
-public class GraphNode<TNode, TEdge> : IGraphNode<TNode, TEdge>
+
+
+public class GraphNode<TNode> : IGraphNode<TNode>
 {
     public TNode Element {get; private set;}
-    private Dictionary<TNode, GraphNode<TNode, TEdge>> _nodeDic;
-    IReadOnlyCollection<TNode> IGraphNode<TNode, TEdge>.Neighbors => Neighbors;
-    TEdge IGraphNode<TNode, TEdge>.GetEdge(TNode neighbor) => _costs[neighbor];
-    bool IGraphNode<TNode, TEdge>.HasEdge(TNode neighbor) => HasNeighbor(neighbor);
+    public HashSet<TNode> Neighbors { get; private set; }
 
+    IReadOnlyCollection<TNode> IGraphNode<TNode>.Neighbors => Neighbors;
 
-    public List<TNode> Neighbors { get; private set; }
-    private Dictionary<TNode, TEdge> _costs;
     public GraphNode(TNode element)
     {
         Element = element;
-        Neighbors = new List<TNode>();
-        _nodeDic = new Dictionary<TNode, GraphNode<TNode, TEdge>>();
-        _costs = new Dictionary<TNode, TEdge>();
+        Neighbors = new HashSet<TNode>();
     }
 
     public bool HasNeighbor(TNode t)
     {
-        return _costs.ContainsKey(t);
+        return Neighbors.Contains(t);
     }
+    bool IGraphNode<TNode>.HasEdge(TNode neighbor) => HasNeighbor(neighbor);
+
+}
+public class GraphNode<TNode, TEdge> : GraphNode<TNode>, IGraphNode<TNode, TEdge>
+{
+    private Dictionary<TNode, GraphNode<TNode, TEdge>> _nodeDic;
+    private Dictionary<TNode, TEdge> _costs;
+    public GraphNode(TNode element) : base(element)
+    {
+        _nodeDic = new Dictionary<TNode, GraphNode<TNode, TEdge>>();
+        _costs = new Dictionary<TNode, TEdge>();
+    }
+
+    
     public TEdge GetEdgeCost(GraphNode<TNode, TEdge> neighbor)
     {
         return _costs[neighbor.Element];
@@ -64,4 +74,6 @@ public class GraphNode<TNode, TEdge> : IGraphNode<TNode, TEdge>
     {
         RemoveNeighbor(_nodeDic[neighbor]);
     }
+    
+    TEdge IGraphNode<TNode, TEdge>.GetEdge(TNode neighbor) => _costs[neighbor];
 }

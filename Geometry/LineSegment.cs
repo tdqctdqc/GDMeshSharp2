@@ -83,13 +83,13 @@ public class LineSegment : ISegment<Vector2>
         return $"[from {From} to {To}] \b";
     }
     ISegment<Vector2> ISegment<Vector2>.ReverseGeneric() => Reverse();
-    bool ISegment.PointsTo(ISegment s)
+    bool ISegment<Vector2>.PointsTo(ISegment<Vector2> s)
     {
         if (s is ISegment<Vector2> t == false) return false;
         return To == t.From;
     }
 
-    bool ISegment.ComesFrom(ISegment s)
+    bool ISegment<Vector2>.ComesFrom(ISegment<Vector2> s)
     {
         if (s is ISegment<Vector2> t == false) return false;
         return From == t.To;

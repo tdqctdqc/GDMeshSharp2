@@ -4,10 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class Chain<TSeg, TPrim> : IChain<TSeg>, ISegment<TPrim> 
+public class Chain<TSeg, TPrim> : IChain<TSeg, TPrim>, ISegment<TPrim> 
     where TSeg : ISegment<TPrim>
 {
     public TSeg this[int i] => Segments[i];
+    
     public List<TSeg> Segments { get; private set; }
     protected Chain(List<TSeg> segments)
     {
@@ -27,12 +28,12 @@ public class Chain<TSeg, TPrim> : IChain<TSeg>, ISegment<TPrim>
         return new Chain<TSeg, TPrim>(r);
     }
 
-    IReadOnlyList<TSeg> IChain<TSeg>.Elements => Segments;
+    IReadOnlyList<TSeg> IChain<TSeg, TPrim>.Segments => Segments;
 
     TPrim ISegment<TPrim>.From => Segments[0].From;
 
     TPrim ISegment<TPrim>.To => Segments[Segments.Count - 1].To;
-    bool ISegment.PointsTo(ISegment s)
+    bool ISegment<TPrim>.PointsTo(ISegment<TPrim> s)
     {
         if (s is ISegment<TPrim> p)
         {
@@ -42,7 +43,7 @@ public class Chain<TSeg, TPrim> : IChain<TSeg>, ISegment<TPrim>
         return false;
     }
 
-    bool ISegment.ComesFrom(ISegment s)
+    bool ISegment<TPrim>.ComesFrom(ISegment<TPrim> s)
     {
         if (s is ISegment<TPrim> p)
         {

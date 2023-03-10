@@ -1,4 +1,5 @@
 
-public interface IBorderChain<TSegment, TRegion> : IBorder<TRegion>, IChain<TSegment>
+public interface IBorderChain<TSegment, TPrim, TRegion> 
+    : IBorder<TRegion>, IChain<TSegment, TPrim> where TSegment : ISegment<TPrim>
 {
 }

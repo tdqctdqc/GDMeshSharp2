@@ -3,18 +3,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public interface IRegion<TElement>
+public interface IRegion<TNode>
+    where TNode : IStaticGraphNode<TNode>
 {
-    IReadOnlyHash<TElement> Elements { get; }
-}
-
-public interface IRegion<TElement, TEdge>
-{
-    IReadOnlyGraph<TElement, TEdge> Graph { get; } 
+    IReadOnlyHash<TNode> Elements { get; }
+    IReadOnlyHash<IContiguousRegion<TNode>> ContiguousRegions { get; }
 }
 
 public static class IRegionExt
 {
-    
-    
+        
 }

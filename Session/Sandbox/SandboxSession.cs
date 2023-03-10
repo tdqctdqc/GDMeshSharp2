@@ -17,8 +17,6 @@ public class SandboxSession : Node, ISession
         _home = Vector2.Zero;
         Client = client;
         client.Setup(Vector2.Zero);
-        // new TriangulationTesting(Client).Run();
-        // OrToolsExt.Test();
     }
 
     public override void _Process(float delta)

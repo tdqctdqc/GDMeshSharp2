@@ -5,11 +5,14 @@ using System.Collections.Generic;
 using System.Linq;
 using MessagePack;
 
-public partial class MapPolygon : Entity, IGraphNode<MapPolygon, PolyBorderChain>
+public partial class MapPolygon : Entity, 
+    IGraphNode<MapPolygon, PolyBorderChain>,
+    IStaticGraphNode<MapPolygon, PolyBorderChain>
 {
     public static IReadOnlyGraph<MapPolygon, PolyBorderChain> BorderGraph
         = new ImplicitGraph<MapPolygon, PolyBorderChain>(p => true, p => p.Neighbors,
             (p, q) => p.HasNeighbor(q), (p, q) => p.GetBorder(q));
+
     public override Type GetDomainType() => typeof(PlanetDomain);
     public Vector2 Center { get; protected set; }
     public EntityRefCollection<MapPolygon> Neighbors { get; protected set; }
@@ -69,7 +72,7 @@ public partial class MapPolygon : Entity, IGraphNode<MapPolygon, PolyBorderChain
         .Select(n => GetBorder(n));
     public IEnumerable<LineSegment> GetNeighborEdgeSegments(Data data)
     {
-        return GetNeighborBorders().UnionSegs<PolyBorderChain, LineSegment>();
+        return GetNeighborBorders().UnionSegs<PolyBorderChain, LineSegment, Vector2>();
     }
     public PolyTerrainTris GetTerrainTris(Data data) => data.Planet.TerrainTris.ByPoly[this];
     public void AddNeighbor(MapPolygon poly, PolyBorderChain border, GenWriteKey key)
@@ -121,6 +124,10 @@ public partial class MapPolygon : Entity, IGraphNode<MapPolygon, PolyBorderChain
     }
     
     PolyBorderChain IGraphNode<MapPolygon, PolyBorderChain>.GetEdge(MapPolygon n) => GetBorder(n);
-    bool IGraphNode<MapPolygon, PolyBorderChain>.HasEdge(MapPolygon n) => Neighbors.Contains(n);
-    IReadOnlyCollection<MapPolygon> IGraphNode<MapPolygon, PolyBorderChain>.Neighbors => Neighbors;
+    bool IGraphNode<MapPolygon>.HasEdge(MapPolygon n) => Neighbors.Contains(n);
+    IReadOnlyCollection<MapPolygon> IGraphNode<MapPolygon>.Neighbors => Neighbors;
+    MapPolygon IStaticGraphNode<MapPolygon>.Element => this;
+
+    IReadOnlyGraph<MapPolygon, PolyBorderChain> IStaticGraphNode<MapPolygon, PolyBorderChain>.Graph => BorderGraph;
+    IReadOnlyGraph<MapPolygon> IStaticGraphNode<MapPolygon>.Graph => BorderGraph;
 }

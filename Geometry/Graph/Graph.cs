@@ -110,7 +110,7 @@ public class Graph<TNode, TEdge>
         return true;
     }
 
-    public List<TNode> GetNeighbors(TNode value)
+    public HashSet<TNode> GetNeighbors(TNode value)
     {
         return _nodeDic[value].Neighbors;
     }

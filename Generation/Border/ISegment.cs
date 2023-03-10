@@ -1,18 +1,14 @@
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public interface ISegment
+public interface ISegment<TPrim>
 {
-    bool PointsTo(ISegment s);
-    bool ComesFrom(ISegment s);
-}
-public interface ISegment<TEnd> : ISegment
-{
-    TEnd From { get; }
-    TEnd To { get; }
-    ISegment<TEnd> ReverseGeneric();
+    TPrim From { get; }
+    TPrim To { get; }
+    ISegment<TPrim> ReverseGeneric();
+    bool PointsTo(ISegment<TPrim> s);
+    bool ComesFrom(ISegment<TPrim> s);
 }
 
