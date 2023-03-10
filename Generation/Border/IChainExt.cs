@@ -4,14 +4,9 @@ using System.Linq;
 
 public static class IChainExt
 {
-
-    public static IEnumerable<TSeg> UnionSegs<TChain, TSeg, TPrim>(this IEnumerable<TChain> borders)
-        where TChain : IChain<TSeg, TPrim> where TSeg : ISegment<TPrim>
+    public static IEnumerable<TSeg> Ordered<TSeg, TPrim>(this IEnumerable<IChain<TSeg, TPrim>> borders)
+        where TSeg : ISegment<TPrim>
     {
-        return borders.OrderEndToStart<TChain, TPrim>().SelectMany(b => b.Segments);
+        return borders.Ordered<IChain<TSeg, TPrim>, TPrim>().SelectMany(b => b.Segments);
     }
-
-
-
-
 }

@@ -66,13 +66,13 @@ public partial class MapPolygon : Entity,
     {
         return Neighbors.Refs().Contains(p);
     }
-    public IEnumerable<MapPolygonEdge> GetNeighborEdges(Data data) => Neighbors.Refs()
+    public IEnumerable<MapPolygonEdge> GetPolyEdges(Data data) => Neighbors.Refs()
         .Select(n => GetEdge(n, data));
-    public IEnumerable<PolyBorderChain> GetNeighborBorders() => Neighbors.Refs()
+    public IEnumerable<PolyBorderChain> GetPolyBorders() => Neighbors.Refs()
         .Select(n => GetBorder(n));
-    public IEnumerable<LineSegment> GetNeighborEdgeSegments(Data data)
+    public IChain<LineSegment> GetOrderedNeighborSegments(Data data)
     {
-        return GetNeighborBorders().UnionSegs<PolyBorderChain, LineSegment, Vector2>();
+        return new Chain<LineSegment, Vector2>(GetPolyBorders().Ordered().ToList());
     }
     public PolyTerrainTris GetTerrainTris(Data data) => data.Planet.TerrainTris.ByPoly[this];
     public void AddNeighbor(MapPolygon poly, PolyBorderChain border, GenWriteKey key)
@@ -81,11 +81,10 @@ public partial class MapPolygon : Entity,
         Neighbors.AddRef(poly, key);
         NeighborBorders.Add(poly.Id, border);
     }
-
-    public void SetNeighborBorder(MapPolygon poly, PolyBorderChain border, GenWriteKey key)
+    public void SetNeighborBorder(MapPolygon n, PolyBorderChain border, GenWriteKey key)
     {
-        if (Neighbors.Contains(poly) == false) throw new Exception();
-        NeighborBorders[poly.Id] = border;
+        if (Neighbors.Contains(n) == false) throw new Exception();
+        NeighborBorders[n.Id] = border;
     }
     public void RemoveNeighbor(MapPolygon poly, GenWriteKey key)
     {
@@ -97,16 +96,21 @@ public partial class MapPolygon : Entity,
         GetMeta().UpdateEntityVar<EntityRef<Regime>>(nameof(Regime), this, key, new EntityRef<Regime>(r.Id));
     }
 
-    public List<LineSegment> GetBoundarySegments(Data data)
+    public List<PolyBorderChain> GetOrderedNeighborBorders()
     {
-        return data.Cache.PolyBoundarySegments[this];
+        //make in data cache
+        throw new NotImplementedException();
+    }
+    public List<LineSegment> GetOrderedBoundarySegs(Data data)
+    {
+        return data.Cache.OrderedBoundarySegs[this];
     }
     public List<LineSegment> BuildBoundarySegments(Data data)
     {
-        var neighborSegs = GetNeighborEdgeSegments(data).ToList();
+        var neighborSegs = GetOrderedNeighborSegments(data).Segments.ToList();
 
-        var before = data.Cache.PolyBoundarySegments != null 
-            ? data.Cache.PolyBoundarySegments[this]
+        var before = data.Cache.OrderedBoundarySegs != null 
+            ? data.Cache.OrderedBoundarySegs[this]
             : new List<LineSegment>();
 
         if (neighborSegs.IsCircuit() == false)
@@ -118,7 +122,7 @@ public partial class MapPolygon : Entity,
         if (neighborSegs.IsCircuit() == false || neighborSegs.IsContinuous() == false)
         {
             GD.Print("still not circuit");
-            throw new SegmentsNotConnectedException(data, this, before, neighborSegs);
+            throw new SegmentsNotConnectedException(before, neighborSegs);
         }
         return neighborSegs;
     }

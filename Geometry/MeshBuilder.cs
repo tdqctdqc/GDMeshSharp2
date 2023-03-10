@@ -24,7 +24,7 @@ public class MeshBuilder
 
     public void AddPoly(MapPolygon poly, Data data, Vector2 offset, float insetFactor)
     {
-        var inscribed = poly.GetBoundarySegments(data).GetInscribed(Vector2.Zero, insetFactor)
+        var inscribed = poly.GetOrderedBoundarySegs(data).GetInscribed(Vector2.Zero, insetFactor)
             .Select(ls => ls.Translate(offset))
             .ToList();
         var col = ColorsExt.GetRandomColor();
@@ -89,7 +89,7 @@ public class MeshBuilder
     {
         var border = poly.GetBorder(n);
         var segs = border.Segments;
-        var edges = poly.GetNeighborBorders();
+        var edges = poly.GetPolyBorders();
         var first = segs[0].From;
         var firstPrev = edges
             .FirstOrDefault(b => b.Segments.Last().To == first)
@@ -169,7 +169,7 @@ public class MeshBuilder
         }
     }
 
-    public void AddArrowsRainbow(List<LineSegment> segs, float thickness)
+    public void AddArrowsRainbow(IReadOnlyList<LineSegment> segs, float thickness)
     {
         for (var i = 0; i < segs.Count; i++)
         {

@@ -9,7 +9,7 @@ public static class MapPolygonEdgeExt
     {
         return b.HighSegsRel().Segments
             .Select(s => s.Translate(b.HighId.Entity().Center))
-            .ToList().OrderEndToStart<LineSegment, Vector2>();
+            .ToList().Ordered<LineSegment, Vector2>();
     }
     public static MapPolygon GetOtherPoly(this MapPolygonEdge b, MapPolygon p)
     {

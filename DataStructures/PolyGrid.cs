@@ -19,7 +19,7 @@ public class PolyGrid
     }
     public void AddElement(MapPolygon element)
     {
-        var borderPoints = element.GetBoundarySegments(_data).GetPoints().ToHashSet();
+        var borderPoints = element.GetOrderedBoundarySegs(_data).GetPoints().ToHashSet();
         var minX = borderPoints.Min(p => p.x);
         var minXCoord = Mathf.FloorToInt(minX / _partitionSize.x);
         var maxX = borderPoints.Max(p => p.x);

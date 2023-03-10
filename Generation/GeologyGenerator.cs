@@ -8,8 +8,8 @@ public class GeologyGenerator
     public GenData Data { get; private set; }
     private IdDispenser _id;
     private GenWriteKey _key;
-    public static readonly float FaultRange = 200f,
-        FrictionAltEffect = .1f,
+    public static readonly float FaultRange = 100f,
+        FrictionAltEffect = .03f,
         FrictionRoughnessEffect = 1f;
     public GeologyGenerator(GenData data, IdDispenser id)
     {

@@ -1,4 +1,5 @@
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
@@ -23,6 +24,10 @@ public class PolyBorderChain : Chain<LineSegment, Vector2>, IBorderChain<LineSeg
         List<LineSegment> segments, int riverSegmentIndex) 
         : base(segments)
     {
+        if(riverSegmentIndex > segments.Count - 1)
+        {
+            throw new Exception($"Bad segment index {riverSegmentIndex} out of {segments.Count}");
+        }
         RiverSegmentIndex = riverSegmentIndex;
         Native = native;
         Foreign = foreign;
@@ -32,7 +37,7 @@ public class PolyBorderChain : Chain<LineSegment, Vector2>, IBorderChain<LineSeg
     {
         return Segments.Select(ls => ls.Translate(Native.Entity().Center));
     }
-    public LineSegment GetRiverSegment() => RiverSegmentIndex == -1 ? null : Segments[RiverSegmentIndex];
+    public LineSegment GetRiverSegment() => HasRiver() ? Segments[RiverSegmentIndex] : null;
     public bool HasRiver() => RiverSegmentIndex != -1;
     MapPolygon IBorder<MapPolygon>.Native => Native.Entity();
     MapPolygon IBorder<MapPolygon>.Foreign => Foreign.Entity();

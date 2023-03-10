@@ -75,12 +75,11 @@ public class PolyTriGenerator
             var newSegs = preSegs.ToList();
             newSegs.Add(rSeg);
             newSegs.AddRange(postSegs);
-            newSegs = newSegs.OrderEndToStart<LineSegment, Vector2>();
+            newSegs = newSegs.Ordered<LineSegment, Vector2>();
             
             if(newSegs.IsContinuous() == false)
             {
-                throw new SegmentsNotConnectedException(key.GenData, hi, 
-                    hi.GetBoundarySegments(_data).ToList(), newSegs, null);
+                throw new SegmentsNotConnectedException(hi.GetOrderedBoundarySegs(_data).ToList(), newSegs, null);
             }
             
             var newIndex = preSegs.Count();
@@ -93,23 +92,26 @@ public class PolyTriGenerator
 
     private void BuildTris(MapPolygon poly, GenWriteKey key)
     {
+        List<PolyTri> tris;
         if (poly.IsWater())
         {
-            DoSeaPoly(poly, key);
+            tris = DoSeaPoly(poly, key);
         }
         else if (poly.Neighbors.Refs().Any(n => _riverBorders.ContainsKey(poly.GetEdge(n, _data))))
         {
-            DoRiverPoly(poly, key);
+            tris = DoRiverPoly(poly, key);
         }
         else
         {
-            DoLandPolyNoRivers(poly, key);
+            tris = DoLandPolyNoRivers(poly, key);
         }
+        var polyTerrainTris = PolyTerrainTris.Create(poly, tris, key);
+
     }
 
-    private void DoSeaPoly(MapPolygon poly, GenWriteKey key)
+    private List<PolyTri> DoSeaPoly(MapPolygon poly, GenWriteKey key)
     {
-        var borderSegsRel = poly.GetBoundarySegments(key.Data);
+        var borderSegsRel = poly.GetOrderedBoundarySegs(key.Data);
         var lf = _data.Models.Landforms;
         var v = _data.Models.Vegetation;
         var points = new List<Vector2> {Vector2.Zero};
@@ -118,53 +120,49 @@ public class PolyTriGenerator
         var tris = DelaunayTriangulator.TriangulatePoints(points)
             .Select(t =>
             {
-                return new PolyTri(_idd.GetID(), t.A, t.B, t.C, LandformManager.Sea.GetRef(), 
+                return new PolyTri(_idd.GetID(), t.A, t.B, t.C, 
+                    LandformManager.Sea.GetRef(), 
                     VegetationManager.Barren.GetRef());
             })
             .ToList();
-        var polyTerrainTris = PolyTerrainTris.Create(poly, tris.ToList(), key);
+        return tris;
     }
     
-    private void DoLandPolyNoRivers(MapPolygon poly, GenWriteKey key)
+    private List<PolyTri> DoLandPolyNoRivers(MapPolygon poly, GenWriteKey key)
     {
-        var borderSegs = poly.GetBoundarySegments(key.Data);
+        var borderSegs = poly.GetOrderedBoundarySegs(key.Data);
         var points = borderSegs.GenerateInteriorPoints(50f, 10f)
             .ToHashSet();
         var tris = borderSegs.PolyTriangulate(key.GenData, poly, _idd, points);
 
-        var polyTerrainTris = PolyTerrainTris.Create(poly, tris, key);
+        return tris;
     }
-    private void DoRiverPoly(MapPolygon poly, GenWriteKey key)
+    private List<PolyTri> DoRiverPoly(MapPolygon poly, GenWriteKey key)
     {
         var lf = _data.Models.Landforms;
         var v = _data.Models.Vegetation;
-        var tris = new List<PolyTri>();
-        var borders = poly.GetNeighborEdges(key.Data);
-        var rBorders = borders
-            .Where(b => _riverBorders.ContainsKey(b)).ToList();
-        var riverSegs = rBorders
-            .Select(b => b.GetRiverSegment(poly)).ToList();
-        riverSegs.OrderByClockwise(Vector2.Zero, ls => ls.From);
+        List<PolyTri> tris;
+        var rBorders = poly.GetPolyBorders()
+            .Where(b => b.HasRiver()).ToList();
         
-        if (riverSegs.Count == 1)
+        if (rBorders.Count == 1)
         {
-            DoRiverSource(poly, rBorders.First(), tris, key);
+            tris = DoRiverSource(poly, rBorders.First(), key);
         }
         else
         {
-            DoRiverJunction(poly, rBorders, tris, key);
+            tris = DoRiverJunction(poly, rBorders, key);
         }
-        var polyTerrainTris = PolyTerrainTris.Create(poly,
-            tris.ToList(), key);
+        return tris;
     }
 
-    private void DoRiverSource(MapPolygon poly, MapPolygonEdge rEdge, 
-        List<PolyTri> tris, GenWriteKey key)
+    private List<PolyTri> DoRiverSource(MapPolygon poly, PolyBorderChain rEdge, GenWriteKey key)
     {
-        var boundarySegs = poly.GetBoundarySegments(key.Data);
+        var tris = new List<PolyTri>();
+        var boundarySegs = poly.GetOrderedBoundarySegs(key.Data);
         var rSeg = boundarySegs
             .First(s => Mathf.Abs(s.Mid().Angle() 
-                                  - rEdge.GetRiverSegment(poly).Mid().Angle()) < .01f);
+                                  - rEdge.GetRiverSegment().Mid().Angle()) < .01f);
         
         var rSegIndex = boundarySegs.IndexOf(rSeg);
         var between = Enumerable.Range(1, boundarySegs.Count - 1)
@@ -184,25 +182,30 @@ public class PolyTriGenerator
         var o2 = outline.GetRange(count1, count2);
         o2.Add(new LineSegment(o2.Last().To, o2.First().From));
 
-        TriangulateArbitrary(poly, o1, tris, key);
-        TriangulateArbitrary(poly, o2, tris, key);
+        tris.AddRange(TriangulateArbitrary(poly, o1, key, true));
+        tris.AddRange(TriangulateArbitrary(poly, o2, key, true));
+        return tris;
     }
 
-    private void DoRiverJunction(MapPolygon poly, List<MapPolygonEdge> riverBorders,
-        List<PolyTri> tris, GenWriteKey key)
+    private List<PolyTri> DoRiverJunction(MapPolygon poly, List<PolyBorderChain> riverBorders,
+        GenWriteKey key)
     {
-        var borderSegs = poly.GetBoundarySegments(key.Data);;
-        var avg = borderSegs.Average();
-        var riverSegs = riverBorders.Select(b => b.GetRiverSegment(poly))
-            .Select(rs => 
-                borderSegs
-                        .OrderBy(s => Mathf.Abs(s.Mid().GetCCWAngle() - rs.Mid().GetCCWAngle()))
-                .First()
-                )
+        var borderSegs = poly.GetOrderedBoundarySegs(key.Data);
+        var tris = new List<PolyTri>();
+        var riverSegs = riverBorders.Select(b => b.GetRiverSegment())
             .ToList();
+        foreach (var r in riverBorders)
+        {
+            if(borderSegs.Contains(r.GetRiverSegment()) == false)
+            {
+                GD.Print("river index " + r.RiverSegmentIndex);
+                throw new Exception();
+            }
+        }
+        if (riverSegs.Any(rs => borderSegs.Contains(rs) == false))
+        {
+        }
         riverSegs.OrderByClockwise(Vector2.Zero, ls => ls.From);
-        var firstRSeg = riverSegs.First();
-        var firstRSegIndex = borderSegs.IndexOf(firstRSeg);
 
         var junctionPoints = new List<Vector2>();
         var lf = _data.Models.Landforms;
@@ -247,15 +250,19 @@ public class PolyTriGenerator
             var intersect = -junctionPoints[i];
             
             var outline = GetOutline(poly, intersect, between);
-            TriangulateArbitrary(poly, outline, tris, key);
+            tris.AddRange(TriangulateArbitrary(poly, outline, key, true));
         }
+
+        return tris;
     }
 
-    private void TriangulateArbitrary(MapPolygon poly, IReadOnlyList<LineSegment> outline, 
-        List<PolyTri> tris, GenWriteKey key)
+    private List<PolyTri> TriangulateArbitrary(MapPolygon poly, IReadOnlyList<LineSegment> outline, 
+        GenWriteKey key, bool generateInterior)
     {
-        var interior = outline.GenerateInteriorPoints(30f, 10f).ToHashSet();
-        tris.AddRange(outline.PolyTriangulate(key.GenData, poly, _idd, interior));
+        HashSet<Vector2> interior = generateInterior 
+            ? outline.GenerateInteriorPoints(30f, 10f).ToHashSet()
+            : null;
+        return outline.PolyTriangulate(key.GenData, poly, _idd, interior);
     }
 
     private List<LineSegment> GetOutline(MapPolygon poly, Vector2 fanPoint, List<LineSegment> between)
@@ -275,7 +282,7 @@ public class PolyTriGenerator
         res.AddRange(end);
 
         if (res.IsCircuit() == false)
-            throw new SegmentsNotConnectedException(_data, poly, between, res,
+            throw new SegmentsNotConnectedException(between, res,
                 start, end);
         
         return res;

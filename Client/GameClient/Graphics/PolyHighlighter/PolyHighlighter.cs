@@ -26,14 +26,14 @@ public class PolyHighlighter : Node2D
 
     private void DrawNeighborBorders(MapPolygon poly, MeshBuilder mb, Data data)
     {
-        var edgeBorders = poly.GetNeighborEdgeSegments(data).ToList();
+        var edgeBorders = poly.GetOrderedNeighborSegments(data).Segments;
         mb.AddArrowsRainbow(edgeBorders, 5f);
         mb.AddNumMarkers(edgeBorders.Select(ls => ls.Mid()).ToList(), 20f, 
             Colors.Transparent, Colors.White, Vector2.Zero);
     }
     private void DrawBoundarySegments(MapPolygon poly, MeshBuilder mb, Data data)
     {
-        var lines = poly.GetBoundarySegments(data);
+        var lines = poly.GetOrderedBoundarySegs(data);
         mb.AddArrowsRainbow(lines.ToList(), 5f);
         mb.AddNumMarkers(lines.Select(ls => ls.Mid()).ToList(), 20f, 
             Colors.Transparent, Colors.White, Vector2.Zero);

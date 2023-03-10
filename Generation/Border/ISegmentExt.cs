@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
@@ -29,9 +30,10 @@ public static class ISegmentExt
         return connect.From.Equals(seg.To);
     }
 
-    public static List<TSeg> OrderEndToStart<TSeg, TPrim>
+    public static List<TSeg> Ordered<TSeg, TPrim>
         (this IEnumerable<TSeg> segs) where TSeg : ISegment<TPrim>
     {
+        //todo make it sort existing list so dont need tseg
         var segCount = segs.Count();
         var segsSample = segs.ToList();
         var res = new List<TSeg>{segs.First()};
@@ -62,15 +64,17 @@ public static class ISegmentExt
         prevRes.AddRange(res);
         if (prevRes.Count != segCount)
         {
-            if (((IReadOnlyList<ISegment<TPrim>>)prevRes).IsContinuous<TPrim>()) return prevRes;
-            GD.Print($"res is {prevRes.Count} segments source is {segCount}");
-            // GD.Print($"degen count {segs.Where(s => s.From == s.To).Count()}");
-            GD.Print("SOURCE");
-            GD.Print(segs.Select(ls => ls.ToString()).ToArray());
-            GD.Print("RESULT");
-            GD.Print(prevRes.Select(ls => ls.ToString()).ToArray());
-            
-            // throw new SegmentsNotConnectedException(data, poly, segs, prevRes, null);
+            if (typeof(ISegment<Vector2>).IsAssignableFrom(typeof(TSeg)))
+            {
+                var vSegs1 = (IEnumerable<ISegment<Vector2>>)segs;
+                var vSegs2 = (IEnumerable<ISegment<Vector2>>)prevRes;
+                throw new SegmentsNotConnectedException(vSegs1.Select(s => new LineSegment(s.From, s.To)).ToList(),
+                    vSegs2.Select(s => new LineSegment(s.From, s.To)).ToList());
+            }
+            else
+            {
+                throw new Exception(typeof(TSeg).ToString());
+            }
         }
         
         return prevRes;

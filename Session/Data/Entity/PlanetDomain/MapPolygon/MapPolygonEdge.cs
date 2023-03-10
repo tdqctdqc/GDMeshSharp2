@@ -82,13 +82,19 @@ public class MapPolygonEdge : Entity
         var highBorderSegs = RelativizeSegments(newSegmentsAbs, HighId.Entity(), key.Data, out var hiRev);
         var lowBorderSegs = RelativizeSegments(newSegmentsAbs, LowId.Entity(), key.Data, out var loRev);
 
-        var lowRiverIndex = loRev ? newSegmentsAbs.Count - riverSegIndex - 1 : riverSegIndex;
-        var hiRiverIndex = hiRev ? newSegmentsAbs.Count - riverSegIndex - 1 : riverSegIndex;
+        var lowRiverIndex = -1;
+        var hiRiverIndex = -1;
+        if (riverSegIndex != -1)
+        {
+            lowRiverIndex = loRev ? newSegmentsAbs.Count - riverSegIndex - 1 : riverSegIndex;
+            hiRiverIndex = hiRev ? newSegmentsAbs.Count - riverSegIndex - 1 : riverSegIndex;
+        }
         
         var lowSegsRel = PolyBorderChain.ConstructRiver(LowId.Entity(), HighId.Entity(), 
             lowBorderSegs, lowRiverIndex);
         var highSegsRel = PolyBorderChain.ConstructRiver(HighId.Entity(), LowId.Entity(), 
             highBorderSegs, hiRiverIndex);
+        
         HighId.Entity().SetNeighborBorder(LowId.Entity(), highSegsRel, key);
         LowId.Entity().SetNeighborBorder(HighId.Entity(), lowSegsRel, key);
     }
@@ -102,6 +108,10 @@ public class MapPolygonEdge : Entity
         MoistureFlow += increment;
     }
 
+    public bool HasRiver()
+    {
+        return HighSegsRel().HasRiver();
+    }
     public LineSegment GetRiverSegment(MapPolygon poly)
     {
         if (poly == HighId.Entity())
