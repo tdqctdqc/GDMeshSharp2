@@ -12,7 +12,7 @@ public class Picker
         var result = new List<TSeed>[seedNums.Length];
         for (var i = 0; i < seedNums.Length; i++)
         {
-            var seeds = available.Except(taken).GetNRandomElements(seedNums[i]);
+            var seeds = available.Except(taken).GetDistinctRandomElements(seedNums[i]);
             seeds.ForEach(s => taken.Add(s));
             result[i] = seeds;
         }

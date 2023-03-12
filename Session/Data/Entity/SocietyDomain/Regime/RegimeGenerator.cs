@@ -29,19 +29,24 @@ public class RegimeGenerator : Generator
     {
         var polysPerRegime = 30;
         
+        
         _data.LandSea.Landmasses.ForEach(lm =>
         {
-            GenerateLandmassRegimes(lm, polysPerRegime);
+            GenerateRegimes(lm, polysPerRegime);
         });
     }
 
-    private void GenerateLandmassRegimes(HashSet<MapPolygon> lm, int polysPerRegime)
+    // private (List<Regime> regimes, Picker picker) GenerateLandmassRegimes(HashSet<MapPolygon> lm, int polysPerRegime)
+    // {
+    //     
+    // }
+    private void GenerateRegimes(HashSet<MapPolygon> lm, int polysPerRegime)
     {
-        var landmassRegimes = Mathf.CeilToInt(lm.Count / polysPerRegime);
-        landmassRegimes = Math.Max(1, landmassRegimes);
-        var seeds = lm.GetNRandomElements(landmassRegimes);
-        var wanderers = new List<RegimeWanderer>();
+        var numLandmassRegimes = Mathf.CeilToInt(lm.Count / polysPerRegime);
+        numLandmassRegimes = Math.Max(1, numLandmassRegimes);
+        var seeds = lm.GetDistinctRandomElements(numLandmassRegimes);
         var picker = new WandererPicker(lm);
+
 
         for (var i = 0; i < seeds.Count; i++)
         {
@@ -52,6 +57,8 @@ public class RegimeGenerator : Generator
             seeds[i].SetRegime(regime, _key);
         }
         
+        
+        var wanderers = new List<RegimeWanderer>();
         picker.Pick();
         
         foreach (var w in picker.Wanderers)
@@ -83,5 +90,10 @@ public class RegimeGenerator : Generator
                 p.SetRegime(regime, _key);
             }
         }
+    }
+
+    private void ExpandRegimes()
+    {
+        
     }
 }

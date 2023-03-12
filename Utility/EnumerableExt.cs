@@ -38,10 +38,21 @@ public static class EnumerableExt
     {
         return new HashSet<T>(enumerable);
     }
-    public static List<T> GetNRandomElements<T>(this IEnumerable<T> enumerable, int n)
+    public static List<T> GetDistinctRandomElements<T>(this IEnumerable<T> enumerable, int n)
     {
-        var choices = new HashSet<T>(enumerable);
+        var choices = new List<T>(enumerable);
+        var indices = new HashSet<int>();
+        var count = enumerable.Count();
+        while (indices.Count < n)
+        {
+            indices.Add(Game.I.Random.RandiRange(0, count - 1));
+        }
+
+        return indices.Select(i => choices[i]).ToList();
+        
+        
         var result = new List<T>();
+        
         for (int i = 0; i < n; i++)
         {
             var sample = choices.GetRandomElement();

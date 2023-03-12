@@ -67,7 +67,6 @@ public class MoistureGenerator : Generator
                     else
                     {
                         var moisture = plateMoistures[plate] + Game.I.Random.RandfRange(-.1f, .1f);
-                    
                         poly.Set(nameof(poly.Moisture), Mathf.Clamp(moisture, 0f, 1f), _key);
                     }
                 }
@@ -100,8 +99,6 @@ public class MoistureGenerator : Generator
                 }
             });
         }
-
-        
     }
 
     private void BuildRiversDrainGraph()
