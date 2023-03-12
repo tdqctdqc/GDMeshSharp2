@@ -33,6 +33,8 @@ public class MoistureGenerator : Generator
     {
         var plateMoistures = new ConcurrentDictionary<GenPlate, float>();
         
+        // Data.GenAuxData.Plates.ForEach
+        
         Parallel.ForEach(Data.GenAuxData.Plates, p =>
         {
             var distFromEquator = Mathf.Abs(Data.Planet.Height / 2f - p.Center.y);
@@ -112,7 +114,7 @@ public class MoistureGenerator : Generator
         void doLandmass(HashSet<MapPolygon> lm)
         {
             var landPolys = lm.Where(p => p.IsLand());
-            var coastPolys = landPolys.Where(p => p.IsCoast());
+            var coastPolys = landPolys.Where(p => p.IsCoast()).ToHashSet();
             var innerPolys = landPolys.Except(coastPolys);
             var graph = DrainGraph<MapPolygon>.GetDrainGraph(
                 innerPolys, 

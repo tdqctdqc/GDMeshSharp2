@@ -27,7 +27,6 @@ public partial class MapPolygon : Entity,
     public bool IsCoast() => IsLand() && Neighbors.Refs().Any(n => n.IsWater());
     public MapPolygonEdge GetEdge(MapPolygon neighbor, Data data) 
         => data.Planet.PolyEdges.GetEdge(this, neighbor);
-
     public PolyBorderChain GetBorder(MapPolygon neighbor) => NeighborBorders[neighbor.Id];
     
     

@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Godot;
 using Poly2Tri;
 using Poly2Tri.Triangulation.Polygon;
@@ -9,7 +11,7 @@ using Poly2Tri.Utility;
 
 public class PolyTriGenerator : Generator
 {
-    private Dictionary<MapPolygonEdge, int> _riverBorders;
+    private ConcurrentDictionary<MapPolygonEdge, int> _riverBorders;
     private GenData _data;
     private IdDispenser _idd;
 
@@ -22,9 +24,7 @@ public class PolyTriGenerator : Generator
         _data = key.GenData;
         var report = new GenReport(GetType().Name);
         
-        
-        
-        _riverBorders = new Dictionary<MapPolygonEdge, int>();
+        _riverBorders = new ConcurrentDictionary<MapPolygonEdge, int>();
         var polys = _data.Planet.Polygons.Entities;
         
         report.StartSection();
@@ -46,15 +46,19 @@ public class PolyTriGenerator : Generator
         var polys = _data.Planet.Polygons.Entities;
         var borders = _data.Planet.PolyEdges.Entities;
         
-        _riverBorders = borders.Where(b => b.MoistureFlow > River.FlowFloor).ToDictionary(s => s, s => -1);
+        var dic = borders.Where(b => b.MoistureFlow > River.FlowFloor).ToDictionary(s => s, s => -1);
+        _riverBorders = new ConcurrentDictionary<MapPolygonEdge, int>(dic);
         
         var logBase = Mathf.Pow(River.FlowCeil, 1f / (River.WidthCeil - River.WidthFloor));
         
         var max = 0f;
         var min = Mathf.Inf;
         var avg = 0f;
-
-        foreach (var rBorder in _riverBorders.Keys.ToList())
+        Parallel.ForEach(_riverBorders.Keys, doEdge);
+        _data.Events.SetPolyShapes?.Invoke();
+        return;
+            
+        void doEdge(MapPolygonEdge rBorder)
         {
             var hi = rBorder.HighId.Entity();
 
@@ -103,7 +107,6 @@ public class PolyTriGenerator : Generator
                 key);
             _riverBorders[rBorder] = newIndex;
         }
-        _data.Events.SetPolyShapes?.Invoke();
     }
 
     private void BuildTris(MapPolygon poly, GenWriteKey key)

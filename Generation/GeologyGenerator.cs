@@ -175,6 +175,10 @@ public class GeologyGenerator : Generator
     {
         ConcurrentBag<FaultLine> faults = new ConcurrentBag<FaultLine>();
         Parallel.ForEach(Data.GenAuxData.Plates, setFriction);
+        foreach (var f in faults)
+        {
+            Data.GenAuxData.FaultLines.AddFault(f);
+        }
         Parallel.ForEach(Data.GenAuxData.FaultLines.FaultLines, f =>
         {
             var inRange = getPolysInRangeOfFault(f);
@@ -208,10 +212,7 @@ public class GeologyGenerator : Generator
                 }
             }
         }
-        foreach (var f in faults)
-        {
-            Data.GenAuxData.FaultLines.AddFault(f);
-        }
+        
 
         IEnumerable<MapPolygon> getPolysInRangeOfFault(FaultLine fault)
         {
