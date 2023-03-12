@@ -32,10 +32,11 @@ public class PolyTriGenerator : Generator
         report.StopSection("Finding river segs");
         
         report.StartSection();
-        foreach (var p in polys)
-        {
-            BuildTris(p, key);
-        }
+        Parallel.ForEach(polys, p => BuildTris(p, key));
+        // foreach (var p in polys)
+        // {
+        //     BuildTris(p, key);
+        // }
         report.StopSection("Building poly terrain tris");
 
         return report;
@@ -124,8 +125,8 @@ public class PolyTriGenerator : Generator
         {
             tris = DoLandPolyNoRivers(poly, key);
         }
-        var polyTerrainTris = PolyTerrainTris.Create(poly, tris, key);
-
+        var polyTerrainTris = PolyTerrainTris.Create(tris, key);
+        poly.SetTerrainTris(polyTerrainTris, key);
     }
 
     private List<PolyTri> DoSeaPoly(MapPolygon poly, GenWriteKey key)
@@ -140,8 +141,8 @@ public class PolyTriGenerator : Generator
             .Select(t =>
             {
                 return new PolyTri(_idd.GetID(), t.A, t.B, t.C, 
-                    LandformManager.Sea.GetRef(), 
-                    VegetationManager.Barren.GetRef());
+                    LandformManager.Sea.MakeRef(), 
+                    VegetationManager.Barren.MakeRef());
             })
             .ToList();
         return tris;
@@ -188,8 +189,8 @@ public class PolyTriGenerator : Generator
             .Select(i => boundarySegs.Modulo(rSegIndex + i))
             .ToList();
 
-        var rTri = new PolyTri(_idd.GetID(), rSeg.From, rSeg.To, Vector2.Zero, LandformManager.River.GetRef(), 
-            VegetationManager.Barren.GetRef());
+        var rTri = new PolyTri(_idd.GetID(), rSeg.From, rSeg.To, Vector2.Zero, LandformManager.River.MakeRef(), 
+            VegetationManager.Barren.MakeRef());
         tris.Add(rTri);
         var outline = GetOutline(poly, Vector2.Zero, between);
         var count1 = outline.Count / 2;
@@ -244,20 +245,20 @@ public class PolyTriGenerator : Generator
             if (riverSegs.Count == 2)
             {
                 tris.Add(new PolyTri(_idd.GetID(), rSeg.From, rSeg.To, nextIntersect,
-                    LandformManager.River.GetRef(), VegetationManager.Barren.GetRef()));
+                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
                 tris.Add(new PolyTri(_idd.GetID(), rSeg.From, nextIntersect, -nextIntersect,
-                    LandformManager.River.GetRef(), VegetationManager.Barren.GetRef()));
+                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
             }
             else
             {
                 tris.Add(new PolyTri(_idd.GetID(), rSeg.From, rSeg.To, Vector2.Zero,
-                    LandformManager.River.GetRef(), VegetationManager.Barren.GetRef()));
+                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
                 
                 tris.Add(new PolyTri(_idd.GetID(), -nextIntersect, Vector2.Zero, nextRSeg.To, 
-                    LandformManager.River.GetRef(), VegetationManager.Barren.GetRef()));
+                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
                 
                 tris.Add(new PolyTri(_idd.GetID(), rSeg.From, -nextIntersect, Vector2.Zero,
-                    LandformManager.River.GetRef(), VegetationManager.Barren.GetRef()));
+                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
             }
         }
         

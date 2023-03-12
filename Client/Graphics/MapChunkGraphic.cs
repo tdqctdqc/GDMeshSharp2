@@ -64,7 +64,7 @@ public class MapChunkGraphic : Node2D
                 new List<List<LineSegment>>
                 {
                     c.Polys.SelectMany(p => p.GetOrderedBoundarySegs(d).Select(bs => bs.Translate(c.RelTo.GetOffsetTo(p, d)))).ToList(),
-                    c.Polys.SelectMany(p => p.GetTerrainTris(d).Tris.SelectMany(t => t.Transpose(c.RelTo.GetOffsetTo(p, d)).GetSegments())).ToList()
+                    c.Polys.SelectMany(p => p.TerrainTris.Tris.SelectMany(t => t.Transpose(c.RelTo.GetOffsetTo(p, d)).GetSegments())).ToList()
                 },
                 new List<float>{5f, 1f},
                 new List<Color>{borderCol, borderCol}

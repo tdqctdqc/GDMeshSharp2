@@ -14,8 +14,8 @@ public class TooltipManager
         _mapPolyToolTip.Setup(higlighter, client);
     }
 
-    public void Process(Data data, Vector2 mousePosInMapSpace)
+    public void Process(float delta, Data data, Vector2 mousePosInMapSpace)
     {
-        _mapPolyToolTip.Process(data, mousePosInMapSpace);
+        _mapPolyToolTip.Process(delta, data, mousePosInMapSpace);
     }
 }

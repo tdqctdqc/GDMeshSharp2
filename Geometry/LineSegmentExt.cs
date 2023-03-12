@@ -110,7 +110,7 @@ public static class LineSegmentExt
             {
                 var lf = data.Models.Landforms.GetAtPoint(poly, (v + w + x) / 3f, data);
                 var vg = data.Models.Vegetation.GetAtPoint(poly, (v + w + x) / 3f, lf, data);
-                return new PolyTri(id.GetID(), v, w, x, lf.GetRef(), vg.GetRef());
+                return new PolyTri(id.GetID(), v, w, x, lf.MakeRef(), vg.MakeRef());
             }, 
             interiorPoints
         );

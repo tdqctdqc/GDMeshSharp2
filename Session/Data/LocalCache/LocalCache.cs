@@ -10,6 +10,7 @@ public class LocalCache
     public Dictionary<MapPolygon, List<Triangle>> PolyRelWheelTris { get; private set; }
     public PolyGrid MapPolyGrid { get; private set; }
     public Dictionary<MapPolygon, List<LineSegment>> OrderedBoundarySegs { get; private set; }
+    //todo sort out to repos?
     public LocalCache(Data data)
     {
         _data = data;
@@ -36,7 +37,9 @@ public class LocalCache
 
     private void BuildPolyGrid()
     {
-        MapPolyGrid = new PolyGrid(20, _data.Planet.PlanetInfo.Value.Dimensions, _data);
+        var gridCellSize = 1000f;
+        var numPartitions = Mathf.CeilToInt(_data.Planet.PlanetInfo.Value.Dimensions.x / gridCellSize);
+        MapPolyGrid = new PolyGrid(numPartitions, _data.Planet.PlanetInfo.Value.Dimensions, _data);
         foreach (var p in _data.Planet.Polygons.Entities)
         {
             MapPolyGrid.AddElement(p);

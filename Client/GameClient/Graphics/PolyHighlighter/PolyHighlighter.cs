@@ -42,7 +42,7 @@ public class PolyHighlighter : Node2D
     private void DrawPolyTriBorders(MapPolygon poly, MeshBuilder mb, Data data)
     {
         var col = Colors.Black;
-        foreach (var t in poly.GetTerrainTris(data).Tris)
+        foreach (var t in poly.TerrainTris.Tris)
         {
             var inscribed = t.GetInscribed(.9f);
             mb.AddArrow(inscribed.A, inscribed.B, 1f, col);
@@ -60,7 +60,7 @@ public class PolyHighlighter : Node2D
     }
     private void DrawPolyTriNetwork(MeshBuilder mb, MapPolygon poly, Data data)
     {
-        var pts = poly.GetTerrainTris(data).Tris;
+        var pts = poly.TerrainTris.Tris;
         foreach (var polyTri in pts)
         {
             // var ns = poly.GetTerrainTris(data).NeighborsInside[polyTri];

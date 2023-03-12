@@ -11,6 +11,7 @@ public class MapPolyTooltip : Node2D
     private MapPolygon _mouseOverPoly = null;
     private IClient _client;
     private PolyHighlighter _highlighter;
+    private TimerAction _action;
     public void Setup(PolyHighlighter highlighter, IClient client)
     {
         _highlighter = highlighter;
@@ -23,23 +24,34 @@ public class MapPolyTooltip : Node2D
         _veg = _container.CreateLabelAsChild("Veg");
         _settlementName = _container.CreateLabelAsChild("SettlementName");
         _settlementSize = _container.CreateLabelAsChild("SettlementSize");
+        _action = new TimerAction(.1f, .1f);
     }
-    public void Process(Data data, Vector2 mousePosMapSpace)
+    public void Process(float delta, Data data, Vector2 mousePosMapSpace)
+    {
+        _action.ProcessVariableFunc(delta, () => FindPoly(data, mousePosMapSpace));
+    }
+
+    private void FindPoly(Data data, Vector2 mousePosMapSpace)
     {
         MapPolygon mouseIn;
         if (mousePosMapSpace.y <= 0f || mousePosMapSpace.y >= data.Planet.Height)
         {
             mouseIn = null;
         }
+        else if (_mouseOverPoly != null && _mouseOverPoly.PointInPoly(mousePosMapSpace, data))
+        {
+            mouseIn = _mouseOverPoly;
+        }
         else
         {
             mouseIn = data.Cache.MapPolyGrid
                 .GetElementAtPoint(mousePosMapSpace);
         }
+        
         if (mouseIn is MapPolygon poly)
         {
             var offset = poly.GetOffsetTo(mousePosMapSpace, data);
-            var tri = poly.GetTerrainTris(data).GetAtPoint(offset, data);
+            var tri = poly.TerrainTris.GetAtPoint(offset, data);
             if (poly != _mouseOverPoly)
             {
                 _mouseOverPoly = poly;
@@ -66,7 +78,7 @@ public class MapPolyTooltip : Node2D
         _numPops.Text = "Num Pops: " + poly.GetNumPeeps(data);
         _regime.Text = poly.Regime.Empty() ? "Neutral" : poly.Regime.Entity().Name;
 
-        var tri = poly.GetTerrainTris(data).GetAtPoint(offset, data);
+        var tri = poly.TerrainTris.GetAtPoint(offset, data);
         if (tri != null)
         {
             _landform.Text = "Landform: " + tri.Landform.Name;

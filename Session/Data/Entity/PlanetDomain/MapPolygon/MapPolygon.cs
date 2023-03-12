@@ -28,11 +28,11 @@ public partial class MapPolygon : Entity,
     public MapPolygonEdge GetEdge(MapPolygon neighbor, Data data) 
         => data.Planet.PolyEdges.GetEdge(this, neighbor);
     public PolyBorderChain GetBorder(MapPolygon neighbor) => NeighborBorders[neighbor.Id];
-    
+    public PolyTerrainTris TerrainTris { get; private set; }
     
     [SerializationConstructor] private MapPolygon(int id, Vector2 center, EntityRefCollection<MapPolygon> neighbors, 
         Dictionary<int, PolyBorderChain> neighborBorders, Color color, float altitude, float roughness, 
-        float moisture, EntityRef<Regime> regime) : base(id)
+        float moisture, EntityRef<Regime> regime, PolyTerrainTris terrainTris) : base(id)
     {
         Center = center;
         Neighbors = neighbors;
@@ -42,6 +42,7 @@ public partial class MapPolygon : Entity,
         Roughness = roughness;
         Moisture = moisture;
         Regime = regime;
+        TerrainTris = terrainTris;
     }
 
     public static MapPolygon Create(int id, Vector2 center, float mapWidth, GenWriteKey key)
@@ -56,7 +57,8 @@ public partial class MapPolygon : Entity,
             0f,
             0f,
             0f,
-            new EntityRef<Regime>(-1)
+            new EntityRef<Regime>(-1),
+            PolyTerrainTris.Create(new List<PolyTri>(), key)
         );
         key.Create(p);
         return p;
@@ -73,7 +75,6 @@ public partial class MapPolygon : Entity,
     {
         return new Chain<LineSegment, Vector2>(GetPolyBorders().Ordered().ToList());
     }
-    public PolyTerrainTris GetTerrainTris(Data data) => data.Planet.TerrainTris.ByPoly[this];
     public void AddNeighbor(MapPolygon poly, PolyBorderChain border, GenWriteKey key)
     {
         if (Neighbors.Contains(poly)) return;
@@ -93,6 +94,11 @@ public partial class MapPolygon : Entity,
     public void SetRegime(Regime r, CreateWriteKey key)
     {
         GetMeta().UpdateEntityVar<EntityRef<Regime>>(nameof(Regime), this, key, new EntityRef<Regime>(r.Id));
+    }
+
+    public void SetTerrainTris(PolyTerrainTris tris, GenWriteKey key)
+    {
+        TerrainTris = tris;
     }
 
     public List<PolyBorderChain> GetOrderedNeighborBorders()

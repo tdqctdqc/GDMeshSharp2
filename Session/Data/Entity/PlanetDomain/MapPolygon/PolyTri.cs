@@ -21,11 +21,11 @@ public class PolyTri : Triangle
 
     public void SetLandform(Landform lf, GenWriteKey key)
     {
-        LandformModel = lf.GetRef();
+        LandformModel = lf.MakeRef();
     }
     public void SetVegetation(Vegetation v, GenWriteKey key)
     {
-        VegetationModel = v.GetRef();
+        VegetationModel = v.MakeRef();
     }
     public PolyTri Transpose(Vector2 offset)
     {

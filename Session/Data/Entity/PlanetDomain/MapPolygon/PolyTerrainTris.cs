@@ -5,15 +5,14 @@ using System.Linq;
 using Godot;
 using MessagePack;
 
-public class PolyTerrainTris : Entity
+public class PolyTerrainTris
 {
     public PolyTri[] Tris;
     private static int _numSections = 4; //could be by how many tris
     private static float _sectionAngle => Mathf.Pi * 2f / _numSections;
     public int[] SectionTriStartIndices;
     public int[] SectionTriCounts;
-    public EntityRef<MapPolygon> Poly { get; private set; }
-    public static PolyTerrainTris Create(MapPolygon poly, List<PolyTri> tris, CreateWriteKey key)
+    public static PolyTerrainTris Create(List<PolyTri> tris, CreateWriteKey key)
     {
         var vertexIndices = new Dictionary<Vector2, int>();
         var vertices = new List<Vector2>();
@@ -49,15 +48,14 @@ public class PolyTerrainTris : Entity
             orderedTris.AddRange(exclusive);
         }
 
-        var ts = new PolyTerrainTris(key.IdDispenser.GetID(), new EntityRef<MapPolygon>(poly.Id), orderedTris.ToArray(), sectionTriStartIndices, sectionTriCounts);
-        key.Create(ts);
+        var ts = new PolyTerrainTris(orderedTris.ToArray(), sectionTriStartIndices, sectionTriCounts);
+        
         return ts;
     }
 
-    [SerializationConstructor] private PolyTerrainTris(int id, EntityRef<MapPolygon> poly, PolyTri[] tris, int[] sectionTriStartIndices, 
-        int[] sectionTriCounts) : base(id)
+    [SerializationConstructor] private PolyTerrainTris(PolyTri[] tris, int[] sectionTriStartIndices, 
+        int[] sectionTriCounts)
     {
-        Poly = poly;
         Tris = tris;
         SectionTriStartIndices = sectionTriStartIndices;
         SectionTriCounts = sectionTriCounts;
@@ -96,6 +94,4 @@ public class PolyTerrainTris : Entity
         }
         return null;
     }
-
-    public override Type GetDomainType() => typeof(PlanetDomain);
 }

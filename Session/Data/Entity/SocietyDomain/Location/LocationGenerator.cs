@@ -49,7 +49,7 @@ public class LocationGenerator : Generator
         float settlementDesireability(MapPolygon poly)
         {
             var res = popScore(poly);
-            if (poly.GetTerrainTris(Data).Tris.Any(t => t.Landform == LandformManager.River))
+            if (poly.TerrainTris.Tris.Any(t => t.Landform == LandformManager.River))
             {
                 res += 1f;
             }
@@ -62,7 +62,7 @@ public class LocationGenerator : Generator
 
         var score = polys.Sum(popScore);
 
-        var validSettlementPolys = polys.Where(p => p.GetTerrainTris(Data).Tris.Any(t =>
+        var validSettlementPolys = polys.Where(p => p.TerrainTris.Tris.Any(t =>
         {
             return t.Landform != LandformManager.Mountain
                    && t.Landform != LandformManager.Peak
@@ -108,7 +108,7 @@ public class LocationGenerator : Generator
             var p = settlementPolys[i];
             var size = settlementSizes[i];
             Settlement.Create(_id.GetID(), NameGenerator.GetName(), p, size, _key);
-            var availTris = p.GetTerrainTris(Data).Tris
+            var availTris = p.TerrainTris.Tris
                 .Where(t => t.Landform != LandformManager.River
                     && t.Landform != LandformManager.Mountain
                     && t.Landform != LandformManager.Peak)

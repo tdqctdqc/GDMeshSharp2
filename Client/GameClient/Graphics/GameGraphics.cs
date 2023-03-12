@@ -18,7 +18,7 @@ public class GameGraphics : Node2D
         if(_client?.Cam != null)
         {
             _segmenters?.ForEach(s => s.Update(_client.Cam.XScrollRatio));
-            _tooltips?.Process(data, _client.Cam.GetMousePosInMapSpace(data));
+            _tooltips?.Process(delta, data, _client.Cam.GetMousePosInMapSpace(data));
         }
     }
     private void Clear()

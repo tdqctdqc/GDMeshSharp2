@@ -10,8 +10,8 @@ public class MapPolyTerrainSample
     public MapPolyTerrainSample(MapPolygon poly, Data data)
     {
         Poly = poly;
-        var polyTri = poly.GetTerrainTris(data);
-        var polyTris = poly.GetTerrainTris(data).Tris;
+        var polyTri = poly.TerrainTris;
+        var polyTris = poly.TerrainTris.Tris;
         FertilityMod = polyTris.Count() > 0f 
             ? polyTris.Select(i => i.Landform.FertilityMod * i.Vegetation.FertilityMod).Average()
             : 0f;

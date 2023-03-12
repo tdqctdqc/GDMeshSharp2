@@ -8,7 +8,7 @@ public class ChunkDecalGraphic : Node2D
     public void Setup(MapChunk chunk, Data data)
     {
         var tris = chunk.Polys
-            .SelectMany(p => p.GetTerrainTris(data).Tris.Select(t => t.Transpose(chunk.RelTo.GetOffsetTo(p, data))));
+            .SelectMany(p => p.TerrainTris.Tris.Select(t => t.Transpose(chunk.RelTo.GetOffsetTo(p, data))));
         var lfSort = tris.Sort(t => t.Landform);
         var vegSort = tris.Sort(t => t.Vegetation);
         foreach (var kvp in lfSort)
