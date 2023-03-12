@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Godot;
 
 public class MoistureGenerator : Generator
@@ -29,9 +31,9 @@ public class MoistureGenerator : Generator
     }
     private void SetPolyMoistures()
     {
-        var plateMoistures = new Dictionary<GenPlate, float>();
+        var plateMoistures = new ConcurrentDictionary<GenPlate, float>();
         
-        Data.GenAuxData.Plates.ForEach(p =>
+        Parallel.ForEach(Data.GenAuxData.Plates, p =>
         {
             var distFromEquator = Mathf.Abs(Data.Planet.Height / 2f - p.Center.y);
             var altMult = .5f + .5f * (1f - distFromEquator / (Data.Planet.Height / 2f));
@@ -39,7 +41,7 @@ public class MoistureGenerator : Generator
             var count = polyGeos.Count;
             var waterCount = polyGeos.Where(g => g.IsWater()).Count();
             var score = altMult * waterCount / count;
-            plateMoistures.Add(p, score);
+            plateMoistures.TryAdd(p, score);
         });
 
 
@@ -50,6 +52,26 @@ public class MoistureGenerator : Generator
         {
             diffuse();
         }
+        Parallel.ForEach(Data.GenAuxData.Plates, setPlateMoistures);
+
+        void setPlateMoistures(GenPlate plate)
+        {
+            var polys = plate.Cells.SelectMany(c => c.PolyGeos).ToList();
+            foreach (var cell in plate.Cells)
+            {
+                foreach (var poly in cell.PolyGeos)
+                {
+                    if (poly.IsWater()) poly.Set(nameof(poly.Moisture), 1f, _key);
+                    else
+                    {
+                        var moisture = plateMoistures[plate] + Game.I.Random.RandfRange(-.1f, .1f);
+                    
+                        poly.Set(nameof(poly.Moisture), Mathf.Clamp(moisture, 0f, 1f), _key);
+                    }
+                }
+            }
+        }
+        
         
         void diffuse()
         {
@@ -77,30 +99,20 @@ public class MoistureGenerator : Generator
             });
         }
 
-        Data.GenAuxData.Plates.ForEach(p =>
-        {
-            var polys = p.Cells.SelectMany(c => c.PolyGeos).ToList();
-            polys.ForEach(poly =>
-            {
-                if (poly.IsWater()) poly.Set(nameof(poly.Moisture), 1f, _key);
-                else
-                {
-                    var moisture = plateMoistures[p] + Game.I.Random.RandfRange(-.1f, .1f);
-                    
-                    poly.Set(nameof(poly.Moisture), Mathf.Clamp(moisture, 0f, 1f), _key);
-                }
-            });
-        });
+        
     }
 
     private void BuildRiversDrainGraph()
     {
         var lms = Data.LandSea.Landmasses;
         int iter = 0;
-        foreach (var lm in lms)
+
+        Parallel.ForEach(Data.LandSea.Landmasses, doLandmass);
+        
+        void doLandmass(HashSet<MapPolygon> lm)
         {
             var landPolys = lm.Where(p => p.IsLand());
-            var coastPolys = landPolys.Where(p => p.IsCoast()).ToHashSet();
+            var coastPolys = landPolys.Where(p => p.IsCoast());
             var innerPolys = landPolys.Except(coastPolys);
             var graph = DrainGraph<MapPolygon>.GetDrainGraph(
                 innerPolys, 

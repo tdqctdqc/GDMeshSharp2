@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -62,7 +63,6 @@ public class GeologyGenerator : Generator
     {
         
     }
-
     
     private void BuildCells()
     {
@@ -173,6 +173,7 @@ public class GeologyGenerator : Generator
 
     private void DoContinentFriction()
     {
+        ConcurrentBag<FaultLine> faults = new ConcurrentBag<FaultLine>();
         Parallel.ForEach(Data.GenAuxData.Plates, setFriction);
         Parallel.ForEach(Data.GenAuxData.FaultLines.FaultLines, f =>
         {
@@ -202,10 +203,14 @@ public class GeologyGenerator : Generator
                             .ToList();
                         var friction = driftStr.ProjectToRange(1f, .5f, .5f);
                         var fault = new FaultLine(driftStr, hiPlate, loPlate, borders, Data);
-                        Data.GenAuxData.FaultLines.AddFault(fault);
+                        faults.Add(fault);
                     }
                 }
             }
+        }
+        foreach (var f in faults)
+        {
+            Data.GenAuxData.FaultLines.AddFault(f);
         }
 
         IEnumerable<MapPolygon> getPolysInRangeOfFault(FaultLine fault)
