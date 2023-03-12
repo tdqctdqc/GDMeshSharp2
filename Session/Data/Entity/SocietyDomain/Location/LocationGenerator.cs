@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Godot;
 using Priority_Queue;
 
@@ -35,45 +37,44 @@ public class LocationGenerator : Generator
         var landPolys = Data.Planet.Polygons.Entities.Where(p => p.IsLand());
         var unions = UnionFind.Find(landPolys.ToList(), (p, q) => p.Regime.Entity() == q.Regime.Entity(),
             p => p.Neighbors.Refs());
-        unions.ForEach(u => GenerateCitiesForRegimeChunk(u));
-    }
 
-    private void GenerateCitiesForRegimeChunk(List<MapPolygon> polys)
+        var dic = new ConcurrentDictionary<List<MapPolygon>, List<float>>();
+        
+        Parallel.ForEach(unions, u =>
+        {
+            var res = PregenerateSettlements(u);
+            dic.TryAdd(res.settlementPolys, res.settlementSizes);
+        });
+        foreach (var kvp in dic)
+        {
+            CreateSettlements(kvp.Key, kvp.Value);
+        }
+        Parallel.ForEach(dic, kvp =>
+        {
+            SetUrbanTris(kvp.Key, kvp.Value);
+        });
+    }
+    
+    
+    
+    private (List<MapPolygon> settlementPolys, List<float> settlementSizes)
+        PregenerateSettlements(List<MapPolygon> polys)
     {
         float minSettlementScore = .5f;
-        float popScore(MapPolygon poly)
-        {
-            return 2f * (poly.Moisture - (poly.Roughness * .5f));
-        }
-
-        float settlementDesireability(MapPolygon poly)
-        {
-            var res = popScore(poly);
-            if (poly.TerrainTris.Tris.Any(t => t.Landform == LandformManager.River))
-            {
-                res += 1f;
-            }
-            if (poly.IsCoast())
-            {
-                res += 1f;
-            }
-            return res;
-        }
-
-        var score = polys.Sum(popScore);
-
-        var validSettlementPolys = polys.Where(p => p.TerrainTris.Tris.Any(t =>
-        {
-            return t.Landform != LandformManager.Mountain
-                   && t.Landform != LandformManager.Peak
-                   && t.Landform != LandformManager.River;
-        }));
+        var score = polys.Sum(PopScore);
         
         var polyQueue = new SimplePriorityQueue<MapPolygon>();
-        foreach (var v in validSettlementPolys)
+        for (var i = 0; i < polys.Count; i++)
         {
-            polyQueue.Enqueue(v, -settlementDesireability(v));
+            var p = polys[i];
+            if (p.TerrainTris.Tris.Any(t => t.Landform != LandformManager.Mountain
+                                            && t.Landform != LandformManager.Peak
+                                            && t.Landform != LandformManager.River))
+            {
+                polyQueue.Enqueue(p, -SettlementDesireability(p));
+            }
         }
+        
         var settlementPolys = new List<MapPolygon>();
         var forbidden = new HashSet<MapPolygon>();
 
@@ -101,8 +102,12 @@ public class LocationGenerator : Generator
             num *= 2;
         }
 
+        return (settlementPolys, settlementSizes);
+    }
+
+    private void CreateSettlements(List<MapPolygon> settlementPolys, List<float> settlementSizes)
+    {
         var numSettlements = Mathf.Min(settlementPolys.Count, settlementSizes.Count);
-        
         for (var i = 0; i < numSettlements; i++)
         {
             var p = settlementPolys[i];
@@ -111,6 +116,17 @@ public class LocationGenerator : Generator
                 "doot", 
                 // NameGenerator.GetName(), //todo fix this
                 p, size, _key);
+        }
+    }
+    private void SetUrbanTris(List<MapPolygon> settlementPolys, List<float> settlementSizes)
+    {
+        var numSettlements = Mathf.Min(settlementPolys.Count, settlementSizes.Count);
+
+        for (var i = 0; i < numSettlements; i++)
+        {
+            var p = settlementPolys[i];
+            var size = settlementSizes[i];
+
             var availTris = p.TerrainTris.Tris
                 .Where(t => t.Landform != LandformManager.River
                     && t.Landform != LandformManager.Mountain
@@ -159,5 +175,24 @@ public class LocationGenerator : Generator
                 }
             }
         });
+    }
+    
+    private float PopScore(MapPolygon poly)
+    {
+        return 2f * (poly.Moisture - (poly.Roughness * .5f));
+    }
+
+    private float SettlementDesireability(MapPolygon poly)
+    {
+        var res = PopScore(poly);
+        if (poly.TerrainTris.Tris.Any(t => t.Landform == LandformManager.River))
+        {
+            res += 1f;
+        }
+        if (poly.IsCoast())
+        {
+            res += 1f;
+        }
+        return res;
     }
 }
