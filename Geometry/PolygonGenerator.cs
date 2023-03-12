@@ -1,47 +1,69 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Godot;
 using System.Linq;
+using System.Threading.Tasks;
 using DelaunatorSharp;
 
-public class PolygonGenerator
+public class PolygonGenerator : Generator
 {
-    private static Vector2 _dimensions;
-    private static IdDispenser _id;
-    private static Data _data;
-    public static MapGenInfo GenerateMapPolygons(List<Vector2> innerPoints, Vector2 dimensions, 
-        bool leftRightWrap, float polySize,
-        IdDispenser id,
-        GenWriteKey key)
+    private Vector2 _dimensions;
+    private IdDispenser _id;
+    private bool _leftRightWrap;
+    private float _polySize;
+    private List<Vector2> _innerPoints;
+    public PolygonGenerator(List<Vector2> innerPoints, Vector2 dimensions, 
+                                    bool leftRightWrap, float polySize)
     {
-        _data = key.Data;
-        _id = id;
+        _innerPoints = innerPoints;
         _dimensions = dimensions;
-
-        var info = new MapGenInfo(innerPoints, dimensions, polySize, leftRightWrap);
+        _leftRightWrap = leftRightWrap;
+        _polySize = polySize;
+    }
+    public override GenReport Generate(GenWriteKey key)
+    {
+        var report = new GenReport(GetType().Name);
+        _id = key.IdDispenser;
+        
+        report.StartSection();
+        var info = new MapGenInfo(_innerPoints, _dimensions, _polySize, _leftRightWrap);
         key.GenData.GenInfo = info;
         if (info.Points.Any(v => v != v.Intify()))
         {
             throw new Exception();
         }
-        var delaunayPoints = info.Points.Select(p => new DelaunayTriangulator.DelaunatorPoint(p)).ToList<IPoint>();
+        report.StopSection("Setup");
 
+        
+        report.StartSection();
+        var delaunayPoints = info.Points.Select(p => new DelaunayTriangulator.DelaunatorPoint(p)).ToList<IPoint>();
         CreateAndRegisterPolys(delaunayPoints, info, key);
+        report.StopSection("Creating points and polys");
+
+        report.StartSection();
         var graph = GraphGenerator.GenerateMapPolyVoronoiGraph(info, _id, key);
+        report.StopSection("Generating poly graph");
+
+        
         // throw new PreGraphFailure(graph);
-        if (leftRightWrap)
+        if (_leftRightWrap)
         {
+            report.StartSection();
             Wrap(graph, info, key);
+            report.StopSection("Wrapping");
         }
         else
         {
             throw new NotImplementedException();
         }
+        report.StartSection();
         BuildBorders(info, graph, key);
-        return info;
+        report.StopSection("Building borders");
+        return report;
     }
 
-    private static void CreateAndRegisterPolys(IEnumerable<IPoint> points, MapGenInfo info, GenWriteKey key)
+    private void CreateAndRegisterPolys(IEnumerable<IPoint> points, MapGenInfo info, GenWriteKey key)
     {
         foreach (var dPoint in points)
         {
@@ -51,7 +73,7 @@ public class PolygonGenerator
         info.SetupPolys(key.Data.Planet.Polygons.Entities.ToList());
     }
 
-    private static void Wrap(Graph<MapPolygon, LineSegment> graph, MapGenInfo info, GenWriteKey key)
+    private void Wrap(Graph<MapPolygon, LineSegment> graph, MapGenInfo info, GenWriteKey key)
     {
         var wrapLeft = new List<MapPolygon>();
         wrapLeft.Add(info.CornerPolys[0]);
@@ -66,12 +88,16 @@ public class PolygonGenerator
         GraphGenerator.WrapMapPolygonGraph(graph, wrapLeft, wrapRight, key);
     }
 
-    private static void BuildBorders(MapGenInfo info, Graph<MapPolygon, LineSegment> graph, GenWriteKey key)
+    private void BuildBorders(MapGenInfo info, Graph<MapPolygon, LineSegment> graph, GenWriteKey key)
     {
+        GD.Print("building borders");
         var rHash = new HashSet<MapPolygon>(info.RightPolys);
         rHash.Add(info.CornerPolys[1]);
         rHash.Add(info.CornerPolys[3]);
-        graph.Elements.ForEach(mp =>
+
+        var constructBorders = new ConcurrentBag<Action>();
+        
+        void buildBorders(MapPolygon mp)
         {
             if (info.LRWrap && rHash.Contains(mp))
             {
@@ -91,9 +117,16 @@ public class PolygonGenerator
                 {
                     edge = edge.Reverse();
                 }
-                MapPolygonEdge.Create(_id.GetID(), mp, nMp, new List<LineSegment> {edge}, key);
+                constructBorders.Add(() => MapPolygonEdge.Create(_id.GetID(), mp, nMp, new List<LineSegment> {edge}, key));
             });
-        });
+        }
+
+        Parallel.ForEach(graph.Elements, buildBorders);
+        
+        foreach (var a in constructBorders)
+        {
+            a.Invoke();
+        }
         key.GenData.Events.SetPolyShapes?.Invoke();
         
     }

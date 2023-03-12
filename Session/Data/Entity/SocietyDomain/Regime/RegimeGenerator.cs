@@ -3,27 +3,32 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class RegimeGenerator
+public class RegimeGenerator : Generator
 {
     private GenData _data;
     private IdDispenser _id;
     private GenWriteKey _key;
-    public RegimeGenerator(GenData data, IdDispenser id, GenWriteKey key)
+    public RegimeGenerator()
     {
-        _id = id;
-        _key = key;
-        _data = data;
+        
     }
 
-    public void Generate()
+    public override GenReport Generate(GenWriteKey key)
     {
+        _id = key.IdDispenser;
+        _key = key;
+        _data = key.GenData;
+        var report = new GenReport(GetType().Name);
+        report.StartSection();
         GenerateRegimes();
+        report.StopSection("all");
+        return report;
     }
 
     private void GenerateRegimes()
     {
         var polysPerRegime = 30;
-
+        
         _data.LandSea.Landmasses.ForEach(lm =>
         {
             GenerateLandmassRegimes(lm, polysPerRegime);

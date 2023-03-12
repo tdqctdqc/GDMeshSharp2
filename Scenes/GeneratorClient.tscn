@@ -58,12 +58,15 @@ margin_right = 533.0
 margin_bottom = 40.0
 text = "Done"
 
-[node name="Progress" type="Label" parent="Control/HBoxContainer"]
-margin_left = 537.0
-margin_top = 13.0
-margin_right = 537.0
-margin_bottom = 27.0
-
 [node name="MapDisplayOptionsUi" parent="Control" instance=ExtResource( 2 )]
 margin_top = 49.0
 margin_bottom = 249.0
+
+[node name="Progress" type="Label" parent="Control"]
+margin_left = 578.0
+margin_top = 18.0
+margin_right = 792.0
+margin_bottom = 146.0
+__meta__ = {
+"_edit_use_anchors_": false
+}

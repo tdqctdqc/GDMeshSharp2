@@ -20,6 +20,7 @@ public class Data
     public SocietyDomain Society { get; private set; }
     public Data()
     {
+        _idDispenser = new IdDispenser();
     }
 
     public void Setup()
@@ -28,7 +29,6 @@ public class Data
     }
     protected virtual void Init()
     {
-        _idDispenser = new IdDispenser();
         Notices = new DataNotices();
         RefFulfiller = new RefFulfiller(this);
         Models = new Models();

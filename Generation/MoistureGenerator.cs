@@ -3,22 +3,29 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class MoistureGenerator
+public class MoistureGenerator : Generator
 {
     public GenData Data { get; private set; }
     private GenWriteKey _key;
     private IdDispenser _id;
-    public MoistureGenerator(GenData data, IdDispenser id)
+    public MoistureGenerator()
     {
-        Data = data;
-        _id = id;
     }
 
-    public void Generate(GenWriteKey key)
+    public override GenReport Generate(GenWriteKey key)
     {
+        var report = new GenReport(GetType().Name);
         _key = key;
+        Data = key.GenData;
+        _id = key.IdDispenser;
+        report.StartSection();
         SetPolyMoistures();
+        report.StopSection("SetPolyMoistures");
+        
+        report.StartSection();
         BuildRiversDrainGraph();
+        report.StopSection("BuildRiversDrainGraph");
+        return report;
     }
     private void SetPolyMoistures()
     {

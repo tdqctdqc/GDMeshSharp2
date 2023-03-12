@@ -7,22 +7,38 @@ using Poly2Tri.Triangulation.Polygon;
 using Poly2Tri.Triangulation.Sets;
 using Poly2Tri.Utility;
 
-public class PolyTriGenerator
+public class PolyTriGenerator : Generator
 {
     private Dictionary<MapPolygonEdge, int> _riverBorders;
     private GenData _data;
     private IdDispenser _idd;
-    public void BuildTris(GenWriteKey key, IdDispenser id)
+
+    public PolyTriGenerator()
     {
-        _idd = id;
+    }
+    public override GenReport Generate(GenWriteKey key)
+    {
+        _idd = key.IdDispenser;
         _data = key.GenData;
+        var report = new GenReport(GetType().Name);
+        
+        
+        
         _riverBorders = new Dictionary<MapPolygonEdge, int>();
         var polys = _data.Planet.Polygons.Entities;
+        
+        report.StartSection();
         FindAndSizeRiverSegs(key);
+        report.StopSection("Finding river segs");
+        
+        report.StartSection();
         foreach (var p in polys)
         {
             BuildTris(p, key);
         }
+        report.StopSection("Building poly terrain tris");
+
+        return report;
     }
     
     private void FindAndSizeRiverSegs(GenWriteKey key)

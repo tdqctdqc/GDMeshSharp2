@@ -24,18 +24,19 @@ public class GeneratorSession : Node, ISession
         AddChild(Client);
     }
     
-    public bool Generate(int seed, GenerationParameters genParams)
+    public void Generate(int seed, GenerationParameters genParams)
     {
         Succeeded = false;
         Generating = true;
         WorldGen = new WorldGenerator(this, genParams);
         WorldGen.GenerationFailed += GenerationFailed;
         WorldGen.GenerationFeedback += GenerationFeedback;
+
+        WorldGen.Generate();
         
+        Succeeded = WorldGen.Failed == false;
         Game.I.Random.Seed = (ulong) seed;
-        Succeeded = WorldGen.Generate();
         Generating = false;
-        return Succeeded;
     }
     public override void _Process(float delta)
     {

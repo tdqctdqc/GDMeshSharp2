@@ -3,20 +3,24 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class PeepGenerator
+public class PeepGenerator : Generator
 {
     public GenData Data { get; private set; }
     private IdDispenser _id;
     private GenWriteKey _key;
-    public PeepGenerator(IdDispenser id, GenWriteKey key, GenData data)
+    public PeepGenerator()
     {
-        _id = id;
-        _key = key;
-        Data = data;
+        
     }
 
-    public void Generate()
+    public override GenReport Generate(GenWriteKey key)
     {
+        _key = key;
+        _id = key.IdDispenser;
+        Data = key.GenData;
+        var report = new GenReport(GetType().Name);
+        
+        report.StartSection();
         var farmers = GeneratePeepType
         (
             PeepJobManager.Farmer, 
@@ -29,12 +33,18 @@ public class PeepGenerator
             50, 
             100
         );
+        report.StopSection("Farmers");
+        
+        report.StartSection();
         var byPoly = Data.Society.Settlements.ByPoly;
         var laborers = GeneratePeepType(PeepJobManager.Laborer,
             p => (int)(byPoly.ContainsKey(p)
                 ? byPoly[p].Size * 100
                 : 0), 
             50, 50);
+        report.StopSection("Laborers");
+
+        return report;
     }
     
     private Vector2 GeneratePeepType(PeepJob job, Func<MapPolygon, int> getPoints,

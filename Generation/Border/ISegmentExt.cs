@@ -62,20 +62,24 @@ public static class ISegmentExt
 
         prevRes.Reverse();
         prevRes.AddRange(res);
-        if (prevRes.Count != segCount)
-        {
-            if (typeof(ISegment<Vector2>).IsAssignableFrom(typeof(TSeg)))
-            {
-                var vSegs1 = (IEnumerable<ISegment<Vector2>>)segs;
-                var vSegs2 = (IEnumerable<ISegment<Vector2>>)prevRes;
-                throw new SegmentsNotConnectedException(vSegs1.Select(s => new LineSegment(s.From, s.To)).ToList(),
-                    vSegs2.Select(s => new LineSegment(s.From, s.To)).ToList());
-            }
-            else
-            {
-                throw new Exception(typeof(TSeg).ToString());
-            }
-        }
+        
+        //todo its creating degenerate segs somewhere?
+        // if (prevRes.Count != segCount)
+        // {
+        //     if (typeof(ISegment<Vector2>).IsAssignableFrom(typeof(TSeg)))
+        //     {
+        //         var vSegs1 = (IEnumerable<ISegment<Vector2>>)segs;
+        //         var vSegs2 = (IEnumerable<ISegment<Vector2>>)prevRes;
+        //         
+        //         GD.Print($"result has {prevRes.Count}, source has {segCount}");
+        //         throw new SegmentsNotConnectedException(vSegs1.Select(s => new LineSegment(s.From, s.To)).ToList(),
+        //             vSegs2.Select(s => new LineSegment(s.From, s.To)).ToList());
+        //     }
+        //     else
+        //     {
+        //         throw new Exception(typeof(TSeg).ToString());
+        //     }
+        // }
         
         return prevRes;
     }

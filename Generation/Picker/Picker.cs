@@ -18,22 +18,36 @@ public class Picker
         return result;
     }
     public static HashSet<TPicked> PickInTurn<TPicker, TPicked>(IEnumerable<TPicked> notTakenSource, IEnumerable<TPicker> openPickersSource,
-        Func<TPicker, IEnumerable<TPicked>> getAdjacent, Action<TPicker, TPicked> pick)
+        Func<TPicker, HashSet<TPicked>> getAdjacent, Action<TPicker, TPicked> pick)
     {
         var notTaken = new HashSet<TPicked>(notTakenSource);
-        var openPickers = new HashSet<TPicker>(openPickersSource);
+        var openPickers = new LinkedList<TPicker>(openPickersSource);
         while (openPickers.Count > 0)
         {
-            var cell = openPickers.GetRandomElement();
-            var available = getAdjacent(cell).Intersect(notTaken);
-            if (available.Count() == 0)
+            var cell = openPickers.First;
+            openPickers.RemoveFirst();
+
+            TPicked take = default;
+            bool found = false;
+            var adj = getAdjacent(cell.Value);
+            for (var i = 0; i < adj.Count; i++)
             {
-                openPickers.Remove(cell);
+                var el = adj.ElementAt(i);
+                if (notTaken.Contains(el))
+                {
+                    take = el;
+                    notTaken.Remove(take);
+                    found = true;
+                    break;
+                }
+            }
+            if (found == false)
+            {
                 continue;
             }
-            var take = available.GetRandomElement();
-            notTaken.Remove(take);
-            pick(cell, take);
+
+            openPickers.AddLast(cell);
+            pick(cell.Value, take);
         }
 
         return notTaken;

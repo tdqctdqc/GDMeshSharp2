@@ -13,7 +13,7 @@ public sealed class GenCell : IGraphNode<GenCell>
     
 
     public Vector2 Center { get; private set; }
-    private Dictionary<MapPolygon, GenCell> _polyCells;
+    private Dictionary<MapPolygon, GenCell> _polyCells { get; }
 
     public GenCell(MapPolygon seed, GenWriteKey key, Dictionary<MapPolygon, GenCell> polyCells, GenData data)
     {
@@ -36,10 +36,9 @@ public sealed class GenCell : IGraphNode<GenCell>
         PolyGeos.Add(p);
         _polyCells[p] = this;
         NeighboringPolyGeos.Remove(p);
-        var newBorder = p.Neighbors.Refs().Except(PolyGeos);
-        foreach (var borderPoly in newBorder)
+        foreach (var n in p.Neighbors.Refs())
         {
-            NeighboringPolyGeos.Add(borderPoly);
+            if(PolyGeos.Contains(n) == false) NeighboringPolyGeos.Add(n);
         }
     }
 

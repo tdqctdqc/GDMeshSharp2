@@ -1,7 +1,9 @@
 using Godot;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using DelaunatorSharp;
 
 public static class GraphGenerator
@@ -90,7 +92,10 @@ public static class GraphGenerator
             cellElements.Add(voronoiCells[i], elements[i]);
             pointElements.Add(iPoints[i], elements[i]);
         }
-        d.ForEachTriangleEdge(edge =>
+
+        var edges = new ConcurrentDictionary<Edge<TNode>, TEdge>();
+        
+        void makeGraphEdgeFromTriEdge(IEdge edge)
         {
             var tri = Mathf.FloorToInt(edge.Index / 3);
             var circum = d.GetTriangleCircumcenter(tri);
@@ -98,7 +103,10 @@ public static class GraphGenerator
             var p2 = edge.Q;
             var el1 = pointElements[p1];
             var el2 = pointElements[p2];
-            if (graph.HasEdge(el1, el2)) return;
+            if(edges.ContainsKey(new Edge<TNode>(el1, el2, e => e.GetHashCode())))
+            {
+                throw new Exception();
+            }
             if (d.Halfedges[edge.Index] != -1)
             {
                 var oppEdgeIndex = d.Halfedges[edge.Index];
@@ -116,15 +124,22 @@ public static class GraphGenerator
                     return;
                 }
                 var tEdge = getEdgeFunc(p, oP, el1, el2);
-                graph.AddEdge(el1, el2, tEdge);
+                edges.TryAdd(new Edge<TNode>(el1, el2, e => e.GetHashCode()), tEdge);
             }
             else
             {
                 var secondPoint = ((edge.P.GetIntV2() + edge.Q.GetIntV2()) / 2f).Intify();
                 var tEdge = getEdgeFunc(circum.GetIntV2(), secondPoint, el1, el2);
-                graph.AddEdge(el1, el2, tEdge);
+                edges.TryAdd(new Edge<TNode>(el1, el2, e => e.GetHashCode()), tEdge);
             }
-        });
+        }
+
+        Parallel.ForEach(d.GetEdges(), makeGraphEdgeFromTriEdge);
+        
+        foreach (var kvp in edges)
+        {
+            graph.AddEdge(kvp.Key.T1, kvp.Key.T2, kvp.Value);
+        }
         
         return graph;
     }

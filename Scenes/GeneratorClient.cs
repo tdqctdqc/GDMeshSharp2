@@ -73,9 +73,9 @@ public class GeneratorClient : Node, IClient
         return new GenerationParameters(new Vector2((int) _width.Value, (int) _height.Value));
     }
 
-    private void MonitorGeneration(string tag, string progress)
+    private void MonitorGeneration(string tag, string report)
     {
-        _progress.Text = tag + " " + progress;
+        _progress.Text = tag + " " + report;
     }
     private void DisplayException(DisplayableException d)
     {
@@ -92,8 +92,8 @@ public class GeneratorClient : Node, IClient
         MoveChild(_node, 0);
         _session.GenerationFeedback += MonitorGeneration;
         _session.GenerationFailed += DisplayException;
-        var success = _session.Generate(seed, GetParams());
-        if (success)
+        _session.Generate(seed, GetParams());
+        if (_session.Succeeded)
         {
             _graphics.Setup(this, _session.Data);
         }

@@ -4,22 +4,30 @@ using System.Linq;
 using Godot;
 using Priority_Queue;
 
-public class LocationGenerator 
+public class LocationGenerator : Generator
 {
     public GenData Data { get; private set; }
     private GenWriteKey _key;
     private IdDispenser _id;
-    public LocationGenerator(GenData data)
+    public LocationGenerator()
     {
-        Data = data;
     }
 
-    public void Generate(GenWriteKey key, IdDispenser id)
+    public override GenReport Generate(GenWriteKey key)
     {
+        var report = new GenReport(GetType().Name);
         _key = key;
-        _id = id;
+        _id = key.IdDispenser;
+        Data = key.GenData;
+        report.StartSection();
         GenerateCities();
+        report.StopSection("Generating Cities");
+        
+        report.StartSection();
         GenerateRoadNetwork();
+        report.StopSection("Generating Road Network");
+
+        return report;
     }
     
     private void GenerateCities()

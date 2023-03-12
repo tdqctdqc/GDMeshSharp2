@@ -29,9 +29,11 @@ public class GenPlate
         Cells.Add(c);
         c.SetPlate(this, key);
         NeighboringCells.Remove(c);
-        var border = c.Neighbors.Except(Cells);
-        foreach (var cell in border)
+        
+        for (var i = 0; i < c.Neighbors.Count; i++)
         {
+            var cell = c.Neighbors[i];
+            if (Cells.Contains(cell)) continue;
             NeighboringCells.Add(cell);
             if (NeighboringCellsAdjCount.ContainsKey(cell) == false)
             {

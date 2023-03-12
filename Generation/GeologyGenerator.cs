@@ -1,9 +1,11 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 
-public class GeologyGenerator
+public class GeologyGenerator : Generator
 {
     public GenData Data { get; private set; }
     private IdDispenser _id;
@@ -11,26 +13,49 @@ public class GeologyGenerator
     public static readonly float FaultRange = 100f,
         FrictionAltEffect = .03f,
         FrictionRoughnessEffect = 1f;
-    public GeologyGenerator(GenData data, IdDispenser id)
+    public GeologyGenerator()
     {
-        _id = id;
-        Data = data;
+        
     }
-    public void GenerateTerrain(GenWriteKey key)
+    public override GenReport Generate(GenWriteKey key)
     {
+        var report = new GenReport(GetType().Name);
         _key = key;
-        BuildGeology();
-    }
-
-    private void BuildGeology()
-    {
+        _id = key.IdDispenser;
+        Data = key.GenData;
+        
+        
+        
+        
+        report.StartSection(); 
         BuildCells();
+        report.StopSection("BuildCells");
+        
+        report.StartSection(); 
         BuildPlates();
+        report.StopSection("BuildPlates");
+        
+        report.StartSection(); 
         BuildMasses();
+        report.StopSection("BuildMasses");
+        
+        report.StartSection(); 
         BuildContinents();
+        report.StopSection("BuildContinents");
+        
+        report.StartSection(); 
         DoContinentFriction();
+        report.StopSection("DoContinentFriction");
+        
+        report.StartSection(); 
         HandleIsthmusAndInlandSeas();
+        report.StopSection("HandleIsthmusAndInlandSeas");
+        
+        report.StartSection(); 
         Data.LandSea.SetLandmasses(Data);
+        report.StopSection("SetLandmasses");
+        
+        return report;
     }
 
     private void HandleIsthmusAndInlandSeas()
@@ -45,20 +70,22 @@ public class GeologyGenerator
         var numCells = Data.Planet.Polygons.Entities.Count / polysPerCell;
         var polyCellDic = Data.GenAuxData.PolyCells;
         var cellSeeds = Picker.PickSeeds(Data.Planet.Polygons.Entities, new int[] {numCells})[0];
+
         var cells = cellSeeds.Select(p => new GenCell(p, _key, polyCellDic, Data)).ToList();
         Data.GenAuxData.Cells.AddRange(cells);
         var polysNotTaken =
             Data.Planet.Polygons.Entities.Except(cellSeeds);
-        var remainder = Picker.PickInTurn(polysNotTaken, cells, 
+
+        var remainder = Picker.PickInTurn(polysNotTaken, 
+            cells, 
             cell => cell.NeighboringPolyGeos, 
-            (cell, poly) => cell.AddPolygon(poly, _key));
+            (cell, poly) => cell.AddPolygon(poly, _key)
+        );
         if (remainder.Count > 0)
         {
             throw new Exception();
         }
-        
-        cells.ForEach(c => c.SetNeighbors(_key));
-        
+        Parallel.ForEach(cells, c => c.SetNeighbors(_key));
     }
 
     private void BuildPlates()
