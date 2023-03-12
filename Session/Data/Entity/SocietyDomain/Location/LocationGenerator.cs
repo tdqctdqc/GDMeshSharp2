@@ -107,7 +107,10 @@ public class LocationGenerator : Generator
         {
             var p = settlementPolys[i];
             var size = settlementSizes[i];
-            Settlement.Create(_id.GetID(), NameGenerator.GetName(), p, size, _key);
+            Settlement.Create(_id.GetID(), 
+                "doot", 
+                // NameGenerator.GetName(), //todo fix this
+                p, size, _key);
             var availTris = p.TerrainTris.Tris
                 .Where(t => t.Landform != LandformManager.River
                     && t.Landform != LandformManager.Mountain

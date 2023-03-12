@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Godot;
 
 public class RegimeGenerator : Generator
@@ -28,37 +31,69 @@ public class RegimeGenerator : Generator
     private void GenerateRegimes()
     {
         var polysPerRegime = 30;
+        var lmPickers = new ConcurrentDictionary<HashSet<MapPolygon>, WandererPicker>();
+        var sw = new Stopwatch();
         
-        
+        sw.Start();
         _data.LandSea.Landmasses.ForEach(lm =>
         {
-            GenerateRegimes(lm, polysPerRegime);
+            var picker = GenerateLandmassRegimes(lm, polysPerRegime);
+            lmPickers.TryAdd(lm, picker);
         });
+        sw.Stop();
+        GD.Print($"GENERATE REGIMES TIME " + sw.Elapsed.TotalMilliseconds);
+        sw.Reset();
+
+        var remainders = new ConcurrentBag<HashSet<MapPolygon>>();
+        
+        
+        sw.Start();
+        Parallel.ForEach(_data.LandSea.Landmasses, lm =>
+        {
+            var remainder = ExpandRegimes(lm, lmPickers[lm]);
+            remainders.Add(remainder);
+        });
+        sw.Stop();
+        GD.Print($"EXPAND REGIMES TIME " + sw.Elapsed.TotalMilliseconds);
+        sw.Reset();
+        
+        
+        sw.Start();
+        foreach (var r in remainders)
+        {
+            HandleRemainder(r);
+        }
+        sw.Stop();
+        GD.Print($"HANDLE REMAINDER TIME " + sw.Elapsed.TotalMilliseconds);
+        sw.Reset();
     }
 
-    // private (List<Regime> regimes, Picker picker) GenerateLandmassRegimes(HashSet<MapPolygon> lm, int polysPerRegime)
-    // {
-    //     
-    // }
-    private void GenerateRegimes(HashSet<MapPolygon> lm, int polysPerRegime)
+    private WandererPicker GenerateLandmassRegimes(HashSet<MapPolygon> lm, int polysPerRegime)
     {
+        var sw = new Stopwatch();
         var numLandmassRegimes = Mathf.CeilToInt(lm.Count / polysPerRegime);
         numLandmassRegimes = Math.Max(1, numLandmassRegimes);
+        
         var seeds = lm.GetDistinctRandomElements(numLandmassRegimes);
+        
         var picker = new WandererPicker(lm);
-
 
         for (var i = 0; i < seeds.Count; i++)
         {
             var prim = ColorsExt.GetRandomColor();
             var sec = prim.Inverted();
-            var regime = Regime.Create(_id, NameGenerator.GetName(), prim, sec, seeds[i], _key);
+            var regime = Regime.Create(_id, 
+                "doot",
+                // NameGenerator.GetName(), 
+                prim, sec, seeds[i], _key);
             var wand = new RegimeWanderer(regime, seeds[i], picker);
             seeds[i].SetRegime(regime, _key);
         }
-        
-        
-        var wanderers = new List<RegimeWanderer>();
+
+        return picker;
+    }
+    private HashSet<MapPolygon> ExpandRegimes(HashSet<MapPolygon> lm, WandererPicker picker)
+    {
         picker.Pick();
         
         foreach (var w in picker.Wanderers)
@@ -71,7 +106,11 @@ public class RegimeGenerator : Generator
             }
         }
 
-        var remainder = picker.NotTaken;
+        return picker.NotTaken;
+    }
+
+    private void HandleRemainder(HashSet<MapPolygon> remainder)
+    {
         var unions = UnionFind.Find(
             remainder, 
             (p1, p2) => p1.IsLand() == p2.IsLand(),
@@ -82,7 +121,10 @@ public class RegimeGenerator : Generator
             if (union.Count == 0) continue;
             var prim = ColorsExt.GetRandomColor();
             var sec = prim.Inverted();
-            var regime = Regime.Create(_id, NameGenerator.GetName(), prim, sec, union[0], _key);
+            var regime = Regime.Create(_id, 
+                // NameGenerator.GetName(), //todo fix this
+                "doot",
+                prim, sec, union[0], _key);
             for (var i = 1; i < union.Count; i++)
             {
                 var p = union[i];
@@ -90,10 +132,5 @@ public class RegimeGenerator : Generator
                 p.SetRegime(regime, _key);
             }
         }
-    }
-
-    private void ExpandRegimes()
-    {
-        
     }
 }

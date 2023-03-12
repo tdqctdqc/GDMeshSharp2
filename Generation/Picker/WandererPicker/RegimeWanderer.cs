@@ -10,23 +10,39 @@ public class RegimeWanderer : Wanderer
     {
         Regime = regime;
     }
-
+    
     public override bool MoveAndPick(WandererPicker host)
     {
-        var canTake = ValidAdjacent.Intersect(host.NotTaken);
-        var canTakeCount = canTake.Count();
-        if (canTakeCount == 0) return false;
+        if (ValidAdjacent.Any(host.NotTaken.Contains) == false) return false;
+
         if (Picked.Count < 4)
         {
-            Pick(canTake.First(), host);
-            return ValidAdjacent.Count != 0;
+            foreach (var a in ValidAdjacent)
+            {
+                if (host.NotTaken.Contains(a) == false) continue;
+                Pick(a, host);
+                return true;
+            }
+            return false;
         }
 
-        var pick = canTake
-            .Where(a => a.Neighbors.Refs().Where(n => Picked.Contains(n)).Count() > 1)
-            .OrderBy(a => a.Neighbors.Refs().Where(n => Picked.Contains(n)).Count())
-            .FirstOrDefault();
-        if (pick != null)
+        var aCount = 0;
+        MapPolygon pick = null;
+        var found = false;
+        
+        foreach (var a in ValidAdjacent)
+        {
+            if (host.NotTaken.Contains(a) == false) continue;
+            if (a.Neighbors.Refs().Where(n => Picked.Contains(n)).Count() <= 1) continue;
+            var count = a.Neighbors.Refs().Where(n => Picked.Contains(n)).Count();
+            if (count > aCount)
+            {
+                pick = a;
+                aCount = count;
+                found = true;
+            }
+        }
+        if (found)
         {
             Pick(pick, host);
             return true;

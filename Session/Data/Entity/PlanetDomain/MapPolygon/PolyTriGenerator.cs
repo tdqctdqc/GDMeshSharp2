@@ -181,8 +181,13 @@ public class PolyTriGenerator : Generator
         var tris = new List<PolyTri>();
         var boundarySegs = poly.GetOrderedBoundarySegs(key.Data);
         var rSeg = boundarySegs
-            .First(s => Mathf.Abs(s.Mid().Angle() 
+            .FirstOrDefault(s => Mathf.Abs(s.Mid().Angle() 
                                   - rEdge.GetRiverSegment().Mid().Angle()) < .01f);
+        if (rSeg == null)
+        {
+            //todo fix this
+            return DoLandPolyNoRivers(poly, key);
+        }
         
         var rSegIndex = boundarySegs.IndexOf(rSeg);
         var between = Enumerable.Range(1, boundarySegs.Count - 1)
@@ -219,7 +224,9 @@ public class PolyTriGenerator : Generator
             if(borderSegs.Contains(r.GetRiverSegment()) == false)
             {
                 GD.Print("river index " + r.RiverSegmentIndex);
-                throw new Exception();
+                //todo fix back
+                return DoLandPolyNoRivers(poly, key);
+                // throw new Exception();
             }
         }
         if (riverSegs.Any(rs => borderSegs.Contains(rs) == false))
