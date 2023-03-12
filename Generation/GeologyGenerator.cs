@@ -173,21 +173,12 @@ public class GeologyGenerator : Generator
 
     private void DoContinentFriction()
     {
-        Data.GenAuxData.Plates.ForEach(p => setFriction(p));
-        Data.GenAuxData.FaultLines.FaultLines.ForEach(f =>
+        Parallel.ForEach(Data.GenAuxData.Plates, setFriction);
+        Parallel.ForEach(Data.GenAuxData.FaultLines.FaultLines, f =>
         {
             var inRange = getPolysInRangeOfFault(f);
             f.PolyFootprint.AddRange(inRange);   
         });
-        
-
-
-        //find polys in range of fault
-        //add altitude + roughness to them
-        //union find for the ones that are land and eligible for hill, mtn, etc
-        //draw meshes inside these 
-        
-        
         
         void setFriction(GenPlate hiPlate)
         {
@@ -242,7 +233,6 @@ public class GeologyGenerator : Generator
                     poly.Set(nameof(poly.Roughness), newRoughness, _key);
                 }
             }
-
             return polysInRange;
         }
     }

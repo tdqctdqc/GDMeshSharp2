@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Godot;
 
 public class Picker
 {
@@ -58,19 +59,34 @@ public class Picker
         Func<TPicked, TPicker, float> heuristic)
     {
         var notTaken = new HashSet<TPicked>(notTakenSource);
-        var openPickers = new HashSet<TPicker>(openPickersSource);
+        var openPickers = new LinkedList<TPicker>(openPickersSource);
         while (openPickers.Count > 0)
         {
-            var picker = openPickers.GetRandomElement();
-            var available = getAdjacent(picker).Intersect(notTaken).OrderByDescending(p => heuristic(p, picker));
-            if (available.Count() == 0)
+            var picker = openPickers.First;
+            openPickers.RemoveFirst();
+            TPicked take = default;
+            bool found = false;
+            var adj = getAdjacent(picker.Value);
+            float takeHeur = Mathf.Inf;
+            foreach (var p in adj)
             {
-                openPickers.Remove(picker);
+                if (notTaken.Contains(p) == false) continue;
+                var heur = heuristic(p, picker.Value);
+                if (heur < takeHeur)
+                {
+                    found = true;
+                    takeHeur = heur;
+                    take = p;
+                }
+            }
+            
+            if (found == false)
+            {
                 continue;
             }
-            var take = available.ElementAt(0);
+            openPickers.AddLast(picker);
             notTaken.Remove(take);
-            pick(picker, take);
+            pick(picker.Value, take);
         }
 
         return notTaken;
