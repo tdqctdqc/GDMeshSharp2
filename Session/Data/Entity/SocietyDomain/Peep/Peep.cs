@@ -13,10 +13,10 @@ public class Peep : Entity
     public EntityRef<MapPolygon> Home { get; private set; }
     public ModelRef<PeepJob> Job { get; private set; }
 
-    public static Peep Create(int id, int size, EntityRef<MapPolygon> home,
+    public static Peep Create(int size, EntityRef<MapPolygon> home,
         ModelRef<PeepJob> job, CreateWriteKey key)
     {
-        var p = new Peep(id, size, home, job);
+        var p = new Peep(key.IdDispenser.GetID(), size, home, job);
         key.Create(p);
         return p;
     }

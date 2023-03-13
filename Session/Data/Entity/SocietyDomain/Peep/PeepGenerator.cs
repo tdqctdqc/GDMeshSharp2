@@ -62,14 +62,13 @@ public class PeepGenerator : Generator
             }
             
             var polyPeeps = Mathf.CeilToInt(pointsInPoly / pointsPerPeep);
-            // poly.Log(100, pointsInPoly.ToString());
 
             numPeeps += polyPeeps;
             for (int i = 0; i < polyPeeps; i++)
             {
                 var peepSize = pointsInPoly / (polyPeeps + 1);
                 totalPoints += peepSize;
-                var peep = Peep.Create(_id.GetID(),
+                var peep = Peep.Create(
                     peepSize,
                     new EntityRef<MapPolygon>(poly, _key),
                     new ModelRef<PeepJob>(job, _key),

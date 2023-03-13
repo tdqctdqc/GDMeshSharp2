@@ -8,9 +8,9 @@ public class PlanetInfo : Entity
 {
     public override Type GetDomainType() => typeof(PlanetDomain);
     public Vector2 Dimensions { get; private set; }
-    public static PlanetInfo Create(Vector2 dimensions, int id, CreateWriteKey key)
+    public static PlanetInfo Create(Vector2 dimensions, CreateWriteKey key)
     {
-        var pi =  new PlanetInfo(id, dimensions);
+        var pi =  new PlanetInfo(key.IdDispenser.GetID(), dimensions);
         key.Create(pi);
         return pi;
     }

@@ -22,7 +22,7 @@ public class MapPolygonEdge : Entity
         HighId = highId;
     }
 
-    public static MapPolygonEdge Create(int id, MapPolygon poly1, MapPolygon poly2, 
+    public static MapPolygonEdge Create(MapPolygon poly1, MapPolygon poly2, 
         List<LineSegment> segments, GenWriteKey key)
     {
         EntityRef<MapPolygon> lowId;
@@ -48,7 +48,7 @@ public class MapPolygonEdge : Entity
         lowId.Entity().AddNeighbor(highId.Entity(), lowBorder, key);
         highId.Entity().AddNeighbor(lowId.Entity(), highBorder, key);
         var b =  new MapPolygonEdge(
-            id, 0f, lowId, highId);
+            key.IdDispenser.GetID(), 0f, lowId, highId);
 
         key.Create(b);
         return b;

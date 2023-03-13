@@ -110,7 +110,7 @@ public class LocationGenerator : Generator
         {
             var p = settlementPolys[i];
             var size = settlementSizes[i];
-            Settlement.Create(_id.GetID(), 
+            Settlement.Create( 
                 "doot", 
                 // NameGenerator.GetName(), //todo fix this
                 p, size, _key);
@@ -169,7 +169,7 @@ public class LocationGenerator : Generator
                     var edge = path[i].GetEdge(path[i + 1], Data);
 
                     if(Data.Society.Roads.ByEdgeId.ContainsKey(edge.Id)) continue;
-                    RoadSegment.Create(_id.GetID(), edge, _key);
+                    RoadSegment.Create(edge, _key);
                 }
             }
         });

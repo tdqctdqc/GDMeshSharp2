@@ -12,8 +12,6 @@ public partial class MapPolygon : Entity,
     public static IReadOnlyGraph<MapPolygon, PolyBorderChain> BorderGraph
         = new ImplicitGraph<MapPolygon, PolyBorderChain>(p => true, p => p.Neighbors,
             (p, q) => p.HasNeighbor(q), (p, q) => p.GetBorder(q));
-
-    public override Type GetDomainType() => typeof(PlanetDomain);
     public Vector2 Center { get; protected set; }
     public EntityRefCollection<MapPolygon> Neighbors { get; protected set; }
     public Dictionary<int, PolyBorderChain> NeighborBorders { get; private set; }
@@ -22,14 +20,7 @@ public partial class MapPolygon : Entity,
     public float Roughness { get; private set; }
     public float Moisture { get; private set; }
     public EntityRef<Regime> Regime { get; private set; }
-    public bool IsLand() => Altitude > .5f;
-    public bool IsWater() => IsLand() == false;
-    public bool IsCoast() => IsLand() && Neighbors.Refs().Any(n => n.IsWater());
-    public MapPolygonEdge GetEdge(MapPolygon neighbor, Data data) 
-        => data.Planet.PolyEdges.GetEdge(this, neighbor);
-    public PolyBorderChain GetBorder(MapPolygon neighbor) => NeighborBorders[neighbor.Id];
     public PolyTerrainTris TerrainTris { get; private set; }
-    
     [SerializationConstructor] private MapPolygon(int id, Vector2 center, EntityRefCollection<MapPolygon> neighbors, 
         Dictionary<int, PolyBorderChain> neighborBorders, Color color, float altitude, float roughness, 
         float moisture, EntityRef<Regime> regime, PolyTerrainTris terrainTris) : base(id)
@@ -45,12 +36,12 @@ public partial class MapPolygon : Entity,
         TerrainTris = terrainTris;
     }
 
-    public static MapPolygon Create(int id, Vector2 center, float mapWidth, GenWriteKey key)
+    public static MapPolygon Create(Vector2 center, float mapWidth, GenWriteKey key)
     {
         var mapCenter = center;
         if (mapCenter.x > mapWidth) mapCenter = new Vector2(mapCenter.x - mapWidth, center.y);
         if (mapCenter.x < 0f) mapCenter = new Vector2(mapCenter.x + mapWidth, center.y);
-        var p = new MapPolygon(id, mapCenter,
+        var p = new MapPolygon(key.IdDispenser.GetID(), mapCenter,
             new EntityRefCollection<MapPolygon>(new HashSet<int>()),
             new Dictionary<int, PolyBorderChain>(),
             ColorsExt.GetRandomColor(),
@@ -63,18 +54,7 @@ public partial class MapPolygon : Entity,
         key.Create(p);
         return p;
     }
-    public bool HasNeighbor(MapPolygon p)
-    {
-        return Neighbors.Refs().Contains(p);
-    }
-    public IEnumerable<MapPolygonEdge> GetPolyEdges(Data data) => Neighbors.Refs()
-        .Select(n => GetEdge(n, data));
-    public IEnumerable<PolyBorderChain> GetPolyBorders() => Neighbors.Refs()
-        .Select(n => GetBorder(n));
-    public IChain<LineSegment> GetOrderedNeighborSegments(Data data)
-    {
-        return new Chain<LineSegment, Vector2>(GetPolyBorders().Ordered().ToList());
-    }
+    
     public void AddNeighbor(MapPolygon poly, PolyBorderChain border, GenWriteKey key)
     {
         if (Neighbors.Contains(poly)) return;
@@ -95,28 +75,15 @@ public partial class MapPolygon : Entity,
     {
         GetMeta().UpdateEntityVar<EntityRef<Regime>>(nameof(Regime), this, key, new EntityRef<Regime>(r.Id));
     }
-
     public void SetTerrainTris(PolyTerrainTris tris, GenWriteKey key)
     {
         TerrainTris = tris;
     }
-
-    public List<PolyBorderChain> GetOrderedNeighborBorders()
-    {
-        //make in data cache
-        throw new NotImplementedException();
-    }
-    public List<LineSegment> GetOrderedBoundarySegs(Data data)
-    {
-        return data.Cache.OrderedBoundarySegs[this];
-    }
     public List<LineSegment> BuildBoundarySegments(Data data)
     {
-        var neighborSegs = GetOrderedNeighborSegments(data).Segments.ToList();
+        var neighborSegs = this.GetOrderedNeighborBorders(data).SelectMany(b => b.Segments).ToList();
 
-        var before = data.Cache.OrderedBoundarySegs != null 
-            ? data.Cache.OrderedBoundarySegs[this]
-            : new List<LineSegment>();
+        
 
         if (neighborSegs.IsCircuit() == false)
         {
@@ -127,16 +94,18 @@ public partial class MapPolygon : Entity,
         if (neighborSegs.IsCircuit() == false || neighborSegs.IsContinuous() == false)
         {
             GD.Print("still not circuit");
-            throw new SegmentsNotConnectedException(before, neighborSegs);
+            throw new Exception();
+            // throw new SegmentsNotConnectedException(before, neighborSegs);
         }
         return neighborSegs;
     }
     
-    PolyBorderChain IGraphNode<MapPolygon, PolyBorderChain>.GetEdge(MapPolygon n) => GetBorder(n);
+    PolyBorderChain IGraphNode<MapPolygon, PolyBorderChain>.GetEdge(MapPolygon n) => this.GetBorder(n);
     bool IGraphNode<MapPolygon>.HasEdge(MapPolygon n) => Neighbors.Contains(n);
     IReadOnlyCollection<MapPolygon> IGraphNode<MapPolygon>.Neighbors => Neighbors;
     MapPolygon IStaticNode<MapPolygon>.Element => this;
 
     IReadOnlyGraph<MapPolygon, PolyBorderChain> IStaticNode<MapPolygon, PolyBorderChain>.Graph => BorderGraph;
     IReadOnlyGraph<MapPolygon> IStaticNode<MapPolygon>.Graph => BorderGraph;
+    public override Type GetDomainType() => typeof(PlanetDomain);
 }

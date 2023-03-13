@@ -36,7 +36,6 @@ public class DrainGraph<T>
         _getNeighbors = (t) => getNeighbors(t).Where(n => _elements.Contains(n) && getCost(t,n) <= maxCost);
     }
 
-
     private Graph<T, float> MakeGraph()
     {
         var sw = new Stopwatch();

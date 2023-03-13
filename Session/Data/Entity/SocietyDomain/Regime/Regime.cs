@@ -27,11 +27,12 @@ public class Regime : Entity
         Capital = capital;
     }
 
-    public static Regime Create(IdDispenser idd, string name, Color primaryColor, Color secondaryColor, 
+    public static Regime Create(string name, Color primaryColor, Color secondaryColor, 
         MapPolygon seed, CreateWriteKey key)
     {
+        var id = key.IdDispenser;
         var polygons = new EntityRefCollection<MapPolygon>(new HashSet<int>{seed.Id});
-        var r = new Regime(idd.GetID(), name, primaryColor, secondaryColor, polygons, new EntityRef<MapPolygon>(seed.Id),
+        var r = new Regime(id.GetID(), name, primaryColor, secondaryColor, polygons, new EntityRef<MapPolygon>(seed.Id),
             new Wallet<Resource>(new Dictionary<Resource, float>()));
         key.Create(r);
         seed.SetRegime(r, key);
@@ -41,7 +42,7 @@ public class Regime : Entity
         {
             if (regime != r)
             {
-                RegimeRelation.Create(idd.GetID(), new EntityRef<Regime>(r.Id), 
+                RegimeRelation.Create(id.GetID(), new EntityRef<Regime>(r.Id), 
                     new EntityRef<Regime>(regime.Id), key);
             }
         }

@@ -36,7 +36,6 @@ public class MessageTypeManager<T> : IMessageTypeManager
             _markersBySubType.Add(subType, marker);
             _subTypesByMarker.Add(marker, subType);
         }
-        GD.Print("adding message type " + typeof(T).Name);
     }
     public Type GetMessageTypeFromMarker(byte marker)
     {

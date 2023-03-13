@@ -8,7 +8,6 @@ using Godot;
 public class GeneratorClient : Node, IClient
 {
     private GeneratorSession _session;
-    private Node _node;
     private ButtonToken _generate, _generateNext, _generateTest, _done;
     private SpinBox _seed, _width, _height;
     public CameraController Cam { get; private set; }
@@ -86,10 +85,6 @@ public class GeneratorClient : Node, IClient
     {
         var bounds = new Vector2(width, height);
         Game.I.Random.Seed = (ulong) seed;
-        _node?.QueueFree();
-        _node = new Node();
-        AddChild(_node);
-        MoveChild(_node, 0);
         _session.GenerationFeedback += MonitorGeneration;
         _session.GenerationFailed += DisplayException;
         _session.Generate(seed, GetParams());

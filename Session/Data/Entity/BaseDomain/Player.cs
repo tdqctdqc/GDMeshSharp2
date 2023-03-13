@@ -8,10 +8,10 @@ public class Player : Entity
     public Guid PlayerGuid { get; private set; }
     public string Name { get; private set; }
     public EntityRef<Regime> Regime { get; private set; }
-    public static Player Create(int id, Guid guid, string name, 
+    public static Player Create(Guid guid, string name, 
         CreateWriteKey key)
     {
-        var p = new Player(id, guid, name, new EntityRef<Regime>(-1));
+        var p = new Player(key.IdDispenser.GetID(), guid, name, new EntityRef<Regime>(-1));
         key.Create(p);
         return p;
     }

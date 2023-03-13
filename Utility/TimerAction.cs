@@ -13,10 +13,10 @@ public class TimerAction
         _action = action;
     }
 
-    public TimerAction(float timerPeriod, float timer)
+    public TimerAction(float timerPeriod)
     {
         _timerPeriod = timerPeriod;
-        _timer = timer;
+        _timer = timerPeriod;
     }
 
     public void Process(float delta)

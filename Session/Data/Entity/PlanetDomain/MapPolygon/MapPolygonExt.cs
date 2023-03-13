@@ -5,12 +5,10 @@ using Godot;
 
 public static class MapPolygonExt
 {
-    
     public static bool PointInPoly(this MapPolygon poly, Vector2 posAbs, Data data)
     {
         return data.Cache.PolyRelWheelTris[poly].Any(t => t.ContainsPoint(poly.GetOffsetTo(posAbs, data)));
     }
-    
     public static Vector2 GetOffsetTo(this MapPolygon poly, MapPolygon p, Data data)
     {
         var off1 = p.Center - poly.Center;
@@ -29,7 +27,6 @@ public static class MapPolygonExt
         if (off2.Length() < off1.Length() && off2.Length() < off3.Length()) return off2;
         return off3;
     }
-
     public static int GetNumPeeps(this MapPolygon poly, Data data)
     {
         if (data.Planet.Polygons.PeepsInPoly[poly] is HashSet<Peep> h)
@@ -38,13 +35,10 @@ public static class MapPolygonExt
         }
         return 0;
     }
-
     public static float GetArea(this MapPolygon poly, Data data)
     {
         return data.Cache.PolyRelWheelTris[poly].Sum(t => t.GetArea());
     }
-    
-    
     public static float GetScore(this MapPolygon poly, MapPolygon closest, MapPolygon secondClosest, 
         Vector2 pRel, Data data, Func<MapPolygon, float> getScore)
     {
@@ -57,5 +51,26 @@ public static class MapPolygonExt
 
         return closeInt + secondInt;
     }
-    
+    public static bool HasNeighbor(this MapPolygon poly, MapPolygon n) => poly.Neighbors.Refs().Contains(n);
+    public static bool IsLand(this MapPolygon poly) => poly.Altitude > .5f;
+    public static bool IsWater(this MapPolygon poly) => IsLand(poly) == false;
+    public static bool IsCoast(this MapPolygon poly) => IsLand(poly) && poly.Neighbors.Refs().Any(n => n.IsWater());
+    public static MapPolygonEdge GetEdge(this MapPolygon poly, MapPolygon neighbor, Data data) 
+        => data.Planet.PolyEdges.GetEdge(poly, neighbor);
+    public static PolyBorderChain GetBorder(this MapPolygon poly, MapPolygon neighbor) => poly.NeighborBorders[neighbor.Id];
+    public static IEnumerable<PolyBorderChain> GetPolyBorders(this MapPolygon poly) => poly.Neighbors.Refs()
+        .Select(n => poly.GetBorder(n));
+    public static IChain<LineSegment> GetOrderedNeighborSegments(this MapPolygon poly, Data data)
+    {
+        var segs = poly.GetOrderedNeighborBorders(data).SelectMany(b => b.Segments).ToList();
+        return new Chain<LineSegment, Vector2>(segs);
+    }
+    public static List<PolyBorderChain> GetOrderedNeighborBorders(this MapPolygon poly, Data data)
+    {
+        return data.Cache.OrderedNeighborBorders[poly];
+    }
+    public static List<LineSegment> GetOrderedBoundarySegs(this MapPolygon poly, Data data)
+    {
+        return data.Cache.OrderedBoundarySegs[poly];
+    }
 }

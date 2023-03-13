@@ -24,43 +24,46 @@ public class MapPolyTooltip : Node2D
         _veg = _container.CreateLabelAsChild("Veg");
         _settlementName = _container.CreateLabelAsChild("SettlementName");
         _settlementSize = _container.CreateLabelAsChild("SettlementSize");
-        _action = new TimerAction(.1f, .1f);
+        _action = new TimerAction(.05f);
     }
     public void Process(float delta, Data data, Vector2 mousePosMapSpace)
     {
         _action.ProcessVariableFunc(delta, () => FindPoly(data, mousePosMapSpace));
     }
-
+    
     private void FindPoly(Data data, Vector2 mousePosMapSpace)
     {
-        MapPolygon mouseIn;
         if (mousePosMapSpace.y <= 0f || mousePosMapSpace.y >= data.Planet.Height)
         {
-            mouseIn = null;
+            _mouseOverPoly = null;
         }
         else if (_mouseOverPoly != null && _mouseOverPoly.PointInPoly(mousePosMapSpace, data))
         {
-            mouseIn = _mouseOverPoly;
+        }
+        else if (_mouseOverPoly != null && 
+                 _mouseOverPoly.Neighbors.Refs().FirstOrDefault(n => n.PointInPoly(mousePosMapSpace, data))
+                 is MapPolygon neighbor)
+        {
+            _mouseOverPoly = neighbor;
         }
         else
         {
-            mouseIn = data.Cache.MapPolyGrid
+            _mouseOverPoly = data.Cache.MapPolyGrid
                 .GetElementAtPoint(mousePosMapSpace);
         }
-        
-        if (mouseIn is MapPolygon poly)
-        {
-            var offset = poly.GetOffsetTo(mousePosMapSpace, data);
-            var tri = poly.TerrainTris.GetAtPoint(offset, data);
-            if (poly != _mouseOverPoly)
-            {
-                _mouseOverPoly = poly;
-                Visible = true;
-            }
-            _highlighter.Draw(data, poly, tri, offset, _client);
+        PreDraw(mousePosMapSpace, data);
+    }
 
+    private void PreDraw(Vector2 mousePosMapSpace, Data data)
+    {
+        if (_mouseOverPoly != null)
+        {
+            var offset = _mouseOverPoly.GetOffsetTo(mousePosMapSpace, data);
+            var tri = _mouseOverPoly.TerrainTris.GetAtPoint(offset, data);
+            Visible = true;
+            _highlighter.Draw(data, _mouseOverPoly, tri, offset, _client);
             Position = GetGlobalMousePosition() + Vector2.One * 20f;
-            Draw(data, poly, offset);
+            DrawTooltip(data, tri, offset);
             Scale = _client.Cam.Zoom;
         }
         else 
@@ -71,21 +74,19 @@ public class MapPolyTooltip : Node2D
             Visible = false;
         }
     }
-
-    public void Draw(Data data, MapPolygon poly, Vector2 offset)
+    public void DrawTooltip(Data data, PolyTri tri, Vector2 offset)
     {
-        _id.Text = "Id: " + poly.Id;
-        _numPops.Text = "Num Pops: " + poly.GetNumPeeps(data);
-        _regime.Text = poly.Regime.Empty() ? "Neutral" : poly.Regime.Entity().Name;
+        _id.Text = "Id: " + _mouseOverPoly.Id;
+        _numPops.Text = "Num Pops: " + _mouseOverPoly.GetNumPeeps(data);
+        _regime.Text = _mouseOverPoly.Regime.Empty() ? "Neutral" : _mouseOverPoly.Regime.Entity().Name;
 
-        var tri = poly.TerrainTris.GetAtPoint(offset, data);
         if (tri != null)
         {
             _landform.Text = "Landform: " + tri.Landform.Name;
             _veg.Text = "Vegetation: " + tri.Vegetation.Name;
         }
 
-        if (data.Society.Settlements.ByPoly[poly] is Settlement s)
+        if (data.Society.Settlements.ByPoly[_mouseOverPoly] is Settlement s)
         {
             _settlementName.Text = "Settlement: " + s.Name;
             _settlementSize.Text = "Settlement size: " + s.Size.ToString();

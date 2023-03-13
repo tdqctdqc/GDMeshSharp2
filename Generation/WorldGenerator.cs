@@ -51,7 +51,7 @@ public class WorldGenerator
         var edgePointMargin = new Vector2(cellSize, cellSize);
         var dim = Data.GenParams.Dimensions;
         var id = _key.IdDispenser.GetID();
-        PlanetInfo.Create(Data.GenParams.Dimensions, _key.IdDispenser.GetID(), _key);
+        PlanetInfo.Create(Data.GenParams.Dimensions, _key);
         GameClock.Create(_key);
         _sw.Start();
 

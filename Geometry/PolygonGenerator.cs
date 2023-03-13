@@ -68,7 +68,7 @@ public class PolygonGenerator : Generator
         foreach (var dPoint in points)
         {
             var center = dPoint.GetIntV2();
-            var polygon = MapPolygon.Create(_id.GetID(), center, _dimensions.x, key);
+            var polygon = MapPolygon.Create(center, _dimensions.x, key);
         }
         info.SetupPolys(key.Data.Planet.Polygons.Entities.ToList());
     }
@@ -117,7 +117,7 @@ public class PolygonGenerator : Generator
                 {
                     edge = edge.Reverse();
                 }
-                constructBorders.Add(() => MapPolygonEdge.Create(_id.GetID(), mp, nMp, new List<LineSegment> {edge}, key));
+                constructBorders.Add(() => MapPolygonEdge.Create(mp, nMp, new List<LineSegment> {edge}, key));
             });
         }
 

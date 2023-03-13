@@ -32,7 +32,7 @@ public class GameSession : Node, ISession
         hServer.SetDependencies(logic, Data, this);
         logic.SetDependencies(hServer, this, Data);
         StartServer(hServer);
-        Player.Create(hKey.IdDispenser.GetID(), Game.I.PlayerGuid, "Doot", hKey);
+        Player.Create(Game.I.PlayerGuid, "Doot", hKey);
 
         StartClient(hServer);
     }

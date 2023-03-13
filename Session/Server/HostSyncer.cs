@@ -23,7 +23,7 @@ public class HostSyncer : Syncer
     public void Sync(Guid newPlayerGuid, HostWriteKey key)
     {
         GD.Print("Syncing");
-        Player.Create(key.IdDispenser.GetID(), newPlayerGuid, "doot", key);
+        Player.Create(newPlayerGuid, "doot", key);
 
         var data = key.Data;
         foreach (var kvp1 in data.Domains)

@@ -10,6 +10,7 @@ public class LocalCache
     public Dictionary<MapPolygon, List<Triangle>> PolyRelWheelTris { get; private set; }
     public PolyGrid MapPolyGrid { get; private set; }
     public Dictionary<MapPolygon, List<LineSegment>> OrderedBoundarySegs { get; private set; }
+    public Dictionary<MapPolygon, List<PolyBorderChain>> OrderedNeighborBorders { get; private set; }
     //todo sort out to repos?
     public LocalCache(Data data)
     {
@@ -27,7 +28,8 @@ public class LocalCache
 
     private void SetPolyShapes(Data data)
     {
-        GD.Print("setting poly shapes");
+        OrderedNeighborBorders = data.Planet.Polygons.Entities
+            .ToDictionary(p => p, p => p.GetPolyBorders().Ordered<PolyBorderChain, Vector2>().ToList());
         OrderedBoundarySegs = data.Planet.Polygons.Entities
             .ToDictionary(p => p, p => p.BuildBoundarySegments(data));
         BuildPolyGrid();

@@ -19,7 +19,7 @@ public class CreatePlayerCommand : Command
 
     public override void Enact(HostWriteKey key)
     {
-        Player.Create(key.IdDispenser.GetID(), Guid, Name, key);
+        Player.Create(Guid, Name, key);
     }
     public override bool Valid(Data data)
     {

@@ -32,40 +32,25 @@ public class RegimeGenerator : Generator
     {
         var polysPerRegime = 30;
         var lmPickers = new ConcurrentDictionary<HashSet<MapPolygon>, WandererPicker>();
-        var sw = new Stopwatch();
         
-        sw.Start();
         _data.LandSea.Landmasses.ForEach(lm =>
         {
             var picker = GenerateLandmassRegimes(lm, polysPerRegime);
             lmPickers.TryAdd(lm, picker);
         });
-        sw.Stop();
-        GD.Print($"GENERATE REGIMES TIME " + sw.Elapsed.TotalMilliseconds);
-        sw.Reset();
 
         var remainders = new ConcurrentBag<HashSet<MapPolygon>>();
         
-        
-        sw.Start();
         Parallel.ForEach(_data.LandSea.Landmasses, lm =>
         {
             var remainder = ExpandRegimes(lm, lmPickers[lm]);
             remainders.Add(remainder);
         });
-        sw.Stop();
-        GD.Print($"EXPAND REGIMES TIME " + sw.Elapsed.TotalMilliseconds);
-        sw.Reset();
         
-        
-        sw.Start();
         foreach (var r in remainders)
         {
             HandleRemainder(r);
         }
-        sw.Stop();
-        GD.Print($"HANDLE REMAINDER TIME " + sw.Elapsed.TotalMilliseconds);
-        sw.Reset();
     }
 
     private WandererPicker GenerateLandmassRegimes(HashSet<MapPolygon> lm, int polysPerRegime)
@@ -82,7 +67,7 @@ public class RegimeGenerator : Generator
         {
             var prim = ColorsExt.GetRandomColor();
             var sec = prim.Inverted();
-            var regime = Regime.Create(_id, 
+            var regime = Regime.Create( 
                 "doot",
                 // NameGenerator.GetName(), 
                 prim, sec, seeds[i], _key);
@@ -121,7 +106,7 @@ public class RegimeGenerator : Generator
             if (union.Count == 0) continue;
             var prim = ColorsExt.GetRandomColor();
             var sec = prim.Inverted();
-            var regime = Regime.Create(_id, 
+            var regime = Regime.Create( 
                 // NameGenerator.GetName(), //todo fix this
                 "doot",
                 prim, sec, union[0], _key);

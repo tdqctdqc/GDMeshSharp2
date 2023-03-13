@@ -15,9 +15,9 @@ public class RoadSegment : Entity
         Edge = edge;
     }
     
-    public static RoadSegment Create(int id, MapPolygonEdge edge, CreateWriteKey key)
+    public static RoadSegment Create(MapPolygonEdge edge, CreateWriteKey key)
     {
-        var rs =  new RoadSegment(id, edge.MakeRef());
+        var rs =  new RoadSegment(key.IdDispenser.GetID(), edge.MakeRef());
         key.Create(rs);
         return rs;
     }

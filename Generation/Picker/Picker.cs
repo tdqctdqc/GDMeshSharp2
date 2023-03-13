@@ -18,77 +18,100 @@ public class Picker
         }
         return result;
     }
-    public static HashSet<TPicked> PickInTurn<TPicker, TPicked>(IEnumerable<TPicked> notTakenSource, IEnumerable<TPicker> openPickersSource,
-        Func<TPicker, HashSet<TPicked>> getAdjacent, Action<TPicker, TPicked> pick)
+    public static HashSet<TPicked> PickInTurn<TPicker, TPicked>(IEnumerable<TPicked> notTakenSource, 
+        IEnumerable<TPicker> openPickersSource,
+        Func<TPicker, HashSet<TPicked>> getAdjacent, Action<TPicker, TPicked> take)
     {
-        var notTaken = new HashSet<TPicked>(notTakenSource);
-        var openPickers = new LinkedList<TPicker>(openPickersSource);
-        while (openPickers.Count > 0)
+        Func<TPicker, HashSet<TPicked>, TPicked> choose = (picker, avail) =>
         {
-            var cell = openPickers.First;
-            openPickers.RemoveFirst();
-
-            TPicked take = default;
-            bool found = false;
-            var adj = getAdjacent(cell.Value);
-            for (var i = 0; i < adj.Count; i++)
+            var adj = getAdjacent(picker);
+            foreach (var el in adj)
             {
-                var el = adj.ElementAt(i);
-                if (notTaken.Contains(el))
+                if (avail.Contains(el))
                 {
-                    take = el;
-                    notTaken.Remove(take);
-                    found = true;
-                    break;
+                    return el;
                 }
             }
-            if (found == false)
-            {
-                continue;
-            }
-
-            openPickers.AddLast(cell);
-            pick(cell.Value, take);
-        }
-
-        return notTaken;
+            return default;
+        };
+        return Pick(notTakenSource, openPickersSource, getAdjacent, choose, take);
     }
     public static HashSet<TPicked> PickInTurnHeuristic<TPicker, TPicked>(IEnumerable<TPicked> notTakenSource, 
         IEnumerable<TPicker> openPickersSource,
-        Func<TPicker, IEnumerable<TPicked>> getAdjacent, Action<TPicker, TPicked> pick,
+        Func<TPicker, HashSet<TPicked>> getAdjacent, Action<TPicker, TPicked> take,
         Func<TPicked, TPicker, float> heuristic)
     {
+        Func<TPicker, HashSet<TPicked>, TPicked> choose = (picker, avail) =>
+        {
+            float takeHeur = Mathf.Inf;
+            bool found = false;
+            TPicked chosen = default;
+            var adj = getAdjacent(picker);
+            foreach (var el in adj)
+            {
+                if (avail.Contains(el) == false) continue;
+                var heur = heuristic(el, picker);
+                if (heur < takeHeur)
+                {
+                    found = true;
+                    takeHeur = heur;
+                    chosen = el;
+                }
+            }
+
+            return (TPicked)chosen;
+        };
+
+        return Pick(notTakenSource, openPickersSource, getAdjacent, choose, take);
+    }
+
+    public static HashSet<TPicked> PickInTurnToLimit<TPicker, TPicked>(IEnumerable<TPicked> notTakenSource, 
+        IEnumerable<TPicker> openPickersSource,
+        Func<TPicker, HashSet<TPicked>> getAdjacent, Action<TPicker, TPicked> take,
+        int numPickedToLeave)
+    {
+        Func<TPicker, HashSet<TPicked>, TPicked> choose = (picker, avail) =>
+        {
+            if (avail.Count == numPickedToLeave) return default;
+            var adj = getAdjacent(picker);
+            foreach (var el in adj)
+            {
+                if (avail.Contains(el))
+                {
+                    return el;
+                }
+            }
+            return default;
+        };
+        return Pick(notTakenSource, openPickersSource, getAdjacent, choose, take);
+    }
+    
+    private static HashSet<TPicked> Pick<TPicker, TPicked>(IEnumerable<TPicked> notTakenSource, IEnumerable<TPicker> openPickersSource,
+        Func<TPicker, HashSet<TPicked>> getAdjacent, 
+        Func<TPicker, HashSet<TPicked>, TPicked> choose,
+        Action<TPicker, TPicked> take)
+    {
+        //todo not valid for structs?
         var notTaken = new HashSet<TPicked>(notTakenSource);
         var openPickers = new LinkedList<TPicker>(openPickersSource);
         while (openPickers.Count > 0)
         {
             var picker = openPickers.First;
             openPickers.RemoveFirst();
-            TPicked take = default;
-            bool found = false;
+
+            TPicked toTake = default;
             var adj = getAdjacent(picker.Value);
-            float takeHeur = Mathf.Inf;
-            foreach (var p in adj)
-            {
-                if (notTaken.Contains(p) == false) continue;
-                var heur = heuristic(p, picker.Value);
-                if (heur < takeHeur)
-                {
-                    found = true;
-                    takeHeur = heur;
-                    take = p;
-                }
-            }
+            toTake = choose(picker.Value, notTaken);
             
-            if (found == false)
+            if (toTake == null)
             {
                 continue;
             }
-            openPickers.AddLast(picker);
-            notTaken.Remove(take);
-            pick(picker.Value, take);
-        }
 
+            openPickers.AddLast(picker);
+            notTaken.Remove(toTake);
+            take(picker.Value, toTake);
+        }
         return notTaken;
     }
 }
