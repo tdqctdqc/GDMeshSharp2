@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -38,21 +39,37 @@ public class DrainGraph<T>
 
     private Graph<T, float> MakeGraph()
     {
+        var sw = new Stopwatch();
+        sw.Start();
         var unions = UnionFind.Find(_sources.Union(_sinks).ToList(), 
             (t, r) => true,
             _getNeighbors);
+        sw.Stop();
+        GD.Print("UNION FIND " + sw.Elapsed.TotalMilliseconds);
+        sw.Reset();
+        
+        sw.Start();
         _nodes = new Dictionary<T, DrainGraphNode<T>>();
         
         foreach (var source in _sources)
         {
             _nodes.Add(source, new DrainGraphNode<T>(source));
         }
+        sw.Stop();
+        GD.Print("SETUP " + sw.Elapsed.TotalMilliseconds);
+        sw.Reset();
         
+        
+        sw.Start();
         foreach (var union in unions)
         {
             DoUnion(union);
         }
+        sw.Stop();
+        GD.Print("DOING UNION " + sw.Elapsed.TotalMilliseconds);
+        sw.Reset();
 
+        sw.Start();
         var graph = new Graph<T, float>();
         foreach (var sink in _sinks)
         {
@@ -66,6 +83,12 @@ public class DrainGraph<T>
         {
             graph.AddEdge(kvp.Value.Element, kvp.Value.DrainsTo, 0f);
         }
+        sw.Stop();
+        GD.Print("BUILDING GRAPH " + sw.Elapsed.TotalMilliseconds);
+        sw.Reset();
+        
+        
+        sw.Start();
         foreach (var kvp in _nodes)
         {
             var curr = kvp.Value.Element;
@@ -79,7 +102,9 @@ public class DrainGraph<T>
                 totFlow = flow;
             }
         }
-        
+        sw.Stop();
+        GD.Print("SETTING GRAPH EDGE VALUES " + sw.Elapsed.TotalMilliseconds);
+        sw.Reset();
         return graph;
     }
 

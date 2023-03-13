@@ -55,8 +55,6 @@ public class LocationGenerator : Generator
         });
     }
     
-    
-    
     private (List<MapPolygon> settlementPolys, List<float> settlementSizes)
         PregenerateSettlements(List<MapPolygon> polys)
     {

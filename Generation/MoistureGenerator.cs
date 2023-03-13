@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Godot;
@@ -32,8 +33,6 @@ public class MoistureGenerator : Generator
     private void SetPolyMoistures()
     {
         var plateMoistures = new ConcurrentDictionary<GenPlate, float>();
-        
-        // Data.GenAuxData.Plates.ForEach
         
         Parallel.ForEach(Data.GenAuxData.Plates, p =>
         {
@@ -103,22 +102,24 @@ public class MoistureGenerator : Generator
 
     private void BuildRiversDrainGraph()
     {
-        var lms = Data.LandSea.Landmasses;
-        int iter = 0;
-
         Parallel.ForEach(Data.LandSea.Landmasses, doLandmass);
         
         void doLandmass(HashSet<MapPolygon> lm)
         {
+            var sw = new Stopwatch();
+            
             var landPolys = lm.Where(p => p.IsLand());
-            var coastPolys = landPolys.Where(p => p.IsCoast()).ToHashSet();
+            var coastPolys = landPolys.Where(p => p.IsCoast());
             var innerPolys = landPolys.Except(coastPolys);
+            
+            sw.Start();
             var graph = DrainGraph<MapPolygon>.GetDrainGraph(
                 innerPolys, 
                 coastPolys,
                 t => t.Moisture * 10f,
                 (p, q) => (p.Roughness + q.Roughness) * p.GetOffsetTo(q, _key.Data).Length() + 100f,
                 Mathf.Inf, p => p.Neighbors.Refs());
+            
             graph.Elements.ForEach(e =>
             {
                 var ns = graph.GetNeighbors(e);
