@@ -40,36 +40,16 @@ public class DrainGraph<T>
     private Graph<T, float> MakeGraph()
     {
         var sw = new Stopwatch();
-        sw.Start();
-        var unions = UnionFind.Find(_sources.Union(_sinks).ToList(), 
-            (t, r) => true,
-            _getNeighbors);
-        sw.Stop();
-        GD.Print("UNION FIND " + sw.Elapsed.TotalMilliseconds);
-        sw.Reset();
         
-        sw.Start();
         _nodes = new Dictionary<T, DrainGraphNode<T>>();
         
         foreach (var source in _sources)
         {
             _nodes.Add(source, new DrainGraphNode<T>(source));
         }
-        sw.Stop();
-        GD.Print("SETUP " + sw.Elapsed.TotalMilliseconds);
-        sw.Reset();
         
-        
-        sw.Start();
-        foreach (var union in unions)
-        {
-            DoUnion(union);
-        }
-        sw.Stop();
-        GD.Print("DOING UNION " + sw.Elapsed.TotalMilliseconds);
-        sw.Reset();
+        DoUnion(_sources.Union(_sinks).ToList());
 
-        sw.Start();
         var graph = new Graph<T, float>();
         foreach (var sink in _sinks)
         {
@@ -83,12 +63,8 @@ public class DrainGraph<T>
         {
             graph.AddEdge(kvp.Value.Element, kvp.Value.DrainsTo, 0f);
         }
-        sw.Stop();
-        GD.Print("BUILDING GRAPH " + sw.Elapsed.TotalMilliseconds);
-        sw.Reset();
         
         
-        sw.Start();
         foreach (var kvp in _nodes)
         {
             var curr = kvp.Value.Element;
@@ -102,39 +78,32 @@ public class DrainGraph<T>
                 totFlow = flow;
             }
         }
-        sw.Stop();
-        GD.Print("SETTING GRAPH EDGE VALUES " + sw.Elapsed.TotalMilliseconds);
-        sw.Reset();
         return graph;
     }
 
     private void DoUnion(List<T> union)
     {
-        var sinks = union.Intersect(_sinks);
-        var sources = union.Intersect(_sources);
+        // var sinks = union.Intersect(_sinks);
+        // var sources = union.Intersect(_sources);
+
+
         var queue = new SimplePriorityQueue<T, float>();
         var frontiers = new Dictionary<T, List<T>>();
 
         IEnumerable<T> getValidNs(T el)
         {
             return _getNeighbors(el)
-                .Where(n => sources.Contains(n))
+                .Where(n => _sources.Contains(n))
                 .Where(n => _nodes[n].DrainsTo == null 
                             // || TotalDrainCost(n) > _getCost(el, n) + TotalDrainCost(el)
                 );
         }
-        float getScore(IEnumerable<T> validNs, T sink)
-        {
-            return validNs.Count() > 0 
-                ? validNs.Min(n => _getCost(sink, n))
-                : Mathf.Inf;
-        }
-        foreach (var sink in sinks)
+        
+        foreach (var sink in _sinks)
         {
             frontiers.Add(sink, new List<T>{sink});
             queue.Enqueue(sink, 0f);
         }
-
 
         var add = new HashSet<T>();
         while (queue.Count > 0)
@@ -169,7 +138,6 @@ public class DrainGraph<T>
             add.Clear();
             queue.UpdatePriority(sink, minScore);
         }
-        
     }
 
     
