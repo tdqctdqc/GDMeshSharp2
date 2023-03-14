@@ -83,8 +83,6 @@ public partial class MapPolygon : Entity,
     {
         var neighborSegs = this.GetOrderedNeighborBorders(data).SelectMany(b => b.Segments).ToList();
 
-        
-
         if (neighborSegs.IsCircuit() == false)
         {
             var edge = new LineSegment(neighborSegs.Last().To, neighborSegs[0].From);

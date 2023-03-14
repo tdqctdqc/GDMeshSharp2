@@ -1,13 +1,13 @@
 
 using Godot;
 
-public struct CylinderPosition
+public struct CylinderPos
 {
     public float Y { get; private set; }
     public float X { get; private set; }
     public float Circum { get; private set; }
-
-    public CylinderPosition(float y, float x, float circum)
+    
+    public CylinderPos(float x, float y, float circum)
     {
         Circum = circum;
         Y = y;
@@ -19,8 +19,8 @@ public struct CylinderPosition
         return new Vector2(X, Y);
     }
 
-    public CylinderPosition GetCylPoint(Vector2 p)
+    public CylinderPos GetCylPoint(Vector2 p)
     {
-        return new CylinderPosition(p.x, p.y, Circum);
+        return new CylinderPos(p.x, p.y, Circum);
     }
 }

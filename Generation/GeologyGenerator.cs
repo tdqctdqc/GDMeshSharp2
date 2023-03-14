@@ -11,7 +11,7 @@ public class GeologyGenerator : Generator
     public GenData Data { get; private set; }
     private IdDispenser _id;
     private GenWriteKey _key;
-    public static readonly float FaultRange = 100f,
+    public static readonly float FaultRange = 50f,
         FrictionAltEffect = .03f,
         FrictionRoughnessEffect = 1f;
     public GeologyGenerator()
@@ -24,9 +24,6 @@ public class GeologyGenerator : Generator
         _key = key;
         _id = key.IdDispenser;
         Data = key.GenData;
-        
-        
-        
         
         report.StartSection(); 
         BuildCells();
@@ -134,27 +131,56 @@ public class GeologyGenerator : Generator
     private void BuildContinents()
     {
         var massesPerCont = 3;
-        var numMasses = Data.GenAuxData.Masses.Count / 3;
-        var numLandmasses = numMasses / 4;
-        var numSeas = numMasses * 3 / 4;
-        if (numLandmasses + numSeas > Data.GenAuxData.Masses.Count) throw new Exception();
-        var seeds = Picker.PickSeeds(Data.GenAuxData.Masses, new int[] {numLandmasses, numSeas});
+        var numMasses = Data.GenAuxData.Masses.Count;
+        var numLandConts = 5;
+        var numSeas = 10;
+        if (numLandConts + numSeas > Data.GenAuxData.Masses.Count) throw new Exception();
+        
+        var landRatio = .3f;
+        var numSeaMasses = Mathf.FloorToInt(numMasses * (1f - landRatio));
+        
+        var seeds = Picker.PickSeeds(Data.GenAuxData.Masses, new int[] {numLandConts, numSeas});
         var landSeeds = seeds[0].ToHashSet();
         var waterSeeds = seeds[1].ToHashSet();
         var allSeeds = landSeeds.Union(waterSeeds);
-        var conts = landSeeds.Select(s => new GenContinent(s, _id.GetID(), Game.I.Random.RandfRange(.6f, .9f)))
-            .Union(waterSeeds.Select(s => new GenContinent(s, _id.GetID(), Game.I.Random.RandfRange(.1f, .45f))))
+        var landConts = landSeeds
+            .Select(s => new GenContinent(s, _id.GetID(), Game.I.Random.RandfRange(.6f, .9f)))
             .ToList();
-
-        var remainder = Picker.PickInTurn(Data.GenAuxData.Masses.Except(allSeeds), conts,
+        //todo make delaunay graph for landConts and put a sea on each edge
+        var seaConts = waterSeeds
+            .Select(s => new GenContinent(s, _id.GetID(), Game.I.Random.RandfRange(.1f, .45f)))
+            .ToList();
+        var width = Data.GenParams.Dimensions.x;
+        var landRemainder = Picker.PickInTurnToLimitHeuristic(
+            Data.GenAuxData.Masses.Except(allSeeds), landConts,
+            cont => cont.NeighboringMasses,
+            (cont, mass) => cont.AddMass(mass),
+            (m, c) => width
+                      + m.Center.DistanceTo(c.Center) / 20f
+                      + Game.I.Random.RandfRange(0f, width / 5f), //todo use cylinder pos
+            numSeaMasses);
+        
+        var seaRemainder = Picker.PickInTurn(landRemainder, seaConts,
             cont => cont.NeighboringMasses,
             (cont, mass) => cont.AddMass(mass));
 
-        if (remainder.Count > 0) throw new Exception();
+        if (seaRemainder.Count > 0)
+        {
+            var unions = UnionFind.Find(seaRemainder, (g, h) => true, m => m.Neighbors);
+            foreach (var u in unions)
+            {
+                var cont = new GenContinent(u.First(), _id.GetID(), Game.I.Random.RandfRange(.1f, .45f));
+                for (var i = 1; i < u.Count; i++)
+                {
+                    cont.AddMass(u[i]);
+                }
+                seaConts.Add(cont);
+            }
+        }
         
-        
-        Data.GenAuxData.Continents.AddRange(conts);
-        conts.ForEach(c => c.SetNeighbors());
+        Data.GenAuxData.Continents.AddRange(landConts);
+        Data.GenAuxData.Continents.AddRange(seaConts);
+        Data.GenAuxData.Continents.ForEach(c => c.SetNeighbors());
         Data.GenAuxData.Continents.ForEach(cont =>
         {
             var isLand = landSeeds.Contains(cont.Seed);
