@@ -9,10 +9,15 @@ public class PreGraphFailure : DisplayableException
         Graph = graph;
     }
 
-    public override Control GetDisplay()
+    public override Node2D GetGraphic()
     {
         var d = SceneManager.Instance<PreGraphFailureDisplay>();
         d.Setup(this);
         return d;
+    }
+
+    public override Control GetUi()
+    {
+        throw new System.NotImplementedException();
     }
 }

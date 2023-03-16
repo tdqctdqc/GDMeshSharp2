@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class PreGraphFailureDisplay : Control
+public class PreGraphFailureDisplay : Node2D
 {
     public void Setup(PreGraphFailure e)
     {

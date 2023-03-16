@@ -14,6 +14,7 @@ public class Models
     public VegetationManager Vegetation { get; private set; }
     public PeepJobManager PeepJobs { get; private set; }
     public ResourceManager Resources { get; private set; }
+    public BuildingManager Buildings { get; private set; }
     public Models()
     {
         _managers = new Dictionary<Type, IModelManager>();
@@ -26,6 +27,8 @@ public class Models
         AddManager(PeepJobs);
         Resources = new ResourceManager();
         AddManager(Resources);
+        Buildings = new BuildingManager();
+        AddManager(Buildings);
     }
 
     public T GetModel<T>(string name)

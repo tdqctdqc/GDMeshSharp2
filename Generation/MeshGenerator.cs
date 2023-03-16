@@ -66,35 +66,7 @@ public static class MeshGenerator
         return meshInstance;
     }
 
-    public static Node2D GetSubGraphMesh<TNode, TEdge>(SubGraph<TNode, TEdge> subGraph,
-        float thickness,
-        Func<TNode, Vector2> getVertexPos,
-        Color color,
-        Color foreignEdgeColor)
-    {
-        var node = new Node2D();
-        for (var i = 0; i < subGraph.Elements.Count; i++)
-        {
-            var e = subGraph.Elements[i];
-            var vertexPos = getVertexPos(e);
-            var vertex = GetCircleMesh(vertexPos, thickness * 2f, 12);
-            vertex.SelfModulate = color;
-            node.AddChild(vertex);
-            foreach (var n in subGraph.Graph[e].Neighbors)
-            {
-                var nPos = getVertexPos(n);
-                var edge = GetLineMesh(vertexPos, nPos, thickness);
-                edge.SelfModulate = foreignEdgeColor;
-                node.AddChild(edge);
-                if (subGraph.Graph.NodeSubGraphs.ContainsKey(n)
-                    && subGraph.Graph.NodeSubGraphs[n] == subGraph)
-                {
-                    edge.SelfModulate = color;
-                }
-            }
-        }
-        return node;
-    }
+    
     public static Node2D GetGraphMesh<TNode, TEdge>(Graph<TNode, TEdge> graph,
         float thickness,
         Func<TNode, Vector2> getVertexPos,

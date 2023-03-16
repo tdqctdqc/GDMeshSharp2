@@ -228,7 +228,7 @@ public class GeologyGenerator : Generator
                     var driftStr = (drift1 - drift2).Length() / 2f;
                     if (driftStr > .5f)
                     {
-                        var borders = MapPolygon.BorderGraph
+                        var borders = Data.Planet.Polygons.BorderGraph
                             .GetBorderEdges(hiPlate.Cells.SelectMany(c => c.PolyGeos))
                             .ToList();
                         var friction = driftStr.ProjectToRange(1f, .5f, .5f);

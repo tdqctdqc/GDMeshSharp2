@@ -130,7 +130,7 @@ public class MeshBuilder
             JoinLinePoints(froms[i], tos[i], thickness, color);
         }
     }
-    public void AddLines(List<LineSegment> segs, float thickness, List<Color> colors)
+    public void AddLines(IReadOnlyList<ISegment<Vector2>> segs, float thickness, List<Color> colors)
     {
         for (int i = 0; i < segs.Count; i++)
         {
@@ -138,7 +138,7 @@ public class MeshBuilder
             JoinLinePoints(segs[i].From, segs[i].To, thickness, color);
         }
     }
-    public void AddLines(List<LineSegment> segs, float thickness, Color color)
+    public void AddLines(IReadOnlyList<ISegment<Vector2>> segs, float thickness, Color color)
     {
         for (int i = 0; i < segs.Count; i++)
         {
@@ -195,13 +195,14 @@ public class MeshBuilder
             mid - perpendicular * thickness * 2f, color);
     }
 
-    public void AddNumMarkers(List<Vector2> points, float markerSize, Color color, Color textColor, Vector2 offset)
+    public void AddNumMarkers(List<Vector2> points, float markerSize, Color color, Color textColor, Vector2 offset,
+        string tag = "")
     {
         AddPointMarkers(points, markerSize, color);
         for (var i = 0; i < points.Count; i++)
         {
             var label = new Label();
-            label.Text = i.ToString();
+            label.Text = tag + " " + i.ToString();
             label.RectPosition = points[i] + offset;
             label.SelfModulate = textColor;
             Labels.Add(label);

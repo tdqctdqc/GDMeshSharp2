@@ -73,6 +73,46 @@ public static class EnumerableExt
         return singles;
     }
 
+
+    public static void DoForGridNeighbors<T>(this T[][] array, Func<T, T, bool> action,
+        bool skipCenter = true)
+    {
+        bool cont = true;
+        var width = array[0].Length;
+        var height = array.Length;
+
+        for (int h = 0; h < height; h++)
+        {
+            for (int g = 0; g < width; g++)
+            {
+                act(g, h);
+            }
+        }
+        
+        void act(int g, int h)
+        {
+            var el = array[h][g];
+            for (int i = -1; i < 2; i++)
+            {
+                for (int j = -1; j < 2; j++)
+                {
+                    if (g + i < 0 || h + j < 0 || g + i >= width || h + j >= height) continue;
+                    if (skipCenter && i == 0 && j == 0) continue;
+                    var el2 = array[h + j][g + i];
+                    cont = action(el, el2);
+                    if (cont == false)
+                    {
+                        break;
+                    }
+                }
+                if (cont == false)
+                {
+                    break;
+                }
+            }
+        }
+        
+    }
     public static void DoForGridAround(this Func<int, int, bool> action, int x, int y, 
         bool skipCenter = true)
     {
@@ -186,5 +226,27 @@ public static class EnumerableExt
             dic.Add(key, col);
             return false;
         }
+    }
+    
+    public static bool AddOrSum<TKey>(this Dictionary<TKey, float> dic,
+        TKey key, float val, float min = float.MinValue, float max = float.MaxValue)
+    {
+        if (dic.ContainsKey(key))
+        {
+            dic[key] = Mathf.Clamp(val + dic[key], min, max);
+            return true;
+        }
+        else
+        {
+            dic[key] = Mathf.Clamp(val, min, max);
+            return false;
+        }
+    }
+
+    public static TValue GetOrAdd<TKey, TValue>(this Dictionary<TKey, TValue> dic, TKey key, Func<TKey, TValue> generate)
+    {
+        if (dic.TryGetValue(key, out var val)) return val;
+        dic.Add(key, generate(key));
+        return dic[key];
     }
 }

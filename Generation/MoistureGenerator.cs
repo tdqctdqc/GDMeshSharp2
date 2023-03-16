@@ -177,7 +177,7 @@ public class MoistureGenerator : Generator
                 {
                     if (node.Element.Id < n.Id) continue;
                     var edge = node.Element.GetEdge(n, Data);
-                    var cost = node.GetEdgeCost(n);
+                    var cost = node.GetEdge(n);
                     edge.IncrementFlow(cost, _key);
                 }
             }

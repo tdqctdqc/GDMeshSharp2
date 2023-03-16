@@ -7,11 +7,14 @@ public class MapChunkGraphic : Node2D
 {
     public Dictionary<string, Node2D> Modules { get; private set; }
     public static ChunkGraphicFactory RegimeFill { get; private set; }
-        = new ChunkGraphicFactory(nameof(RegimeFill), false, (c, d) => SetupPolygonGraphic(c, d,
-            p => p.Regime.Empty()
-                ? Colors.Transparent
-                : p.Regime.Entity().PrimaryColor
-        ));
+        = new ChunkGraphicFactory(nameof(RegimeFill), false, 
+            (c, d) => SetupPolygonGraphic(
+                c, d,
+                p => p.Regime.Empty()
+                    ? Colors.Transparent
+                    : p.Regime.Entity().PrimaryColor
+            )
+        );
 
     public static ChunkGraphicFactory RegimeBorders { get; private set; }
         = new ChunkGraphicFactory(nameof(RegimeBorders), true, (c, d) =>
@@ -71,6 +74,18 @@ public class MapChunkGraphic : Node2D
             );
             return b;
         });
+    public static ChunkGraphicFactory ResourceDeposits { get; private set; }
+        = new ChunkGraphicFactory(nameof(ResourceDeposits), true, 
+            (c, d) => SetupPolygonGraphic(
+                c, d,
+                p =>
+                {
+                    var rs = p.GetResourceDeposits(d);
+                    if(rs == null || rs.Count == 0) return new Color(Colors.Pink, .5f);
+                    return rs.First().Resource.Model().Color;
+                }
+            )
+        );
 
     public void Setup(MapChunk chunk, Data data)
     {
@@ -85,6 +100,7 @@ public class MapChunkGraphic : Node2D
             RegimeBorders,
             Borders,
             Decals,
+            ResourceDeposits,
             Roads
         );
     }

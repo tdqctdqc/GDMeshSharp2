@@ -13,7 +13,8 @@ public class SandboxClient : Node, IClient
     private Line2D _mouseLine;
     private CanvasLayer _canvas;
     private List<int> _sectionTriIndices;
-    
+    private RegionDebugGraphic _regionTest;
+    private Control _debugHook;
     public SandboxClient()
     {
         
@@ -23,21 +24,24 @@ public class SandboxClient : Node, IClient
     {
         this.AssignChildNode(ref _degrees, "Degrees");
         this.AssignChildNode(ref _mousePos, "MousePos");
+        this.AssignChildNode(ref _debugHook, "DebugHook");
+        _regionTest = new RegionDebugGraphic();
+        AddChild(_regionTest);
+        ExceptionCatcher.Try(() => _regionTest.Setup(DisplayError, _debugHook), DisplayError);
     }
 
+    private void DisplayError(DisplayableException e)
+    {
+        _regionTest.QueueFree();
+        AddChild(e.GetGraphic());
+    }
     public void Setup(Vector2 home)
     {
-        
         this.AssignChildNode(ref _canvas, "Canvas");
-        var mb = new MeshBuilder();
-        mb.AddPointMarkers(new List<Vector2> {Vector2.Zero}, 20f, Colors.Red);
-        AddChild(mb.GetMeshInstance());
-        
         Cam = new CameraController();
         AddChild(Cam);
         Cam.Current = true;
 
-        _triGraphics = new Dictionary<int, Node2D>();
         _mouseOverTriGraphics = new Node2D();
         _mouseLine = new Line2D();
         _mouseLine.DefaultColor = Colors.Red;

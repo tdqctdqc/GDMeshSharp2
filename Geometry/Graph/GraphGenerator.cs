@@ -262,12 +262,12 @@ public static class GraphGenerator
         {
             graph.AddNode(e);
         }
-        var openNodes = new List<GraphNode<Vector2, float>>(graph.Nodes);
+        var openNodes = new List<IGraphNode<Vector2, float>>(graph.Nodes);
 
         while(openNodes.Count > 0)
         {
             var node = openNodes[0];
-            var branchNodes = new List<GraphNode<Vector2, float>>();
+            var branchNodes = new List<IGraphNode<Vector2, float>>();
             int branch = 0;
             branchNodes.Add(node);
             openNodes.Remove(node);

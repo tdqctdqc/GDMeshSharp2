@@ -1,14 +1,16 @@
 
+using System.Collections.Generic;
 using Godot;
 
-public class Resource : IModel
+public abstract class Resource : IModel
 {
     public string Name { get; private set; }
     public Color Color { get; private set; }
 
-    public Resource(string name, Color color)
+    protected Resource(string name, Color color)
     {
         Name = name;
         Color = color;
     }
+
 }

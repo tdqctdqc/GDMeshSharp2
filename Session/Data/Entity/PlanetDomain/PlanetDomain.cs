@@ -8,6 +8,7 @@ public class PlanetDomain : Domain
     public MapPolygonRepo Polygons { get; private set; }
     public MapPolygonEdgeRepo PolyEdges { get; private set; }
     public SingletonRepo<PlanetInfo> PlanetInfo { get; private set; }
+    public ResourceDepositRepo ResourceDeposits { get; private set; }
     public float Width => PlanetInfo.Value.Dimensions.x;
     public float Height => PlanetInfo.Value.Dimensions.y;
     public PlanetDomain(Data data) : base(data)
@@ -20,6 +21,9 @@ public class PlanetDomain : Domain
 
         PlanetInfo = new SingletonRepo<PlanetInfo>(this, data);
         AddRepo(PlanetInfo);
+        
+        ResourceDeposits = new ResourceDepositRepo(this, data);
+        AddRepo(ResourceDeposits);
     }
     
 }

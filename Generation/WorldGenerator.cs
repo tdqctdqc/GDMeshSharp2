@@ -10,10 +10,12 @@ public class WorldGenerator
     public bool Failed { get; private set; }
     private GenWriteKey _key;
     private Stopwatch _sw;
+    private GeneratorSession _session;
     public Action<DisplayableException> GenerationFailed { get; set; }
     public Action<string, string> GenerationFeedback { get; set; }
     public WorldGenerator(GeneratorSession session, GenerationParameters genParams)
     {
+        _session = session;
         Data = new GenData(genParams);
         _key = new GenWriteKey(Data, session);
         Data.Setup();
@@ -22,26 +24,7 @@ public class WorldGenerator
     public GenReport Generate()
     {
         var report = new GenReport(GetType().Name);
-        try
-        {
-            GenerateInner();
-        }
-        catch (Exception e)
-        {
-            Failed = true;
-            GenerationFeedback?.Invoke("GENERATION FAILED" + e.Message, "");
-            if (e is DisplayableException i)
-            {
-                GenerationFailed?.Invoke(i);
-            }
-            else
-            {
-                throw;
-            }
-            
-            return report;
-        }
-
+        Failed = ! ExceptionCatcher.Try(() => GenerateInner(), GenerationFailed);
         return report;
     }
 
@@ -66,6 +49,8 @@ public class WorldGenerator
         //     Data.Planet.PlanetInfo.Value.Dimensions, _key);
         
         RunGenerator(new GeologyGenerator());
+        
+        RunGenerator(new ResourceGenerator());
         
         RunGenerator(new MoistureGenerator());
         

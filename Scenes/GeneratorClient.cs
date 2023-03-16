@@ -17,7 +17,8 @@ public class GeneratorClient : Node, IClient
     private bool _generating;
     private bool _generated;
     private MapDisplayOptionsUi _mapOptions;
-
+    public Control DebugHook => _debugHook;
+    private Control _debugHook;
     public override void _Ready()
     {
         Cam = new CameraController();
@@ -30,6 +31,7 @@ public class GeneratorClient : Node, IClient
         this.AssignChildNode(ref _progress, "Progress");
         this.AssignChildNode(ref _graphics, "Graphics");
         this.AssignChildNode(ref _mapOptions, "MapDisplayOptionsUi");
+        this.AssignChildNode(ref _debugHook, "DebugHook");
         _mapOptions.Setup(_graphics, Cam, _session.Data);
         
         _generate = ButtonToken.Create(this, "Generate", () => PressedGenerate());
@@ -78,7 +80,7 @@ public class GeneratorClient : Node, IClient
     }
     private void DisplayException(DisplayableException d)
     {
-        AddChild(d.GetDisplay());
+        AddChild(d.GetGraphic());
         GD.Print(d.StackTrace);
     }
     private void Generate(int seed, int width, int height)

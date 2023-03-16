@@ -2,26 +2,23 @@ using Godot;
 using System;
 using System.Collections.Generic;
 
-
-
 public class GraphNode<TNode> : IGraphNode<TNode>
 {
     public TNode Element {get; private set;}
-    public HashSet<TNode> Neighbors { get; private set; }
 
-    IReadOnlyCollection<TNode> IGraphNode<TNode>.Neighbors => Neighbors;
+    public IReadOnlyCollection<TNode> Neighbors => _neighbors;
+    protected HashSet<TNode> _neighbors;
 
     public GraphNode(TNode element)
     {
         Element = element;
-        Neighbors = new HashSet<TNode>();
+        _neighbors = new HashSet<TNode>();
     }
 
     public bool HasNeighbor(TNode t)
     {
-        return Neighbors.Contains(t);
+        return _neighbors.Contains(t);
     }
-    bool IGraphNode<TNode>.HasEdge(TNode neighbor) => HasNeighbor(neighbor);
 
 }
 public class GraphNode<TNode, TEdge> : GraphNode<TNode>, IGraphNode<TNode, TEdge>
@@ -35,15 +32,15 @@ public class GraphNode<TNode, TEdge> : GraphNode<TNode>, IGraphNode<TNode, TEdge
     }
 
     
-    public TEdge GetEdgeCost(GraphNode<TNode, TEdge> neighbor)
+    public TEdge GetEdge(IGraphNode<TNode, TEdge> neighbor)
     {
         return _costs[neighbor.Element];
     }
-    public TEdge GetEdgeCost(TNode neighbor)
+    public TEdge GetEdge(TNode neighbor)
     {
         return _costs[neighbor];
     }
-    public void SetEdgeValue(GraphNode<TNode, TEdge> neighbor, TEdge newEdgeVal)
+    public void SetEdgeValue(IGraphNode<TNode, TEdge> neighbor, TEdge newEdgeVal)
     {
         _costs[neighbor.Element] = newEdgeVal;
     }
@@ -53,14 +50,14 @@ public class GraphNode<TNode, TEdge> : GraphNode<TNode>, IGraphNode<TNode, TEdge
         {
             return;
         }
-        Neighbors.Add(neighbor.Element);
+        _neighbors.Add(neighbor.Element);
         _nodeDic.Add(neighbor.Element, neighbor);
         _costs.Add(neighbor.Element, edge);
     }
 
     public void RemoveNeighbor(GraphNode<TNode, TEdge> neighbor)
     {
-        Neighbors.Remove(neighbor.Element);
+        _neighbors.Remove(neighbor.Element);
         _costs.Remove(neighbor.Element);
         _nodeDic.Remove(neighbor.Element);
     }
@@ -69,11 +66,9 @@ public class GraphNode<TNode, TEdge> : GraphNode<TNode>, IGraphNode<TNode, TEdge
         var node = new GraphNode<TNode, TEdge>(poly);
         AddNeighbor(node, edge);
     }
-
     public void RemoveNeighbor(TNode neighbor)
     {
         RemoveNeighbor(_nodeDic[neighbor]);
     }
-    
-    TEdge IGraphNode<TNode, TEdge>.GetEdge(TNode neighbor) => _costs[neighbor];
+    IReadOnlyCollection<TNode> IReadOnlyGraphNode<TNode>.Neighbors => Neighbors;
 }

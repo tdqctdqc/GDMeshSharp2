@@ -3,22 +3,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public class Graph<TNode, TEdge>
+public class Graph<TNode, TEdge> : IGraph<TNode, TEdge>
 {
-    public GraphNode<TNode, TEdge> this[TNode t] => _nodeDic[t];
-    private Dictionary<TNode, GraphNode<TNode, TEdge>> _nodeDic;
+    public IGraphNode<TNode, TEdge> this[TNode t] => _nodeDic[t];
+    private Dictionary<TNode, IGraphNode<TNode, TEdge>> _nodeDic;
     public List<TNode> Elements { get; private set; }
     public List<GraphNode<TNode, TEdge>> Nodes { get; private set; }
     public HashSet<TEdge> Edges { get; private set; }
-    public Dictionary<TNode, SubGraph<TNode, TEdge>> NodeSubGraphs 
-        { get; private set; }
     public Graph()
     {
-        _nodeDic = new Dictionary<TNode, GraphNode<TNode, TEdge>>();
+        _nodeDic = new Dictionary<TNode, IGraphNode<TNode, TEdge>>();
         Elements = new List<TNode>();
         Nodes = new List<GraphNode<TNode, TEdge>>();
-        // SubGraphs = new List<SubGraph<TNode, TEdge>>();
-        NodeSubGraphs = new Dictionary<TNode, SubGraph<TNode, TEdge>>();
         Edges = new HashSet<TEdge>();
     }
     
@@ -26,6 +22,18 @@ public class Graph<TNode, TEdge>
     {
         if (_nodeDic.ContainsKey(t1) == false) return false;
         return _nodeDic[t1].HasNeighbor(t2);
+    }
+
+    
+
+    IReadOnlyCollection<TNode> IReadOnlyGraph<TNode>.GetNeighbors(TNode value)
+    {
+        return GetNeighbors(value);
+    }
+
+    public IGraphNode<TNode> GetNode(TNode t)
+    {
+        return _nodeDic[t];
     }
 
     public void SetEdgeValue(TNode t1, TNode t2, TEdge newEdgeVal)
@@ -52,21 +60,19 @@ public class Graph<TNode, TEdge>
         Edges.Add(edge);
         var fromNode = _nodeDic[from];
         var toNode = _nodeDic[to];
-        fromNode.AddNeighbor(toNode, edge);
-        toNode.AddNeighbor(fromNode, edge);
+        fromNode.AddNeighbor(to, edge);
+        toNode.AddNeighbor(from, edge);
     }
     public void AddDirectedEdge(TNode from, TNode to, TEdge edge)
     {
         Edges.Add(edge);
         var fromNode = _nodeDic[from];
-        var toNode = _nodeDic[to];
-        fromNode.AddNeighbor(toNode, edge);
+        fromNode.AddNeighbor(to, edge);
     }
     public TEdge GetEdge(TNode t1, TNode t2)
     {
         var node1 = _nodeDic[t1];
-        var node2 = _nodeDic[t2];
-        return node1.GetEdgeCost(node2);
+        return node1.GetEdge(t2);
     }
     public void AddNode(GraphNode<TNode, TEdge> node)
     {
@@ -74,20 +80,21 @@ public class Graph<TNode, TEdge>
         Elements.Add(node.Element);
         Nodes.Add(node);
     }
-    public void AddNode(TNode element)
+    public IGraphNode<TNode, TEdge> AddNode(TNode element)
     {
         Elements.Add(element);
         var node = new GraphNode<TNode, TEdge>(element);
         _nodeDic.Add(node.Element, node);
         Nodes.Add(node);
+        return node;
     }
     
-    public void AddUndirectedEdge(GraphNode<TNode, TEdge> from, 
-        GraphNode<TNode, TEdge> to, TEdge edge)
+    public void AddUndirectedEdge(IGraphNode<TNode, TEdge> from, 
+        IGraphNode<TNode, TEdge> to, TEdge edge)
     {
         Edges.Add(edge);
-        from.AddNeighbor(to, edge);
-        to.AddNeighbor(from, edge);
+        from.AddNeighbor(to.Element, edge);
+        to.AddNeighbor(from.Element, edge);
     }
     public bool Contains(TNode value)
     {
@@ -95,7 +102,7 @@ public class Graph<TNode, TEdge>
     }
     public bool Remove(TNode value)
     {
-        GraphNode<TNode, TEdge> nodeToRemove = _nodeDic[value];
+        IGraphNode<TNode, TEdge> nodeToRemove = _nodeDic[value];
         if (nodeToRemove == null) return false;
         Elements.Remove(value);
         _nodeDic.Remove(nodeToRemove.Element);
@@ -103,13 +110,20 @@ public class Graph<TNode, TEdge>
         foreach (var neighbor in nodeToRemove.Neighbors)
         {
             var nNode = _nodeDic[neighbor];
-            nNode.RemoveNeighbor(nodeToRemove);
+            nNode.RemoveNeighbor(nodeToRemove.Element);
         }
         return true;
     }
 
     public HashSet<TNode> GetNeighbors(TNode value)
     {
-        return _nodeDic[value].Neighbors;
+        //todo make igraphnode neighbors hashset?
+        return _nodeDic[value].Neighbors.ToHashSet();
     }
+    public bool HasNode(TNode value)
+    {
+        return _nodeDic.ContainsKey(value);
+    }
+    IReadOnlyCollection<TNode> IReadOnlyGraph<TNode>.Elements => Elements;
+    IReadOnlyCollection<TEdge> IReadOnlyGraph<TNode, TEdge>.Edges => Edges;
 }

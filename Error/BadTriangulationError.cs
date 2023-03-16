@@ -21,10 +21,15 @@ public class BadTriangulationError : DisplayableException
         Outlines = outlines.ToList();
     }
 
-    public override Control GetDisplay()
+    public override Node2D GetGraphic()
     {
         var d = SceneManager.Instance<BadTriangulationDisplay>();
         d.Setup(this);
         return d;
+    }
+
+    public override Control GetUi()
+    {
+        throw new System.NotImplementedException();
     }
 }

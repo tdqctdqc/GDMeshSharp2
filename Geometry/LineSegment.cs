@@ -35,6 +35,14 @@ public class LineSegment : ISegment<Vector2>
         return new LineSegment(From + offset, To + offset);
     }
 
+    public LineSegment Rotated(float rads, float shrink = 1f)
+    {
+        var mid = (From + To) / 2f;
+        var axis = (To - From).Perpendicular();
+        return new LineSegment(
+            mid - axis * .5f * shrink, mid + axis * .5f * shrink
+        );
+    }
     public void Clamp(float mapWidth)
     {
         if (Mid().x > mapWidth / 2f)

@@ -6,7 +6,8 @@ using Godot;
 
 public class MapPolyTooltip : Node2D
 {
-    private Label _id, _numPops, _regime, _landform, _veg, _settlementName, _settlementSize;
+    private Label _id, _numPops, _regime, _landform, _veg, _settlementName, _settlementSize,
+        _resourceDeposits;
     private Container _container;
     private MapPolygon _mouseOverPoly = null;
     private IClient _client;
@@ -24,6 +25,7 @@ public class MapPolyTooltip : Node2D
         _veg = _container.CreateLabelAsChild("Veg");
         _settlementName = _container.CreateLabelAsChild("SettlementName");
         _settlementSize = _container.CreateLabelAsChild("SettlementSize");
+        _resourceDeposits = _container.CreateLabelAsChild("ResourceDeposits");
         _action = new TimerAction(.05f);
     }
     public void Process(float delta, Data data, Vector2 mousePosMapSpace)
@@ -95,6 +97,14 @@ public class MapPolyTooltip : Node2D
         {
             _settlementName.Text = "";
             _settlementSize.Text = "";
+        }
+
+        _resourceDeposits.Text = "";
+        var rs = _mouseOverPoly.GetResourceDeposits(data);
+        if (rs == null) return;
+        foreach (var r in rs)
+        {
+            _resourceDeposits.Text += $"{r.Resource.Model().Name}: {r.Size} \n";
         }
     }
     

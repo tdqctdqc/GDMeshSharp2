@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Godot;
 
 public static class IGraphExt
 {
@@ -130,17 +131,25 @@ public static class IGraphExt
     public static List<Segment<TNode>> GetOrderedBoundarySegs<TNode>(this IReadOnlyGraph<TNode> graph,
         IEnumerable<TNode> regionElements)
     {
-        var pairs = GetOrderedBorderPairs(graph, regionElements);
-        var res = new List<Segment<TNode>>();
-        var from = pairs[0].Native;
-        for (var i = 1; i < pairs.Count; i++)
+        var borderPairs = GetOrderedBorderPairs(graph, regionElements);
+        if (borderPairs.Count == 0)
         {
-            if (from.Equals(pairs[i].Native) == false)
+            GD.Print("no pairs");
+            return new List<Segment<TNode>>();
+        }
+        GD.Print(borderPairs.Count + " pairs");
+        var from = borderPairs[0].Native;
+        var res = new List<Segment<TNode>> {};
+
+        for (var i = 1; i < borderPairs.Count; i++)
+        {
+            if (from.Equals(borderPairs[i].Native) == false)
             {
-                res.Add(new Segment<TNode>(from, pairs[i].Native));
-                from = pairs[i].Native;
+                res.Add(new Segment<TNode>(from, borderPairs[i].Native));
+                from = borderPairs[i].Native;
             }
         }
+
         return res;
     }
     
@@ -148,8 +157,18 @@ public static class IGraphExt
     public static List<BorderEdge<TNode>> GetOrderedBorderPairs<TNode>(this IReadOnlyGraph<TNode> graph,
         IEnumerable<TNode> elements)
     {
+        if (elements.Count() == 0) return new List<BorderEdge<TNode>>();
+        if (elements.Count() == 1)
+        {
+            var f = elements.First();
+            return graph
+                .GetNeighbors(f)
+                .Select(e => new BorderEdge<TNode>(f, e))
+                .ToList();
+        }
         var nativeHash = elements.ToHashSet().ReadOnly();
         var borderNodes = graph.GetBorderElements(nativeHash);
+        if (borderNodes.Count() == 0) return new List<BorderEdge<TNode>>();
         var nativeEdgeDic = new Dictionary<TNode, List<BorderEdge<TNode>>>();
         var foreignEdgeDic = new Dictionary<TNode, List<BorderEdge<TNode>>>();
         
@@ -227,7 +246,24 @@ public static class IGraphExt
             list.Add(e);
             covered.Add(e);
             var adj = getAdjEdges(e).Where(a => covered.Contains(a) == false);
-            if (adj.Count() > 1) throw new Exception();
+            if (adj.Count() > 1)
+            {
+                if (typeof(TNode) == typeof(Vector2))
+                {
+                    var l = left.Select(x => x as ISegment<Vector2>).Select(s => new LineSegment(s.From, s.To)).ToList();
+                    var r = right.Select(x => x as ISegment<Vector2>).Select(s => new LineSegment(s.From, s.To)).ToList();
+                    var a = adj.Select(x => x as ISegment<Vector2>).Select(s => new LineSegment(s.From, s.To)).ToList();
+                    var ps = elements.Select(el => (Vector2) (object)el).ToList();
+                    var graphPs = graph.Elements.Select(el => (Vector2) (object)el).ToList();
+                    var ex = new SegmentsException();
+                    ex.AddSegLayer(l, "left");
+                    ex.AddSegLayer(r, "right");
+                    ex.AddSegLayer(a, "adj");
+                    ex.AddPointSet(graphPs, "graph points");
+                    ex.AddPointSet(ps, "points");
+                    throw ex;
+                }
+            }
             if (adj.Count() > 0)
             {
                 traverse(adj.First(), list);

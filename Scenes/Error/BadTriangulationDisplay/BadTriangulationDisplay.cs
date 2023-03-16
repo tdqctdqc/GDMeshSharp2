@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class BadTriangulationDisplay : Control
+public class BadTriangulationDisplay : Node2D
 {
     public void Setup(BadTriangulationError err)
     {

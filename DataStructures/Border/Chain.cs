@@ -14,10 +14,6 @@ public class Chain<TSeg, TPrim> : IChain<TSeg, TPrim>,
     {
         Segments = segments;
     }
-    ISegment<TPrim> ISegment<TPrim>.ReverseGeneric()
-    {
-        throw new NotImplementedException();
-    }
     public ISegment<TPrim> ReverseGeneric()
     {
         var r = Segments.Select(e => e.Reverse<TSeg, TPrim>()).ToList();

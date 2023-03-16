@@ -20,8 +20,6 @@
     <Compile Remove="Client\GeneratorClient\**" />
     <Compile Remove="Client\MapDisplayOptionsUi\**" />
     <Compile Remove="Client\StartScene\**" />
-    <Compile Include="Client\SandboxClient\RegionGraphic\RegionGraphic.cs" />
-    <Compile Include="Client\SandboxClient\RegionGraphic\RegionNodeGraphic.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Remove="Data\Entity\MapPoly\**" />

@@ -5,13 +5,17 @@ using System.Linq;
 
 public sealed class GenCell : IGraphNode<GenCell>
 {
+    private GenCell _element;
     public MapPolygon Seed { get; private set; }
     public GenPlate Plate { get; private set; }
     public HashSet<MapPolygon> PolyGeos { get; private set; }
     public HashSet<MapPolygon> NeighboringPolyGeos { get; private set; }
-    public List<GenCell> Neighbors { get; private set; }
-    
 
+    GenCell IReadOnlyGraphNode<GenCell>.Element => _element;
+
+    IReadOnlyCollection<GenCell> IReadOnlyGraphNode<GenCell>.Neighbors => Neighbors;
+    bool IReadOnlyGraphNode<GenCell>.HasNeighbor(GenCell neighbor) => Neighbors.Contains(neighbor);
+    public HashSet<GenCell> Neighbors { get; private set; }
     public Vector2 Center { get; private set; }
     private Dictionary<MapPolygon, GenCell> _polyCells { get; }
 
@@ -22,7 +26,7 @@ public sealed class GenCell : IGraphNode<GenCell>
         Seed = seed;
         PolyGeos = new HashSet<MapPolygon>();
         NeighboringPolyGeos = new HashSet<MapPolygon>();
-        Neighbors = new List<GenCell>();
+        Neighbors = new HashSet<GenCell>();
         AddPolygon(seed, key);
     }
 
@@ -53,8 +57,6 @@ public sealed class GenCell : IGraphNode<GenCell>
             }
         }
         Neighbors = NeighboringPolyGeos
-            .Select(t => key.GenData.GenAuxData.PolyCells[t]).Distinct().ToList();
+            .Select(t => key.GenData.GenAuxData.PolyCells[t]).ToHashSet();
     }
-    IReadOnlyCollection<GenCell> IGraphNode<GenCell>.Neighbors => Neighbors;
-    bool IGraphNode<GenCell>.HasEdge(GenCell neighbor) => Neighbors.Contains(neighbor);
 }

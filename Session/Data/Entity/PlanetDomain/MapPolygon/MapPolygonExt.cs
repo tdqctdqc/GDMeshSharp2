@@ -73,4 +73,10 @@ public static class MapPolygonExt
     {
         return data.Cache.OrderedBoundarySegs[poly];
     }
+
+    public static ReadOnlyHash<ResourceDeposit> GetResourceDeposits(this MapPolygon p, Data data)
+    {
+        var rd = data.Planet.ResourceDeposits.ByPoly[p];
+        return rd == null ? null : rd.ReadOnly();
+    }
 }

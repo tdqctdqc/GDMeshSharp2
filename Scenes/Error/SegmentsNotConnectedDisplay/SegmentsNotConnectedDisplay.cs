@@ -3,25 +3,25 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class SegmentsNotConnectedDisplay : Control
+public class SegmentsNotConnectedDisplay : Node2D
 {
-    public void Setup(SegmentsNotConnectedException e)
+    public void Setup(SegmentsException e)
     {
         var mb = new MeshBuilder();
         var step = 3f;
-        var partialWidth = e.Partials.Count * step;
-        mb.AddArrows(e.SegsBefore, step * 2f + partialWidth, Colors.Black);
         int iter = 0;
-        e.Partials.ForEach(p =>
+        e.SegLayers.ForEach(p =>
         {
-            mb.AddArrows(p, (e.Partials.Count - iter + 1) * step, ColorsExt.GetRainbowColor(iter));
+            mb.AddArrows(p, (e.SegLayers.Count - iter + 1) * step, ColorsExt.GetRainbowColor(iter));
+            mb.AddNumMarkers(p.Select(s => s.Mid()).ToList(), 20f, Colors.Transparent, Colors.White, Vector2.Zero);
             iter++;
         }); 
         
-        mb.AddArrows(e.SegsAfter, step, Colors.White);
-        mb.AddNumMarkers(e.SegsAfter.Select(s => s.Mid()).ToList(), 20f, Colors.Transparent, Colors.White, Vector2.Zero);
-        mb.AddNumMarkers(e.SegsBefore.Select(s => s.Mid()).ToList(), 20f, Colors.Transparent, Colors.Black, Vector2.One * -10f);
-        
+        e.PointSets.ForEach(p =>
+        {
+            mb.AddPointMarkers(p, step * 10f, ColorsExt.GetRainbowColor(iter));
+            iter++;
+        });
         AddChild(mb.GetMeshInstance());
     }
 

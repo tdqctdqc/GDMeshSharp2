@@ -35,3 +35,12 @@ text = "Doot"
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="DebugHook" type="Control" parent="Canvas"]
+margin_left = 64.0
+margin_top = 104.0
+margin_right = 64.0
+margin_bottom = 104.0
+__meta__ = {
+"_edit_use_anchors_": false
+}

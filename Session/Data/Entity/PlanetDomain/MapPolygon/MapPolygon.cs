@@ -6,12 +6,8 @@ using System.Linq;
 using MessagePack;
 
 public partial class MapPolygon : Entity, 
-    IGraphNode<MapPolygon, PolyBorderChain>,
-    IStaticNode<MapPolygon, PolyBorderChain>
+    IReadOnlyGraphNode<MapPolygon, PolyBorderChain>
 {
-    public static IReadOnlyGraph<MapPolygon, PolyBorderChain> BorderGraph
-        = new ImplicitGraph<MapPolygon, PolyBorderChain>(p => true, p => p.Neighbors,
-            (p, q) => p.HasNeighbor(q), (p, q) => p.GetBorder(q));
     public Vector2 Center { get; protected set; }
     public EntityRefCollection<MapPolygon> Neighbors { get; protected set; }
     public Dictionary<int, PolyBorderChain> NeighborBorders { get; private set; }
@@ -98,12 +94,14 @@ public partial class MapPolygon : Entity,
         return neighborSegs;
     }
     
-    PolyBorderChain IGraphNode<MapPolygon, PolyBorderChain>.GetEdge(MapPolygon n) => this.GetBorder(n);
-    bool IGraphNode<MapPolygon>.HasEdge(MapPolygon n) => Neighbors.Contains(n);
-    IReadOnlyCollection<MapPolygon> IGraphNode<MapPolygon>.Neighbors => Neighbors;
-    MapPolygon IStaticNode<MapPolygon>.Element => this;
-
-    IReadOnlyGraph<MapPolygon, PolyBorderChain> IStaticNode<MapPolygon, PolyBorderChain>.Graph => BorderGraph;
-    IReadOnlyGraph<MapPolygon> IStaticNode<MapPolygon>.Graph => BorderGraph;
     public override Type GetDomainType() => typeof(PlanetDomain);
+    PolyBorderChain IReadOnlyGraphNode<MapPolygon, PolyBorderChain>.GetEdge(MapPolygon neighbor) =>
+        this.GetBorder(neighbor);
+    
+    MapPolygon IReadOnlyGraphNode<MapPolygon>.Element => this;
+
+
+    IReadOnlyCollection<MapPolygon> IReadOnlyGraphNode<MapPolygon>.Neighbors => Neighbors;
+
+    bool IReadOnlyGraphNode<MapPolygon>.HasNeighbor(MapPolygon neighbor) => Neighbors.RefIds.Contains(neighbor.Id);
 }

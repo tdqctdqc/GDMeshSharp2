@@ -100,7 +100,10 @@ public class PolyTriGenerator : Generator
             
             if(newSegs.IsContinuous() == false)
             {
-                throw new SegmentsNotConnectedException(hi.GetOrderedBoundarySegs(_data).ToList(), newSegs, null);
+                var ex = new SegmentsException();
+                ex.AddSegLayer(hi.GetOrderedBoundarySegs(_data).ToList(), "poly boundary");
+                ex.AddSegLayer(newSegs, "new segs");
+                throw ex;
             }
             
             var newIndex = preSegs.Count();
@@ -140,7 +143,7 @@ public class PolyTriGenerator : Generator
         var tris = DelaunayTriangulator.TriangulatePoints(points)
             .Select(t =>
             {
-                return new PolyTri(_idd.GetID(), t.A, t.B, t.C, 
+                return new PolyTri(t.A, t.B, t.C, 
                     LandformManager.Sea.MakeRef(), 
                     VegetationManager.Barren.MakeRef());
             })
@@ -194,7 +197,7 @@ public class PolyTriGenerator : Generator
             .Select(i => boundarySegs.Modulo(rSegIndex + i))
             .ToList();
 
-        var rTri = new PolyTri(_idd.GetID(), rSeg.From, rSeg.To, Vector2.Zero, LandformManager.River.MakeRef(), 
+        var rTri = new PolyTri(rSeg.From, rSeg.To, Vector2.Zero, LandformManager.River.MakeRef(), 
             VegetationManager.Barren.MakeRef());
         tris.Add(rTri);
         var outline = GetOutline(poly, Vector2.Zero, between);
@@ -251,20 +254,20 @@ public class PolyTriGenerator : Generator
 
             if (riverSegs.Count == 2)
             {
-                tris.Add(new PolyTri(_idd.GetID(), rSeg.From, rSeg.To, nextIntersect,
+                tris.Add(new PolyTri(rSeg.From, rSeg.To, nextIntersect,
                     LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
-                tris.Add(new PolyTri(_idd.GetID(), rSeg.From, nextIntersect, -nextIntersect,
+                tris.Add(new PolyTri(rSeg.From, nextIntersect, -nextIntersect,
                     LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
             }
             else
             {
-                tris.Add(new PolyTri(_idd.GetID(), rSeg.From, rSeg.To, Vector2.Zero,
+                tris.Add(new PolyTri(rSeg.From, rSeg.To, Vector2.Zero,
                     LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
                 
-                tris.Add(new PolyTri(_idd.GetID(), -nextIntersect, Vector2.Zero, nextRSeg.To, 
+                tris.Add(new PolyTri(-nextIntersect, Vector2.Zero, nextRSeg.To, 
                     LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
                 
-                tris.Add(new PolyTri(_idd.GetID(), rSeg.From, -nextIntersect, Vector2.Zero,
+                tris.Add(new PolyTri(rSeg.From, -nextIntersect, Vector2.Zero,
                     LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
             }
         }
@@ -309,8 +312,14 @@ public class PolyTriGenerator : Generator
         res.AddRange(end);
 
         if (res.IsCircuit() == false)
-            throw new SegmentsNotConnectedException(between, res,
-                start, end);
+        {
+            var ex = new SegmentsException();
+            ex.AddSegLayer(between, "between");
+            ex.AddSegLayer(res, "res");
+            ex.AddSegLayer(start, "start");
+            ex.AddSegLayer(end, "end");
+            throw ex;
+        }
         
         return res;
     }

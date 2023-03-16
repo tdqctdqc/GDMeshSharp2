@@ -2,19 +2,8 @@
 
 [ext_resource path="res://Scenes/Error/BadTriangulationDisplay/BadTriangulationDisplay.cs" type="Script" id=1]
 
-[node name="BadTriangulationDisplay" type="Control"]
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-margin_left = -512.0
-margin_top = -300.0
-margin_right = 512.0
-margin_bottom = 300.0
+[node name="BadTriangulationDisplay" type="Node2D"]
 script = ExtResource( 1 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="Label" type="Label" parent="."]
 anchor_left = 0.5
@@ -25,3 +14,6 @@ margin_left = -20.0
 margin_top = -7.0
 margin_right = 20.0
 margin_bottom = 7.0
+__meta__ = {
+"_edit_use_anchors_": false
+}

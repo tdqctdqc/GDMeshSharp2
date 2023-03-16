@@ -6,7 +6,7 @@
     {
         public Arid() 
             : base(new HashSet<Landform>{LandformManager.Hill, LandformManager.Plain}, 
-                .1f, 1f, Colors.YellowGreen, "Arid", true)
+                .1f, 1f, Colors.YellowGreen.Lightened(.3f), "Arid", true)
         {
         }
     }

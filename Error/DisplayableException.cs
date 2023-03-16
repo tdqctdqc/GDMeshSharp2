@@ -4,5 +4,6 @@ using Godot;
 
 public abstract class DisplayableException : Exception
 {
-    public abstract Control GetDisplay();
+    public abstract Node2D GetGraphic();
+    public abstract Control GetUi();
 }

@@ -19,4 +19,9 @@ public static class IStaticGraphNodeExt
     {
         return elements.First().Graph.GetOrderedBoundarySegs(elements);
     }
+    public static List<BorderEdge<TNode>> GetOrderedBorderPairs<TNode>(this IEnumerable<TNode> elements)
+        where TNode : IStaticNode<TNode>
+    {
+        return elements.First().Graph.GetOrderedBorderPairs(elements);
+    } 
 }

@@ -20,7 +20,7 @@ public class ModelRef<T> : IRef where T : IModel
         ModelName = modelName;
     }
 
-    public T Ref()
+    public T Model()
     {
         if (_ref == null)
         {
