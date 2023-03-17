@@ -52,7 +52,7 @@ public static class MapPolygonExt
         return closeInt + secondInt;
     }
     public static bool HasNeighbor(this MapPolygon poly, MapPolygon n) => poly.Neighbors.Refs().Contains(n);
-    public static bool IsLand(this MapPolygon poly) => poly.Altitude > .5f;
+    public static bool IsLand(this MapPolygon poly) => poly.Altitude > GeologyGenerator.SeaLevel;
     public static bool IsWater(this MapPolygon poly) => IsLand(poly) == false;
     public static bool IsCoast(this MapPolygon poly) => IsLand(poly) && poly.Neighbors.Refs().Any(n => n.IsWater());
     public static MapPolygonEdge GetEdge(this MapPolygon poly, MapPolygon neighbor, Data data) 
@@ -78,5 +78,17 @@ public static class MapPolygonExt
     {
         var rd = data.Planet.ResourceDeposits.ByPoly[p];
         return rd == null ? null : rd.ReadOnly();
+    }
+
+    public static float GetFertility(this MapPolygon poly)
+    {
+        return poly.TerrainTris.Tris.Count() > 0 
+            ? poly.TerrainTris.Tris.Select(i => i.GetFertility()).Sum()
+            : 0f;
+    }
+
+    public static IEnumerable<Building> GetBuildings(this MapPolygon poly, Data data)
+    {
+        return data.Society.Buildings.ByPoly[poly];
     }
 }

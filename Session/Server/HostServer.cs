@@ -55,29 +55,29 @@ public class HostServer : Node, IServer
             _peers[i].QueuePacket(bytes);
         }
     }
-    public void ReceiveLogicResult(LogicResult result, HostWriteKey key)
+    public void ReceiveLogicResult(LogicResults results, HostWriteKey key)
     {
-        for (var i = 0; i < result.Procedures.Count; i++)
+        for (var i = 0; i < results.Procedures.Count; i++)
         {
-            var bytes = result.Procedures[i].Wrap();
+            var bytes = results.Procedures[i].Wrap();
             for (var j = 0; j < _peers.Count; j++)
             {
                 _peers[j].QueuePacket(bytes);
             }
         }
 
-        for (var i = 0; i < result.Updates.Count; i++)
+        for (var i = 0; i < results.Updates.Count; i++)
         {
-            var bytes = result.Updates[i].Wrap();
+            var bytes = results.Updates[i].Wrap();
             for (var j = 0; j < _peers.Count; j++)
             {
                 _peers[j].QueuePacket(bytes);
             }
         }
         
-        for (var i = 0; i < result.Decisions.Count; i++)
+        for (var i = 0; i < results.Decisions.Count; i++)
         {
-            var d = result.Decisions[i];
+            var d = results.Decisions[i];
             if (d.Decided) continue;
             if (d.IsPlayerDecision(_key.Data))
             {

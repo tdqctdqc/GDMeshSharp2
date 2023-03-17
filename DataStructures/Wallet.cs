@@ -12,13 +12,13 @@ public class Wallet<T>
         Contents = contents;
     }
 
-    public void Add(T t, float amount)
+    public void Add(T t, float amount, StrongWriteKey key)
     {
         if (amount < 0f) throw new Exception("Trying to add negative amount to wallet");
         if(Contents.ContainsKey(t) == false) Contents.Add(t, 0f);
         Contents[t] += amount;
     }
-    public void Remove(T t, float amount)
+    public void Remove(T t, float amount, StrongWriteKey key)
     {
         if (amount < 0f) throw new Exception("Trying to remove negative amount from wallet");
         if(Contents.ContainsKey(t) == false) throw new Exception("Trying to remove whats not in wallet");
@@ -26,9 +26,9 @@ public class Wallet<T>
         Contents[t] -= amount;
     }
 
-    public void Transfer<R>(R t, float amount, Wallet<R> destination) where R : T
+    public void Transfer<R>(R t, float amount, Wallet<R> destination, StrongWriteKey key) where R : T
     {
-        Remove(t, amount);
-        destination.Add(t, amount);
+        Remove(t, amount, key);
+        destination.Add(t, amount, key);
     }
 }

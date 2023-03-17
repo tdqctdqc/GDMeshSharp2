@@ -6,6 +6,63 @@ using Godot;
 public class MapChunkGraphic : Node2D
 {
     public Dictionary<string, Node2D> Modules { get; private set; }
+    
+
+    public void Setup(MapChunk chunk, Data data)
+    {
+        Position = chunk.RelTo.Center;
+        Modules = new Dictionary<string, Node2D>();
+        Order(
+            chunk, data,
+            Tris, 
+            Landform,
+            Vegetation,
+            RegimeFill,
+            RegimeBorders,
+            Borders,
+            Decals,
+            ResourceDeposits,
+            Roads,
+            Buildings
+        );
+    }
+
+    private void Order(MapChunk chunk, Data data, params ChunkGraphicFactory[] factories)
+    {
+        for (var i = 0; i < factories.Length; i++)
+        {
+            if (factories[i].Active == false) continue;
+            var node = factories[i].GetNode(chunk, data);
+            node.ZAsRelative = false;
+            node.ZIndex = i;
+            Modules.Add(factories[i].Name, node);
+            AddChild(node);
+        }
+    }
+    private static TerrainTriChunkGraphic SetupTerrainTriGraphic(MapChunk chunk, Data data, 
+        Func<PolyTri, Color> getColor)
+    {
+        var t = new TerrainTriChunkGraphic();
+        t.Setup(chunk, data, getColor);
+        t.ZAsRelative = false;
+        return t;
+    }
+
+    private static PolygonChunkGraphic SetupPolygonGraphic(MapChunk chunk, Data data,
+        Func<MapPolygon, Color> getColor)
+    {
+        var g = new PolygonChunkGraphic();
+        g.Setup
+        (chunk, data, 
+            getColor,
+            false
+        );
+        return g;
+    }
+    public static ChunkGraphicFactory Buildings { get; private set; }
+        = new ChunkGraphicFactory(nameof(Buildings), true, 
+            (c, d) => new BuildingChunkGraphic(c, d)
+        );
     public static ChunkGraphicFactory RegimeFill { get; private set; }
         = new ChunkGraphicFactory(nameof(RegimeFill), false, 
             (c, d) => SetupPolygonGraphic(
@@ -86,55 +143,4 @@ public class MapChunkGraphic : Node2D
                 }
             )
         );
-
-    public void Setup(MapChunk chunk, Data data)
-    {
-        Position = chunk.RelTo.Center;
-        Modules = new Dictionary<string, Node2D>();
-        Order(
-            chunk, data,
-            Tris, 
-            Landform,
-            Vegetation,
-            RegimeFill,
-            RegimeBorders,
-            Borders,
-            Decals,
-            ResourceDeposits,
-            Roads
-        );
-    }
-
-    private void Order(MapChunk chunk, Data data, params ChunkGraphicFactory[] factories)
-    {
-        for (var i = 0; i < factories.Length; i++)
-        {
-            if (factories[i].Active == false) continue;
-            var node = factories[i].GetNode(chunk, data);
-            node.ZAsRelative = false;
-            node.ZIndex = i;
-            Modules.Add(factories[i].Name, node);
-            AddChild(node);
-        }
-    }
-    private static TerrainTriChunkGraphic SetupTerrainTriGraphic(MapChunk chunk, Data data, 
-        Func<PolyTri, Color> getColor)
-    {
-        var t = new TerrainTriChunkGraphic();
-        t.Setup(chunk, data, getColor);
-        t.ZAsRelative = false;
-        return t;
-    }
-
-    private static PolygonChunkGraphic SetupPolygonGraphic(MapChunk chunk, Data data,
-        Func<MapPolygon, Color> getColor)
-    {
-        var g = new PolygonChunkGraphic();
-        g.Setup
-        (chunk, data, 
-            getColor,
-            false
-        );
-        return g;
-    }
 }

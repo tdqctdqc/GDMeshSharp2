@@ -2,17 +2,17 @@
 using System.Collections.Generic;
 using MessagePack;
 
-public class PRemoveFromRefCol : Procedure
+public class RemoveFromRefColProcedure : Procedure
 {
     public EntityRef<Entity> Entity { get; private set; }
     public string CollectionName { get; private set; }
     public List<int> ToRemove { get; private set; }
 
-    public static PRemoveFromRefCol Create(Entity e, string colName, List<int> toAdd)
+    public static RemoveFromRefColProcedure Create(Entity e, string colName, List<int> toAdd)
     {
-        return new PRemoveFromRefCol(e.MakeRef(), colName, toAdd);
+        return new RemoveFromRefColProcedure(e.MakeRef(), colName, toAdd);
     }
-    [SerializationConstructor] private PRemoveFromRefCol(EntityRef<Entity> entity, string collectionName, List<int> toRemove)
+    [SerializationConstructor] private RemoveFromRefColProcedure(EntityRef<Entity> entity, string collectionName, List<int> toRemove)
     {
         Entity = entity;
         CollectionName = collectionName;

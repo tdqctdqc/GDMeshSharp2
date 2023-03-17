@@ -3,7 +3,7 @@ using Godot;
 public class Peak : Landform, IDecaledTerrain
 {
     public Peak() 
-        : base("Peak", .8f, 0f, Colors.Snow.Darkened(.25f))
+        : base("Peak", .8f, 0f, Colors.Snow.Darkened(.25f), false)
     {
     }
 

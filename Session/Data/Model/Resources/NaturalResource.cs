@@ -38,7 +38,7 @@ public abstract class NaturalResource : Resource
 
         return deps;
     }
-    protected abstract ArctanMetric _depositChanceMetric { get; }
+    protected abstract IMetric<float> _depositChanceMetric { get; }
     protected abstract float GetDepositScore(MapPolygon p);
     protected abstract float GenerateDepositSize(MapPolygon p);
     protected abstract float _overflowSize { get; }

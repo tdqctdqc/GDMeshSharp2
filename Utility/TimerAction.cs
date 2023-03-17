@@ -21,16 +21,24 @@ public class TimerAction
 
     public void Process(float delta)
     {
-        ProcessVariableFunc(delta, _action);
+        ProcessAction(delta, _action);
     }
 
-    public void ProcessVariableFunc(float delta, Action action)
+    public bool ProcessAction(float delta, Action action)
     {
         _timer += delta;
         if (_timer >= _timerPeriod)
         {
             _timer = 0f;
             action.Invoke();
+            return true;
         }
+
+        return false;
+    }
+
+    public void ResetTimer()
+    {
+        _timer = 0f;
     }
 }

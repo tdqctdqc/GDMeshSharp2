@@ -4,7 +4,7 @@ using Godot;
 
 public class Iron : NaturalResource
 {
-    protected override ArctanMetric _depositChanceMetric { get; }  = new ArctanMetric(100f);
+    protected override IMetric<float> _depositChanceMetric { get; }  = new ArctanMetric(100f);
     protected override float _overflowSize { get; } = 100f;
     protected override float _minDepositSize { get; } = 10f;
     public Iron() 

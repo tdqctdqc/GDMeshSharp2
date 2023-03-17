@@ -26,9 +26,8 @@ public class PeepGenerator : Generator
             PeepJobManager.Farmer, 
             p =>
             {
-                var sample = new MapPolyTerrainSample(p, Data);
                 var fertilityAreaPerFarmerSize = 10f;
-                return Mathf.FloorToInt(sample.FertilityMod * p.GetArea(Data) / fertilityAreaPerFarmerSize);
+                return Mathf.FloorToInt(p.GetFertility() / fertilityAreaPerFarmerSize);
             },
             50, 
             100

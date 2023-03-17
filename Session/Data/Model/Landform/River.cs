@@ -10,7 +10,7 @@ public class River : Landform
         FlowFloor = 1f,
         FlowCeil = 200f;
     public River()
-        : base("River", Mathf.Inf, 0f, Colors.Blue)
+        : base("River", Mathf.Inf, 0f, Colors.Blue, true)
     {
     }
 }

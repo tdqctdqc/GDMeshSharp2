@@ -9,10 +9,5 @@ public abstract class ResourceProdBuilding : BuildingModel
         Resource = resource;
     }
 
-    public ResourceProdResult Produce(MapPolygon p, float workerPower)
-    {
-        return new ResourceProdResult(Resource, p, ProdFunction(p, workerPower));
-    }
-
-    protected abstract float ProdFunction(MapPolygon p, float workerPower);
+    public abstract void Produce(ProductionResult result, Building p, float staffingRatio, Data data);
 }

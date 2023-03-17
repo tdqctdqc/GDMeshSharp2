@@ -5,5 +5,5 @@ using Godot;
 
 public abstract class LogicModule
 {
-    public abstract LogicResult Calculate(Data data);
+    public abstract IResult Calculate(Data data);
 }

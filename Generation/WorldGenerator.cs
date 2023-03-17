@@ -64,6 +64,8 @@ public class WorldGenerator
         
         RunGenerator(new LocationGenerator());
         
+        RunGenerator(new BuildingGenerator());
+        
         RunGenerator(new PeepGenerator());
         
         _sw.Stop();

@@ -4,7 +4,7 @@ using Godot;
 public class Mountain : Landform, IDecaledTerrain
 {
     public Mountain() 
-        : base("Mountain", .6f, 0f, Colors.DimGray)
+        : base("Mountain", .6f, 0f, Colors.DimGray, false)
     {
     }
 
