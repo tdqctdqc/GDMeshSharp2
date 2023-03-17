@@ -202,6 +202,7 @@ public class GeologyGenerator : Generator
 
     private void DoContinentFriction()
     {
+        var oscilMetric = new OscillatingDownMetric(50f, 1f, 0f, .005f);
         ConcurrentBag<FaultLine> faults = new ConcurrentBag<FaultLine>();
         Parallel.ForEach(Data.GenAuxData.Plates, setFriction);
         foreach (var f in faults)
@@ -264,19 +265,24 @@ public class GeologyGenerator : Generator
             }
             return polysInRange;
         }
-
+        
         void DoRoughness(MapPolygon poly, FaultLine fault)
         {
             var dist = fault.GetDist(poly, Data);
             var faultRange = fault.Friction * FaultRange;
             var distRatio = (faultRange - dist) / faultRange;
-            var altEffect = fault.Friction * FrictionAltEffect * distRatio;
+
+            var osc =
+                // 1f;
+                oscilMetric.GetMetric(dist);
+            var distFactor = distRatio * osc;
+            var altEffect = fault.Friction * FrictionAltEffect * distFactor;
             poly.Set(nameof(poly.Altitude), poly.Altitude + altEffect, _key);
 
             float roughnessErosion = 0f;
             if (poly.Altitude < SeaLevel) roughnessErosion = poly.Altitude * RoughnessErosionMult;
             
-            var frictionEffect = fault.Friction * FrictionRoughnessEffect * distRatio;
+            var frictionEffect = fault.Friction * FrictionRoughnessEffect * distFactor;
             var rand = Game.I.Random.RandfRange(-.2f, .2f);
             var newRoughness = Mathf.Clamp(frictionEffect - roughnessErosion + rand, 0f, 1f);
             poly.Set(nameof(poly.Roughness), newRoughness, _key);
