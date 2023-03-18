@@ -1,6 +1,7 @@
 
 using System;
 using System.Collections.Generic;
+using Godot;
 
 public class ValueChangedHandler<TEntity, TProperty> 
     : EntityNoticeHandler<TEntity, ValueChangedNotice<TEntity, TProperty>>
@@ -16,13 +17,13 @@ public class ValueChangedHandler<TEntity, TProperty>
         if(_changedAll.ContainsKey(fieldName) == false) _changedAll.Add(fieldName, n => { });
         _changedAll[fieldName] += callback;
     }
-    public static void RegisterForSpecific(string fieldName, TEntity t, Action<ValueChangedNotice<TEntity, TProperty>> callback)
+    public static void RegisterForEntity(string fieldName, TEntity t, Action<ValueChangedNotice<TEntity, TProperty>> callback)
     {
         if(_changedSpecific.ContainsKey(t.Id) == false) _changedSpecific.Add(t.Id, new Dictionary<string, Action<ValueChangedNotice<TEntity, TProperty>>>());
         if(_changedSpecific[t.Id].ContainsKey(fieldName) == false) _changedSpecific[t.Id].Add(fieldName, a => { });
         _changedSpecific[t.Id][fieldName] += callback;
     }
-    public static void UnregisterForSpecific<T>(string fieldName, TEntity t, 
+    public static void UnregisterForEntity(string fieldName, TEntity t, 
         Action<ValueChangedNotice<TEntity, TProperty>> callback)
     {
         if (_changedSpecific.ContainsKey(t.Id) == false) throw new Exception();

@@ -4,8 +4,7 @@ using Godot;
 
 public class Farm : ResourceProdBuilding
 {
-    public override Texture Icon { get; } = (Texture) GD.Load("res://Assets/farm.png");
-    public Farm() : base(ResourceManager.Food, nameof(Farm))
+    public Farm() : base(StratResourceManager.Food, nameof(Farm))
     {
     }
 
@@ -22,6 +21,6 @@ public class Farm : ResourceProdBuilding
     {
         var fert = p.Position.Poly.Entity().GetFertility();
         var regime = p.Position.Poly.Entity().Regime.Entity();
-        result.AddResult(regime, ResourceManager.Food, fert * staffingRatio);
+        result.AddResult(regime, StratResourceManager.Food, fert * staffingRatio);
     }
 }

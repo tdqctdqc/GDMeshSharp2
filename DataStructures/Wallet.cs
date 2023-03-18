@@ -6,6 +6,7 @@ using MessagePack;
 public class Wallet<T>
 {
     public Dictionary<T, float> Contents { get; private set; }
+    public float this[T t] => Contents.ContainsKey(t) ? Contents[t] : 0f;
 
     [SerializationConstructor] public Wallet(Dictionary<T, float> contents)
     {

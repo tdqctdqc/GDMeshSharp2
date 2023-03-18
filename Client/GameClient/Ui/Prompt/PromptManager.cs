@@ -13,7 +13,7 @@ public class PromptManager
     {
         _hook = hook;
         Prompts = new Queue<IPrompt>();
-        data.Notices.NeedDecision += d => GetPrompt(new DecisionPrompt(d, key));
+        data.Notices.NeedDecision.Subscribe(d => GetPrompt(new DecisionPrompt(d, key)));
     }
 
     public void Process(float delta, ClientWriteKey key)

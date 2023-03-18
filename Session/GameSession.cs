@@ -48,10 +48,10 @@ public class GameSession : Node, ISession
         Server = server;
         _key = new WriteKey(Data, this);
 
-        Data.Notices.FinishedStateSync += () =>
+        Data.Notices.FinishedStateSync.Subscribe(() =>
         {
             StartClient(server);
-        };
+        });
         server.Setup(this, logic, Data);
         StartServer(server);
         

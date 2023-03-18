@@ -21,7 +21,7 @@ public class LocalCache
         }
         else
         {
-            data.Notices.FinishedStateSync += () => SetPolyShapes(data);
+            data.Notices.FinishedStateSync.Subscribe(() => SetPolyShapes(data));
         }
     }
 

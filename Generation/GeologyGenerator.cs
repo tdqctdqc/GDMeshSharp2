@@ -202,7 +202,7 @@ public class GeologyGenerator : Generator
 
     private void DoContinentFriction()
     {
-        var oscilMetric = new OscillatingDownMetric(50f, 1f, 0f, .005f);
+        var oscilMetric = new OscillatingDownFunction(50f, 1f, 0f, 100f);
         ConcurrentBag<FaultLine> faults = new ConcurrentBag<FaultLine>();
         Parallel.ForEach(Data.GenAuxData.Plates, setFriction);
         foreach (var f in faults)
@@ -274,7 +274,8 @@ public class GeologyGenerator : Generator
 
             var osc =
                 // 1f;
-                oscilMetric.GetMetric(dist);
+                oscilMetric.Calc(dist);
+            
             var distFactor = distRatio * osc;
             var altEffect = fault.Friction * FrictionAltEffect * distFactor;
             poly.Set(nameof(poly.Altitude), poly.Altitude + altEffect, _key);

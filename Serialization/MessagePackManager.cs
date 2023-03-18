@@ -12,11 +12,27 @@ public class MessagePackManager
     private MessagePackSerializerOptions _options;
     public byte[] Serialize<T>(T t)
     {
-        return MessagePackSerializer.Serialize<T>(t, _options);
+        try
+        {
+            return MessagePackSerializer.Serialize(t, _options);
+        }
+        catch (Exception e)
+        {
+            GD.Print("couldnt serialize " + t.GetType());
+            throw;
+        }
     }
     public byte[] Serialize(object t, Type type)
     {
-        return MessagePackSerializer.Serialize(type, t, _options);
+        try
+        {
+            return MessagePackSerializer.Serialize(type, t, _options);
+        }
+        catch (Exception e)
+        {
+            GD.Print("couldnt serialize " + type);
+            throw;
+        }
     }
     public T Deserialize<T>(byte[] bytes)
     {

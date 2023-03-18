@@ -5,11 +5,15 @@ using Godot;
 
 public class DataNotices
 {
-    public Action FinishedStateSync { get; set; }
-    public Action<Decision> NeedDecision { get; set; }
+    public RefAction FinishedStateSync { get; set; }
+    public RefAction<Decision> NeedDecision { get; set; }
+    public RefAction FinishedFrame { get; set; }
     
     public DataNotices()
     {
+        FinishedStateSync = new RefAction();
+        NeedDecision = new RefAction<Decision>();
+        FinishedFrame = new RefAction();
     }
 }
 

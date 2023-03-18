@@ -24,7 +24,7 @@ public class HostLogic : ILogic
         CommandQueue = new ConcurrentQueue<Command>();
         _frames = new LogicFrame[]
         {
-            new LogicFrame(new TickModule())
+            new LogicFrame(new TickModule(), new ProductionModule())
         };
     }
 
@@ -59,8 +59,7 @@ public class HostLogic : ILogic
 
     public async void DoFrame()
     {
-        
-        var logicResult = await Task.Run(() => _frames[_frameIter].Calculate(_data));
+        var logicResult = _frames[_frameIter].Calculate(_data);
         _frameIter = (_frameIter + 1) % _frames.Length;
         
         for (var i = 0; i < logicResult.Procedures.Count; i++)
@@ -74,10 +73,18 @@ public class HostLogic : ILogic
             {
                 logicResult.Decisions[i].AIDecide(_hKey);
             }
+            else 
+            {
+                var p = d.Decider.Entity().GetPlayer(_pKey.Data);
+                if (p.PlayerGuid == Game.I.PlayerGuid)
+                {
+                    _pKey.Data.Notices.NeedDecision?.Invoke(d);
+                }
+            }
         }
-        
         _server.ReceiveLogicResult(logicResult, _hKey);
         _server.PushPackets(_hKey);
         _calculating = false;
+        _data.Notices.FinishedFrame?.Invoke();
     }
 }

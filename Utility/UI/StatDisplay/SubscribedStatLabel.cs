@@ -1,0 +1,55 @@
+
+using System;
+using Godot;
+
+public class SubscribedStatLabel : StatLabel
+{
+    private Action _unsubscribe;
+    private SubscribedStatLabel()
+    {
+        
+    }
+    public static SubscribedStatLabel ConstructForEntityTrigger<TEntity, TProperty>(TEntity e,
+        string name, Label label,
+        Func<TEntity, TProperty> getStat, RefAction trigger)
+    {
+        var d = new SubscribedStatLabel();
+        d.SetupForEntityTrigger(e, name, label, getStat, trigger);
+        return d;
+    }
+    public static SubscribedStatLabel ConstructForEntityAutomatic<TEntity, TProperty>(TEntity e,
+        string name, Label label,
+        Func<TEntity, TProperty> getStat) where TEntity : Entity
+    {
+        var d = new SubscribedStatLabel();
+        d.SetupForEntityAutomatic(e, name, label, getStat);
+        
+        return d;
+    }
+    
+    private void SetupForEntityTrigger<TEntity, TProperty>(TEntity e,
+        string name, Label label,
+        Func<TEntity, TProperty> getStat, RefAction trigger)
+    {
+        trigger.Subscribe(TriggerUpdate);
+        _unsubscribe = () => trigger.Unsubscribe(TriggerUpdate);
+        base.Setup<TEntity, TProperty>(e, name, label, getStat);
+    }
+    
+    private void SetupForEntityAutomatic<TEntity, TProperty>(TEntity e,
+        string name, Label label,
+        Func<TEntity, TProperty> getStat) where TEntity : Entity
+    {
+        Action<ValueChangedNotice<TEntity, TProperty>> act = n => TriggerUpdate();
+        ValueChangedHandler<TEntity, TProperty>.RegisterForEntity(name,
+            e, act);
+        _unsubscribe = () => ValueChangedHandler<TEntity, TProperty>.UnregisterForEntity(name, e, act);
+        base.Setup<TEntity, TProperty>(e, name, label, getStat);
+    }
+    
+    public override void _ExitTree()
+    {
+        _unsubscribe();
+        base._ExitTree();
+    }
+}

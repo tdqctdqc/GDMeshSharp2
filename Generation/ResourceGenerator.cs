@@ -20,7 +20,7 @@ public class ResourceGenerator : Generator
     private void GenerateResources()
     {
         var deposits = new ConcurrentDictionary<NaturalResource, Dictionary<MapPolygon, float>>();
-        var resources = _data.Models.Resources.Models.Values;
+        var resources = _data.Models.StratResources.Models.Values;
         Parallel.ForEach(resources, r =>
         {
             if (r is NaturalResource n == false) return;

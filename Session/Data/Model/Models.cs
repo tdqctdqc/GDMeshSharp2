@@ -13,7 +13,7 @@ public class Models
     public LandformManager Landforms { get; private set; }
     public VegetationManager Vegetation { get; private set; }
     public PeepJobManager PeepJobs { get; private set; }
-    public ResourceManager Resources { get; private set; }
+    public StratResourceManager StratResources { get; private set; }
     public BuildingModelManager BuildingsModel { get; private set; }
     public Models()
     {
@@ -25,8 +25,8 @@ public class Models
         AddManager(Vegetation);
         PeepJobs = new PeepJobManager();
         AddManager(PeepJobs);
-        Resources = new ResourceManager();
-        AddManager(Resources);
+        StratResources = new StratResourceManager();
+        AddManager(StratResources);
         BuildingsModel = new BuildingModelManager();
         AddManager(BuildingsModel);
     }

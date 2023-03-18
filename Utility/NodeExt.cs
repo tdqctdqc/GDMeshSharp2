@@ -40,4 +40,10 @@ public static class NodeExt
             n.RemoveChild(n.GetChild(0));
         }
     }
+    public static void AddChildWithVSeparator(this Node parent, Node n)
+    {
+        parent.AddChild(n);
+        var s = new VSeparator();
+        parent.AddChild(s);
+    }
 }

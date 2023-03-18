@@ -82,11 +82,7 @@ public class HostServer : Node, IServer
             if (d.IsPlayerDecision(_key.Data))
             {
                 var p = d.Decider.Entity().GetPlayer(_key.Data);
-                if (p.PlayerGuid == Game.I.PlayerGuid)
-                {
-                    _key.Data.Notices.NeedDecision?.Invoke(d);
-                }
-                else
+                if (p.PlayerGuid != Game.I.PlayerGuid)
                 {
                     var bytes = d.Wrap();
                     var peer = _peersByGuid[p.PlayerGuid];

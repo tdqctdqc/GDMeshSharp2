@@ -21,7 +21,8 @@ public class Game : Node
             throw new Exception();
         }
         I = this;
-        SceneManager.Setup();
+        AssetManager.Setup();
+        
         Serializer = new Serializer();
     }
     public void StartGeneratorSession()
