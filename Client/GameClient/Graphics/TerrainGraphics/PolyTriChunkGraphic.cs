@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class TerrainTriChunkGraphic : Node2D
+public class PolyTriChunkGraphic : Node2D
 {
     public void Setup(MapChunk chunk, Data data, 
         Func<PolyTri, Color> getColor) 

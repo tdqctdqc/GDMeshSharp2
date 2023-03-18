@@ -6,7 +6,7 @@ using Godot;
 
 public class PolygonChunkGraphic : Node2D
 {
-    public void Setup(MapChunk chunk, Data data, Func<MapPolygon, Color> getColor, bool labels = false)
+    public PolygonChunkGraphic(MapChunk chunk, Data data, Func<MapPolygon, Color> getColor, bool labels = false)
     {
         var mb = new MeshBuilder();
         mb.AddPolysRelative(chunk.RelTo, chunk.Polys, getColor, data);
@@ -15,6 +15,10 @@ public class PolygonChunkGraphic : Node2D
         if (labels) AddLabels(chunk.Polys, data);
     }
 
+    private PolygonChunkGraphic()
+    {
+        
+    }
     private void AddLabels(IEnumerable<MapPolygon> polys, Data data)
     {
         var mb = new MeshBuilder();

@@ -5,7 +5,12 @@ using Godot;
 
 public class RoadChunkGraphic : Node2D
 {
-    public void Setup(MapChunk chunk, Data data)
+    private RoadChunkGraphic()
+    {
+        
+    }
+
+    public RoadChunkGraphic(MapChunk chunk, Data data)
     {
         var froms = new List<Vector2>();
         var tos = new List<Vector2>();

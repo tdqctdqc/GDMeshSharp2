@@ -6,7 +6,7 @@ public class PromptManager
 {
     public Queue<IPrompt> Prompts { get; private set; }
     private float _timer;
-    private float _period = 5f;
+    private float _period = 1f;
     private Node _hook;
 
     public PromptManager(Node hook, Data data, ClientWriteKey key)
