@@ -21,22 +21,15 @@ public class PeepGenerator : Generator
         var report = new GenReport(GetType().Name);
         
         report.StartSection();
-        var farmers = GeneratePeepType
-        (
-            PeepJobManager.Farmer, 
-            p =>
-            {
-                var fertilityAreaPerFarmerSize = 10f;
-                return Mathf.FloorToInt(p.GetFertility() / fertilityAreaPerFarmerSize);
-            },
-            50, 
-            100
+        GeneratePeepType(PeepJobManager.Farmer, 
+            p => Mathf.FloorToInt(p.GetFertility()),
+            2, 5
         );
         report.StopSection("Farmers");
         
         report.StartSection();
         var byPoly = Data.Society.Settlements.ByPoly;
-        var laborers = GeneratePeepType(PeepJobManager.Laborer,
+        GeneratePeepType(PeepJobManager.Laborer,
             p => (int)(byPoly.ContainsKey(p)
                 ? byPoly[p].Size * 100
                 : 0), 
@@ -46,7 +39,7 @@ public class PeepGenerator : Generator
         return report;
     }
     
-    private Vector2 GeneratePeepType(PeepJob job, Func<MapPolygon, int> getPoints,
+    private void GeneratePeepType(PeepJob job, Func<MapPolygon, int> getPoints,
         int minPoints, int pointsPerPeep)
     {
         var numPeeps = 0;
@@ -65,16 +58,11 @@ public class PeepGenerator : Generator
             numPeeps += polyPeeps;
             for (int i = 0; i < polyPeeps; i++)
             {
-                var peepSize = pointsInPoly / (polyPeeps + 1);
-                totalPoints += peepSize;
                 var peep = Peep.Create(
-                    peepSize,
                     new EntityRef<MapPolygon>(poly, _key),
                     new ModelRef<PeepJob>(job, _key),
                     _key);
             }
         }
-
-        return new Vector2(numPeeps, totalPoints);
     }
 }

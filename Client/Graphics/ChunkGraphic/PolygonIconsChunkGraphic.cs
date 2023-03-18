@@ -6,22 +6,31 @@ using Godot;
 
 public class PolygonIconsChunkGraphic : Node2D
 {
-    public PolygonIconsChunkGraphic(MapChunk chunk, Data data, Func<MapPolygon, IEnumerable<Icon>> getIcons)
+    public PolygonIconsChunkGraphic(MapChunk chunk, Data data, 
+        Func<MapPolygon, IEnumerable<IEnumerable<Icon>>> getIconGroups, int stackMin)
     {
         var iconDic = new Dictionary<Icon, List<Vector2>>();
         foreach (var p in chunk.Polys)
         {
-            var offset = chunk.RelTo.GetOffsetTo(p, data);
-            var icons = getIcons(p);
-            if (icons == null) continue;
-            var numIcons = icons.Count();
-            int iter = 0;
-            var step = 30f;
-            foreach (var icon in icons)
+            var polyOffset = chunk.RelTo.GetOffsetTo(p, data);
+            var iconGroups = getIconGroups(p);
+            var yOffset = Vector2.Zero;
+            foreach (var icons in iconGroups)
             {
-                var iconPos = offset + step * numIcons * Vector2.Left / 2f + step * iter * Vector2.Right;
-                iter++;
-                iconDic.AddOrUpdate(icon, iconPos);
+                if (icons == null) continue;
+                var iconCounts = icons.GetCounts();
+                var numIcons = icons.Count();
+                
+                int iter = 0;
+                var step = 5f;
+                foreach (var icon in icons)
+                {
+                    var iconPos = polyOffset + yOffset + step * numIcons * Vector2.Left / 2f + step * iter * Vector2.Right;
+                    iter++;
+                    iconDic.AddOrUpdate(icon, iconPos);
+                }
+
+                yOffset += Vector2.Down * icons.First().Dimension.y;
             }
         }
         foreach (var kvp in iconDic)

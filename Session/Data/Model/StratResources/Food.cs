@@ -1,7 +1,7 @@
 
 using Godot;
 
-public class Food : StratResource
+public class Food : Item
 {
     public Food() : base(nameof(Food), Colors.Yellow)
     {

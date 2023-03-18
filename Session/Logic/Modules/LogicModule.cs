@@ -5,5 +5,5 @@ using Godot;
 
 public abstract class LogicModule
 {
-    public abstract IResult Calculate(Data data);
+    public abstract void Calculate(Data data, Action<Message> queue);
 }

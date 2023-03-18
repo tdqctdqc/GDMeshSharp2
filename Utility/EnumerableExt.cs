@@ -6,7 +6,14 @@ using System.Linq;
 public static class EnumerableExt
 {
     private static RandomNumberGenerator _rand = new RandomNumberGenerator();
-
+    public static IEnumerable<TSub> SelectWhereOfType<T, TSub>(this IEnumerable<T> enumerable)
+    {
+        return enumerable.Where(e => e is TSub).Select(e => (TSub)(object) e);
+    }
+    public static IEnumerable<T> SelectWhere<T>(this IEnumerable<T> enumerable, Func<T,bool> pred)
+    {
+        return enumerable.Where(pred).Select(e => e);
+    }
     public static List<T> GetBetween<T>(this IReadOnlyList<T> list, T from, T to)
     {
         var start = list.IndexOf(from);

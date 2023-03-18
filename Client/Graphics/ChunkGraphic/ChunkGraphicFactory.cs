@@ -2,16 +2,16 @@
 using System;
 using Godot;
 
-public class ChunkGraphicFactory
+public abstract class ChunkGraphicFactory
 {
     public bool Active { get; private set; }
     public string Name { get; private set; }
-    public Func<MapChunk, Data, Node2D> GetNode { get; private set; }
 
-    public ChunkGraphicFactory(string name, bool active, Func<MapChunk, Data, Node2D> getNode)
+    public ChunkGraphicFactory(string name, bool active)
     {
         Name = name;
         Active = active;
-        GetNode = getNode;
     }
+
+    public abstract Node2D GetNode(MapChunk c, Data d);
 }

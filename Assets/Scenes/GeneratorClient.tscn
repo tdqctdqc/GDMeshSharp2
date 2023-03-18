@@ -1,0 +1,81 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://Assets/Scenes/GeneratorClient.cs" type="Script" id=1]
+[ext_resource path="res://Assets/Scenes/GameUi/MapDisplayOptionsUi.tscn" type="PackedScene" id=2]
+[ext_resource path="res://Client/GameClient/Graphics/GameGraphics.cs" type="Script" id=3]
+
+[node name="GeneratorClient" type="Node"]
+script = ExtResource( 1 )
+
+[node name="Graphics" type="Node2D" parent="."]
+script = ExtResource( 3 )
+
+[node name="Control" type="CanvasLayer" parent="."]
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Control"]
+margin_right = 364.0
+margin_bottom = 40.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Seed" type="SpinBox" parent="Control/HBoxContainer"]
+margin_right = 100.0
+margin_bottom = 40.0
+rect_min_size = Vector2( 100, 0 )
+max_value = 10000.0
+prefix = "Seed:"
+
+[node name="Width" type="SpinBox" parent="Control/HBoxContainer"]
+margin_left = 104.0
+margin_right = 254.0
+margin_bottom = 40.0
+rect_min_size = Vector2( 150, 0 )
+min_value = 8000.0
+max_value = 32000.0
+value = 8000.0
+prefix = "Width:"
+
+[node name="Height" type="SpinBox" parent="Control/HBoxContainer"]
+margin_left = 258.0
+margin_right = 408.0
+margin_bottom = 40.0
+rect_min_size = Vector2( 150, 0 )
+min_value = 4000.0
+max_value = 16000.0
+value = 4000.0
+prefix = "Height:"
+
+[node name="Generate" type="Button" parent="Control/HBoxContainer"]
+margin_left = 412.0
+margin_right = 483.0
+margin_bottom = 40.0
+text = "Generate"
+
+[node name="Done" type="Button" parent="Control/HBoxContainer"]
+margin_left = 487.0
+margin_right = 533.0
+margin_bottom = 40.0
+text = "Done"
+
+[node name="MapDisplayOptionsUi" parent="Control" instance=ExtResource( 2 )]
+margin_top = 49.0
+margin_bottom = 249.0
+
+[node name="Progress" type="Label" parent="Control"]
+margin_left = 578.0
+margin_top = 18.0
+margin_right = 792.0
+margin_bottom = 146.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="DebugHook" type="Control" parent="Control"]
+margin_left = 96.0
+margin_top = 96.0
+margin_right = 136.0
+margin_bottom = 136.0
+__meta__ = {
+"_edit_use_anchors_": false
+}

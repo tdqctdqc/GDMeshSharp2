@@ -9,7 +9,7 @@ public abstract class BuildingModel : IModel
     public BuildingModel(string name)
     {
         Name = name;
-        BuildingIcon = Icon.Create(Name);
+        BuildingIcon = Icon.Create(Name, Icon.AspectRatio.Square);
     }
 
     public abstract bool CanBuildInTri(PolyTri t, Data data);

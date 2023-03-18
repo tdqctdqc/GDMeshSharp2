@@ -4,22 +4,42 @@ using Godot;
 
 public class Icon : MeshTexture
 {
-    public static Mesh IconMesh { get; private set; } = MakeMesh();
-
-    public static Icon Create(string textureName)
+    public Vector2 Dimension { get; private set; }
+    public static QuadMesh SquareMesh { get; private set; } = MakeMesh(Vector2.One * 30f);
+    
+    public static QuadMesh OnePointFiveMesh { get; private set; } = MakeMesh(new Vector2(30f, 45f));
+    
+    public enum AspectRatio
+    {
+        Square, OneByOnePointFive
+    }
+    public static Icon Create(string textureName, AspectRatio ratio)
     {
         var i = new Icon();
-        i.Mesh = IconMesh;
+        QuadMesh q;
+        if (ratio == AspectRatio.Square)
+        {
+            q = SquareMesh;
+        }
+        else if (ratio == AspectRatio.OneByOnePointFive)
+        {
+            q = SquareMesh;
+        }
+        else throw new Exception();
+
+        i.Mesh = q;
+        i.Dimension = q.Size;
+        
         i.BaseTexture = TextureManager.Textures[textureName];
         return i;
     }
     public Icon()
     {
     }
-    private static Mesh MakeMesh()
+    private static QuadMesh MakeMesh(Vector2 size)
     {
         var m = new QuadMesh();
-        m.Size = Vector2.One * 30f;
+        m.Size = size;
         return m;
     }
 

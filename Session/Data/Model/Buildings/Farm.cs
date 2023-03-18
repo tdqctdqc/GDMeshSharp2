@@ -1,13 +1,16 @@
 
+using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class Farm : ResourceProdBuilding
+public class Farm : ProductionBuilding
 {
-    public Farm() : base(StratResourceManager.Food, nameof(Farm))
+    public Farm() : base(ItemManager.Food, nameof(Farm))
     {
     }
-
+    public override int PeepsLaborReq { get; } = 10;
+    public override HashSet<PeepJob> JobTypes { get; }
+        = new HashSet<PeepJob> { PeepJobManager.Farmer };
     public override bool CanBuildInTri(PolyTri t, Data data)
     {
         return t.Landform.IsLand
@@ -17,10 +20,13 @@ public class Farm : ResourceProdBuilding
     {
         return p.IsLand();
     }
-    public override void Produce(ProductionResult result, Building p, float staffingRatio, Data data)
+
+
+    public override void Produce(Wallet<ModelRef<Item>> gains, 
+        Wallet<EntityRef<ResourceDeposit>> depletions, Building p, float staffingRatio, Data data)
     {
         var fert = p.Position.Poly.Entity().GetFertility();
         var regime = p.Position.Poly.Entity().Regime.Entity();
-        result.AddResult(regime, StratResourceManager.Food, fert * staffingRatio);
+        gains.Add(ItemManager.Food.MakeRef<Item>(), fert * staffingRatio / 1000f);
     }
 }

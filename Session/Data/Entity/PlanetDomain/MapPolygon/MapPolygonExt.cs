@@ -27,13 +27,9 @@ public static class MapPolygonExt
         if (off2.Length() < off1.Length() && off2.Length() < off3.Length()) return off2;
         return off3;
     }
-    public static int GetNumPeeps(this MapPolygon poly, Data data)
+    public static IEnumerable<Peep> GetPeeps(this MapPolygon poly, Data data)
     {
-        if (data.Planet.Polygons.PeepsInPoly[poly] is HashSet<Peep> h)
-        {
-            return h.Count;
-        }
-        return 0;
+        return data.Planet.Polygons.PeepsInPoly[poly];
     }
     public static float GetArea(this MapPolygon poly, Data data)
     {
@@ -83,7 +79,7 @@ public static class MapPolygonExt
     public static float GetFertility(this MapPolygon poly)
     {
         return poly.TerrainTris.Tris.Count() > 0 
-            ? poly.TerrainTris.Tris.Select(i => i.GetFertility()).Sum()
+            ? poly.TerrainTris.Tris.Select(i => i.GetFertility()).Sum() / 1000f
             : 0f;
     }
 

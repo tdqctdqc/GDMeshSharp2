@@ -5,16 +5,8 @@ using System.Reflection;
 
 public class TickModule : LogicModule
 {
-    public override IResult Calculate(Data data)
+    public override void Calculate(Data data, Action<Message> queue)
     {
-        return new TickResult();
-    }
-}
-
-public class TickResult : IResult
-{
-    public void Poll(Action<Procedure> addProc, Action<Decision> addDec, Action<Update> addUpdate)
-    {
-        addProc(new TickProcedure());
+        queue(new TickProcedure());
     }
 }

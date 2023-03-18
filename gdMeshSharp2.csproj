@@ -30,7 +30,4 @@
     <EmbeddedResource Remove="Client\MapDisplayOptionsUi\**" />
     <EmbeddedResource Remove="Client\StartScene\**" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Assets\Scenes\GameUi\Tooltip" />
-  </ItemGroup>
 </Project>

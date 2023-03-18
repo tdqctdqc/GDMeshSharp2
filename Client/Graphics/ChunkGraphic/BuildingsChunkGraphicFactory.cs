@@ -4,10 +4,13 @@ using Godot;
 
 public class BuildingsChunkGraphicFactory : ChunkGraphicFactory
 {
-    public BuildingsChunkGraphicFactory(string name, bool active)
-        : base(name, active,
-            (c, d) => TriIconChunkGraphic.Create(c, d, p => p.GetBuildings(d),
-                b => b.Position.Tri(), b => b.Model.Model().BuildingIcon))
+    public BuildingsChunkGraphicFactory(string name, bool active) : base(name, active)
     {
+    }
+
+    public override Node2D GetNode(MapChunk c, Data d)
+    {
+        return TriIconChunkGraphic.Create(c, d, p => p.GetBuildings(d),
+            b => b.Position.Tri(), b => b.Model.Model().BuildingIcon);
     }
 }

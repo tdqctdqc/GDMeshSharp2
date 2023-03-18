@@ -1,0 +1,28 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://Assets/Scenes/GameUi/GameUi.cs" type="Script" id=1]
+[ext_resource path="res://Assets/Scenes/GameUi/MapDisplayOptionsUi.tscn" type="PackedScene" id=2]
+[ext_resource path="res://Assets/Scenes/GameUi/TopBar.tscn" type="PackedScene" id=3]
+
+[node name="Ui" type="CanvasLayer"]
+script = ExtResource( 1 )
+
+[node name="TopBar" parent="." instance=ExtResource( 3 )]
+margin_right = 1025.0
+
+[node name="MapDisplayOptionsUi" parent="." instance=ExtResource( 2 )]
+margin_left = 5.0
+margin_top = 61.0
+margin_right = 238.0
+margin_bottom = 661.0
+
+[node name="MousePos" type="Label" parent="."]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -40.0
+margin_top = -14.0
+__meta__ = {
+"_edit_use_anchors_": false
+}

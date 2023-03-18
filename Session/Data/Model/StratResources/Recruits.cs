@@ -1,7 +1,7 @@
 
 using Godot;
 
-public class Recruits : StratResource
+public class Recruits : Item
 {
 
     public Recruits() : base(nameof(Recruits), Colors.ForestGreen)

@@ -1,0 +1,77 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://Assets/Scenes/GameUi/EntityOverview.cs" type="Script" id=1]
+
+[node name="EntityOverview" type="WindowDialog"]
+margin_right = 635.0
+margin_bottom = 460.0
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -281.5
+margin_top = -217.0
+margin_right = 281.5
+margin_bottom = 217.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ScrollContainer" type="ScrollContainer" parent="HBoxContainer"]
+margin_right = 100.0
+margin_bottom = 434.0
+rect_min_size = Vector2( 100, 0 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Domains" type="ItemList" parent="HBoxContainer/ScrollContainer"]
+margin_right = 100.0
+margin_bottom = 300.0
+rect_min_size = Vector2( 100, 300 )
+auto_height = true
+
+[node name="ScrollContainer4" type="ScrollContainer" parent="HBoxContainer"]
+margin_left = 104.0
+margin_right = 204.0
+margin_bottom = 434.0
+rect_min_size = Vector2( 100, 0 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="EntityTypes" type="ItemList" parent="HBoxContainer/ScrollContainer4"]
+margin_right = 100.0
+rect_min_size = Vector2( 100, 0 )
+
+[node name="ScrollContainer2" type="ScrollContainer" parent="HBoxContainer"]
+margin_left = 208.0
+margin_right = 308.0
+margin_bottom = 434.0
+rect_min_size = Vector2( 100, 0 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Entities" type="ItemList" parent="HBoxContainer/ScrollContainer2"]
+margin_right = 100.0
+rect_min_size = Vector2( 100, 0 )
+
+[node name="ScrollContainer3" type="ScrollContainer" parent="HBoxContainer"]
+margin_left = 312.0
+margin_right = 562.0
+margin_bottom = 434.0
+rect_min_size = Vector2( 250, 0 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="EntityProps" type="ItemList" parent="HBoxContainer/ScrollContainer3"]
+margin_right = 250.0
+rect_min_size = Vector2( 250, 0 )

@@ -1,17 +1,21 @@
 
+using System;
 using Godot;
 
-public static class RegimeFillChunkGraphicFactory
+public class RegimeFillChunkGraphicFactory : ChunkGraphicFactory
 {
-    public static ChunkGraphicFactory Create(string name, bool active)
+    public RegimeFillChunkGraphicFactory(string name, bool active) 
+        : base(name, active)
     {
-        return new ChunkGraphicFactory(name, false, 
-            (c, d) => new PolygonChunkGraphic(
-                c, d,
-                p => p.Regime.Empty()
-                    ? Colors.Transparent
-                    : p.Regime.Entity().PrimaryColor
-            )
+    }
+
+    public override Node2D GetNode(MapChunk c, Data d)
+    {
+        return new PolygonChunkGraphic(
+            c, d,
+            p => p.Regime.Empty()
+                ? Colors.Transparent
+                : p.Regime.Entity().PrimaryColor
         );
     }
 }

@@ -8,14 +8,10 @@ public class LogicResults
     public List<Decision> Decisions { get; private set; }
     public List<Update> Updates { get; private set; }
 
-    public LogicResults(IEnumerable<IResult> results)
+    public LogicResults(IEnumerable<Message> messages)
     {
-        Updates = new List<Update>();
-        Procedures = new List<Procedure>();
-        Decisions = new List<Decision>();
-        foreach (var r in results)
-        {
-            r.Poll(Procedures.Add, Decisions.Add, Updates.Add);
-        }
+        Updates = messages.SelectWhereOfType<Message, Update>().ToList();
+        Procedures = messages.SelectWhereOfType<Message, Procedure>().ToList();
+        Decisions = messages.SelectWhereOfType<Message, Decision>().ToList();
     }
 }

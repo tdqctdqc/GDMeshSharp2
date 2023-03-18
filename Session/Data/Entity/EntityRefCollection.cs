@@ -68,6 +68,10 @@ public partial class EntityRefCollection<TRef>
 
     public IEnumerator<TRef> GetEnumerator()
     {
+        if (_refs == null)
+        {
+            Game.I.RefFulfiller.Fulfill(this);
+        }
         return _refs.Values.GetEnumerator();
     }
 

@@ -1,13 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 public class DiplomaticCalcModule : LogicModule
 {
-    public override IResult Calculate(Data data)
+    public override void Calculate(Data data, Action<Message> queue)
     {
-        var regimes = data.Society.Regimes.Entities;
-        var r0 = regimes.ElementAt(0);
-        var r1 = regimes.ElementAt(1);
-        return null;
+        return;
     }
 }

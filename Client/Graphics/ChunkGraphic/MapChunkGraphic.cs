@@ -20,7 +20,7 @@ public class MapChunkGraphic : Node2D
             Borders,
             Decals,
             Roads,
-            ResourceDepositIcons,
+            PolyIcons,
             ResourceDepositPolyFill,
             Buildings
         );
@@ -40,7 +40,7 @@ public class MapChunkGraphic : Node2D
     public static ChunkGraphicFactory Buildings { get; private set; }
         = new BuildingsChunkGraphicFactory(nameof(Buildings), true);
     public static ChunkGraphicFactory RegimeFill { get; private set; }
-        = RegimeFillChunkGraphicFactory.Create(nameof(RegimeFill), false);
+        = new RegimeFillChunkGraphicFactory(nameof(RegimeFill), false);
     public static ChunkGraphicFactory RegimeBorders { get; private set; }
         = new PolygonBorderChunkGraphicFactory(nameof(RegimeBorders), true);
     public static ChunkGraphicFactory Landform { get; private set; }
@@ -56,8 +56,8 @@ public class MapChunkGraphic : Node2D
         = new RoadChunkGraphicFactory(nameof(Roads), true);
     public static ChunkGraphicFactory Borders { get; private set; }
         = new BordersChunkGraphicFactory(nameof(Borders), false);
-    public static ChunkGraphicFactory ResourceDepositIcons { get; private set; }
-        = new PolyIconsChunkGraphicFactory(nameof(ResourceDepositIcons), true);
+    public static ChunkGraphicFactory PolyIcons { get; private set; }
+        = new PolyIconsChunkGraphicFactory(nameof(PolyIcons), true);
     public static ChunkGraphicFactory ResourceDepositPolyFill { get; private set; }
         = new PolygonChunkGraphicFactory(nameof(ResourceDepositPolyFill), true, (p,d) =>
             {

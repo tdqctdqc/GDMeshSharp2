@@ -8,18 +8,22 @@ public class Wallet<T>
     public Dictionary<T, float> Contents { get; private set; }
     public float this[T t] => Contents.ContainsKey(t) ? Contents[t] : 0f;
 
+    public static Wallet<T> Construct()
+    {
+        return new Wallet<T>(new Dictionary<T, float>());
+    }
     [SerializationConstructor] public Wallet(Dictionary<T, float> contents)
     {
         Contents = contents;
     }
 
-    public void Add(T t, float amount, StrongWriteKey key)
+    public void Add(T t, float amount)
     {
         if (amount < 0f) throw new Exception("Trying to add negative amount to wallet");
         if(Contents.ContainsKey(t) == false) Contents.Add(t, 0f);
         Contents[t] += amount;
     }
-    public void Remove(T t, float amount, StrongWriteKey key)
+    public void Remove(T t, float amount)
     {
         if (amount < 0f) throw new Exception("Trying to remove negative amount from wallet");
         if(Contents.ContainsKey(t) == false) throw new Exception("Trying to remove whats not in wallet");
@@ -27,9 +31,9 @@ public class Wallet<T>
         Contents[t] -= amount;
     }
 
-    public void Transfer<R>(R t, float amount, Wallet<R> destination, StrongWriteKey key) where R : T
+    public void TransferFrom<R>(R t, float amount, Wallet<R> destination) where R : T
     {
-        Remove(t, amount, key);
-        destination.Add(t, amount, key);
+        Remove(t, amount);
+        destination.Add(t, amount);
     }
 }

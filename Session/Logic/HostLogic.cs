@@ -24,7 +24,7 @@ public class HostLogic : ILogic
         CommandQueue = new ConcurrentQueue<Command>();
         _frames = new LogicFrame[]
         {
-            new LogicFrame(new TickModule(), new ProductionModule())
+            new LogicFrame(new TickModule(), new ProductionModule(), new PeepConsumptionModule())
         };
     }
 
