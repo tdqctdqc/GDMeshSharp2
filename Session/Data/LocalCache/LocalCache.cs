@@ -8,6 +8,7 @@ public class LocalCache
     private Data _data;
     public HashSet<MapChunk> Chunks { get; private set; }
     public Dictionary<MapPolygon, List<Triangle>> PolyRelWheelTris { get; private set; }
+    public Dictionary<MapPolygon, Vector2> PolyGraphicalCenters { get; private set; }
     public PolyGrid MapPolyGrid { get; private set; }
     public Dictionary<MapPolygon, List<LineSegment>> OrderedBoundarySegs { get; private set; }
     public Dictionary<MapPolygon, List<PolyBorderChain>> OrderedNeighborBorders { get; private set; }
@@ -28,10 +29,13 @@ public class LocalCache
 
     private void SetPolyShapes(Data data)
     {
+        
         OrderedNeighborBorders = data.Planet.Polygons.Entities
             .ToDictionary(p => p, p => p.GetPolyBorders().Ordered<PolyBorderChain, Vector2>().ToList());
         OrderedBoundarySegs = data.Planet.Polygons.Entities
             .ToDictionary(p => p, p => p.BuildBoundarySegments(data));
+        PolyGraphicalCenters = data.Planet.Polygons.Entities
+            .ToDictionary(p => p, p => p.GetOrderedBoundarySegs(data).Average());
         BuildPolyGrid();
         BuildChunks(data);
         BuildPolyRelTris();

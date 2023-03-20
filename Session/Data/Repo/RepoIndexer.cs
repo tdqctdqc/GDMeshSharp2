@@ -38,7 +38,6 @@ public class RepoIndexer<TEntity, TKey> : RepoAuxData<TEntity>
         ValueChangedHandler<TEntity, TKey>.RegisterForAll(keyFieldName, callback);
         Initialize(data);
     }
-
     private void Initialize(Data data)
     {
         foreach (var repo in data.EntityRepos.Values.Where(v => v.EntityType == typeof(TEntity)))

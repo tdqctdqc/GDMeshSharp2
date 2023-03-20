@@ -17,9 +17,10 @@ public partial class MapPolygon : Entity,
     public float Moisture { get; private set; }
     public EntityRef<Regime> Regime { get; private set; }
     public PolyTerrainTris TerrainTris { get; private set; }
+    public bool IsLand { get; private set; }
     [SerializationConstructor] private MapPolygon(int id, Vector2 center, EntityRefCollection<MapPolygon> neighbors, 
         Dictionary<int, PolyBorderChain> neighborBorders, Color color, float altitude, float roughness, 
-        float moisture, EntityRef<Regime> regime, PolyTerrainTris terrainTris) : base(id)
+        float moisture, EntityRef<Regime> regime, PolyTerrainTris terrainTris, bool isLand) : base(id)
     {
         Center = center;
         Neighbors = neighbors;
@@ -30,6 +31,7 @@ public partial class MapPolygon : Entity,
         Moisture = moisture;
         Regime = regime;
         TerrainTris = terrainTris;
+        IsLand = isLand;
     }
 
     public static MapPolygon Create(Vector2 center, float mapWidth, GenWriteKey key)
@@ -38,14 +40,15 @@ public partial class MapPolygon : Entity,
         if (mapCenter.x > mapWidth) mapCenter = new Vector2(mapCenter.x - mapWidth, center.y);
         if (mapCenter.x < 0f) mapCenter = new Vector2(mapCenter.x + mapWidth, center.y);
         var p = new MapPolygon(key.IdDispenser.GetID(), mapCenter,
-            new EntityRefCollection<MapPolygon>(new HashSet<int>()),
+            EntityRefCollection<MapPolygon>.Construct(new HashSet<int>(), key.Data),
             new Dictionary<int, PolyBorderChain>(),
             ColorsExt.GetRandomColor(),
             0f,
             0f,
             0f,
             new EntityRef<Regime>(-1),
-            PolyTerrainTris.Create(new List<PolyTri>(), key)
+            PolyTerrainTris.Create(new List<PolyTri>(), key),
+            true
         );
         key.Create(p);
         return p;
@@ -74,6 +77,11 @@ public partial class MapPolygon : Entity,
     public void SetTerrainTris(PolyTerrainTris tris, GenWriteKey key)
     {
         TerrainTris = tris;
+    }
+
+    public void SetIsLand(bool isLand, GenWriteKey key)
+    {
+        IsLand = isLand;
     }
     public List<LineSegment> BuildBoundarySegments(Data data)
     {

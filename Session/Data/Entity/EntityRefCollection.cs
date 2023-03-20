@@ -11,13 +11,13 @@ public partial class EntityRefCollection<TRef>
     public HashSet<int> RefIds { get; private set; }
     private Dictionary<int, TRef> _refs;
     public int Count() => RefIds.Count;
-    public static EntityRefCollection<TRef> Construct(HashSet<int> refIds, CreateWriteKey key)
+    public static EntityRefCollection<TRef> Construct(HashSet<int> refIds, Data data)
     {
         var col = new EntityRefCollection<TRef>(refIds);
-        col._refs = col.RefIds.ToDictionary(id => id, id => (TRef) key.Data[id]);
+        col._refs = col.RefIds.ToDictionary(id => id, id => (TRef) data[id]);
         return col;
     }
-    [SerializationConstructor] public EntityRefCollection(HashSet<int> refIds)
+    [SerializationConstructor] private EntityRefCollection(HashSet<int> refIds)
     {
         RefIds = refIds == null ? new HashSet<int>() : new HashSet<int>(refIds);
         _refs = null;
@@ -37,6 +37,7 @@ public partial class EntityRefCollection<TRef>
     }
     public void AddRef(TRef t, GenWriteKey key)
     {
+        if (RefIds.Contains(t.Id)) return;
         RefIds.Add(t.Id);
         _refs?.Add(t.Id, t);
     }

@@ -19,7 +19,7 @@ public class LandSeaManager
     {
         Landmasses = new List<HashSet<MapPolygon>>();
         LandmassDic = new Dictionary<MapPolygon, HashSet<MapPolygon>>();
-        var landPolys = data.Planet.Polygons.Entities.Where(p => p.IsLand());
+        var landPolys = data.Planet.Polygons.Entities.Where(p => p.IsLand);
         var seaPolys = data.Planet.Polygons.Entities.Where(p => p.IsWater());
         var landmasses =
             UnionFind.Find(landPolys.ToList(), (p1, p2) => p1.HasNeighbor(p2), p1 => p1.Neighbors.Refs());

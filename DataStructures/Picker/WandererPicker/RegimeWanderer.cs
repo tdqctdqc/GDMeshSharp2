@@ -54,6 +54,6 @@ public class RegimeWanderer : Wanderer
 
     protected override bool Valid(MapPolygon poly)
     {
-        return poly.IsLand();
+        return poly.IsLand;
     }
 }

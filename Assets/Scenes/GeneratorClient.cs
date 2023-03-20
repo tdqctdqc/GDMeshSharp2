@@ -8,40 +8,42 @@ using Godot;
 public class GeneratorClient : Node, IClient
 {
     private GeneratorSession _session;
-    private ButtonToken _generate, _generateNext, _generateTest, _done;
-    private SpinBox _seed, _width, _height;
     public CameraController Cam { get; private set; }
-    public GenData Data => _session.Data;
     private GameGraphics _graphics;
     private Label _progress;
     private bool _generating;
     private bool _generated;
     private MapDisplayOptionsUi _mapOptions;
-    public Control DebugHook => _debugHook;
-    private Control _debugHook;
+    public CanvasLayer CanvasLayer => _canvasLayer;
+    private CanvasLayer _canvasLayer;
+    public ClientSettings Settings { get; private set; }
+    public SettingsWindow GenSettingsWindow { get; private set; }
     public override void _Ready()
     {
-        Cam = new CameraController();
-        AddChild(Cam);
-        Cam.Current = true;
-        this.AssignChildNode(ref _seed, "Seed");
-        this.AssignChildNode(ref _width, "Width");
-        this.AssignChildNode(ref _height, "Height");
-        this.AssignChildNode(ref _width, "Width");
-        this.AssignChildNode(ref _progress, "Progress");
-        this.AssignChildNode(ref _graphics, "Graphics");
-        this.AssignChildNode(ref _mapOptions, "MapDisplayOptionsUi");
-        this.AssignChildNode(ref _debugHook, "DebugHook");
-        _mapOptions.Setup(_graphics, Cam, _session.Data);
-        
-        _generate = ButtonToken.CreateToken(this, "Generate", () => PressedGenerate());
-        _done = ButtonToken.CreateToken(this, "Done", GoToGameSession);
         
     }
 
     public void Setup(GeneratorSession session)
     {
         _session = session;
+        Settings = ClientSettings.Load();
+        Cam = new CameraController();
+        
+        AddChild(Cam);
+        Cam.Current = true;
+        this.AssignChildNode(ref _progress, "Progress");
+        this.AssignChildNode(ref _graphics, "Graphics");
+        this.AssignChildNode(ref _mapOptions, "MapDisplayOptionsUi");
+        this.AssignChildNode(ref _canvasLayer, "CanvasLayer");
+        
+        GenSettingsWindow = SettingsWindow.Get(_session.GenSettings);
+        _canvasLayer.AddChild(GenSettingsWindow);
+        
+        _mapOptions.Setup(_graphics, Cam, _session.Data);
+        
+        ButtonToken.FindButtonCreateToken(this, "Generate", () => PressedGenerate());
+        ButtonToken.FindButtonCreateToken(this, "Done", GoToGameSession);
+        ButtonToken.FindButtonCreateToken(this, "GenSettings", () => GenSettingsWindow.Popup_());
     }
     public void HandleInput(InputEvent e, float delta)
     {
@@ -64,16 +66,10 @@ public class GeneratorClient : Node, IClient
     {
         if (_generating) return;
         _generating = true;
-        await Task.Run(() => Generate((int) _seed.Value, (int) _width.Value, (int) _height.Value)); 
+        await Task.Run(() => Generate()); 
         _generating = false;
         _generated = true;
     }
-
-    private GenerationParameters GetParams()
-    {
-        return new GenerationParameters(new Vector2((int) _width.Value, (int) _height.Value));
-    }
-
     private void MonitorGeneration(string tag, string report)
     {
         _progress.Text = tag + " " + report;
@@ -83,13 +79,11 @@ public class GeneratorClient : Node, IClient
         AddChild(d.GetGraphic());
         GD.Print(d.StackTrace);
     }
-    private void Generate(int seed, int width, int height)
+    private void Generate()
     {
-        var bounds = new Vector2(width, height);
-        Game.I.Random.Seed = (ulong) seed;
         _session.GenerationFeedback += MonitorGeneration;
         _session.GenerationFailed += DisplayException;
-        _session.Generate(seed, GetParams());
+        _session.Generate();
         if (_session.Succeeded)
         {
             _graphics.Setup(this, _session.Data);

@@ -99,10 +99,10 @@ public class MeshBuilder
             .FirstOrDefault(b => b.Segments[0].From == last)
             ?.Segments[0];
         
-        var firstInner = segs[0].From + segs[0].GetNormalizedPerpendicular() * innerThickness;
+        var firstInner = segs[0].From - segs[0].GetNormalizedPerpendicular() * innerThickness;
         if (firstPrev != null) firstInner = firstPrev.GetCornerPoint(segs[0], innerThickness);
 
-        var lastInner = segs.Last().To + segs.Last().GetNormalizedPerpendicular() * innerThickness;
+        var lastInner = segs.Last().To - segs.Last().GetNormalizedPerpendicular() * innerThickness;
         if (lastNext != null) lastInner = segs.Last().GetCornerPoint(lastNext, innerThickness);
 
         var currInner = firstInner;

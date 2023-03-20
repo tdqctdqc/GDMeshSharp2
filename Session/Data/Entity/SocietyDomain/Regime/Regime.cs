@@ -31,7 +31,7 @@ public class Regime : Entity
         MapPolygon seed, CreateWriteKey key)
     {
         var id = key.IdDispenser;
-        var polygons = new EntityRefCollection<MapPolygon>(new HashSet<int>{seed.Id});
+        var polygons = EntityRefCollection<MapPolygon>.Construct(new HashSet<int>{seed.Id}, key.Data);
         var r = new Regime(id.GetID(), name, primaryColor, secondaryColor, polygons, new EntityRef<MapPolygon>(seed.Id),
             Wallet<Item>.Construct());
         key.Create(r);

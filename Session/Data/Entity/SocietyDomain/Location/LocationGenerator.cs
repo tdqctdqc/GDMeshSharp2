@@ -34,7 +34,7 @@ public class LocationGenerator : Generator
     
     private void GenerateCities()
     {
-        var landPolys = Data.Planet.Polygons.Entities.Where(p => p.IsLand());
+        var landPolys = Data.Planet.Polygons.Entities.Where(p => p.IsLand);
         var unions = UnionFind.Find(landPolys.ToList(), (p, q) => p.Regime.Entity() == q.Regime.Entity(),
             p => p.Neighbors.Refs());
 

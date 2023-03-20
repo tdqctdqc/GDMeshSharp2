@@ -87,7 +87,6 @@ public class PolygonGenerator : Generator
             
         GraphGenerator.WrapMapPolygonGraph(graph, wrapLeft, wrapRight, key);
     }
-
     private void BuildBorders(MapGenInfo info, Graph<MapPolygon, LineSegment> graph, GenWriteKey key)
     {
         GD.Print("building borders");

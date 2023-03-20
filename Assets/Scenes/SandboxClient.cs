@@ -15,9 +15,10 @@ public class SandboxClient : Node, IClient
     private List<int> _sectionTriIndices;
     private RegionDebugGraphic _regionTest;
     private Control _debugHook;
+    public ClientSettings Settings { get; private set; }
     public SandboxClient()
     {
-        
+        Settings = ClientSettings.Load();
     }
 
     public override void _Ready()

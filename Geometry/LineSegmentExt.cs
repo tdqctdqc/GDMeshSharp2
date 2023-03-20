@@ -269,11 +269,9 @@ public static class LineSegmentExt
     {
         var angle = l1.AngleBetween(l2);
         var axis = l1.GetNormalizedAxis();
-        var perp = axis.Perpendicular() * thickness;
+        var perp = -axis.Perpendicular() * thickness;
         if (angle > Mathf.Pi) angle = -angle;
-
         var d = thickness / Mathf.Tan(angle / 2f);
-        
         var p = l1.To - axis * d + perp; 
 
         return p;

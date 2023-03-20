@@ -3,7 +3,7 @@ using System;
 
 public class GameClient : Node, IClient
 {
-    private EntityOverview _entityOverview;
+    private EntityOverviewWindow _entityOverviewWindow;
     public GameUi Ui { get; private set; }
     public GameSession Session { get; private set; }
     private IServer _server;
@@ -11,6 +11,7 @@ public class GameClient : Node, IClient
     public GameGraphics Graphics { get; private set; }
     public Data Data { get; private set; }
     public ClientWriteKey Key { get; private set; }
+    public ClientSettings Settings { get; private set; }
     public override void _Ready()
     {
         
@@ -24,6 +25,7 @@ public class GameClient : Node, IClient
     }
     public void Setup(GameSession session, IServer server)
     {
+        Settings = ClientSettings.Load();
         Key = new ClientWriteKey(session.Data, session);
         Session = session;
         Data = Session.Data;
@@ -48,8 +50,8 @@ public class GameClient : Node, IClient
         Ui = SceneManager.Instance<GameUi>();
         Ui.Setup(server is HostServer, data, Graphics, Cam, this);
         _server = server;
-        _entityOverview = EntityOverview.Get(data);
-        AddChild(_entityOverview);
+        _entityOverviewWindow = EntityOverviewWindow.Get(data);
+        AddChild(_entityOverviewWindow);
         AddChild(Ui);
     }
     public void HandleInput(InputEvent e, float delta)

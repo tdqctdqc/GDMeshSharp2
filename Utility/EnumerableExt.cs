@@ -197,8 +197,7 @@ public static class EnumerableExt
         var res = new Dictionary<T, int>();
         foreach (var element in elements)
         {
-            if(res.ContainsKey(element) == false) res.Add(element, 0);
-            res[element]++;
+            res.AddOrSum(element, 1);
         }
         return res;
     }

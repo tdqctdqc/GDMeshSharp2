@@ -33,12 +33,7 @@ public class PolyTriGenerator : Generator
         
         report.StartSection();
         Parallel.ForEach(polys, p => BuildTris(p, key));
-        // foreach (var p in polys)
-        // {
-        //     BuildTris(p, key);
-        // }
         report.StopSection("Building poly terrain tris");
-
         return report;
     }
     
@@ -46,6 +41,7 @@ public class PolyTriGenerator : Generator
     {
         var polys = _data.Planet.Polygons.Entities;
         var borders = _data.Planet.PolyEdges.Entities;
+        var prefEdgeLength = _data.GenSettings.PreferredMinPolyEdgeLength.Value;
         
         var dic = borders.Where(b => b.MoistureFlow > River.FlowFloor).ToDictionary(s => s, s => -1);
         _riverBorders = new ConcurrentDictionary<MapPolygonEdge, int>(dic);
@@ -88,10 +84,10 @@ public class PolyTriGenerator : Generator
                 width = length / 2f;
             }
             var p1 = (mid - axis * width / 2f);
-            var preSegs = p1.GeneratePointsAlong(50f, 10f, true, null, start).GetLineSegments();
+            var preSegs = p1.GeneratePointsAlong(prefEdgeLength, prefEdgeLength / 5f, true, null, start).GetLineSegments();
 
             var p2 = (mid + axis * width / 2f);
-            var postSegs = end.GeneratePointsAlong(50f, 10f, true, null, p2).GetLineSegments();
+            var postSegs = end.GeneratePointsAlong(prefEdgeLength, prefEdgeLength / 5f, true, null, p2).GetLineSegments();
             var rSeg = new LineSegment(p1, p2);
             var newSegs = preSegs.ToList();
             newSegs.Add(rSeg);

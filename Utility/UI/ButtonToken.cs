@@ -15,7 +15,7 @@ public class ButtonToken : Node
         button.Text = label;
         return button;
     }
-    public static ButtonToken CreateToken(Node node, string buttonName, params Action[] actions)
+    public static ButtonToken FindButtonCreateToken(Node node, string buttonName, params Action[] actions)
     {
         var button = (Button) node.FindNode(buttonName);
         var token = new ButtonToken();

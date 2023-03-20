@@ -18,7 +18,7 @@ public class Farm : ProductionBuilding
     }
     public override bool CanBuildInPoly(MapPolygon p, Data data)
     {
-        return p.IsLand();
+        return p.IsLand;
     }
 
 

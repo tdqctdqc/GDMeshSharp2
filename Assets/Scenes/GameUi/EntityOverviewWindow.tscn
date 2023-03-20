@@ -1,9 +1,9 @@
 [gd_scene load_steps=2 format=2]
 
-[ext_resource path="res://Assets/Scenes/GameUi/EntityOverview.cs" type="Script" id=1]
+[ext_resource path="res://Assets/Scenes/GameUi/EntityOverviewWindow.cs" type="Script" id=1]
 
 [node name="EntityOverview" type="WindowDialog"]
-margin_right = 635.0
+margin_right = 690.0
 margin_bottom = 460.0
 script = ExtResource( 1 )
 __meta__ = {
@@ -15,9 +15,9 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-margin_left = -281.5
+margin_left = -333.0
 margin_top = -217.0
-margin_right = 281.5
+margin_right = 333.0
 margin_bottom = 217.0
 __meta__ = {
 "_edit_use_anchors_": false
@@ -63,9 +63,22 @@ __meta__ = {
 margin_right = 100.0
 rect_min_size = Vector2( 100, 0 )
 
-[node name="ScrollContainer3" type="ScrollContainer" parent="HBoxContainer"]
+[node name="ScrollContainer5" type="ScrollContainer" parent="HBoxContainer"]
 margin_left = 312.0
-margin_right = 562.0
+margin_right = 412.0
+margin_bottom = 434.0
+rect_min_size = Vector2( 100, 0 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="EntityTypeProps" type="ItemList" parent="HBoxContainer/ScrollContainer5"]
+margin_right = 100.0
+rect_min_size = Vector2( 100, 0 )
+
+[node name="ScrollContainer3" type="ScrollContainer" parent="HBoxContainer"]
+margin_left = 416.0
+margin_right = 666.0
 margin_bottom = 434.0
 rect_min_size = Vector2( 250, 0 )
 __meta__ = {

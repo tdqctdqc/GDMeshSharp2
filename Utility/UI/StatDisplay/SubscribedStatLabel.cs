@@ -17,13 +17,12 @@ public class SubscribedStatLabel : StatLabel
         d.SetupForEntityTrigger(e, name, label, getStat, trigger);
         return d;
     }
-    public static SubscribedStatLabel ConstructForEntityAutomatic<TEntity, TProperty>(TEntity e,
+    public static SubscribedStatLabel ConstructForEntityDynamic<TEntity, TProperty>(TEntity e,
         string name, Label label,
         Func<TEntity, TProperty> getStat) where TEntity : Entity
     {
         var d = new SubscribedStatLabel();
-        d.SetupForEntityAutomatic(e, name, label, getStat);
-        
+        d.SetupForEntityDynamic(e, name, label, getStat);
         return d;
     }
     
@@ -36,7 +35,7 @@ public class SubscribedStatLabel : StatLabel
         base.Setup<TEntity, TProperty>(e, name, label, getStat);
     }
     
-    private void SetupForEntityAutomatic<TEntity, TProperty>(TEntity e,
+    private void SetupForEntityDynamic<TEntity, TProperty>(TEntity e,
         string name, Label label,
         Func<TEntity, TProperty> getStat) where TEntity : Entity
     {

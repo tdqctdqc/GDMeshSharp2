@@ -13,10 +13,10 @@ public class WorldGenerator
     private GeneratorSession _session;
     public Action<DisplayableException> GenerationFailed { get; set; }
     public Action<string, string> GenerationFeedback { get; set; }
-    public WorldGenerator(GeneratorSession session, GenerationParameters genParams)
+    public WorldGenerator(GeneratorSession session, GenData data)
     {
         _session = session;
-        Data = new GenData(genParams);
+        Data = data;
         _key = new GenWriteKey(Data, session);
         Data.Setup();
         _sw = new Stopwatch();
@@ -30,20 +30,20 @@ public class WorldGenerator
 
     private GenData GenerateInner()
     {
-        var cellSize = 200f;
-        var edgePointMargin = new Vector2(cellSize, cellSize);
-        var dim = Data.GenParams.Dimensions;
+        var polySize = 200f;
+        var edgePointMargin = new Vector2(polySize, polySize);
+        var dim = Data.GenSettings.Dimensions;
         var id = _key.IdDispenser.GetID();
-        PlanetInfo.Create(Data.GenParams.Dimensions, _key);
+        PlanetInfo.Create(Data.GenSettings.Dimensions, _key);
         GameClock.Create(_key);
         _sw.Start();
 
         var points = PointsGenerator
             .GenerateConstrainedSemiRegularPoints
-                (Data.GenParams.Dimensions - edgePointMargin, cellSize, cellSize * .75f, false, true)
+                (Data.GenSettings.Dimensions - edgePointMargin, polySize, polySize * .75f, false, true)
             .Select(v => v + edgePointMargin / 2f).ToList();
         
-        RunGenerator(new PolygonGenerator(points, Data.GenParams.Dimensions, true, cellSize));
+        RunGenerator(new PolygonGenerator(points, Data.GenSettings.Dimensions, true, polySize));
 
         // EdgeDisturber.DisturbEdges(Data.Planet.Polygons.Entities, 
         //     Data.Planet.PlanetInfo.Value.Dimensions, _key);
@@ -54,7 +54,8 @@ public class WorldGenerator
         
         RunGenerator(new MoistureGenerator());
         
-        EdgeDisturber.SplitEdges(Data.Planet.Polygons.Entities, _key, 50f);
+        EdgeDisturber.SplitEdges(Data.Planet.Polygons.Entities, _key, 
+            Data.GenSettings.PreferredMinPolyEdgeLength.Value);
         GenerationFeedback?.Invoke("Edge split", "");
         
         RunGenerator(new PolyTriGenerator());

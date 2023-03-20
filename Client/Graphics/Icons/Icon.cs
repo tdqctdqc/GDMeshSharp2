@@ -4,11 +4,10 @@ using Godot;
 
 public class Icon : MeshTexture
 {
+    public string Name { get; private set; }
     public Vector2 Dimension { get; private set; }
     public static QuadMesh SquareMesh { get; private set; } = MakeMesh(Vector2.One * 30f);
-    
     public static QuadMesh OnePointFiveMesh { get; private set; } = MakeMesh(new Vector2(30f, 45f));
-    
     public enum AspectRatio
     {
         Square, OneByOnePointFive
@@ -23,13 +22,13 @@ public class Icon : MeshTexture
         }
         else if (ratio == AspectRatio.OneByOnePointFive)
         {
-            q = SquareMesh;
+            q = OnePointFiveMesh;
         }
         else throw new Exception();
 
         i.Mesh = q;
         i.Dimension = q.Size;
-        
+        i.Name = textureName;
         i.BaseTexture = TextureManager.Textures[textureName];
         return i;
     }

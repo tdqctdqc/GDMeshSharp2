@@ -7,7 +7,7 @@ public class PlayerRegimeDisplay
     {
         var label = new Label();
         var player = data.BaseDomain.Players.LocalPlayer;
-        SubscribedStatLabel.ConstructForEntityAutomatic(player, nameof(Player.Regime), label, p => p.Regime);
+        SubscribedStatLabel.ConstructForEntityDynamic(player, nameof(Player.Regime), label, p => p.Regime);
         return label;
     }
 }

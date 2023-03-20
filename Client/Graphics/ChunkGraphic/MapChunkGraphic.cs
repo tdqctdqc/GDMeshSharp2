@@ -42,7 +42,7 @@ public class MapChunkGraphic : Node2D
     public static ChunkGraphicFactory RegimeFill { get; private set; }
         = new RegimeFillChunkGraphicFactory(nameof(RegimeFill), false);
     public static ChunkGraphicFactory RegimeBorders { get; private set; }
-        = new PolygonBorderChunkGraphicFactory(nameof(RegimeBorders), true);
+        = new BorderChunkGraphicFactory(nameof(RegimeBorders), true);
     public static ChunkGraphicFactory Landform { get; private set; }
         = new PolyTriChunkGraphicFactory(nameof(Landform), true, t => t.Landform.Color);
     public static ChunkGraphicFactory Vegetation { get; private set; }
@@ -59,7 +59,7 @@ public class MapChunkGraphic : Node2D
     public static ChunkGraphicFactory PolyIcons { get; private set; }
         = new PolyIconsChunkGraphicFactory(nameof(PolyIcons), true);
     public static ChunkGraphicFactory ResourceDepositPolyFill { get; private set; }
-        = new PolygonChunkGraphicFactory(nameof(ResourceDepositPolyFill), true, (p,d) =>
+        = new PolygonChunkGraphicFactory(nameof(ResourceDepositPolyFill), false, (p,d) =>
             {
                 var rs = p.GetResourceDeposits(d);
                 if(rs == null || rs.Count == 0) return new Color(Colors.Pink, .5f);

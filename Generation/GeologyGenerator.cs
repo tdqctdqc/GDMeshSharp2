@@ -11,12 +11,6 @@ public class GeologyGenerator : Generator
     public GenData Data { get; private set; }
     private IdDispenser _id;
     private GenWriteKey _key;
-    public static readonly float 
-        SeaLevel = .5f,
-        FaultRange = 75f,
-        FrictionAltEffect = .05f,
-        FrictionRoughnessEffect = 1f,
-        RoughnessErosionMult = 1f;
     public GeologyGenerator()
     {
         
@@ -153,7 +147,7 @@ public class GeologyGenerator : Generator
         var seaConts = waterSeeds
             .Select(s => new GenContinent(s, _id.GetID(), Game.I.Random.RandfRange(.1f, .45f)))
             .ToList();
-        var width = Data.GenParams.Dimensions.x;
+        var width = Data.GenSettings.Dimensions.x;
         var landRemainder = Picker.PickInTurnToLimitHeuristic(
             Data.GenAuxData.Masses.Except(allSeeds), landConts,
             cont => cont.NeighboringMasses,
@@ -250,7 +244,7 @@ public class GeologyGenerator : Generator
 
         IEnumerable<MapPolygon> getPolysInRangeOfFault(FaultLine fault)
         {
-            var faultRange = fault.Friction * FaultRange;
+            var faultRange = fault.Friction * Data.GenSettings.FaultLineRange.Value;
             var polys = fault.HighId.Cells.SelectMany(c => c.PolyGeos)
                 .Union(fault.LowId.Cells.SelectMany(c => c.PolyGeos));
             
@@ -269,7 +263,7 @@ public class GeologyGenerator : Generator
         void DoRoughness(MapPolygon poly, FaultLine fault)
         {
             var dist = fault.GetDist(poly, Data);
-            var faultRange = fault.Friction * FaultRange;
+            var faultRange = fault.Friction * Data.GenSettings.FaultLineRange.Value;
             var distRatio = (faultRange - dist) / faultRange;
 
             var osc =
@@ -277,16 +271,19 @@ public class GeologyGenerator : Generator
                 oscilMetric.Calc(dist);
             
             var distFactor = distRatio * osc;
-            var altEffect = fault.Friction * FrictionAltEffect * distFactor;
-            poly.Set(nameof(poly.Altitude), poly.Altitude + altEffect, _key);
-
+            var altEffect = fault.Friction * Data.GenSettings.FrictionAltEffect.Value * distFactor;
+            poly.Set(nameof(poly.Altitude), Mathf.Min(1f, poly.Altitude + altEffect), _key);
             float roughnessErosion = 0f;
-            if (poly.Altitude < SeaLevel) roughnessErosion = poly.Altitude * RoughnessErosionMult;
+            if (poly.Altitude < Data.GenSettings.SeaLevel.Value) roughnessErosion 
+                = poly.Altitude * Data.GenSettings.RoughnessErosionMult.Value;
             
-            var frictionEffect = fault.Friction * FrictionRoughnessEffect * distFactor;
+            var frictionEffect = fault.Friction * Data.GenSettings.FrictionRoughnessEffect.Value * distFactor;
             var rand = Game.I.Random.RandfRange(-.2f, .2f);
             var newRoughness = Mathf.Clamp(frictionEffect - roughnessErosion + rand, 0f, 1f);
             poly.Set(nameof(poly.Roughness), newRoughness, _key);
+            
+            //todo not working? setting sealevel at 1 still leaves land
+            poly.SetIsLand(poly.Altitude > Data.GenSettings.SeaLevel.Value, _key);
         }
     }
 }

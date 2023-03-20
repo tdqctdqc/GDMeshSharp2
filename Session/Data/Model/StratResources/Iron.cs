@@ -21,7 +21,7 @@ public class Iron : NaturalResource
         var score = 15f;
         score += p.Roughness * 50f;
         if (p.IsWater()) score *= .1f;
-        if(p.IsLand() && p.Moisture >= VegetationManager.Swamp.MinMoisture * .75f) score += 20f;
+        if(p.IsLand && p.Moisture >= VegetationManager.Swamp.MinMoisture * .75f) score += 20f;
         return score;
     }
 

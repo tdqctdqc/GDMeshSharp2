@@ -2,6 +2,7 @@ using Godot;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 public class HostLogic : ILogic
@@ -17,9 +18,10 @@ public class HostLogic : ILogic
     private float _framePeriod = 1f;
     private float _frameTimer = 1f;
     private bool _calculating;
-    
+    private Stopwatch _sw;
     public HostLogic()
     {
+        _sw = new Stopwatch();
         AIs = new Dictionary<Regime, RegimeAI>();
         CommandQueue = new ConcurrentQueue<Command>();
         _frames = new LogicFrame[]
@@ -36,18 +38,25 @@ public class HostLogic : ILogic
         {
             _frameTimer = 0f;
             _calculating = true;
-            DoFrame();
-        }
-        
-        var commandCount = CommandQueue.Count;
-        for (var i = 0; i < commandCount; i++)
-        {
-            if (CommandQueue.TryDequeue(out var command))
+            
+            Task.Run(() => 
             {
-                if(command.Valid(_data)) command.Enact(_hKey);
-            }
+                _sw.Reset();
+                _sw.Start();
+                DoFrame();
+                _sw.Stop();
+                if(_sw.Elapsed.TotalSeconds > _framePeriod) GD.Print("logic lagging");
+                DoCommands(); 
+            });
+            
+            _calculating = false;
         }
-        
+        else if (_calculating == false)
+        {
+            _calculating = true;
+            Task.Run(() => DoCommands());
+            _calculating = false;
+        }
     }
     public void SetDependencies(HostServer server, GameSession session, Data data)
     {
@@ -57,7 +66,7 @@ public class HostLogic : ILogic
         _pKey = new ProcedureWriteKey(data, session);
     }
 
-    public async void DoFrame()
+    private void DoFrame()
     {
         var logicResult = _frames[_frameIter].Calculate(_data);
         _frameIter = (_frameIter + 1) % _frames.Length;
@@ -84,7 +93,18 @@ public class HostLogic : ILogic
         }
         _server.ReceiveLogicResult(logicResult, _hKey);
         _server.PushPackets(_hKey);
-        _calculating = false;
         _data.Notices.FinishedFrame?.Invoke();
+    }
+
+    private void DoCommands()
+    {
+        var commandCount = CommandQueue.Count;
+        for (var i = 0; i < commandCount; i++)
+        {
+            if (CommandQueue.TryDequeue(out var command))
+            {
+                if(command.Valid(_data)) command.Enact(_hKey);
+            }
+        }
     }
 }

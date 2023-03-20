@@ -4,7 +4,8 @@ using System.Collections.Generic;
 
 public class GameUi : CanvasLayer
 {
-    public EntityOverview EntityOverview { get; private set; }
+    public EntityOverviewWindow EntityOverviewWindow { get; private set; }
+    public SettingsWindow SettingsWindow { get; private set; }
     private MapDisplayOptionsUi _mapOptions;
     private TopBar _topBar;
     private Label  _mousePos;
@@ -32,8 +33,12 @@ public class GameUi : CanvasLayer
         CameraController cam, GameClient client)
     {
         this.AssignChildNode(ref _mousePos, "MousePos");
-        EntityOverview = EntityOverview.Get(data);
-        AddChild(EntityOverview);
+        
+        EntityOverviewWindow = EntityOverviewWindow.Get(data);
+        AddChild(EntityOverviewWindow);
+        
+        SettingsWindow = SettingsWindow.Get(client.Settings);
+        AddChild(SettingsWindow);
 
         this.AssignChildNode(ref _mapOptions, "MapDisplayOptionsUi");
         _mapOptions.Setup(graphics, cam, data);

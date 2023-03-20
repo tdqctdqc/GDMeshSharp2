@@ -1,30 +1,28 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-public class EntityOverview : WindowDialog
+public class EntityOverviewWindow : WindowDialog
 {
-    public static EntityOverview Get(Data data)
+    public static EntityOverviewWindow Get(Data data)
     {
-        var eo = SceneManager.Instance<EntityOverview>();
+        var eo = SceneManager.Instance<EntityOverviewWindow>();
         eo.Setup(data);
         return eo;
     }
     private UIVar<Domain> _domain;
     private UIVar<Type> _entityType;
     private UIVar<Entity> _selectedEntity;
-    
 
-    private ItemList _domainContainer, _entityTypeContainer, _entitiesContainer, _entityPropsContainer;
-    private ItemListToken _domainToken, _entityTypeToken, _entitiesToken, _entityPropsToken;
+    private ItemListToken _domainToken, _entityTypeToken, _entityTypePropsToken, 
+        _entitiesToken, _entityPropsToken;
     private Data _data;
 
     private void Setup(Data data)
     {
         _data = data;
-        this.AssignChildNode(ref _domainContainer, "Domains");
-        _domainToken = ItemListToken.Construct(_domainContainer);
         
         _domain = new UIVar<Domain>(null);
         _domain.ChangedValue += DrawEntityTypes;
@@ -35,14 +33,11 @@ public class EntityOverview : WindowDialog
         _selectedEntity = new UIVar<Entity>(null);
         _selectedEntity.ChangedValue += DrawEntityProps;
         
-        this.AssignChildNode(ref _entityTypeContainer, "EntityTypes");
-        _entityTypeToken = ItemListToken.Construct(_entityTypeContainer);
-        
-        this.AssignChildNode(ref _entitiesContainer, "Entities");
-        _entitiesToken = ItemListToken.Construct(_entitiesContainer);
-        
-        this.AssignChildNode(ref _entityPropsContainer, "EntityProps");
-        _entityPropsToken = ItemListToken.Construct(_entityPropsContainer);
+        _domainToken = ItemListToken.Construct((ItemList) FindNode("Domains"));
+        _entityTypeToken = ItemListToken.Construct((ItemList) FindNode("EntityTypes"));
+        _entitiesToken = ItemListToken.Construct((ItemList) FindNode("Entities"));
+        _entityPropsToken = ItemListToken.Construct((ItemList) FindNode("EntityProps"));
+        _entityTypePropsToken = ItemListToken.Construct((ItemList) FindNode("EntityTypeProps"));
         
         Connect("about_to_show", this, nameof(Draw));
     }
@@ -69,6 +64,15 @@ public class EntityOverview : WindowDialog
         _entitiesToken.Setup(repo.Entities.ToList(), 
             e => e.Id.ToString(),
             e => () => _selectedEntity.SetValue(e));
+        
+        _entityTypePropsToken.Setup<string>(
+            new List<string>
+            {
+                "Number: " + repo.Entities.Count
+            },
+            i => i,
+            i => () => { }
+        );
     }
     private void DrawEntityProps(Entity e)
     {

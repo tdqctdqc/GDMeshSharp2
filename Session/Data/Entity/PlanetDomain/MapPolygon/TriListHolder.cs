@@ -62,7 +62,7 @@ public class TriListHolder
             if (ts.Any(t => t.ContainsPoint(offset))) return (Landform)data.Models[keyValuePair.Key];
         }
 
-        return poly.IsLand() ? LandformManager.LandDefault : LandformManager.WaterDefault;
+        return poly.IsLand ? LandformManager.LandDefault : LandformManager.WaterDefault;
     }
     public Vegetation GetVegetationAtPoint(MapPolygon poly, Data data, Vector2 offset)
     {
@@ -72,7 +72,7 @@ public class TriListHolder
             if (ts.Any(t => t.ContainsPoint(offset))) return (Vegetation)data.Models[keyValuePair.Key];
         }
 
-        return poly.IsLand() ? VegetationManager.LandDefault : VegetationManager.WaterDefault;
+        return poly.IsLand ? VegetationManager.LandDefault : VegetationManager.WaterDefault;
     }
     
 }

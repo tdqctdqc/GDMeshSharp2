@@ -38,7 +38,20 @@ public static class DictionaryExt
             return false;
         }
     }
-    
+    public static bool AddOrSum<TKey>(this Dictionary<TKey, int> dic,
+        TKey key, int val, int min = int.MinValue, int max = int.MaxValue)
+    {
+        if (dic.ContainsKey(key))
+        {
+            dic[key] = Mathf.Clamp(val + dic[key], min, max);
+            return true;
+        }
+        else
+        {
+            dic[key] = Mathf.Clamp(val, min, max);
+            return false;
+        }
+    }
     public static bool AddOrSum<TKey>(this Dictionary<TKey, float> dic,
         TKey key, float val, float min = float.MinValue, float max = float.MaxValue)
     {

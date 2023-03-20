@@ -98,7 +98,7 @@ public class RegimeGenerator : Generator
     {
         var unions = UnionFind.Find(
             remainder, 
-            (p1, p2) => p1.IsLand() == p2.IsLand(),
+            (p1, p2) => p1.IsLand == p2.IsLand,
             p => p.Neighbors.Refs()
         );
         foreach (var union in unions)

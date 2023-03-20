@@ -10,6 +10,7 @@ public class CameraController : Camera2D
     private Vector2 _globalSpaceMousePos;
     public Vector2 GetMousePosInMapSpace(Data data)
     {
+        if(data == null) return Vector2.Inf;
         if(data.Planet.PlanetInfo.Entities.Count == 0) return Vector2.Inf;
         
         var mapWidth = data.Planet.Width;

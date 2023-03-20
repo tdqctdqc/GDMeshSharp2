@@ -48,9 +48,8 @@ public static class MapPolygonExt
         return closeInt + secondInt;
     }
     public static bool HasNeighbor(this MapPolygon poly, MapPolygon n) => poly.Neighbors.Refs().Contains(n);
-    public static bool IsLand(this MapPolygon poly) => poly.Altitude > GeologyGenerator.SeaLevel;
-    public static bool IsWater(this MapPolygon poly) => IsLand(poly) == false;
-    public static bool IsCoast(this MapPolygon poly) => IsLand(poly) && poly.Neighbors.Refs().Any(n => n.IsWater());
+    public static bool IsWater(this MapPolygon poly) => poly.IsLand == false;
+    public static bool IsCoast(this MapPolygon poly) => poly.IsLand && poly.Neighbors.Refs().Any(n => n.IsWater());
     public static MapPolygonEdge GetEdge(this MapPolygon poly, MapPolygon neighbor, Data data) 
         => data.Planet.PolyEdges.GetEdge(poly, neighbor);
     public static PolyBorderChain GetBorder(this MapPolygon poly, MapPolygon neighbor) => poly.NeighborBorders[neighbor.Id];
@@ -86,5 +85,10 @@ public static class MapPolygonExt
     public static IEnumerable<Building> GetBuildings(this MapPolygon poly, Data data)
     {
         return data.Society.Buildings.ByPoly[poly];
+    }
+
+    public static Vector2 GetGraphicalCenterOffset(this MapPolygon poly, Data data)
+    {
+        return data.Cache.PolyGraphicalCenters[poly];
     }
 }

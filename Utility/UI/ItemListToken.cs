@@ -16,7 +16,7 @@ public class ItemListToken : Node
         node.AddChild(token);
         return token;
     }
-    public void Setup<T>(List<T> items, 
+    public void Setup<T>(IReadOnlyList<T> items, 
         Func<T, string> getLabelText, Func<T, Action> getAction)
     {
         _node.Clear();
@@ -29,8 +29,7 @@ public class ItemListToken : Node
             _node.AddItem(getLabelText(items[i]));
         }
     }
-
-    public ItemListToken(ItemList node)
+    private ItemListToken(ItemList node)
     {
         _node = node;
         _node.AutoHeight = true;

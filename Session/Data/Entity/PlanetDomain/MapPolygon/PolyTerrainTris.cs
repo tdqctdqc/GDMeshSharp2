@@ -14,13 +14,13 @@ public class PolyTerrainTris
     public int[] SectionTriCounts;
     public static PolyTerrainTris Create(List<PolyTri> tris, CreateWriteKey key)
     {
+        if (tris.Count > 254) throw new Exception("Too many tris");
         var vertexIndices = new Dictionary<Vector2, int>();
         var vertices = new List<Vector2>();
         var triVertexIndices = new HashSet<Vector3>();
 
         var sectionTriStartIndices = new int[_numSections];
         var sectionTriCounts = new int[_numSections];
-        
         
         var sectionTris = Enumerable.Range(0, _numSections)
         .Select(i =>
