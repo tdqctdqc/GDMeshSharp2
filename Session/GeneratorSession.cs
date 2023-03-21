@@ -16,12 +16,12 @@ public class GeneratorSession : Node, ISession
     public bool Generating { get; private set; }
     public bool Succeeded { get; private set; }
     public IServer Server { get; private set; }
-    public GenerationSettings GenSettings { get; private set; }
+    public GenerationMultiSettings GenMultiSettings { get; private set; }
 
     public GeneratorSession()
     {
         Server = new DummyServer();
-        GenSettings = new GenerationSettings();
+        GenMultiSettings = new GenerationMultiSettings();
         Client = SceneManager.Instance<GeneratorClient>();
         Client.Setup(this);
         AddChild(Client);
@@ -31,7 +31,7 @@ public class GeneratorSession : Node, ISession
     {
         Succeeded = false;
         Generating = true;
-        Data = new GenData(GenSettings);
+        Data = new GenData(GenMultiSettings);
         WorldGen = new WorldGenerator(this, Data);
         WorldGen.GenerationFailed += GenerationFailed;
         WorldGen.GenerationFeedback += GenerationFeedback;
@@ -39,7 +39,7 @@ public class GeneratorSession : Node, ISession
         WorldGen.Generate();
         
         Succeeded = WorldGen.Failed == false;
-        Game.I.Random.Seed = (ulong) GenSettings.Seed.Value;
+        Game.I.Random.Seed = (ulong) GenMultiSettings.PlanetSettings.Seed.Value;
         Generating = false;
     }
     public override void _Process(float delta)

@@ -17,23 +17,15 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="ScrollContainer" type="ScrollContainer" parent="."]
+[node name="TabContainer" type="TabContainer" parent="."]
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-margin_left = -353.0
-margin_top = -281.5
-margin_right = 347.0
-margin_bottom = 268.5
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="Container" type="VBoxContainer" parent="ScrollContainer"]
-margin_right = 700.0
-margin_bottom = 550.0
-rect_min_size = Vector2( 700, 550 )
+margin_left = -363.0
+margin_top = -289.5
+margin_right = 363.0
+margin_bottom = 289.5
 __meta__ = {
 "_edit_use_anchors_": false
 }

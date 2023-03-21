@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using gdMeshSharp2.Client.Settings;
 using Godot;
 
 public abstract class SettingsOption<T> : ISettingsOption

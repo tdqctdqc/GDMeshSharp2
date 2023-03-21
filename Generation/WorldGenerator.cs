@@ -32,18 +32,18 @@ public class WorldGenerator
     {
         var polySize = 200f;
         var edgePointMargin = new Vector2(polySize, polySize);
-        var dim = Data.GenSettings.Dimensions;
+        var dim = Data.GenMultiSettings.Dimensions;
         var id = _key.IdDispenser.GetID();
-        PlanetInfo.Create(Data.GenSettings.Dimensions, _key);
+        PlanetInfo.Create(Data.GenMultiSettings.Dimensions, _key);
         GameClock.Create(_key);
         _sw.Start();
 
         var points = PointsGenerator
             .GenerateConstrainedSemiRegularPoints
-                (Data.GenSettings.Dimensions - edgePointMargin, polySize, polySize * .75f, false, true)
+                (Data.GenMultiSettings.Dimensions - edgePointMargin, polySize, polySize * .75f, false, true)
             .Select(v => v + edgePointMargin / 2f).ToList();
         
-        RunGenerator(new PolygonGenerator(points, Data.GenSettings.Dimensions, true, polySize));
+        RunGenerator(new PolygonGenerator(points, Data.GenMultiSettings.Dimensions, true, polySize));
 
         // EdgeDisturber.DisturbEdges(Data.Planet.Polygons.Entities, 
         //     Data.Planet.PlanetInfo.Value.Dimensions, _key);
@@ -55,7 +55,7 @@ public class WorldGenerator
         RunGenerator(new MoistureGenerator());
         
         EdgeDisturber.SplitEdges(Data.Planet.Polygons.Entities, _key, 
-            Data.GenSettings.PreferredMinPolyEdgeLength.Value);
+            Data.GenMultiSettings.PlanetSettings.PreferredMinPolyEdgeLength.Value);
         GenerationFeedback?.Invoke("Edge split", "");
         
         RunGenerator(new PolyTriGenerator());

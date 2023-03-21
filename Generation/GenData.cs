@@ -8,10 +8,10 @@ public class GenData : Data
     public GenAuxiliaryData GenAuxData { get; private set; }
     public GeneratorEvents Events { get; private set; }
     public MapGenInfo GenInfo { get; set; }
-    public GenerationSettings GenSettings { get; private set; }
-    public GenData(GenerationSettings genSettings)
+    public GenerationMultiSettings GenMultiSettings { get; private set; }
+    public GenData(GenerationMultiSettings genMultiSettings)
     {
-        GenSettings = genSettings;
+        GenMultiSettings = genMultiSettings;
     }
 
     protected override void Init()

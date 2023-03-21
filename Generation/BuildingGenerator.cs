@@ -25,8 +25,8 @@ public class BuildingGenerator : Generator
 
     private void GenerateFarms()
     {
-        var fertilityPerFarm = 15_000f;
-        var minFertToGetOneFarm = 7_500f;
+        var fertilityPerFarm = _data.GenMultiSettings.SocietySettings.FertilityPerFarm.Value;
+        var minFertToGetOneFarm = _data.GenMultiSettings.SocietySettings.FertilityToGetOneFarm.Value;
         var farmTris = new ConcurrentBag<PolyTriPosition>();
         var farm = BuildingModelManager.Farm;
         Parallel.ForEach(_data.Planet.Polygons.Entities, p =>

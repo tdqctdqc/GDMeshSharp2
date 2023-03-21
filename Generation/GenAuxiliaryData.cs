@@ -15,7 +15,7 @@ public class GenAuxiliaryData
     public GenAuxiliaryData(GenData data)
     {
         _altNoise = new OpenSimplexNoise();
-        _altNoise.Period = data.GenSettings.Dimensions.x;
+        _altNoise.Period = data.GenMultiSettings.Dimensions.x;
         _altNoise.Octaves = 3;
         _altNoise.Lacunarity = 2;
         _altNoise.Persistence = .5f;

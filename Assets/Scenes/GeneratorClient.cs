@@ -36,7 +36,7 @@ public class GeneratorClient : Node, IClient
         this.AssignChildNode(ref _mapOptions, "MapDisplayOptionsUi");
         this.AssignChildNode(ref _canvasLayer, "CanvasLayer");
         
-        GenSettingsWindow = SettingsWindow.Get(_session.GenSettings);
+        GenSettingsWindow = SettingsWindow.Get(_session.GenMultiSettings);
         _canvasLayer.AddChild(GenSettingsWindow);
         
         _mapOptions.Setup(_graphics, Cam, _session.Data);

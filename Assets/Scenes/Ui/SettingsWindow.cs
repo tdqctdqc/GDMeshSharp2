@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using gdMeshSharp2.Client.Settings;
 using Godot;
 
 public class SettingsWindow : WindowDialog
@@ -17,19 +16,17 @@ public class SettingsWindow : WindowDialog
         sw.Setup(settings);
         return sw;
     }
+    public static SettingsWindow Get(MultiSettings multi)
+    {
+        var sw = SceneManager.Instance<SettingsWindow>();
+        multi.Settings.ForEach(s => sw.Setup(s));
+        return sw;
+    }
     private void Setup(ISettings settings)
     {
-        var container = (Container) FindNode("Container");
-        foreach (var option in settings.Options)
-        {
-            SetupOption(option, container);
-        }
-    }
-    private void SetupOption(ISettingsOption option, Container container)
-    {
-        var l = new Label();
-        l.Text = option.Name + ":";
-        container.AddChild(l);
-        container.AddChild(option.GetControlInterface());
+        var tabs = (TabContainer) FindNode("TabContainer");
+        var controls = SettingsControls.Construct(settings);
+        controls.Name = settings.Name;
+        tabs.AddChild(controls);
     }
 }

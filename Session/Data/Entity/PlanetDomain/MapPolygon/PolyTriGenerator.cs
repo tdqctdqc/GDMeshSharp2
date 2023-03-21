@@ -41,7 +41,7 @@ public class PolyTriGenerator : Generator
     {
         var polys = _data.Planet.Polygons.Entities;
         var borders = _data.Planet.PolyEdges.Entities;
-        var prefEdgeLength = _data.GenSettings.PreferredMinPolyEdgeLength.Value;
+        var prefEdgeLength = _data.GenMultiSettings.PlanetSettings.PreferredMinPolyEdgeLength.Value;
         
         var dic = borders.Where(b => b.MoistureFlow > River.FlowFloor).ToDictionary(s => s, s => -1);
         _riverBorders = new ConcurrentDictionary<MapPolygonEdge, int>(dic);
@@ -62,7 +62,8 @@ public class PolyTriGenerator : Generator
             var flow = rBorder.MoistureFlow;
             if (flow > River.FlowCeil)
             {
-                throw new Exception($"flow is {flow} too wide for ceiling {River.FlowCeil}");
+                GD.Print($"flow is {flow} too wide for ceiling {River.FlowCeil}");
+                flow = River.FlowCeil;
             }
             var width = River.FlowFloor + (float)Math.Log(flow, logBase);
             max = Mathf.Max(max, width);

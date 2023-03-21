@@ -33,7 +33,7 @@ public class MoistureGenerator : Generator
     private void SetPolyMoistures()
     {
         var plateMoistures = new ConcurrentDictionary<GenPlate, float>();
-        var equatorDistMultWeight = Data.GenSettings.EquatorDistMoistureMultWeight.Value;
+        var equatorDistMultWeight = Data.GenMultiSettings.MoistureSettings.EquatorDistMoistureMultWeight.Value;
         Parallel.ForEach(Data.GenAuxData.Plates, p =>
         {
             var distFromEquator = Mathf.Abs(Data.Planet.Height / 2f - p.Center.y);
@@ -102,9 +102,9 @@ public class MoistureGenerator : Generator
 
     private void BuildRiversDrainGraph()
     {
-        var riverFlowPerMoisture = Data.GenSettings.RiverFlowPerMoisture.Value;
-        var baseRiverFlowCost = Data.GenSettings.BaseRiverFlowCost.Value;
-        var roughnessMult = Data.GenSettings.RiverFlowCostRoughnessMult.Value;
+        var riverFlowPerMoisture = Data.GenMultiSettings.MoistureSettings.RiverFlowPerMoisture.Value;
+        var baseRiverFlowCost = Data.GenMultiSettings.MoistureSettings.BaseRiverFlowCost.Value;
+        var roughnessMult = Data.GenMultiSettings.MoistureSettings.RiverFlowCostRoughnessMult.Value;
         Parallel.ForEach(Data.LandSea.Landmasses, doLandmass);
         
         void doLandmass(HashSet<MapPolygon> lm)

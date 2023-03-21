@@ -141,6 +141,7 @@ public class LocationGenerator : Generator
     }
     private void GenerateRoadNetwork()
     {
+        var roadBuildDist = Data.GenMultiSettings.SocietySettings.RoadBuildDist.Value;
         Data.LandSea.Landmasses.ForEach(lm =>
         {
             var settlements = lm.Where(p => Data.Society.Settlements.ByPoly.ContainsKey(p));
@@ -160,7 +161,7 @@ public class LocationGenerator : Generator
             }
             foreach (var e in graph.Edges)
             {
-                if (e.T1.GetOffsetTo(e.T2, Data).Length() > 1000f) continue;
+                if (e.T1.GetOffsetTo(e.T2, Data).Length() > roadBuildDist) continue;
                 var path = PathFinder<MapPolygon>.FindPath(e.T1, e.T2, p => p.Neighbors.Refs(),
                     edgeCost, (p1, p2) => p1.GetOffsetTo(p2, Data).Length());
 
