@@ -6,7 +6,6 @@ public class GenData : Data
 {
     public LandSeaManager LandSea { get; private set; }
     public GenAuxiliaryData GenAuxData { get; private set; }
-    public GeneratorEvents Events { get; private set; }
     public MapGenInfo GenInfo { get; set; }
     public GenerationMultiSettings GenMultiSettings { get; private set; }
     public GenData(GenerationMultiSettings genMultiSettings)
@@ -18,7 +17,6 @@ public class GenData : Data
     {
         GenAuxData = new GenAuxiliaryData(this);
         LandSea = new LandSeaManager();
-        Events = new GeneratorEvents();
         base.Init();
     }
     public void ClearAuxData()

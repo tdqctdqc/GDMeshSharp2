@@ -9,7 +9,10 @@ public class MapPolygonRepo : Repository<MapPolygon>
     public IReadOnlyGraph<MapPolygon, PolyBorderChain> BorderGraph { get; private set; }
     public MapPolygonRepo(Domain domain, Data data) : base(domain, data)
     {
-        BorderGraph = ImplicitGraph.Get<MapPolygon, PolyBorderChain>(() => Entities, () => Entities.SelectMany(e => e.GetPolyBorders()).ToHashSet());
+        BorderGraph = ImplicitGraph.Get<MapPolygon, PolyBorderChain>(
+            () => Entities, 
+            () => Entities.SelectMany(e => e.GetPolyBorders()).ToHashSet()
+        );
         PeepsInPoly = new RepoEntityMultiIndexer<MapPolygon, Peep>(
             data,
             p => p.Home,

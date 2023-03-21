@@ -7,6 +7,7 @@ public abstract class RepoAuxData<TEntity>
     where TEntity : Entity
 {
     public abstract void HandleAdded(TEntity added);
+    
     public abstract void HandleRemoved(TEntity removing);
 
     public RepoAuxData(Data data)

@@ -5,6 +5,8 @@ using Godot;
 
 public class PromptWindow : WindowDialog
 {
+    public Action Satisfied { get; set; }
+    public Action Dismissed { get; set; }
     private Container _container;
     public void Setup(IPrompt prompt)
     {
@@ -16,9 +18,22 @@ public class PromptWindow : WindowDialog
         for (var i = 0; i < prompt.Actions.Count; i++)
         {
             var btn = new Button();
-            var btnToken = ButtonToken.CreateToken(btn, prompt.Actions[i], () => QueueFree());
+            var btnToken = ButtonToken.CreateToken(btn, 
+                prompt.Actions[i],
+                () =>
+                {
+                    Satisfied?.Invoke();
+                    QueueFree();
+                });
             btn.Text = prompt.ActionDescrs[i];
             _container.AddChild(btn);
         }
+
+        Connect("popup_hide", this, nameof(Dismiss));
+    }
+
+    private void Dismiss()
+    {
+        Dismissed?.Invoke();
     }
 }

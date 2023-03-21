@@ -59,7 +59,7 @@ public class WorldGenerator
         GenerationFeedback?.Invoke("Edge split", "");
         
         RunGenerator(new PolyTriGenerator());
-        Data.Events.SetPolyShapes?.Invoke();
+        Data.Notices.SetPolyShapes.Invoke();
         
         RunGenerator(new RegimeGenerator());
         

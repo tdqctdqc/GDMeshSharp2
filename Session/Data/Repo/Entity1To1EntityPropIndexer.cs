@@ -1,19 +1,19 @@
 
 using System;
 
-public class RepoEntityIndexer<TEntity, TKey> : RepoIndexer<TEntity, int?>
+public class Entity1To1EntityPropIndexer<TEntity, TKey> : Entity1to1PropIndexer<TEntity, int?>
     where TEntity : Entity where TKey : Entity
 {
     public TEntity this[TKey k] => this[k.Id];
-    public static RepoEntityIndexer<TEntity, TKey> CreateStatic(Data data, Func<TEntity, EntityRef<TKey>> get)
+    public static Entity1To1EntityPropIndexer<TEntity, TKey> CreateStatic(Data data, Func<TEntity, EntityRef<TKey>> get)
     {
-        return new RepoEntityIndexer<TEntity, TKey>(data, get);
+        return new Entity1To1EntityPropIndexer<TEntity, TKey>(data, get);
     }
-    public static RepoEntityIndexer<TEntity, TKey> CreateDynamic(Data data, Func<TEntity, EntityRef<TKey>> get, string keyFieldName)
+    public static Entity1To1EntityPropIndexer<TEntity, TKey> CreateDynamic(Data data, Func<TEntity, EntityRef<TKey>> get, string keyFieldName)
     {
-        return new RepoEntityIndexer<TEntity, TKey>(data, get, keyFieldName);
+        return new Entity1To1EntityPropIndexer<TEntity, TKey>(data, get, keyFieldName);
     }
-    private RepoEntityIndexer(Data data, 
+    private Entity1To1EntityPropIndexer(Data data, 
         Func<TEntity, EntityRef<TKey>> get, 
         string keyFieldName) 
         : base(data, e => get(e) == null ? (int?)null : get(e).RefId)
@@ -25,7 +25,7 @@ public class RepoEntityIndexer<TEntity, TKey> : RepoIndexer<TEntity, int?>
         };
         ValueChangedHandler<TEntity, TKey>.RegisterForAll(keyFieldName, callback);
     }
-    private RepoEntityIndexer(Data data, Func<TEntity, EntityRef<TKey>> get) 
+    private Entity1To1EntityPropIndexer(Data data, Func<TEntity, EntityRef<TKey>> get) 
         : base(data, e => get(e) == null ? (int?)null : get(e).RefId)
     {
     }

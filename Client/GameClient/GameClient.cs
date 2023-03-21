@@ -5,7 +5,6 @@ public class GameClient : Node, IClient
 {
     private EntityOverviewWindow _entityOverviewWindow;
     public GameUi Ui { get; private set; }
-    public GameSession Session { get; private set; }
     private IServer _server;
     public CameraController Cam { get; private set; }
     public GameGraphics Graphics { get; private set; }
@@ -23,26 +22,35 @@ public class GameClient : Node, IClient
         Graphics?.Process(delta, Data);
         Ui?.Process(delta, Key);
     }
-    public void Setup(GameSession session, IServer server)
+    public void Setup(GameSession session, IServer server, GameGraphics graphics)
     {
         Settings = ClientSettings.Load();
         Key = new ClientWriteKey(session.Data, session);
-        Session = session;
-        Data = Session.Data;
+        Data = session.Data;
         Cam = new CameraController();
         AddChild(Cam);
         Cam.Current = true;
         
-        BuildGraphics(Session.Data);
-        BuildUi(Session.Data, Key.Session.Server);
-        Graphics.Setup(this, Session.Data);
+        BuildUi(session.Data, Key.Session.Server);
+
+        if (graphics == null)
+        {
+            BuildGraphics(session.Data);
+        }
+        else
+        {
+            Graphics = graphics;
+            Graphics.GetParent().RemoveChild(Graphics);
+            Graphics.SetClient(this);
+        }
+        AddChild(Graphics);
     }
     
     private void BuildGraphics(Data data)
     {
         Graphics = GameGraphics.Get();
-        Graphics.Setup(this, data);
-        AddChild(Graphics);
+        Graphics.SetClient(this);
+        Graphics.Setup(data);
     }
 
     private void BuildUi(Data data, IServer server)

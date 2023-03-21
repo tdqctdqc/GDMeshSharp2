@@ -16,20 +16,19 @@ public class LocalCache
     public LocalCache(Data data)
     {
         _data = data;
-        if (data is GenData g)
+        if (_data is GenData g)
         {
-            g.Events.SetPolyShapes += () => SetPolyShapes(data);
+            _data.Notices.SetPolyShapes.Subscribe(() => SetPolyShapes(_data));
         }
         else
         {
-            data.Notices.FinishedStateSync.Subscribe(() => SetPolyShapes(data));
+            _data.Notices.FinishedStateSync.Subscribe(() => SetPolyShapes(_data));
         }
     }
 
 
     private void SetPolyShapes(Data data)
     {
-        
         OrderedNeighborBorders = data.Planet.Polygons.Entities
             .ToDictionary(p => p, p => p.GetPolyBorders().Ordered<PolyBorderChain, Vector2>().ToList());
         OrderedBoundarySegs = data.Planet.Polygons.Entities

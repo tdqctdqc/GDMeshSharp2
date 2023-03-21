@@ -52,7 +52,7 @@ public class PolyTriGenerator : Generator
         var min = Mathf.Inf;
         var avg = 0f;
         Parallel.ForEach(_riverBorders.Keys, doEdge);
-        _data.Events.SetPolyShapes?.Invoke();
+        _data.Notices.SetPolyShapes.Invoke();
         return;
             
         void doEdge(MapPolygonEdge rBorder)

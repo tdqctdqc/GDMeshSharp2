@@ -8,9 +8,6 @@ public class TopBar : Control
     public void Setup(bool host, Data data, GameClient client)
     {
         var container = FindNode("Container");
-        var testSerializationBtn 
-            = ButtonToken.CreateButton("TestSerialization", () => client.Session.TestSerialization());
-        container.AddChildWithVSeparator(testSerializationBtn);
         
         var entityOverviewBtn 
             = ButtonToken.CreateButton("EntityOverviewBtn", () => client.Ui.EntityOverviewWindow.Popup_());
@@ -21,9 +18,9 @@ public class TopBar : Control
         container.AddChildWithVSeparator(settingsWindowBtn);
 
         
-        var hostClient = new Label();
-        hostClient.Text = host ? "Host" : "Client";
-        container.AddChildWithVSeparator(hostClient);
+        var hostClientLabel = new Label();
+        hostClientLabel.Text = host ? "Host" : "Client";
+        container.AddChildWithVSeparator(hostClientLabel);
         container.AddChildWithVSeparator(TickDisplay.Create());
         container.AddChildWithVSeparator(PlayerRegimeDisplay.Create(data));
 

@@ -126,7 +126,7 @@ public class PolygonGenerator : Generator
         {
             a.Invoke();
         }
-        key.GenData.Events.SetPolyShapes?.Invoke();
+        key.Data.Notices.SetPolyShapes.Invoke();
         
     }
 }

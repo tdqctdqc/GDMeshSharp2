@@ -5,16 +5,16 @@ using MessagePack;
 
 public class ConsumptionProcedure : Procedure
 {
-    public RegimeModelWallet<Item> Consumptions { get; private set; }
+    public Dictionary<int, ItemWallet> ConsumptionsByRegime { get; private set; }
     
-    public static ConsumptionProcedure Create(RegimeModelWallet<Item> wallets)
+    public static ConsumptionProcedure Create(Dictionary<int, ItemWallet> byRegime)
     {
-        return new ConsumptionProcedure(wallets);
+        return new ConsumptionProcedure(byRegime);
     }
     [SerializationConstructor] 
-    private ConsumptionProcedure(RegimeModelWallet<Item> consumptions)
+    private ConsumptionProcedure(Dictionary<int, ItemWallet> consumptionsByRegime)
     {
-        Consumptions = consumptions;
+        ConsumptionsByRegime = consumptionsByRegime;
     }
     public override bool Valid(Data data)
     {
@@ -23,14 +23,19 @@ public class ConsumptionProcedure : Procedure
 
     public override void Enact(ProcedureWriteKey key)
     {
-        foreach (var kvp in Consumptions.Wallets)
+        var tick = key.Data.BaseDomain.GameClock.Value.Tick;
+        foreach (var kvp in ConsumptionsByRegime)
         {
-            var r = kvp.Key.Entity();
+            var r = (Regime)key.Data[kvp.Key];
             var gains = kvp.Value.Contents;
+            var snapshot = kvp.Value.GetSnapshot();
+
             foreach (var kvp2 in gains)
             {
-                r.Resources.Remove(kvp2.Key.Model(), kvp2.Value);
+                var model = key.Data.Models.Items.Models[kvp2.Key];
+                r.Resources.Remove(model, kvp2.Value);
             }
+            r.ConsumptionHistory.AddSnapshot(tick, snapshot, key);
         }
     }
 }

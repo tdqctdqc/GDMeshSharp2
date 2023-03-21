@@ -11,14 +11,14 @@ public class GameGraphics : Node2D
     public List<MapChunkGraphic> MapChunkGraphics { get; private set; }
     private TooltipManager _tooltips;
     private MapPolyTooltip _polyTooltip;
-    private IClient _client;
+    public IClient Client { get; private set; }
     public PolyHighlighter Highlighter { get; private set; }
     public void Process(float delta, Data data)
     {
-        if(_client?.Cam != null)
+        if(Client?.Cam != null)
         {
-            _segmenters?.ForEach(s => s.Update(_client.Cam.XScrollRatio));
-            _tooltips?.Process(delta, data, _client.Cam.GetMousePosInMapSpace(data));
+            _segmenters?.ForEach(s => s.Update(Client.Cam.XScrollRatio));
+            _tooltips?.Process(delta, data, Client.Cam.GetMousePosInMapSpace(data));
         }
     }
     private void Clear()
@@ -29,12 +29,14 @@ public class GameGraphics : Node2D
             GetChild(0).Free();
         }
     }
-    public void Setup(IClient client, Data data)
+
+    public void SetClient(IClient client)
+    {
+        Client = client;
+    }
+    public void Setup(Data data)
     {
         Clear();
-
-        _client = client;
-        
         _segmenters = new List<IGraphicsSegmenter>();
         MapChunkGraphics = new List<MapChunkGraphic>();
         var polySegmenter = new GraphicsSegmenter<MapChunkGraphic>();
@@ -63,6 +65,6 @@ public class GameGraphics : Node2D
         _polyTooltip.ZIndex = 99;
         _polyTooltip.ZAsRelative = false;
         AddChild(_polyTooltip);
-        _tooltips = new TooltipManager(_polyTooltip, Highlighter, _client);
+        _tooltips = new TooltipManager(_polyTooltip, Highlighter, this);
     }
 }

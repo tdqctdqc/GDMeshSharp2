@@ -86,7 +86,8 @@ public class GeneratorClient : Node, IClient
         _session.Generate();
         if (_session.Succeeded)
         {
-            _graphics.Setup(this, _session.Data);
+            _graphics.SetClient(this);
+            _graphics.Setup(_session.Data);
         }
     }
 }

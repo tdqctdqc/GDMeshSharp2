@@ -17,7 +17,8 @@ public class HostLogic : ILogic
     private int _frameIter = 0;
     private float _framePeriod = 1f;
     private float _frameTimer = 1f;
-    private bool _calculating;
+    private Task _calculating;
+    
     private Stopwatch _sw;
     public HostLogic()
     {
@@ -26,36 +27,44 @@ public class HostLogic : ILogic
         CommandQueue = new ConcurrentQueue<Command>();
         _frames = new LogicFrame[]
         {
-            new LogicFrame(new TickModule(), new ProductionModule(), new PeepConsumptionModule())
+            new LogicFrame(new TickModule(), new ProductionModule(), new PeepConsumptionModule()),
+            new LogicFrame(new TickModule()),
+            new LogicFrame(new TickModule()),
+            new LogicFrame(new TickModule()),
+            new LogicFrame(new TickModule()),
         };
     }
 
     public void Process(float delta)
     {
         _frameTimer += delta;
+        if (_calculating != null && _calculating.Exception != null)
+        {
+            throw _calculating.Exception;
+        }
+        
         if (_frameTimer >= _framePeriod 
-            && _calculating == false)
+            && _calculating == null)
         {
             _frameTimer = 0f;
-            _calculating = true;
-            
-            Task.Run(() => 
-            {
+            _calculating = Task.Run(() => {
                 _sw.Reset();
                 _sw.Start();
                 DoFrame();
                 _sw.Stop();
                 if(_sw.Elapsed.TotalSeconds > _framePeriod) GD.Print("logic lagging");
                 DoCommands(); 
+                _calculating = null;
+                _data.Notices.FinishedFrame.Invoke();
             });
-            
-            _calculating = false;
         }
-        else if (_calculating == false)
+        else if (_calculating == null)
         {
-            _calculating = true;
-            Task.Run(() => DoCommands());
-            _calculating = false;
+            _calculating = Task.Run(() =>
+            {
+                DoCommands();
+                _calculating = null;
+            });
         }
     }
     public void SetDependencies(HostServer server, GameSession session, Data data)
@@ -93,7 +102,6 @@ public class HostLogic : ILogic
         }
         _server.ReceiveLogicResult(logicResult, _hKey);
         _server.PushPackets(_hKey);
-        _data.Notices.FinishedFrame?.Invoke();
     }
 
     private void DoCommands()

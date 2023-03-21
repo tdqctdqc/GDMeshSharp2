@@ -10,7 +10,10 @@ public static class RegimeExt
     {
         return data.BaseDomain.Players.ByRegime.ContainsKey(r);
     }
-
+    public static bool IsLocalPlayerRegime(this Regime r, Data data)
+    {
+        return data.BaseDomain.Players.LocalPlayer.Regime.Entity() == r;
+    }
     public static Player GetPlayer(this Regime r, Data data)
     {
         return data.BaseDomain.Players.ByRegime[r];

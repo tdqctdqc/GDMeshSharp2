@@ -32,7 +32,6 @@ public class HostSyncer : Syncer
             foreach (var kvp2 in dom.Repos)
             {
                 var repo = kvp2.Value;
-                GD.Print(kvp2.Key.Name);
                 foreach (var e in repo.Entities)
                 {
                     var u = EntityCreationUpdate.Create(e, key);

@@ -7,7 +7,11 @@ public class TickDisplay
     {
         var label = new Label();
         ValueChangedHandler<GameClock, int>.RegisterForAll(nameof(GameClock.Tick),
-            n => label.Text = $"Tick: {n.NewVal}");
+            n =>
+            { 
+                label.Text = $"Tick: {n.NewVal}";
+            }
+        );
         return label;
     }
 }

@@ -22,11 +22,11 @@ public class Farm : ProductionBuilding
     }
 
 
-    public override void Produce(Wallet<ModelRef<Item>> gains, 
-        Wallet<EntityRef<ResourceDeposit>> depletions, Building p, float staffingRatio, Data data)
+    public override void Produce(ItemWallet gains, 
+        EntityWallet<ResourceDeposit> depletions, Building p, float staffingRatio, Data data)
     {
         var fert = p.Position.Poly.Entity().GetFertility();
         var regime = p.Position.Poly.Entity().Regime.Entity();
-        gains.Add(ItemManager.Food.MakeRef<Item>(), fert * staffingRatio / 1000f);
+        gains.Add(ItemManager.Food, fert * staffingRatio / 1000f);
     }
 }

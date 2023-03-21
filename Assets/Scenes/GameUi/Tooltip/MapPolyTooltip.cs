@@ -11,13 +11,13 @@ public class MapPolyTooltip : Node2D
     private Container _container;
     private MapPolygon _mouseOverPoly = null;
     private PolyTri _mouseOverTri = null;
-    private IClient _client;
+    private GameGraphics _graphics;
     private PolyHighlighter _highlighter;
     private TimerAction _action, _detailedAction;
-    public void Setup(PolyHighlighter highlighter, IClient client)
+    public void Setup(PolyHighlighter highlighter, GameGraphics graphics)
     {
         _highlighter = highlighter;
-        _client = client;
+        _graphics = graphics;
         this.AssignChildNode(ref _container, "Container");
         _id = _container.CreateLabelAsChild("Id");
         _numPeeps = _container.CreateLabelAsChild("Num Peeps");
@@ -72,10 +72,10 @@ public class MapPolyTooltip : Node2D
             var offset = _mouseOverPoly.GetOffsetTo(mousePosMapSpace, data);
             _mouseOverTri = _mouseOverPoly.TerrainTris.GetAtPoint(offset, data);
             Visible = true;
-            _highlighter.Draw(data, _mouseOverPoly, _mouseOverTri, offset, _client);
+            _highlighter.Draw(data, _mouseOverPoly, _mouseOverTri, offset, _graphics.Client);
             Position = GetGlobalMousePosition() + Vector2.One * 50f;
             DrawTooltip(data, _mouseOverTri, offset);
-            Scale = _client.Cam.Zoom;
+            Scale = _graphics.Client.Cam.Zoom;
         }
         else 
         {

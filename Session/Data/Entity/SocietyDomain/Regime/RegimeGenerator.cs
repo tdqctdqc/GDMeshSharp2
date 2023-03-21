@@ -62,13 +62,15 @@ public class RegimeGenerator : Generator
         var seeds = lm.GetDistinctRandomElements(numLandmassRegimes);
         
         var picker = new WandererPicker(lm);
-
+        var iter = 0;
         for (var i = 0; i < seeds.Count; i++)
         {
             var prim = ColorsExt.GetRandomColor();
             var sec = prim.Inverted();
+            var name = "Regime " + iter;
+            iter++;
             var regime = Regime.Create( 
-                "doot",
+                name,
                 // NameGenerator.GetName(), 
                 prim, sec, seeds[i], _key);
             var wand = new RegimeWanderer(regime, seeds[i], picker);
@@ -101,14 +103,17 @@ public class RegimeGenerator : Generator
             (p1, p2) => p1.IsLand == p2.IsLand,
             p => p.Neighbors.Refs()
         );
+        int iter = 0;
         foreach (var union in unions)
         {
             if (union.Count == 0) continue;
+            var name = "Regime 2 " + iter;
+            iter++;
             var prim = ColorsExt.GetRandomColor();
             var sec = prim.Inverted();
             var regime = Regime.Create( 
                 // NameGenerator.GetName(), //todo fix this
-                "doot",
+                name,
                 prim, sec, union[0], _key);
             for (var i = 1; i < union.Count; i++)
             {

@@ -6,23 +6,28 @@ public class Icon : MeshTexture
 {
     public string Name { get; private set; }
     public Vector2 Dimension { get; private set; }
-    public static QuadMesh SquareMesh { get; private set; } = MakeMesh(Vector2.One * 30f);
-    public static QuadMesh OnePointFiveMesh { get; private set; } = MakeMesh(new Vector2(30f, 45f));
+    public static QuadMesh _1x1Mesh { get; private set; } = MakeMesh(Vector2.One * 15f);
+    public static QuadMesh _1x2Mesh { get; private set; } = MakeMesh(new Vector2(15f, 30f));
+    public static QuadMesh _2x3Mesh { get; private set; } = MakeMesh(new Vector2(30f, 45f));
     public enum AspectRatio
     {
-        Square, OneByOnePointFive
+        _1x1, _2x3, _1x2
     }
     public static Icon Create(string textureName, AspectRatio ratio)
     {
         var i = new Icon();
         QuadMesh q;
-        if (ratio == AspectRatio.Square)
+        if (ratio == AspectRatio._1x1)
         {
-            q = SquareMesh;
+            q = _1x1Mesh;
         }
-        else if (ratio == AspectRatio.OneByOnePointFive)
+        else if (ratio == AspectRatio._1x2)
         {
-            q = OnePointFiveMesh;
+            q = _1x2Mesh;
+        }
+        else if (ratio == AspectRatio._2x3)
+        {
+            q = _2x3Mesh;
         }
         else throw new Exception();
 

@@ -12,6 +12,6 @@ public abstract class ProductionBuilding : BuildingModel
         Item = resource;
     }
 
-    public abstract void Produce(Wallet<ModelRef<Item>> gains, 
-        Wallet<EntityRef<ResourceDeposit>> depletions, Building p, float staffingRatio, Data data);
+    public abstract void Produce(ItemWallet gains, 
+        EntityWallet<ResourceDeposit> depletions, Building p, float staffingRatio, Data data);
 }

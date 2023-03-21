@@ -15,8 +15,10 @@ public class RegimeResourceDisplay
         box.AddChild(icon);
         box.AddChild(label);
         icon.RectScale = new Vector2(1f, -1f);
-
-        SubscribedStatLabel.ConstructForEntityTrigger<Regime, float>(regime, "", label, r => (int)r.Resources[sr], 
+        
+        SubscribedStatLabel.ConstructForEntityTrigger<Regime, float>(regime, 
+            "", label, 
+            r => r.Resources[sr], 
             data.Notices.FinishedFrame);
         return box;
     }

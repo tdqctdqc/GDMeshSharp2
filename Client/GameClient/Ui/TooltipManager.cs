@@ -5,13 +5,12 @@ using Godot;
 
 public class TooltipManager
 {
-    private IClient _client;
     private MapPolyTooltip _mapPolyToolTip;
-    public TooltipManager(MapPolyTooltip mapPolyTooltip, PolyHighlighter higlighter, IClient client)
+    
+    public TooltipManager(MapPolyTooltip mapPolyTooltip, PolyHighlighter higlighter, GameGraphics graphics)
     {
         _mapPolyToolTip = mapPolyTooltip;
-        _client = client;
-        _mapPolyToolTip.Setup(higlighter, client);
+        _mapPolyToolTip.Setup(higlighter, graphics);
     }
 
     public void Process(float delta, Data data, Vector2 mousePosInMapSpace)

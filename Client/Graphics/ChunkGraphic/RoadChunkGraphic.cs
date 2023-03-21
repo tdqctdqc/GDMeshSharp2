@@ -30,8 +30,11 @@ public class RoadChunkGraphic : Node2D
             }
         }
         if (froms.Count == 0) return;
-        var mesh = MeshGenerator.GetLinesMesh(froms, tos, 10f);
-        mesh.Modulate = Colors.LightGray;
-        AddChild(mesh);
+        var outsideMesh = MeshGenerator.GetLinesMesh(froms, tos, 10f);
+        outsideMesh.Modulate = Colors.LightGray;
+        var insideMesh = MeshGenerator.GetLinesMesh(froms, tos, 8f);
+        insideMesh.Modulate = Colors.Black.Lightened(.1f);
+        AddChild(outsideMesh);
+        AddChild(insideMesh);
     }
 }

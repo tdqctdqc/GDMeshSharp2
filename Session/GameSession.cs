@@ -18,7 +18,7 @@ public class GameSession : Node, ISession
         Client?.Process(delta);
     }
     
-    public void StartAsHost(GenData data)
+    public void StartAsHost(GenData data, GameGraphics graphics = null)
     {
         Data = data;
         var hServer = new HostServer();
@@ -34,7 +34,7 @@ public class GameSession : Node, ISession
         StartServer(hServer);
         Player.Create(Game.I.PlayerGuid, "Doot", hKey);
 
-        StartClient(hServer);
+        StartClient(hServer, graphics);
     }
     
     public void StartAsRemote()
@@ -50,7 +50,7 @@ public class GameSession : Node, ISession
 
         Data.Notices.FinishedStateSync.Subscribe(() =>
         {
-            StartClient(server);
+            StartClient(server, null);
         });
         server.Setup(this, logic, Data);
         StartServer(server);
@@ -63,12 +63,11 @@ public class GameSession : Node, ISession
         AddChild((Node)server);
     }
 
-    private void StartClient(IServer server)
+    private void StartClient(IServer server, GameGraphics graphics)
     {
-        GD.Print("starting client");
         var client = new GameClient();
         Client = client;
-        client.Setup(this, server);
+        client.Setup(this, server, graphics);
         AddChild((Node)Client);
     }
     public override void _UnhandledInput(InputEvent e)

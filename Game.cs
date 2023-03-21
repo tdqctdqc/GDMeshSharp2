@@ -36,11 +36,11 @@ public class Game : Node
         session.StartAsRemote();
 
     }
-    public void StartHostSession(GenData data)
+    public void StartHostSession(GenData data, GameGraphics graphics = null)
     {
         var session = new GameSession();
         SetSession(session);
-        session.StartAsHost(data);
+        session.StartAsHost(data, graphics);
     }
 
     public void StartSandbox()

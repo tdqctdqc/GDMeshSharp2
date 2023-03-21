@@ -18,6 +18,9 @@ public class Data
     public BaseDomain BaseDomain { get; private set; }
     public PlanetDomain Planet { get; private set; }
     public SocietyDomain Society { get; private set; }
+    
+    public int Tick => BaseDomain.GameClock.Value.Tick;
+
     public Data()
     {
         _idDispenser = new IdDispenser();
