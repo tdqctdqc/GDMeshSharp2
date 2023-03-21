@@ -15,7 +15,7 @@ public class LandSeaManager
         
     }
 
-    public void SetLandmasses(Data data)
+    public void SetMasses(Data data)
     {
         Landmasses = new List<HashSet<MapPolygon>>();
         LandmassDic = new Dictionary<MapPolygon, HashSet<MapPolygon>>();

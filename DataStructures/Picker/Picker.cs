@@ -89,14 +89,14 @@ public class Picker
         IEnumerable<TPicker> openPickersSource,
         Func<TPicker, HashSet<TPicked>> getAdjacent, Action<TPicker, TPicked> take,
         Func<TPicked, TPicker, float> heuristic,
-        int numPickedToLeave)
+        int numPickedToLeave) where TPicked : class
     {
         Func<TPicker, HashSet<TPicked>, TPicked> choose = (picker, avail) =>
         {
-            if (avail.Count == numPickedToLeave) return default;
+            if (avail.Count <= numPickedToLeave) return null;
             float takeHeur = Mathf.Inf;
             bool found = false;
-            TPicked chosen = default;
+            TPicked chosen = null;
             var adj = getAdjacent(picker);
             foreach (var el in adj)
             {
@@ -110,9 +110,10 @@ public class Picker
                 }
             }
 
-            return (TPicked)chosen;
+            return chosen;
         };
-        return Pick(notTakenSource, openPickersSource, getAdjacent, choose, take);
+        return Pick(notTakenSource, openPickersSource, 
+            getAdjacent, choose, take);
     }
     
     private static HashSet<TPicked> Pick<TPicker, TPicked>(IEnumerable<TPicked> notTakenSource, IEnumerable<TPicker> openPickersSource,
@@ -128,9 +129,8 @@ public class Picker
             var picker = openPickers.First;
             openPickers.RemoveFirst();
 
-            TPicked toTake = default;
             var adj = getAdjacent(picker.Value);
-            toTake = choose(picker.Value, notTaken);
+            TPicked toTake = choose(picker.Value, notTaken);
             
             if (toTake == null)
             {

@@ -4,6 +4,12 @@ using System.Linq;
 
 public class GeologySettings : Settings
 {
+    public FloatSettingsOption LandRatio { get; private set; }
+        = new FloatSettingsOption("Land Ratio", .3f, .05f, 1f, .05f, false);
+    public FloatSettingsOption NumContinents { get; private set; }
+        = new FloatSettingsOption("Num Continents", 5, 2, 10, 1, true);
+    public FloatSettingsOption NumSeas { get; private set; }
+        = new FloatSettingsOption("Num Seas", 10, 0, 20, 1, true);
     public FloatSettingsOption SeaLevel { get; private set; }
         = new FloatSettingsOption("Sea Level", .5f, 0f, 1f, .05f, false);
     public FloatSettingsOption FaultLineRange { get; private set; }
@@ -19,7 +25,8 @@ public class GeologySettings : Settings
     {
         _options.AddRange(new ISettingsOption[]
         {
-            SeaLevel, FaultLineRange, FrictionAltEffect, FrictionRoughnessEffect, RoughnessErosionMult
+            LandRatio, NumContinents, NumSeas, SeaLevel, FaultLineRange, FrictionAltEffect, 
+            FrictionRoughnessEffect, RoughnessErosionMult
         });
     }
 }

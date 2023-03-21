@@ -7,7 +7,7 @@ using Godot;
 public class MapPolyTooltip : Node2D
 {
     private Label _id, _numPeeps, _totalPop, _regime, _landform, _veg, _settlementName, _settlementSize,
-        _resourceDeposits, _buildings, _fertility;
+        _resourceDeposits, _buildings, _fertility, _altitude;
     private Container _container;
     private MapPolygon _mouseOverPoly = null;
     private PolyTri _mouseOverTri = null;
@@ -30,6 +30,7 @@ public class MapPolyTooltip : Node2D
         _resourceDeposits = _container.CreateLabelAsChild("ResourceDeposits");
         _buildings = _container.CreateLabelAsChild("Buildings");
         _fertility = _container.CreateLabelAsChild("Fertility");
+        _altitude = _container.CreateLabelAsChild("Altitude");
         _action = new TimerAction(.05f);
     }
     public void Process(float delta, Data data, Vector2 mousePosMapSpace)
@@ -142,6 +143,8 @@ public class MapPolyTooltip : Node2D
         }
         
         _fertility.Text = "Fertility: " + Mathf.FloorToInt(_mouseOverPoly.GetFertility());
+        
+        _altitude.Text = "Altitude: " + _mouseOverPoly.Altitude;
     }
 
 }

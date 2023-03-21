@@ -4,7 +4,6 @@ using System.Collections.Generic;
 
 public class GenData : Data
 {
-    public LandSeaManager LandSea { get; private set; }
     public GenAuxiliaryData GenAuxData { get; private set; }
     public MapGenInfo GenInfo { get; set; }
     public GenerationMultiSettings GenMultiSettings { get; private set; }
@@ -16,7 +15,6 @@ public class GenData : Data
     protected override void Init()
     {
         GenAuxData = new GenAuxiliaryData(this);
-        LandSea = new LandSeaManager();
         base.Init();
     }
     public void ClearAuxData()

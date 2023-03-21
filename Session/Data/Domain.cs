@@ -24,7 +24,6 @@ public abstract class Domain
 
     protected void AddRepo<T>(Repository<T> repo) where T : Entity
     {
-        GD.Print("Adding repo " + typeof(T));
         _repos.Add(typeof(T), repo);
     }
 

@@ -47,7 +47,7 @@ public class GeologyGenerator : Generator
         report.StopSection("HandleIsthmusAndInlandSeas");
         
         report.StartSection(); 
-        Data.LandSea.SetLandmasses(Data);
+        Data.Notices.SetLandAndSea.Invoke();
         report.StopSection("SetLandmasses");
         
         return report;
@@ -127,29 +127,29 @@ public class GeologyGenerator : Generator
 
     private void BuildContinents()
     {
-        var massesPerCont = 3;
         var numMasses = Data.GenAuxData.Masses.Count;
-        var numLandConts = 5;
-        var numSeas = 10;
+        var numLandConts = (int) Data.GenMultiSettings.GeologySettings.NumContinents.Value;
+        var numSeas = (int) Data.GenMultiSettings.GeologySettings.NumSeas.Value;
         if (numLandConts + numSeas > Data.GenAuxData.Masses.Count) throw new Exception();
         
-        var landRatio = .3f;
+        var landRatio = Data.GenMultiSettings.GeologySettings.LandRatio.Value;
         var numSeaMasses = Mathf.FloorToInt(numMasses * (1f - landRatio));
-        
+
         var seeds = Picker.PickSeeds(Data.GenAuxData.Masses, new int[] {numLandConts, numSeas});
         var landSeeds = seeds[0].ToHashSet();
         var waterSeeds = seeds[1].ToHashSet();
         var allSeeds = landSeeds.Union(waterSeeds);
         var landConts = landSeeds
-            .Select(s => new GenContinent(s, _id.GetID(), Game.I.Random.RandfRange(.6f, .9f)))
+            .Select(s => new GenContinent(s, _id.GetID(), Game.I.Random.RandfRange(.5f, .6f)))
             .ToList();
         //todo make delaunay graph for landConts and put a sea on each edge
         var seaConts = waterSeeds
-            .Select(s => new GenContinent(s, _id.GetID(), Game.I.Random.RandfRange(.1f, .45f)))
+            .Select(s => new GenContinent(s, _id.GetID(), Game.I.Random.RandfRange(.0f, .0f)))
             .ToList();
         var width = Data.GenMultiSettings.Dimensions.x;
         var landRemainder = Picker.PickInTurnToLimitHeuristic(
-            Data.GenAuxData.Masses.Except(allSeeds), landConts,
+            Data.GenAuxData.Masses.Except(allSeeds), 
+            landConts,
             cont => cont.NeighboringMasses,
             (cont, mass) => cont.AddMass(mass),
             (m, c) => width
@@ -166,7 +166,7 @@ public class GeologyGenerator : Generator
             var unions = UnionFind.Find(seaRemainder, (g, h) => true, m => m.Neighbors);
             foreach (var u in unions)
             {
-                var cont = new GenContinent(u.First(), _id.GetID(), Game.I.Random.RandfRange(.1f, .45f));
+                var cont = new GenContinent(u.First(), _id.GetID(), Game.I.Random.RandfRange(.0f, .0f));
                 for (var i = 1; i < u.Count; i++)
                 {
                     cont.AddMass(u[i]);
@@ -174,7 +174,6 @@ public class GeologyGenerator : Generator
                 seaConts.Add(cont);
             }
         }
-        
         Data.GenAuxData.Continents.AddRange(landConts);
         Data.GenAuxData.Continents.AddRange(seaConts);
         Data.GenAuxData.Continents.ForEach(c => c.SetNeighbors());
@@ -217,7 +216,10 @@ public class GeologyGenerator : Generator
             }
             f.PolyFootprint.AddRange(inRange);   
         });
-        
+        foreach (var poly in Data.Planet.Polygons.Entities)
+        {
+            poly.SetIsLand(poly.Altitude > seaLevelSetting, _key);
+        }
         void setFriction(GenPlate hiPlate)
         {
             var neighbors = hiPlate.Neighbors.ToList();
@@ -286,9 +288,6 @@ public class GeologyGenerator : Generator
             var rand = Game.I.Random.RandfRange(-.2f, .2f);
             var newRoughness = Mathf.Clamp(frictionEffect - roughnessErosion + rand, 0f, 1f);
             poly.Set(nameof(poly.Roughness), newRoughness, _key);
-            
-            //todo not working? setting sealevel at 1 still leaves land
-            poly.SetIsLand(poly.Altitude > seaLevelSetting, _key);
         }
     }
 }

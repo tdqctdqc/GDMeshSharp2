@@ -10,6 +10,8 @@ public class MapPolygonRepo : Repository<MapPolygon>
     public EntityValueCache<MapPolygon, PolyAuxData> AuxDatas { get; private set; }
     public PolyGrid MapPolyGrid { get; private set; }
     public HashSet<MapChunk> Chunks { get; private set; }
+    public LandSeaManager LandSea { get; private set; }
+
     public MapPolygonRepo(Domain domain, Data data) : base(domain, data)
     {
         BorderGraph = ImplicitGraph.Get<MapPolygon, PolyBorderChain>(
@@ -32,6 +34,17 @@ public class MapPolygonRepo : Repository<MapPolygon>
         
         data.Notices.SetPolyShapes.Subscribe(() => BuildChunks(data));
         data.Notices.FinishedStateSync.Subscribe(() => BuildChunks(data));
+        
+        data.Notices.SetLandAndSea.Subscribe(() =>
+        {
+            LandSea = new LandSeaManager();
+            LandSea.SetMasses(data);
+        });
+        data.Notices.FinishedStateSync.Subscribe(() =>
+        {
+            LandSea = new LandSeaManager();
+            LandSea.SetMasses(data);
+        });
     }
     private void BuildPolyGrid(Data data)
     {

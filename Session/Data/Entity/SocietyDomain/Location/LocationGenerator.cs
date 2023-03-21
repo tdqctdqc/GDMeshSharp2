@@ -142,7 +142,7 @@ public class LocationGenerator : Generator
     private void GenerateRoadNetwork()
     {
         var roadBuildDist = Data.GenMultiSettings.SocietySettings.RoadBuildDist.Value;
-        Data.LandSea.Landmasses.ForEach(lm =>
+        Data.Planet.Polygons.LandSea.Landmasses.ForEach(lm =>
         {
             var settlements = lm.Where(p => Data.Society.Settlements.ByPoly.ContainsKey(p));
             if (settlements.Count() == 0) return;
