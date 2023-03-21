@@ -7,7 +7,6 @@ public class Data
 {
     private IdDispenser _idDispenser;
     public DataNotices Notices { get; private set; }
-    public LocalCache Cache { get; private set; }
     public Models Models { get; private set; }
     public RefFulfiller RefFulfiller { get; private set; }
     public IReadOnlyDictionary<Type, Domain> Domains => _domains;
@@ -44,7 +43,6 @@ public class Data
         AddDomain(Planet);
         Society = new SocietyDomain(this);
         AddDomain(Society);
-        Cache = new LocalCache(this);
     }
 
     public void AddEntity<TEntity>(TEntity e, StrongWriteKey key) where TEntity : Entity

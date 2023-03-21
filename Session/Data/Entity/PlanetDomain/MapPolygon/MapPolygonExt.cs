@@ -7,7 +7,7 @@ public static class MapPolygonExt
 {
     public static bool PointInPoly(this MapPolygon poly, Vector2 posAbs, Data data)
     {
-        return data.Cache.PolyRelWheelTris[poly].Any(t => t.ContainsPoint(poly.GetOffsetTo(posAbs, data)));
+        return poly.GetWheelTris(data).Any(t => t.ContainsPoint(poly.GetOffsetTo(posAbs, data)));
     }
     public static Vector2 GetOffsetTo(this MapPolygon poly, MapPolygon p, Data data)
     {
@@ -31,9 +31,13 @@ public static class MapPolygonExt
     {
         return data.Planet.Polygons.PeepsInPoly[poly];
     }
+    public static IReadOnlyList<Triangle> GetWheelTris(this MapPolygon poly, Data data)
+    {
+        return data.Planet.Polygons.AuxDatas[poly].WheelTris;
+    }
     public static float GetArea(this MapPolygon poly, Data data)
     {
-        return data.Cache.PolyRelWheelTris[poly].Sum(t => t.GetArea());
+        return data.Planet.Polygons.AuxDatas[poly].WheelTris.Sum(t => t.GetArea());
     }
     public static float GetScore(this MapPolygon poly, MapPolygon closest, MapPolygon secondClosest, 
         Vector2 pRel, Data data, Func<MapPolygon, float> getScore)
@@ -62,11 +66,11 @@ public static class MapPolygonExt
     }
     public static List<PolyBorderChain> GetOrderedNeighborBorders(this MapPolygon poly, Data data)
     {
-        return data.Cache.OrderedNeighborBorders[poly];
+        return data.Planet.Polygons.AuxDatas[poly].OrderedNeighborBorders;
     }
     public static List<LineSegment> GetOrderedBoundarySegs(this MapPolygon poly, Data data)
     {
-        return data.Cache.OrderedBoundarySegs[poly];
+        return data.Planet.Polygons.AuxDatas[poly].OrderedBoundarySegs;
     }
 
     public static ReadOnlyHash<ResourceDeposit> GetResourceDeposits(this MapPolygon p, Data data)
@@ -89,6 +93,6 @@ public static class MapPolygonExt
 
     public static Vector2 GetGraphicalCenterOffset(this MapPolygon poly, Data data)
     {
-        return data.Cache.PolyGraphicalCenters[poly];
+        return data.Planet.Polygons.AuxDatas[poly].GraphicalCenter;
     }
 }

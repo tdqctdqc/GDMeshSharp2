@@ -76,7 +76,9 @@ public class MeshBuilder
         foreach (var p in polys)
         {
             var color = getColor(p);
-            var polyTris = data.Cache.PolyRelWheelTris[p].Select(v => v.Transpose(relTo.GetOffsetTo(p, data))).ToList();
+            var polyTris = p.GetWheelTris(data)
+                .Select(v => v.Transpose(relTo.GetOffsetTo(p, data)))
+                .ToList();
             for (int j = 0; j < polyTris.Count(); j++)
             {
                 AddTri(polyTris[j], color);

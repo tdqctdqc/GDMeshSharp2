@@ -56,7 +56,7 @@ public class MapPolyTooltip : Node2D
         }
         else
         {
-            SetMousePoly(data.Cache.MapPolyGrid.GetElementAtPoint(mousePosMapSpace));
+            SetMousePoly(data.Planet.Polygons.MapPolyGrid.GetElementAtPoint(mousePosMapSpace));
         }
         PreDraw(mousePosMapSpace, data);
     }

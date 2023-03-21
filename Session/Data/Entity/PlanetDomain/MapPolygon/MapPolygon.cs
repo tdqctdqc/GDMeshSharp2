@@ -83,24 +83,7 @@ public partial class MapPolygon : Entity,
     {
         IsLand = isLand;
     }
-    public List<LineSegment> BuildBoundarySegments(Data data)
-    {
-        var neighborSegs = this.GetOrderedNeighborBorders(data).SelectMany(b => b.Segments).ToList();
-
-        if (neighborSegs.IsCircuit() == false)
-        {
-            var edge = new LineSegment(neighborSegs.Last().To, neighborSegs[0].From);
-            neighborSegs.Add(edge);
-        }
-
-        if (neighborSegs.IsCircuit() == false || neighborSegs.IsContinuous() == false)
-        {
-            GD.Print("still not circuit");
-            throw new Exception();
-            // throw new SegmentsNotConnectedException(before, neighborSegs);
-        }
-        return neighborSegs;
-    }
+    
     
     public override Type GetDomainType() => typeof(PlanetDomain);
     PolyBorderChain IReadOnlyGraphNode<MapPolygon, PolyBorderChain>.GetEdge(MapPolygon neighbor) =>
