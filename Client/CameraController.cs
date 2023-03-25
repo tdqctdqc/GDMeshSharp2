@@ -1,35 +1,48 @@
 using Godot;
 using System;
 
-public class CameraController : Camera2D
+public class CameraController : Camera2D, ICameraController
 {
     private float _udScrollSpeed = 1000f;
     private float _lrScrollSpeed = .02f;
     public float XScrollRatio { get; private set; }
-    private Vector2 _mapSpaceMousePos;
-    private Vector2 _globalSpaceMousePos;
-    public Vector2 GetMousePosInMapSpace(Data data)
+    private Data _data;
+
+    public static CameraController Construct(Data data)
     {
-        if(data == null) return Vector2.Inf;
-        if(data.Planet.PlanetInfo.Entities.Count == 0) return Vector2.Inf;
+        var c = new CameraController();
+        c.Setup(data);
+        return c;
+    }
+    private CameraController()
+    {
         
-        var mapWidth = data.Planet.Width;
+    }
+    public void Setup(Data data)
+    {
+        _data = data;
+    }
+    
+    public Vector2 GetMousePosInMapSpace()
+    {
+        if(_data.Planet == null) return Vector2.Inf;
+        if(_data.Planet.PlanetInfo == null) return Vector2.Inf;
+        if(_data.Planet.PlanetInfo.Entities.Count == 0) return Vector2.Inf;
+        
+        var mapWidth = _data.Planet.Width;
         var scrollDist = mapWidth * XScrollRatio;
         
         var mousePosGlobal = GetGlobalMousePosition();
-        if (_globalSpaceMousePos == mousePosGlobal) return _mapSpaceMousePos;
-        _globalSpaceMousePos = mousePosGlobal;
-        _mapSpaceMousePos =  new Vector2(mousePosGlobal.x + scrollDist, mousePosGlobal.y);
-        while (_mapSpaceMousePos.x > mapWidth) _mapSpaceMousePos += Vector2.Left * mapWidth;
-        while (_mapSpaceMousePos.x < 0f) _mapSpaceMousePos += Vector2.Right * mapWidth;
-        return _mapSpaceMousePos;
+        var mapSpaceMousePos =  new Vector2(mousePosGlobal.x + scrollDist, mousePosGlobal.y);
+        while (mapSpaceMousePos.x > mapWidth) mapSpaceMousePos += Vector2.Left * mapWidth;
+        while (mapSpaceMousePos.x < 0f) mapSpaceMousePos += Vector2.Right * mapWidth;
+        return mapSpaceMousePos;
     }
 
-    public Vector2 GetMapPosInGlobalSpace(Vector2 mapPos, Data data)
+    public Vector2 GetMapPosInGlobalSpace(Vector2 mapPos)
     {
-        var mapWidth = data.Planet.Width;   
+        var mapWidth = _data.Planet.Width;   
         var scrollDist = mapWidth * XScrollRatio;
-        
         
         var globalSpace = new Vector2(mapPos.x - scrollDist, mapPos.y);
         

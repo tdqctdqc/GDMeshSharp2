@@ -131,6 +131,11 @@ public class GeologyGenerator : Generator
         var numLandConts = (int) Data.GenMultiSettings.GeologySettings.NumContinents.Value;
         var numSeas = (int) Data.GenMultiSettings.GeologySettings.NumSeas.Value;
         if (numLandConts + numSeas > Data.GenAuxData.Masses.Count) throw new Exception();
+
+        var landMinAlt = .5f;
+        var landMaxAlt = .9f;
+        var seaMinAlt = .1f;
+        var seaMaxAlt = .45f;
         
         var landRatio = Data.GenMultiSettings.GeologySettings.LandRatio.Value;
         var numSeaMasses = Mathf.FloorToInt(numMasses * (1f - landRatio));
@@ -140,11 +145,11 @@ public class GeologyGenerator : Generator
         var waterSeeds = seeds[1].ToHashSet();
         var allSeeds = landSeeds.Union(waterSeeds);
         var landConts = landSeeds
-            .Select(s => new GenContinent(s, _id.GetID(), Game.I.Random.RandfRange(.5f, .6f)))
+            .Select(s => new GenContinent(s, _id.GetID(), Game.I.Random.RandfRange(landMinAlt, landMaxAlt)))
             .ToList();
         //todo make delaunay graph for landConts and put a sea on each edge
         var seaConts = waterSeeds
-            .Select(s => new GenContinent(s, _id.GetID(), Game.I.Random.RandfRange(.0f, .0f)))
+            .Select(s => new GenContinent(s, _id.GetID(), Game.I.Random.RandfRange(seaMinAlt, seaMaxAlt)))
             .ToList();
         var width = Data.GenMultiSettings.Dimensions.x;
         var landRemainder = Picker.PickInTurnToLimitHeuristic(
@@ -166,7 +171,7 @@ public class GeologyGenerator : Generator
             var unions = UnionFind.Find(seaRemainder, (g, h) => true, m => m.Neighbors);
             foreach (var u in unions)
             {
-                var cont = new GenContinent(u.First(), _id.GetID(), Game.I.Random.RandfRange(.0f, .0f));
+                var cont = new GenContinent(u.First(), _id.GetID(), Game.I.Random.RandfRange(seaMinAlt, seaMaxAlt));
                 for (var i = 1; i < u.Count; i++)
                 {
                     cont.AddMass(u[i]);
@@ -212,7 +217,7 @@ public class GeologyGenerator : Generator
             var inRange = getPolysInRangeOfFault(f);
             foreach (var mapPolygon in inRange)
             {
-                DoRoughness(mapPolygon, f);
+                DoFaultLineEffect(mapPolygon, f);
             }
             f.PolyFootprint.AddRange(inRange);   
         });
@@ -220,6 +225,9 @@ public class GeologyGenerator : Generator
         {
             poly.SetIsLand(poly.Altitude > seaLevelSetting, _key);
         }
+        
+        
+        
         void setFriction(GenPlate hiPlate)
         {
             var neighbors = hiPlate.Neighbors.ToList();
@@ -267,7 +275,7 @@ public class GeologyGenerator : Generator
             return polysInRange;
         }
         
-        void DoRoughness(MapPolygon poly, FaultLine fault)
+        void DoFaultLineEffect(MapPolygon poly, FaultLine fault)
         {
             var dist = fault.GetDist(poly, Data);
             var faultRange = fault.Friction * faultRangeSetting;

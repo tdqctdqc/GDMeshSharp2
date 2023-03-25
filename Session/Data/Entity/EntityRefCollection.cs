@@ -22,7 +22,7 @@ public partial class EntityRefCollection<TRef>
         RefIds = refIds == null ? new HashSet<int>() : new HashSet<int>(refIds);
         _refs = null;
     }
-    public IReadOnlyCollection<TRef> Refs()
+    public IReadOnlyCollection<TRef> Entities()
     {
         if (_refs == null)
         {

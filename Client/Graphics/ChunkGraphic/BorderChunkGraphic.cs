@@ -16,10 +16,10 @@ public class BorderChunkGraphic : Node2D
         {
             var color = p.Regime.Entity().PrimaryColor.Darkened(.2f);
             var offset = relTo.GetOffsetTo(p, data);
-            foreach (var n in p.Neighbors.Refs())
+            foreach (var n in p.Neighbors.Entities())
             {
                 if (n.Regime.RefId == p.Regime.RefId) continue;
-                mb.DrawMapPolyEdge(p, n, data, 20f, color, offset);
+                mb.DrawMapPolyEdge(p, n, data, thickness, color, offset);
             }
         }
         

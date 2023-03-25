@@ -14,7 +14,8 @@ public class Models
     public VegetationManager Vegetation { get; private set; }
     public PeepJobManager PeepJobs { get; private set; }
     public ItemManager Items { get; private set; }
-    public BuildingModelManager BuildingsModel { get; private set; }
+    public BuildingModelManager Buildings { get; private set; }
+    public RoadModelManager Roads { get; private set; }
     public Models()
     {
         _managers = new Dictionary<Type, IModelManager>();
@@ -27,8 +28,10 @@ public class Models
         AddManager(PeepJobs);
         Items = new ItemManager();
         AddManager(Items);
-        BuildingsModel = new BuildingModelManager();
-        AddManager(BuildingsModel);
+        Buildings = new BuildingModelManager();
+        AddManager(Buildings);
+        Roads = new RoadModelManager();
+        AddManager(Roads);
     }
 
     public T GetModel<T>(string name)

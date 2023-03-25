@@ -30,7 +30,7 @@ public class VegetationManager : TerrainAspectManager<Vegetation>
     }
     public Vegetation GetAtPoint(MapPolygon poly, Vector2 pRel, Landform lf, Data data)
     {
-        var close = poly.Neighbors.Refs().OrderBy(n => (poly.GetOffsetTo(n, data) - pRel).Length());
+        var close = poly.Neighbors.Entities().OrderBy(n => (poly.GetOffsetTo(n, data) - pRel).Length());
         var first = close.ElementAt(0);
         var second = close.ElementAt(1);
         var score = poly.GetScore(first, second, pRel, data, p => p.Moisture);

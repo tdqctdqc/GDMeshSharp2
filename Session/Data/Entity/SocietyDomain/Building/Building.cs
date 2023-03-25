@@ -4,17 +4,17 @@ using MessagePack;
 
 public class Building : Entity
 {
-    public PolyTriPosition Position { get; private set; }
+    public PolyTriPositionSerializable Position { get; private set; }
     public ModelRef<BuildingModel> Model { get; private set; }
 
-    public static Building Create(PolyTriPosition position, BuildingModel model, CreateWriteKey key)
+    public static Building Create(PolyTriPositionSerializable positionSerializable, BuildingModel model, CreateWriteKey key)
     {
-        var b = new Building(key.IdDispenser.GetID(), position, model.MakeRef());
+        var b = new Building(key.IdDispenser.GetID(), positionSerializable, model.MakeRef());
         key.Create(b);
         return b;
     }
 
-    [SerializationConstructor] private Building(int id, PolyTriPosition position, ModelRef<BuildingModel> model) : base(id)
+    [SerializationConstructor] private Building(int id, PolyTriPositionSerializable position, ModelRef<BuildingModel> model) : base(id)
     {
         Position = position;
         Model = model;

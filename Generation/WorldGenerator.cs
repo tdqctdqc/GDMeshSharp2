@@ -36,6 +36,7 @@ public class WorldGenerator
         var id = _key.IdDispenser.GetID();
         PlanetInfo.Create(Data.GenMultiSettings.Dimensions, _key);
         GameClock.Create(_key);
+        RuleVars.Create(_key);
         _sw.Start();
 
         var points = PointsGenerator
@@ -64,6 +65,7 @@ public class WorldGenerator
         RunGenerator(new RegimeGenerator());
         
         RunGenerator(new LocationGenerator());
+        RunGenerator(new RoadGenerator());
         
         RunGenerator(new BuildingGenerator());
         

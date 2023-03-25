@@ -51,13 +51,13 @@ public static class MapPolygonExt
 
         return closeInt + secondInt;
     }
-    public static bool HasNeighbor(this MapPolygon poly, MapPolygon n) => poly.Neighbors.Refs().Contains(n);
+    public static bool HasNeighbor(this MapPolygon poly, MapPolygon n) => poly.Neighbors.Entities().Contains(n);
     public static bool IsWater(this MapPolygon poly) => poly.IsLand == false;
-    public static bool IsCoast(this MapPolygon poly) => poly.IsLand && poly.Neighbors.Refs().Any(n => n.IsWater());
+    public static bool IsCoast(this MapPolygon poly) => poly.IsLand && poly.Neighbors.Entities().Any(n => n.IsWater());
     public static MapPolygonEdge GetEdge(this MapPolygon poly, MapPolygon neighbor, Data data) 
         => data.Planet.PolyEdges.GetEdge(poly, neighbor);
     public static PolyBorderChain GetBorder(this MapPolygon poly, MapPolygon neighbor) => poly.NeighborBorders[neighbor.Id];
-    public static IEnumerable<PolyBorderChain> GetPolyBorders(this MapPolygon poly) => poly.Neighbors.Refs()
+    public static IEnumerable<PolyBorderChain> GetPolyBorders(this MapPolygon poly) => poly.Neighbors.Entities()
         .Select(n => poly.GetBorder(n));
     public static IChain<LineSegment> GetOrderedNeighborSegments(this MapPolygon poly, Data data)
     {
@@ -82,7 +82,7 @@ public static class MapPolygonExt
     public static float GetFertility(this MapPolygon poly)
     {
         return poly.TerrainTris.Tris.Count() > 0 
-            ? poly.TerrainTris.Tris.Select(i => i.GetFertility()).Sum() / 1000f
+            ? poly.TerrainTris.Tris.Select(i => i.GetFertility()).Sum()
             : 0f;
     }
 
@@ -94,5 +94,14 @@ public static class MapPolygonExt
     public static Vector2 GetGraphicalCenterOffset(this MapPolygon poly, Data data)
     {
         return data.Planet.Polygons.AuxDatas[poly].GraphicalCenter;
+    }
+
+    public static bool HasSettlement(this MapPolygon p, Data data)
+    {
+        return GetSettlement(p, data) != null;
+    }
+    public static Settlement GetSettlement(this MapPolygon p, Data data)
+    {
+        return data.Society.Settlements.ByPoly.ContainsKey(p) ? data.Society.Settlements.ByPoly[p] : null;
     }
 }

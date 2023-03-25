@@ -5,20 +5,20 @@ using MessagePack;
 
 public class ItemWallet : Wallet<string>
 {
-    public float this[Item item] => this[item.Name];
+    public int this[Item item] => this[item.Name];
     public static ItemWallet Construct()
     {
-        return new ItemWallet(new Dictionary<string, float>());
+        return new ItemWallet(new Dictionary<string, int>());
     }
-    [SerializationConstructor] private ItemWallet(Dictionary<string, float> contents) : base(contents)
+    [SerializationConstructor] private ItemWallet(Dictionary<string, int> contents) : base(contents)
     {
     }
 
-    public void Add(Item item, float amount)
+    public void Add(Item item, int amount)
     {
         Add(item.Name, amount);
     }
-    public void Remove(Item item, float amount)
+    public void Remove(Item item, int amount)
     {
         Remove(item.Name, amount);
     }

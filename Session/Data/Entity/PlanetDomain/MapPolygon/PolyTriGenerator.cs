@@ -117,7 +117,7 @@ public class PolyTriGenerator : Generator
         {
             tris = DoSeaPoly(poly, key);
         }
-        else if (poly.Neighbors.Refs().Any(n => _riverBorders.ContainsKey(poly.GetEdge(n, _data))))
+        else if (poly.Neighbors.Entities().Any(n => _riverBorders.ContainsKey(poly.GetEdge(n, _data))))
         {
             tris = DoRiverPoly(poly, key);
         }

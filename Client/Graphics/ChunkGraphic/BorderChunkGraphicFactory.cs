@@ -14,7 +14,7 @@ public class BorderChunkGraphicFactory : ChunkGraphicFactory
     {
         var r = new BorderChunkGraphic();
         r.SetupForRegime(c.RelTo, c.Polys.ToList(),
-            20f, d);
+            5f, d);
         return r;
     }
 }

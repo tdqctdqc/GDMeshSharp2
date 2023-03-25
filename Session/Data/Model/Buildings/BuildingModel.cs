@@ -4,12 +4,11 @@ using Godot;
 public abstract class BuildingModel : IModel
 {
     public string Name { get; }
-    public Icon BuildingIcon { get; } 
-
+    public Icon BuildingIcon { get; }
     public BuildingModel(string name)
     {
         Name = name;
-        BuildingIcon = Icon.Create(Name, Icon.AspectRatio._1x1);
+        BuildingIcon = Icon.Create(Name, Icon.AspectRatio._1x1, 20f);
     }
 
     public abstract bool CanBuildInTri(PolyTri t, Data data);

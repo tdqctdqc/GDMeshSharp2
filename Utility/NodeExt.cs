@@ -5,6 +5,17 @@ using Godot;
 
 public static class NodeExt
 {
+    public static List<Node> GetChildList(this Node n)
+    {
+        var l = new List<Node>();
+        var children = n.GetChildren();
+        foreach (var child in children)
+        {
+            l.Add((Node)child);
+        }
+
+        return l;
+    }
     public static void AssignChildNode<T>(this Node n, ref T node, string name) where T : Node
     {
         node = (T) n.FindNode(name);
@@ -14,6 +25,13 @@ public static class NodeExt
     {
         parent.AddChild(toCenter);
         toCenter.RectPosition = -parentDim / 2f;
+    }
+
+    public static Label CreateLabel(string text)
+    {
+        var l = new Label();
+        l.Text = text;
+        return l;
     }
     public static Label CreateLabelAsChild(this Node parent, string text)
     {

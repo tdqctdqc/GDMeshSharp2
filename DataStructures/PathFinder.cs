@@ -132,6 +132,17 @@ public static class PathFinder<T>
 
         return path;
     }
+
+    public static float GetPathCost<T>(List<T> path, Func<T, T, float> cost)
+    {
+        var res = 0f;
+        for (var i = 0; i < path.Count - 1; i++)
+        {
+            res += cost(path[i], path[i + 1]);
+        }
+
+        return res;
+    }
     private static List<T> BuildPathBackwards(PathFinderNode<T> endNode)
     {
         var path = new List<T>();

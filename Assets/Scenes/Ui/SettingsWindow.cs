@@ -6,15 +6,15 @@ using Godot;
 
 public class SettingsWindow : WindowDialog
 {
-    private SettingsWindow()
+    protected SettingsWindow()
     {
-        
+        RectSize = Vector2.One * 500f;
     }
     public static SettingsWindow Get(ISettings settings)
     {
-        var sw = SceneManager.Instance<SettingsWindow>();
-        sw.Setup(settings);
-        return sw;
+        var w = new SettingsWindow();
+        w.Setup(settings);
+        return w;
     }
     public static SettingsWindow Get(MultiSettings multi)
     {
@@ -22,11 +22,25 @@ public class SettingsWindow : WindowDialog
         multi.Settings.ForEach(s => sw.Setup(s));
         return sw;
     }
-    private void Setup(ISettings settings)
+    protected void Setup(ISettings settings)
     {
-        var tabs = (TabContainer) FindNode("TabContainer");
+        var tabs = new TabContainer();
+        tabs.RectSize = RectSize;
+        AddChild(tabs);
         var controls = SettingsControls.Construct(settings);
         controls.Name = settings.Name;
         tabs.AddChild(controls);
+    }
+    protected void Setup(MultiSettings multi)
+    {
+        var tabs = new TabContainer();
+        tabs.RectSize = RectSize;
+        AddChild(tabs);
+        foreach (var settings in multi.Settings)
+        {
+            var controls = SettingsControls.Construct(settings);
+            controls.Name = settings.Name;
+            tabs.AddChild(controls);
+        }
     }
 }

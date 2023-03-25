@@ -11,12 +11,12 @@ public class PromptManager
     private float _period = 1f;
     private Node _hook;
 
-    public PromptManager(Node hook, Data data, ClientWriteKey key)
+    public PromptManager(Node hook, Data data)
     {
         _hook = hook;
         _currPrompts = new HashSet<Type>();
         Prompts = new Queue<IPrompt>();
-        data.Notices.NeedDecision.Subscribe(d => GetPrompt(new DecisionPrompt(d, key)));
+        data.Notices.NeedDecision.Subscribe(d => GetPrompt(new DecisionPrompt(d, Game.I.Client.Key)));
     }
 
     public void Process(float delta, ClientWriteKey key)

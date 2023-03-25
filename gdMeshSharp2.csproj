@@ -30,4 +30,7 @@
     <EmbeddedResource Remove="Client\MapDisplayOptionsUi\**" />
     <EmbeddedResource Remove="Client\StartScene\**" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Session\Logic\Modules\Peeps" />
+  </ItemGroup>
 </Project>

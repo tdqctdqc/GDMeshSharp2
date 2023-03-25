@@ -1,13 +1,15 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 public class PolyTriPosition
 {
-    public EntityRef<MapPolygon> Poly { get; private set; }
-    public int TriIndex { get; private set; }
-    public PolyTri Tri() => Poly.Entity().TerrainTris.Tris[TriIndex];
-    
-    public PolyTriPosition(EntityRef<MapPolygon> poly, int triIndex)
+    public MapPolygon Poly { get; private set; }
+    public PolyTri Tri { get; private set; }
+
+    public PolyTriPosition(MapPolygon poly, PolyTri tri)
     {
         Poly = poly;
-        TriIndex = triIndex;
+        Tri = tri;
     }
 }

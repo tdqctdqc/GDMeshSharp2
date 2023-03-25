@@ -8,7 +8,6 @@ public class GeneratorSession : Node, ISession
     RefFulfiller ISession.RefFulfiller => Data.RefFulfiller;
     public GenData Data { get; private set; }
     IClient ISession.Client => Client;
-    
     public GeneratorClient Client { get; private set; }
     public WorldGenerator WorldGen { get; private set; }
     public Action<DisplayableException> GenerationFailed { get; set; }
@@ -22,7 +21,8 @@ public class GeneratorSession : Node, ISession
     {
         Server = new DummyServer();
         GenMultiSettings = new GenerationMultiSettings();
-        Client = SceneManager.Instance<GeneratorClient>();
+        Data = new GenData(GenMultiSettings);
+        Client = new GeneratorClient();
         Client.Setup(this);
         AddChild(Client);
     }
@@ -31,7 +31,6 @@ public class GeneratorSession : Node, ISession
     {
         Succeeded = false;
         Generating = true;
-        Data = new GenData(GenMultiSettings);
         WorldGen = new WorldGenerator(this, Data);
         WorldGen.GenerationFailed += GenerationFailed;
         WorldGen.GenerationFeedback += GenerationFeedback;

@@ -14,27 +14,24 @@ public class RoadChunkGraphic : Node2D
     {
         var froms = new List<Vector2>();
         var tos = new List<Vector2>();
+        var mb = new MeshBuilder();
         foreach (var p in chunk.Polys)
         {
-            foreach (var n in p.Neighbors.Refs())
+            foreach (var n in p.Neighbors.Entities())
             {
                 if (p.Id > n.Id)
                 {
                     var border = p.GetEdge(n, data);
                     if (data.Society.Roads.ByEdgeId.ContainsKey(border.Id))
                     {
-                        froms.Add(chunk.RelTo.GetOffsetTo(p.Center, data));
-                        tos.Add(chunk.RelTo.GetOffsetTo(n.Center, data));
+                        var seg = data.Society.Roads.ByEdgeId[border.Id];
+                        seg.Road.Model().Draw(mb, chunk.RelTo.GetOffsetTo(p.Center, data), 
+                            chunk.RelTo.GetOffsetTo(n.Center, data), 10f);
                     }
                 }
             }
         }
-        if (froms.Count == 0) return;
-        var outsideMesh = MeshGenerator.GetLinesMesh(froms, tos, 10f);
-        outsideMesh.Modulate = Colors.LightGray;
-        var insideMesh = MeshGenerator.GetLinesMesh(froms, tos, 8f);
-        insideMesh.Modulate = Colors.Black.Lightened(.1f);
-        AddChild(outsideMesh);
-        AddChild(insideMesh);
+        if (mb.Tris.Count == 0) return;
+        AddChild(mb.GetMeshInstance());
     }
 }

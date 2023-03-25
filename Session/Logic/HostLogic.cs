@@ -27,7 +27,7 @@ public class HostLogic : ILogic
         CommandQueue = new ConcurrentQueue<Command>();
         _frames = new LogicFrame[]
         {
-            new LogicFrame(new TickModule(), new ProductionModule(), new PeepConsumptionModule()),
+            new LogicFrame(new TickModule(), new ProductionAndConsumptionModule()),
             new LogicFrame(new TickModule()),
             new LogicFrame(new TickModule()),
             new LogicFrame(new TickModule()),
@@ -38,6 +38,7 @@ public class HostLogic : ILogic
     public void Process(float delta)
     {
         _frameTimer += delta;
+        Game.I.Logger.Log("framer time " + _frameTimer, LogType.Logic);
         if (_calculating != null && _calculating.Exception != null)
         {
             throw _calculating.Exception;

@@ -14,7 +14,7 @@ public class PolyIconsChunkGraphicFactory : ChunkGraphicFactory
     {
         return new List<IEnumerable<Icon>>
         {
-            p.GetResourceDeposits(d)?.Select(r => r.Resource.Model().ResIcon),
+            p.GetResourceDeposits(d)?.Select(r => r.Item.Model().ResIcon),
             p.GetPeeps(d)?.Select(peep => peep.Job.Model().JobIcon),
         };
     }

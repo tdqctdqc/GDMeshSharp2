@@ -123,6 +123,50 @@ public class MeshBuilder
             currInner = nextInner;
         }
     }
+
+    public void AddLine(Vector2 from, Vector2 to, Color color, float thickness)
+    {
+        JoinLinePoints(from, to, thickness, color);
+    }
+
+    public void AddParallelLines(Vector2 from, Vector2 to, Color color, float thickness, float offset)
+    {
+        var axis = (to - from).Normalized();
+        var perp = axis.Perpendicular();
+        var railOffset = offset * perp;
+        var railWidth = thickness;
+        AddLine(from + railOffset, to + railOffset, color, railWidth);
+        AddLine(from - railOffset, to - railOffset, color, railWidth);
+    }
+
+    public void AddSpacedCrossbars(Vector2 from, Vector2 to, Color color, float thickness, float length, float spacing)
+    {
+        var axis = (to - from).Normalized();
+        var perp = axis.Perpendicular();
+        var numCrossBars = Mathf.FloorToInt(from.DistanceTo(to) / spacing);
+        var crossStartOffset = axis * spacing / 2f;
+        for (var i = 0; i < numCrossBars; i++)
+        {
+            var mid = crossStartOffset + axis * i * spacing;
+            var left = from + mid - perp * length;
+            var right = from + mid + perp * length;
+            AddLine(left, right, color, thickness);
+        }
+    }
+    
+    public void AddDashedLine(Vector2 from, Vector2 to, Color color, float thickness, float dashLength, float spacing)
+    {
+        var axis = (to - from).Normalized();
+        var perp = axis.Perpendicular();
+        var numCrossBars = Mathf.FloorToInt(from.DistanceTo(to) / (spacing + dashLength));
+        var startOffset = axis * spacing / 2f;
+        for (var i = 0; i < numCrossBars; i++)
+        {
+            var dashFrom = from + startOffset + axis * i * (spacing + dashLength);
+            var dashTo = dashFrom + axis * dashLength;
+            AddLine(dashFrom, dashTo, color, thickness);
+        }
+    }
     public void AddLines(List<Vector2> froms,
         List<Vector2> tos, float thickness, List<Color> colors)
     {

@@ -3,8 +3,12 @@ using System;
 
 public interface IClient
 {
+    ClientRequests Requests { get; }
+    TooltipManager TooltipManager { get; }
     void HandleInput(InputEvent e, float delta);
     void Process(float delta);
-    CameraController Cam { get; }
+    ICameraController Cam { get; }
     ClientSettings Settings { get; }
+    ClientWriteKey Key { get; }
+
 }

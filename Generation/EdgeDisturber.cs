@@ -20,7 +20,7 @@ public static class EdgeDisturber
         int iter = 0;
         foreach (var poly in polys)
         {
-            foreach (var n in poly.Neighbors.Refs())
+            foreach (var n in poly.Neighbors.Entities())
             {
                 var edge = poly.GetEdge(n, key.Data);
                 if (edges.Contains(edge)) continue;
@@ -48,7 +48,7 @@ public static class EdgeDisturber
             var poly = polys.ElementAt(i);
             for (var j = 0; j < poly.Neighbors.Count(); j++)
             {
-                var nPoly = poly.Neighbors.Refs().ElementAt(j);
+                var nPoly = poly.Neighbors.Entities().ElementAt(j);
                 if (poly.Id > nPoly.Id)
                 {
                     // DisturbEdge(_key.Data, poly, nPoly, noise);

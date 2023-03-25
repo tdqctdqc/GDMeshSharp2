@@ -122,7 +122,7 @@ public class MoistureGenerator : Generator
                 t => t.Moisture * riverFlowPerMoisture,
                 (p, q) => (p.Roughness + q.Roughness) * roughnessMult
                             * p.GetOffsetTo(q, _key.Data).Length() + baseRiverFlowCost,
-                Mathf.Inf, p => p.Neighbors.Refs());
+                Mathf.Inf, p => p.Neighbors.Entities());
             
             graph.Elements.ForEach(e =>
             {
@@ -138,8 +138,8 @@ public class MoistureGenerator : Generator
             
             foreach (var coast in coastPolys)
             {
-                var flowIn = coast.Neighbors.Refs().Sum(n => coast.GetEdge(n, Data).MoistureFlow);
-                var sea = coast.Neighbors.Refs().Where(n => n.IsWater())
+                var flowIn = coast.Neighbors.Entities().Sum(n => coast.GetEdge(n, Data).MoistureFlow);
+                var sea = coast.Neighbors.Entities().Where(n => n.IsWater())
                     .First();
                 coast.GetEdge(sea, Data).SetFlow(flowIn, _key);
             }

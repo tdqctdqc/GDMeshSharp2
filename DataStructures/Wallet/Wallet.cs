@@ -6,23 +6,23 @@ using MessagePack;
 
 public abstract class Wallet<T>
 {
-    public Dictionary<T, float> Contents { get; private set; }
-    public float this[T t] => Contents.ContainsKey(t) ? Contents[t] : 0f;
-    [SerializationConstructor] protected Wallet(Dictionary<T, float> contents)
+    public Dictionary<T, int> Contents { get; private set; }
+    public int this[T t] => Contents.ContainsKey(t) ? Contents[t] : 0;
+    [SerializationConstructor] protected Wallet(Dictionary<T, int> contents)
     {
         Contents = contents;
     }
-    public Snapshot<T, float> GetSnapshot()
+    public Snapshot<T, int> GetSnapshot()
     {
-        return Snapshot<T, float>.Construct(Contents);
+        return Snapshot<T, int>.Construct(Contents);
     }
-    protected void Add(T t, float amount)
+    protected void Add(T t, int amount)
     {
         if (amount < 0f) throw new Exception("Trying to add negative amount to wallet");
-        if(Contents.ContainsKey(t) == false) Contents.Add(t, 0f);
+        if(Contents.ContainsKey(t) == false) Contents.Add(t, 0);
         Contents[t] += amount;
     }
-    protected void Remove(T t, float amount)
+    protected void Remove(T t, int amount)
     {
         if (amount < 0f) throw new Exception("Trying to remove negative amount from wallet");
         if(Contents.ContainsKey(t) == false)
@@ -34,7 +34,7 @@ public abstract class Wallet<T>
         Contents[t] -= amount;
     }
 
-    public void TransferFrom<R>(R t, float amount, Wallet<R> destination) where R : T
+    public void TransferFrom<R>(R t, int amount, Wallet<R> destination) where R : T
     {
         Remove(t, amount);
         destination.Add(t, amount);

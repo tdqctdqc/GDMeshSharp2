@@ -2,50 +2,44 @@ using Godot;
 using System;
 using System.Collections.Generic;
 
-public class GameUi : CanvasLayer
+public class GameUi : Ui
 {
-    public EntityOverviewWindow EntityOverviewWindow { get; private set; }
-    public SettingsWindow SettingsWindow { get; private set; }
-    private MapDisplayOptionsUi _mapOptions;
-    private TopBar _topBar;
-    private Label  _mousePos;
     public PromptManager Prompts { get; private set; }
-    
-    public override void _Ready()
-    {
-        
-    }
-
+    public TooltipManager TooltipManager { get; private set; }
     public void Process(float delta, ClientWriteKey key)
     {
         Prompts.Process(delta, key);    
     }
 
-    public override void _UnhandledInput(InputEvent e)
+    public static GameUi Construct(IClient client, bool host, Data data, GameGraphics graphics)
     {
-        if (e is InputEventMouseMotion mm)
-        {
-            
-        }
+        var ui = new GameUi(client);
+        ui.Setup(host, data, graphics);
+        return ui;
+    }
+    private GameUi() : base() 
+    {
     }
 
-    public void Setup(bool host, Data data, GameGraphics graphics, 
-        CameraController cam, GameClient client)
+    protected GameUi(IClient client) : base(client)
     {
-        this.AssignChildNode(ref _mousePos, "MousePos");
         
-        EntityOverviewWindow = EntityOverviewWindow.Get(data);
-        AddChild(EntityOverviewWindow);
-        
-        SettingsWindow = SettingsWindow.Get(client.Settings);
-        AddChild(SettingsWindow);
+    }
 
-        this.AssignChildNode(ref _mapOptions, "MapDisplayOptionsUi");
-        _mapOptions.Setup(graphics, cam, data);
+    public void Setup(bool host, Data data, GameGraphics graphics)
+    {
+        AddWindow(LoggerWindow.Get());
+        AddWindow(EntityOverviewWindow.Get(data));
+        AddWindow(SettingsWindow.Get(Game.I.Client.Settings));
 
-        Prompts = new PromptManager(this, data, client.Key);
-        
-        this.AssignChildNode(ref _topBar, "TopBar");
-        _topBar.Setup(host, data, client);
+        var mapOptions = new MapDisplayOptionsUi();
+        mapOptions.Setup(graphics, data);
+        mapOptions.RectPosition = Vector2.Down * 50f;
+        AddChild(mapOptions);
+
+        Prompts = new PromptManager(this, data);
+        AddChild(GameUiTopBarToken.Get(host,data).Container);
+        TooltipManager = new TooltipManager(data);
+        AddChild(TooltipManager);
     }
 }

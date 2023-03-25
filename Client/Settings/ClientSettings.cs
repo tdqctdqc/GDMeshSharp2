@@ -4,10 +4,11 @@ using System.Linq;
 
 public class ClientSettings : Settings
 {
-
+    private static ClientSettings _settings;
     public static ClientSettings Load()
     {
-        return new ClientSettings();
+        if(_settings == null) _settings = new ClientSettings();
+        return _settings;
     }
 
     private ClientSettings() : base("Client")

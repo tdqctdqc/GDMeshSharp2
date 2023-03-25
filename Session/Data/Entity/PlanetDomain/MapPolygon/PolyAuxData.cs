@@ -44,11 +44,11 @@ public class PolyAuxData
     private void SetWheelTris(MapPolygon p, Data data)
     {
         WheelTris = new List<Triangle>();
-        if (p.Neighbors.Refs().Count == 0)
+        if (p.Neighbors.Entities().Count == 0)
         {
             throw new Exception();
         }
-        foreach (var n in p.Neighbors.Refs())
+        foreach (var n in p.Neighbors.Entities())
         {
             var segs = p.GetBorder(n).Segments;
             for (var j = 0; j < segs.Count; j++)

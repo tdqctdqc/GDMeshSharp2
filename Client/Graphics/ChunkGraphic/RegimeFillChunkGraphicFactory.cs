@@ -15,7 +15,7 @@ public class RegimeFillChunkGraphicFactory : ChunkGraphicFactory
             c, d,
             p => p.Regime.Empty()
                 ? Colors.Transparent
-                : p.Regime.Entity().PrimaryColor
+                : new Color(p.Regime.Entity().PrimaryColor, .4f)
         );
     }
 }

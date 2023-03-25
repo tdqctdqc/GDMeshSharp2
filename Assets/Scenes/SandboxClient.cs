@@ -6,7 +6,8 @@ using Godot;
 
 public class SandboxClient : Node, IClient
 {
-    public CameraController Cam { get; private set; }
+    public ClientWriteKey Key { get; private set; }
+    public ICameraController Cam { get; private set; }
     private Label _degrees, _mousePos;
     private Dictionary<int, Node2D> _triGraphics;
     private Node2D _mouseOverTriGraphics;
@@ -16,9 +17,13 @@ public class SandboxClient : Node, IClient
     private RegionDebugGraphic _regionTest;
     private Control _debugHook;
     public ClientSettings Settings { get; private set; }
+    public ClientRequests Requests { get; } = new ClientRequests();
+    public TooltipManager TooltipManager { get; }
+
     public SandboxClient()
     {
         Settings = ClientSettings.Load();
+        // TooltipManager = new TooltipManager(null); //todo fix
     }
 
     public override void _Ready()
@@ -38,10 +43,12 @@ public class SandboxClient : Node, IClient
     }
     public void Setup(Vector2 home)
     {
+        Key = new ClientWriteKey(null, null);
         this.AssignChildNode(ref _canvas, "Canvas");
-        Cam = new CameraController();
-        AddChild(Cam);
-        Cam.Current = true;
+        var cam = CameraController.Construct(null); //todo make dummy
+        AddChild(cam);
+        cam.Current = true;
+        Cam = cam;
 
         _mouseOverTriGraphics = new Node2D();
         _mouseLine = new Line2D();
@@ -49,6 +56,7 @@ public class SandboxClient : Node, IClient
         _mouseLine.Width = 10;
         AddChild(_mouseLine);
     }
+
 
     public void HandleInput(InputEvent e, float delta)
     {

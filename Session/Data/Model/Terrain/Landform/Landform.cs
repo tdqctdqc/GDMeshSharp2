@@ -16,6 +16,7 @@ public class Landform : TerrainAspect
         Color color, bool isWater, 
         float darkenFactor = 0f)
     {
+        IsWater = isWater;
         DarkenFactor = darkenFactor;
         FertilityMod = fertilityMod;
         Name = name;

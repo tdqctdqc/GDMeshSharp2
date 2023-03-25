@@ -23,7 +23,7 @@ public abstract class Wanderer
         host.NotTaken.Remove(poly);
         ValidAdjacent.Remove(poly);
 
-        var outside = poly.Neighbors.Refs().Where(Valid).Except(Picked);
+        var outside = poly.Neighbors.Entities().Where(Valid).Except(Picked);
         foreach (var p in outside)
         {
             ValidAdjacent.Add(p);

@@ -8,12 +8,14 @@ public class Game : Node
 {
     public static Game I { get; private set; }
     public Serializer Serializer { get; private set; }
+    public Logger Logger { get; private set; }
     public Guid PlayerGuid { get; private set; } = Guid.NewGuid();
     public RandomNumberGenerator Random = new RandomNumberGenerator();
     private ISession _session;
     public Action ClearNotices { get; set; }
 
     public RefFulfiller RefFulfiller => _session.RefFulfiller;
+    public IClient Client => _session.Client;
     public override void _Ready()
     {
         if (I != null)
@@ -21,9 +23,15 @@ public class Game : Node
             throw new Exception();
         }
         I = this;
+        Logger = new Logger();
         AssetManager.Setup();
-        
         Serializer = new Serializer();
+        StartMainMenuSession();
+    }
+
+    public void StartMainMenuSession()
+    {
+        SetSession(new MainMenuSession());
     }
     public void StartGeneratorSession()
     {
@@ -50,6 +58,7 @@ public class Game : Node
 
     private void SetSession(Node session)
     {
+        if(_session != null) RemoveChild((Node) _session);
         _session?.QueueFree();
         session.Name = "Session";
         _session = (ISession)session;

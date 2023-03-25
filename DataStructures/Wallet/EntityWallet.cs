@@ -8,17 +8,17 @@ public class EntityWallet<T> : Wallet<int>
 {
     public static EntityWallet<T> Construct()
     {
-        return new EntityWallet<T>(new Dictionary<int, float>());
+        return new EntityWallet<T>(new Dictionary<int, int>());
     }
-    [SerializationConstructor] private EntityWallet(Dictionary<int, float> contents) : base(contents)
+    [SerializationConstructor] private EntityWallet(Dictionary<int, int> contents) : base(contents)
     {
     }
     
-    public void Add(T t, float amount)
+    public void Add(T t, int amount)
     {
         Add(t.Id, amount);
     }
-    public void Remove(T t, float amount)
+    public void Remove(T t, int amount)
     {
         Remove(t.Id, amount);
     }

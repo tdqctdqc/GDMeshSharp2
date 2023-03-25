@@ -4,11 +4,10 @@ using System.Linq;
 using System.Reflection;
 using Godot;
 
-public class MapDisplayOptionsUi : Container
+public class MapDisplayOptionsUi : VBoxContainer
 {
     private ButtonToken _roads, _regimes, _landforms, _vegetation;
     private Label _mousePos;
-    private CameraController _cam;
     private Data _data;
     public override void _Ready()
     {
@@ -17,12 +16,11 @@ public class MapDisplayOptionsUi : Container
 
     public override void _Process(float delta)
     {
-        _mousePos.Text = _cam?.GetMousePosInMapSpace(_data).ToString();
+        _mousePos.Text = Game.I.Client.Cam?.GetMousePosInMapSpace().ToString();
     }
 
-    public void Setup(GameGraphics graphics, CameraController cam, Data data)
+    public void Setup(GameGraphics graphics, Data data)
     {
-        _cam = cam;
         _data = data;
         _mousePos = new Label();
         AddChild(_mousePos);

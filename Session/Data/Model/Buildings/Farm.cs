@@ -5,12 +5,14 @@ using Godot;
 
 public class Farm : ProductionBuilding
 {
-    public Farm() : base(ItemManager.Food, nameof(Farm))
+    public Farm() : base(ItemManager.Food, nameof(Farm), false)
     {
     }
-    public override int PeepsLaborReq { get; } = 10;
+    public override int PeepsLaborReq { get; } = 2;
+    public override int FullProduction { get; } = 50;
     public override HashSet<PeepJob> JobTypes { get; }
         = new HashSet<PeepJob> { PeepJobManager.Farmer };
+
     public override bool CanBuildInTri(PolyTri t, Data data)
     {
         return t.Landform.IsLand
@@ -20,13 +22,9 @@ public class Farm : ProductionBuilding
     {
         return p.IsLand;
     }
-
-
-    public override void Produce(ItemWallet gains, 
-        EntityWallet<ResourceDeposit> depletions, Building p, float staffingRatio, Data data)
+    protected override float GetProductionRatio(Building p, float staffingRatio, Data data)
     {
-        var fert = p.Position.Poly.Entity().GetFertility();
-        var regime = p.Position.Poly.Entity().Regime.Entity();
-        gains.Add(ItemManager.Food, fert * staffingRatio / 1000f);
+         var tri = p.Position.Tri();
+         return tri.Landform.FertilityMod * tri.Vegetation.FertilityMod * staffingRatio; 
     }
 }

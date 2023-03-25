@@ -7,17 +7,18 @@ using MessagePack;
 public class RoadSegment : Entity
 {
     public override Type GetDomainType() => typeof(SocietyDomain);
-
     public EntityRef<MapPolygonEdge> Edge { get; private set; }
-
-    [SerializationConstructor] private RoadSegment(int id, EntityRef<MapPolygonEdge> edge) : base(id)
+    public ModelRef<RoadModel> Road { get; private set; }
+    [SerializationConstructor] private RoadSegment(int id, EntityRef<MapPolygonEdge> edge,
+        ModelRef<RoadModel> road) : base(id)
     {
         Edge = edge;
+        Road = road;
     }
     
-    public static RoadSegment Create(MapPolygonEdge edge, CreateWriteKey key)
+    public static RoadSegment Create(MapPolygonEdge edge, RoadModel road, CreateWriteKey key)
     {
-        var rs =  new RoadSegment(key.IdDispenser.GetID(), edge.MakeRef());
+        var rs =  new RoadSegment(key.IdDispenser.GetID(), edge.MakeRef(), road.MakeRef());
         key.Create(rs);
         return rs;
     }

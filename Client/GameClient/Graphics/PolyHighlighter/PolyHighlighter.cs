@@ -15,21 +15,21 @@ public class PolyHighlighter : Node2D
         Simple,
         Complex
     }
-    public void Draw(Data data, MapPolygon poly, PolyTri pt, Vector2 offset, IClient client)
+    public void Draw(Data data, MapPolygon poly, PolyTri pt, Vector2 offset)
     {
         Visible = true;
         Clear();
-        Move(data, client, poly);
+        Move(poly);
         var mb = new MeshBuilder();
         
-        var mode = client.Settings.PolyHighlightMode.Value;
+        var mode = Game.I.Client.Settings.PolyHighlightMode.Value;
         if (mode == Modes.Simple)
         {
-            DrawSimple(data, poly, pt, offset, mb, client);
+            DrawSimple(data, poly, pt, offset, mb);
         }
         else if (mode == Modes.Complex)
         {
-            DrawComplex(data, poly, pt, offset, mb, client);
+            DrawComplex(data, poly, pt, offset, mb);
         }
         else throw new Exception();
         
@@ -37,13 +37,13 @@ public class PolyHighlighter : Node2D
     }
 
     private static void DrawSimple(Data data, MapPolygon poly, PolyTri pt, Vector2 offset, 
-        MeshBuilder mb, IClient client)
+        MeshBuilder mb)
     {
         DrawBordersSimple(poly, mb, data);
     }
 
     private static void DrawComplex(Data data, MapPolygon poly, PolyTri pt, Vector2 offset, 
-        MeshBuilder mb, IClient client)
+        MeshBuilder mb)
     {
         DrawBoundarySegments(poly, mb, data);
         DrawPolyTriBorders(poly, mb, data);
@@ -106,9 +106,9 @@ public class PolyHighlighter : Node2D
         AddChild(mi);
         _mis.Add(mi);
     }
-    private void Move(Data data, IClient client, MapPolygon poly)
+    private void Move(MapPolygon poly)
     {
-        Position = client.Cam.GetMapPosInGlobalSpace(poly.Center, data);
+        Position = Game.I.Client.Cam.GetMapPosInGlobalSpace(poly.Center);
     }
     public void Clear()
     {

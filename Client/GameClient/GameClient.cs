@@ -6,7 +6,10 @@ public class GameClient : Node, IClient
     private EntityOverviewWindow _entityOverviewWindow;
     public GameUi Ui { get; private set; }
     private IServer _server;
-    public CameraController Cam { get; private set; }
+    public PolyHighlighter Highlighter { get; private set; }
+    public ClientRequests Requests { get; private set; }
+    public TooltipManager TooltipManager => Ui.TooltipManager;
+    public ICameraController Cam { get; private set; }
     public GameGraphics Graphics { get; private set; }
     public Data Data { get; private set; }
     public ClientWriteKey Key { get; private set; }
@@ -19,19 +22,22 @@ public class GameClient : Node, IClient
     public void Process(float delta)
     {
         if (GetParent() == null) return;
-        Graphics?.Process(delta, Data);
+        Graphics?.Process(delta);
         Ui?.Process(delta, Key);
+        TooltipManager?.Process(delta, Cam.GetMousePosInMapSpace());
+        
     }
     public void Setup(GameSession session, IServer server, GameGraphics graphics)
     {
+        Requests = new ClientRequests();
         Settings = ClientSettings.Load();
         Key = new ClientWriteKey(session.Data, session);
         Data = session.Data;
-        Cam = new CameraController();
-        AddChild(Cam);
-        Cam.Current = true;
+        var cam = CameraController.Construct(Data);
+        AddChild(cam);
+        cam.Current = true;
+        Cam = cam;
         
-        BuildUi(session.Data, Key.Session.Server);
 
         if (graphics == null)
         {
@@ -41,26 +47,26 @@ public class GameClient : Node, IClient
         {
             Graphics = graphics;
             Graphics.GetParent().RemoveChild(Graphics);
-            Graphics.SetClient(this);
         }
         AddChild(Graphics);
+        BuildUi(session.Data, Key.Session.Server);
+
+        Highlighter = new PolyHighlighter();
     }
     
     private void BuildGraphics(Data data)
     {
         Graphics = GameGraphics.Get();
-        Graphics.SetClient(this);
         Graphics.Setup(data);
     }
 
     private void BuildUi(Data data, IServer server)
     {
-        Ui = SceneManager.Instance<GameUi>();
-        Ui.Setup(server is HostServer, data, Graphics, Cam, this);
+        Ui = GameUi.Construct(this, server is HostServer, data, Graphics);
+        AddChild(Ui);
         _server = server;
         _entityOverviewWindow = EntityOverviewWindow.Get(data);
         AddChild(_entityOverviewWindow);
-        AddChild(Ui);
     }
     public void HandleInput(InputEvent e, float delta)
     {

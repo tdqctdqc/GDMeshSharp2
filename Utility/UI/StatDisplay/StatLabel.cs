@@ -13,7 +13,10 @@ public class StatLabel : Node
         _label = label;
         if (_label == null) throw new Exception();
         _label.AddChild(this);
-        _update = () => _label.Text = $"{name}: {getStat(e).ToString()}";
+        _update = () =>
+        {
+            return _label.Text = $"{name}: {getStat(e).ToString()}";
+        };
     }
 
     protected void TriggerUpdate()

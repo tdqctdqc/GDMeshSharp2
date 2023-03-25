@@ -20,9 +20,9 @@ public class MapChunkGraphic : Node2D
             Borders,
             Decals,
             Roads,
-            PolyIcons,
             ResourceDepositPolyFill,
-            Buildings
+            Buildings,
+            PolyIcons
         );
     }
     private void Order(MapChunk chunk, Data data, params ChunkGraphicFactory[] factories)
@@ -40,7 +40,7 @@ public class MapChunkGraphic : Node2D
     public static ChunkGraphicFactory Buildings { get; private set; }
         = new BuildingsChunkGraphicFactory(nameof(Buildings), true);
     public static ChunkGraphicFactory RegimeFill { get; private set; }
-        = new RegimeFillChunkGraphicFactory(nameof(RegimeFill), false);
+        = new RegimeFillChunkGraphicFactory(nameof(RegimeFill), true);
     public static ChunkGraphicFactory RegimeBorders { get; private set; }
         = new BorderChunkGraphicFactory(nameof(RegimeBorders), true);
     public static ChunkGraphicFactory Landform { get; private set; }
@@ -63,7 +63,7 @@ public class MapChunkGraphic : Node2D
             {
                 var rs = p.GetResourceDeposits(d);
                 if(rs == null || rs.Count == 0) return new Color(Colors.Pink, .5f);
-                return rs.First().Resource.Model().Color;
+                return rs.First().Item.Model().Color;
             }
         );
 }
