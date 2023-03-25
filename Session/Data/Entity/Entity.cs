@@ -10,7 +10,7 @@ public abstract class Entity
     public IEntityMeta GetMeta() => Game.I.Serializer.GetEntityMeta(GetType());
     protected Entity(int id)
     {
-        Id = id;
+        Id = id; 
     }
 
     public void Set<TValue>(string fieldName, TValue newValue, StrongWriteKey key)
