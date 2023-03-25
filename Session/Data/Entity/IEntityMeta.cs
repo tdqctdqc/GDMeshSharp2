@@ -2,8 +2,9 @@ using Godot;
 using System;
 using System.Collections.Generic;
 
-public interface IEntityMeta 
+public interface IEntityMeta
 {
+    Type RepoEntityType { get; }
     IReadOnlyList<string> FieldNames { get; }
     Dictionary<string, Type> FieldTypes { get; }
     object[] GetPropertyValues(Entity entity);

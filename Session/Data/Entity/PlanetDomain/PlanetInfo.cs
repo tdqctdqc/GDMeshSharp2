@@ -6,6 +6,7 @@ using MessagePack;
 
 public class PlanetInfo : Entity
 {
+    public override Type GetRepoEntityType() => GetType();
     public override Type GetDomainType() => typeof(PlanetDomain);
     public Vector2 Dimensions { get; private set; }
     public static PlanetInfo Create(Vector2 dimensions, CreateWriteKey key)

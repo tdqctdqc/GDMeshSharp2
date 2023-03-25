@@ -18,4 +18,6 @@ public abstract class Entity
         GetMeta().UpdateEntityVar<TValue>(fieldName, this, key, newValue);
     }
     public abstract Type GetDomainType();
+    public abstract Type GetRepoEntityType();
+
 }

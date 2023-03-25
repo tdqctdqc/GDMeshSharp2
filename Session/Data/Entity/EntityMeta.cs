@@ -10,6 +10,8 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
     public IReadOnlyList<string> FieldNames => _fieldNames;
     private List<string> _fieldNames;
     public Dictionary<string, Type> FieldTypes => _fieldTypes;
+
+    public Type RepoEntityType { get; private set; }
     private Dictionary<string, Type> _fieldTypes;
 
     private Dictionary<string, IEntityVarMeta<T>> _vars;
@@ -24,7 +26,10 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
         var entityType = typeof(T);
         //bc with generic parameters it will not capture all the classes
         if (entityType.ContainsGenericParameters) 
-            throw new Exception(); 
+            throw new Exception();
+        RepoEntityType = (Type) entityType
+            .GetMethod(nameof(Entity.GetRepoEntityType))
+            .Invoke(null, null);
         
         var properties = entityType.GetProperties(BindingFlags.Instance | BindingFlags.Public);
         _fieldNames = properties.Select(p => p.Name).ToList();
@@ -75,7 +80,7 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
 
     public void AddToData(Entity e, StrongWriteKey key)
     {
-        key.Data.AddEntity<T>((T)e, key);
+        key.Data.AddEntity<T>((T)e, key, RepoEntityType);
     }
     public void RemoveFromData(Entity e, StrongWriteKey key)
     {
@@ -83,7 +88,7 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
     }
     public void UpdateEntityVarServer<TProperty>(string fieldName, Entity t, ServerWriteKey key, TProperty newValue)
     {
-        var repo = key.Data.EntityRepos[t.Id];
+        var repo = key.Data.EntityRepoIndex[t.Id];
         
         var prop = _vars[fieldName].GetForSerialize((T)t);
         if (prop is TProperty == false)

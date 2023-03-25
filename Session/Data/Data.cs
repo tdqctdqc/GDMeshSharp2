@@ -12,7 +12,7 @@ public class Data
     public IReadOnlyDictionary<Type, Domain> Domains => _domains;
     private Dictionary<Type, Domain> _domains;
     public Dictionary<int, Entity> Entities { get; private set; }
-    public Dictionary<int, IRepo> EntityRepos { get; private set; }
+    public Dictionary<int, IRepo> EntityRepoIndex { get; private set; }
     public Entity this[int id] => Entities[id];
     public BaseDomain BaseDomain { get; private set; }
     public PlanetDomain Planet { get; private set; }
@@ -35,7 +35,7 @@ public class Data
         RefFulfiller = new RefFulfiller(this);
         Models = new Models();
         Entities = new Dictionary<int, Entity>();
-        EntityRepos = new Dictionary<int, IRepo>();
+        EntityRepoIndex = new Dictionary<int, IRepo>();
         _domains = new Dictionary<Type, Domain>();
         BaseDomain = new BaseDomain(this);
         AddDomain(BaseDomain);
@@ -44,30 +44,30 @@ public class Data
         Society = new SocietyDomain(this);
         AddDomain(Society);
     }
-
-    public void AddEntity<TEntity>(TEntity e, StrongWriteKey key) where TEntity : Entity
+    
+    public void AddEntity<TEntity>(TEntity e, StrongWriteKey key, Type repoType) where TEntity : Entity
     {
         if (Entities.ContainsKey(e.Id))
         {
             GD.Print($"trying to overwrite {Entities[e.Id].GetType().ToString()} with {e.GetType().ToString()}");
         }
         Entities.Add(e.Id, e);
-        var repo = _domains[e.GetDomainType()].Repos[e.GetType()];
+        var repo = _domains[e.GetDomainType()].Repos[repoType];
         repo.AddEntity(e, key);
-        EntityRepos.Add(e.Id, repo);
+        EntityRepoIndex.Add(e.Id, repo);
         if (key is HostWriteKey hKey)
         {
             hKey.HostServer.QueueUpdate(EntityCreationUpdate.Create(e, hKey));
         }
-        EntityCreatedHandler<TEntity>.Raise(new EntityCreatedNotice<TEntity>(e));
+        EntityCreatedHandler<TEntity>.Raise(e);
     }
 
     public void RemoveEntity<TEntity>(TEntity e, StrongWriteKey key) where TEntity : Entity
     {
         EntityDestroyedHandler<TEntity>.Raise(e);
-        EntityRepos[e.Id].RemoveEntity(e, key);
+        EntityRepoIndex[e.Id].RemoveEntity(e, key);
         Entities.Remove(e.Id);
-        EntityRepos.Remove(e.Id);
+        EntityRepoIndex.Remove(e.Id);
         if (key is HostWriteKey hKey)
         {
             hKey.HostServer.QueueUpdate(EntityDeletionUpdate.Create(e.Id, hKey));

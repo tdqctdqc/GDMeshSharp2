@@ -4,6 +4,7 @@ using MessagePack;
 
 public class Player : Entity
 {
+    public override Type GetRepoEntityType() => GetType();
     public override Type GetDomainType() => typeof(BaseDomain);
     public Guid PlayerGuid { get; private set; }
     public string Name { get; private set; }

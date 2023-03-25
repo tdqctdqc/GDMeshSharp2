@@ -51,7 +51,7 @@ public class Entity1to1PropIndexer<TEntity, TKey> : RepoAuxData<TEntity>
     private void Initialize(Data data)
     {
         _dic = new Dictionary<TKey, TEntity>();
-        foreach (var repo in data.EntityRepos.Values.Where(v => v.EntityType == typeof(TEntity)))
+        foreach (var repo in data.EntityRepoIndex.Values.Where(v => v.EntityType == typeof(TEntity)))
         {
             foreach (var e in repo.Entities)
             {

@@ -23,7 +23,7 @@ public abstract class NoticeHandler<TNotice>
             // _oneTime = n => { };
         };
     }
-    public static void Raise(TNotice notice)
+    protected static void Raise(TNotice notice)
     {
         _action?.Invoke(notice);
         _oneTime?.Invoke(notice);

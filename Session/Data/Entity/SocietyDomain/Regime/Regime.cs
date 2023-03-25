@@ -7,6 +7,7 @@ using MessagePack;
 public class Regime : Entity
 {
     public override Type GetDomainType() => typeof(SocietyDomain);
+    public override Type GetRepoEntityType() => GetType();
     public EntityRef<MapPolygon> Capital { get; private set; }
     public Color PrimaryColor { get; private set; }
     public Color SecondaryColor { get; private set; }

@@ -7,6 +7,7 @@ using MessagePack;
 public class RegimeRelation : Entity
 {
     public override Type GetDomainType() => typeof(SocietyDomain);
+    public override Type GetRepoEntityType() => GetType();
     public EntityRef<Regime> HighId { get; private set; }
     public EntityRef<Regime> LowId { get; private set; }
     public bool AtWar { get; private set; }

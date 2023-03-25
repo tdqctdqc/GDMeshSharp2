@@ -7,6 +7,7 @@ using MessagePack;
 
 public class Peep : Entity
 {
+    public override Type GetRepoEntityType() => GetType();
     public override Type GetDomainType() => typeof(SocietyDomain);
     public EntityRef<MapPolygon> Home { get; private set; }
     public ModelRef<PeepJob> Job { get; private set; }
