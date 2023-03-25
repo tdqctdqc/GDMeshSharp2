@@ -52,15 +52,18 @@ public class LocationGenerator : Generator
     }
     
     private (List<MapPolygon> settlementPolys, List<float> settlementSizes)
-        PregenerateSettlements(List<MapPolygon> polys)
+        PregenerateSettlements(List<MapPolygon> regimeUnionPolys)
     {
-        float minSettlementScore = 1f;
-        var score = polys.Sum(PopScore);
+        // float minSettlementScore = 1f;
+        float scorePerSettlement = 1f;
+        var numSettlements = regimeUnionPolys.Count / 10;
+        if (numSettlements == 0) numSettlements = 1;
+        var score = regimeUnionPolys.Sum(PopScore);
         
         var polyQueue = new SimplePriorityQueue<MapPolygon>();
-        for (var i = 0; i < polys.Count; i++)
+        for (var i = 0; i < regimeUnionPolys.Count; i++)
         {
-            var p = polys[i];
+            var p = regimeUnionPolys[i];
             if (p.TerrainTris.Tris.Any(t => t.Landform != LandformManager.Mountain
                                             && t.Landform != LandformManager.Peak
                                             && t.Landform != LandformManager.River))
@@ -68,12 +71,14 @@ public class LocationGenerator : Generator
                 polyQueue.Enqueue(p, -SettlementDesireability(p));
             }
         }
-        
+        numSettlements = Math.Max(numSettlements, Mathf.FloorToInt(score / scorePerSettlement));
+        numSettlements = Math.Min(numSettlements, polyQueue.Count);
         var settlementPolys = new List<MapPolygon>();
         var forbidden = new HashSet<MapPolygon>();
 
-        while (polyQueue.Count > 0)
+        for (var i = 0; i < numSettlements; i++)
         {
+            if (polyQueue.Count == 0) break;
             var poly = polyQueue.Dequeue();
             if (forbidden.Contains(poly)) continue;
             foreach (var n in poly.Neighbors.Entities())
@@ -82,19 +87,23 @@ public class LocationGenerator : Generator
             }
             settlementPolys.Add(poly);
         }
-
-        var num = 1;
+        numSettlements = Math.Min(numSettlements, settlementPolys.Count);
         var settlementSizes = new List<float>();
-        while (score > minSettlementScore)
+
+        var tierSize = score;
+        var tier = 1;
+        while (settlementSizes.Count < numSettlements)
         {
-            var size = (score / 2f) / num;
-            for (var i = 0; i < num; i++)
+            tierSize = score / tier;
+
+            for (var i = 0; i < tier; i++)
             {
-                settlementSizes.Add(size);
+                if (settlementSizes.Count >= numSettlements) break;
+                settlementSizes.Add(tierSize);
             }
-            score *= .5f;
-            num *= 2;
+            tier++;
         }
+        
 
         return (settlementPolys, settlementSizes);
     }
@@ -115,7 +124,7 @@ public class LocationGenerator : Generator
     private void SetUrbanTris(List<MapPolygon> settlementPolys, List<float> settlementSizes)
     {
         var numSettlements = Mathf.Min(settlementPolys.Count, settlementSizes.Count);
-        var sizePerTri = 2f;
+        var sizeForFirstTri = 2f;
         
         for (var i = 0; i < numSettlements; i++)
         {
@@ -137,14 +146,14 @@ public class LocationGenerator : Generator
         }
         int trisForSize(float size)
         {
-            return Mathf.Max(1, Mathf.CeilToInt(Mathf.Sqrt(size / sizePerTri)));
+            return Mathf.Max(1, Mathf.CeilToInt(Mathf.Sqrt(size / sizeForFirstTri)));
         }
     }
     
     
     private float PopScore(MapPolygon poly)
     {
-        return 20f * (poly.Moisture - (poly.Roughness * .5f));
+        return 2f * (poly.Moisture + (1f - poly.Roughness * .5f));
     }
 
     private float SettlementDesireability(MapPolygon poly)

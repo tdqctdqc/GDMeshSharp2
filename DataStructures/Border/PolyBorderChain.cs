@@ -41,4 +41,5 @@ public class PolyBorderChain : Chain<LineSegment, Vector2>, IBorderChain<LineSeg
     public bool HasRiver() => RiverSegmentIndex != -1;
     MapPolygon IBorder<MapPolygon>.Native => Native.Entity();
     MapPolygon IBorder<MapPolygon>.Foreign => Foreign.Entity();
+    public float PolyDist(Data data) => Native.Entity().GetOffsetTo(Foreign.Entity(), data).Length();
 }

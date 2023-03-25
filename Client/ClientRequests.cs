@@ -5,9 +5,14 @@ using Godot;
 
 public class ClientRequests
 {
-    public Action<Type> OpenWindowType { get; set; }
-    public void OpenWindow<T>() where T : WindowDialog
+    public RefAction<string> OpenWindowRequest { get; private set; }
+
+    public ClientRequests()
     {
-        OpenWindowType?.Invoke(typeof(T));
+        OpenWindowRequest = new RefAction<string>();
+    }
+    public void OpenWindow<T>(string name) where T : WindowDialog
+    {
+        OpenWindowRequest?.Invoke(name);
     }
 }

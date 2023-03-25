@@ -270,4 +270,22 @@ public static class IGraphExt
             }
         }
     }
+
+    public static void DoForEachEdge<T, E>(this IReadOnlyGraph<T, E> graph, Action<T, T, E> action, 
+        Func<T, float> getRank)
+    {
+        var hash = new HashSet<Edge<T>>();
+        foreach (var el in graph.Elements)
+        {
+            var neighbors = graph.GetNeighbors(el);
+            foreach (var n in neighbors)
+            {
+                var hashEdge = new Edge<T>(el, n, getRank);
+                if (hash.Contains(hashEdge)) continue;
+                hash.Add(hashEdge);
+                var edge = graph.GetEdge(el, n);
+                action(el, n, edge);
+            }
+        }
+    }
 }

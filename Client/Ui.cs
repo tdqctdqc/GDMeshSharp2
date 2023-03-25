@@ -5,20 +5,23 @@ using Godot;
 
 public class Ui : CanvasLayer
 {
-    protected Dictionary<Type, WindowDialog> _windows;
-
+    protected Dictionary<string, WindowDialog> _windows;
+    public static string Logger = "Logger";
+    public static string Entities = "Entities";
+    public static string ClientSettings = "Settings";
+    public static string GenSettings = "Generator Settings";
     protected Ui(IClient client)
     {
-        _windows = new Dictionary<Type, WindowDialog>();
-        client.Requests.OpenWindowType += t => _windows[t].Popup_();
+        _windows = new Dictionary<string, WindowDialog>();
+        client.Requests.OpenWindowRequest.Subscribe(name => _windows[name].Popup_());
     }
     protected Ui()
     {
         
     }
-    protected void AddWindow(WindowDialog window)
+    protected void AddWindow(WindowDialog window, string name)
     {
-        _windows.Add(window.GetType(), window);
+        _windows.Add(name, window);
         AddChild(window);
     }
 }

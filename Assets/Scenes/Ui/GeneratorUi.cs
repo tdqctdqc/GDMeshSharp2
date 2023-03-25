@@ -12,7 +12,7 @@ public class GeneratorUi : Ui
     private Label _progress;
     private MapDisplayOptionsUi _mapOptions;
     private GameGraphics _graphics;
-    public GeneratorSettingsWindow GenSettingsWindow { get; private set; }
+    // public GeneratorSettingsWindow GenSettingsWindow { get; private set; }
     public static GeneratorUi Construct(IClient client, GeneratorSession session, GameGraphics graphics)
     {
         var ui = new GeneratorUi(client);
@@ -34,10 +34,10 @@ public class GeneratorUi : Ui
         var topBar = ButtonBarToken.Create<HBoxContainer>();
         topBar.AddButton("Generate", PressedGenerate);
         topBar.AddButton("Done", GoToGameSession);
-        topBar.AddWindowButton<GeneratorSettingsWindow>("GeneratorSettings");
+        topBar.AddWindowButton<GeneratorSettingsWindow>(Ui.GenSettings);
         AddChild(topBar.Container);
-        GenSettingsWindow = GeneratorSettingsWindow.Get(_session.GenMultiSettings);
-        AddWindow(GenSettingsWindow);
+        var genSettingsWindow = GeneratorSettingsWindow.Get(_session.GenMultiSettings);
+        AddWindow(genSettingsWindow, GenSettings);
         
         var sideBar = ButtonBarToken.Create<VBoxContainer>();
         AddChild(sideBar.Container);

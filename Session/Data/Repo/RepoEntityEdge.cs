@@ -9,10 +9,10 @@ public class RepoEntityEdge<TEntity, TEnd> : RepoAuxData<TEntity>
     public TEntity this[TEnd t1, TEnd t2] => Get(t1, t2);
     private Dictionary<Edge<TEnd>, TEntity> _byEdge;
     
-    private Func<TEnd, int> _getId;
+    private Func<TEnd, float> _getId;
     private Func<TEntity, Tuple<TEnd, TEnd>> _getEnds;
 
-    public RepoEntityEdge(Data data, Func<TEnd, int> getId, Func<TEntity, Tuple<TEnd, TEnd>> getEnds) : base(data)
+    public RepoEntityEdge(Data data, Func<TEnd, float> getId, Func<TEntity, Tuple<TEnd, TEnd>> getEnds) : base(data)
     {
         _getId = getId;
         _getEnds = getEnds;

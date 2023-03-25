@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 public class GameUi : Ui
 {
+    
     public PromptManager Prompts { get; private set; }
     public TooltipManager TooltipManager { get; private set; }
     public void Process(float delta, ClientWriteKey key)
@@ -28,9 +29,9 @@ public class GameUi : Ui
 
     public void Setup(bool host, Data data, GameGraphics graphics)
     {
-        AddWindow(LoggerWindow.Get());
-        AddWindow(EntityOverviewWindow.Get(data));
-        AddWindow(SettingsWindow.Get(Game.I.Client.Settings));
+        AddWindow(LoggerWindow.Get(), Logger);
+        AddWindow(EntityOverviewWindow.Get(data), Entities);
+        AddWindow(SettingsWindow.Get(Game.I.Client.Settings), ClientSettings);
 
         var mapOptions = new MapDisplayOptionsUi();
         mapOptions.Setup(graphics, data);

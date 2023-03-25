@@ -38,10 +38,14 @@ public class HostLogic : ILogic
     public void Process(float delta)
     {
         _frameTimer += delta;
-        Game.I.Logger.Log("framer time " + _frameTimer, LogType.Logic);
-        if (_calculating != null && _calculating.Exception != null)
+        GD.Print("framer time " + _frameTimer);
+        if (_calculating != null && _calculating.IsCompleted)
         {
-            throw _calculating.Exception;
+            if( _calculating.Exception != null)
+            {
+                throw _calculating.Exception;
+            }
+            _calculating = null;
         }
         
         if (_frameTimer >= _framePeriod 

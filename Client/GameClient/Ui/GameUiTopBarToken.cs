@@ -15,9 +15,9 @@ public class GameUiTopBarToken : ButtonBarToken
     
     public void Setup(bool host, Data data)
     {
-        AddWindowButton<EntityOverviewWindow>("Entities");
-        AddWindowButton<ClientSettingsWindow>("Settings");
-        AddWindowButton<LoggerWindow>("Logger");
+        AddWindowButton<EntityOverviewWindow>(Ui.Entities);
+        AddWindowButton<ClientSettingsWindow>(Ui.ClientSettings);
+        AddWindowButton<LoggerWindow>(Ui.Logger);
         
         var hostClientLabel = new Label();
         hostClientLabel.Text = host ? "Host" : "Client";
