@@ -6,8 +6,9 @@ public class Building : Entity
 {
     public override Type GetRepoEntityType() => RepoEntityType();
     private static Type RepoEntityType() => typeof(Building);
-    public PolyTriPositionSerializable Position { get; private set; }
-    public ModelRef<BuildingModel> Model { get; private set; }
+    public override Type GetDomainType() => typeof(SocietyDomain);
+    public PolyTriPositionSerializable Position { get; protected set; }
+    public ModelRef<BuildingModel> Model { get; protected set; }
 
     public static Building Create(PolyTriPositionSerializable positionSerializable, BuildingModel model, CreateWriteKey key)
     {
@@ -22,5 +23,5 @@ public class Building : Entity
         Model = model;
     }
 
-    public override Type GetDomainType() => typeof(SocietyDomain);
+    
 }

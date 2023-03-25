@@ -9,11 +9,11 @@ public class RegimeRelation : Entity
     public override Type GetDomainType() => typeof(SocietyDomain);
     public override Type GetRepoEntityType() => RepoEntityType();
     private static Type RepoEntityType() => typeof(RegimeRelation);
-    public EntityRef<Regime> HighId { get; private set; }
-    public EntityRef<Regime> LowId { get; private set; }
-    public bool AtWar { get; private set; }
-    public bool OpenBorders { get; private set; }
-    public bool Alliance { get; private set; }
+    public EntityRef<Regime> HighId { get; protected set; }
+    public EntityRef<Regime> LowId { get; protected set; }
+    public bool AtWar { get; protected set; }
+    public bool OpenBorders { get; protected set; }
+    public bool Alliance { get; protected set; }
 
     [SerializationConstructor] private RegimeRelation(int id, EntityRef<Regime> lowId, EntityRef<Regime> highId,
         bool atWar, bool openBorders, bool alliance) : base(id)

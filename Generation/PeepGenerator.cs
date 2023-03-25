@@ -74,8 +74,8 @@ public class PeepGenerator : Generator
                 for (var i = 0; i < numFarmers; i++)
                 {
                     Peep.Create(
-                        new EntityRef<MapPolygon>(poly, _key),
-                        new ModelRef<PeepJob>(farmerJob, _key),
+                        poly,
+                        farmerJob,
                         _key);
                 }
             }
@@ -97,8 +97,8 @@ public class PeepGenerator : Generator
             for (var j = 0; j < num; j++)
             {
                 Peep.Create(
-                    new EntityRef<MapPolygon>(polys[i], _key),
-                    new ModelRef<PeepJob>(laborerJob, _key),
+                    polys[i],
+                    laborerJob,
                     _key
                 );
             }
@@ -144,8 +144,8 @@ public class PeepGenerator : Generator
             for (int i = 0; i < polyPeeps; i++)
             {
                 var peep = Peep.Create(
-                    new EntityRef<MapPolygon>(poly, _key),
-                    new ModelRef<PeepJob>(job, _key),
+                    poly,
+                    job,
                     _key);
             }
         }

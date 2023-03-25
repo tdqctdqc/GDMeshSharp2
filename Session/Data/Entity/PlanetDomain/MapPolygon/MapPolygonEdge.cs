@@ -10,11 +10,11 @@ public class MapPolygonEdge : Entity
     public override Type GetRepoEntityType() => RepoEntityType();
     private static Type RepoEntityType() => typeof(MapPolygonEdge);
     public override Type GetDomainType() => typeof(PlanetDomain);
-    public float MoistureFlow { get; private set; }
+    public float MoistureFlow { get; protected set; }
     public PolyBorderChain LowSegsRel() => LowId.Entity().NeighborBorders[HighId.RefId];
     public PolyBorderChain HighSegsRel() => HighId.Entity().NeighborBorders[LowId.RefId];
-    public EntityRef<MapPolygon> LowId { get; private set; }
-    public EntityRef<MapPolygon> HighId { get; private set; }
+    public EntityRef<MapPolygon> LowId { get; protected set; }
+    public EntityRef<MapPolygon> HighId { get; protected set; }
 
     [SerializationConstructor] private MapPolygonEdge(int id, float moistureFlow, EntityRef<MapPolygon> lowId, 
         EntityRef<MapPolygon> highId) : base(id)

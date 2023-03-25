@@ -72,6 +72,13 @@ public class WorldGenerator
         RunGenerator(new PeepGenerator());
         
         _sw.Stop();
+
+
+        var first = Data.Planet.Polygons.Entities.First();
+        var job = PeepJobManager.Farmer;
+        GhostPeep.Create(first, job, "boo", _key);
+        
+        
         GD.Print("world gen time was " + _sw.Elapsed.TotalMilliseconds + "ms");
         return Data;
     }

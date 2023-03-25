@@ -10,9 +10,9 @@ public class Settlement : Location
     public override Type GetDomainType() => typeof(SocietyDomain);
     public override Type GetRepoEntityType() => RepoEntityType();
     private static Type RepoEntityType() => typeof(Settlement);
-    public EntityRef<MapPolygon> Poly { get; private set; }
-    public float Size { get; private set; }
-    public string Name { get; private set; }
+    public EntityRef<MapPolygon> Poly { get; protected set; }
+    public float Size { get; protected set; }
+    public string Name { get; protected set; }
     
     public static Settlement Create(string name, MapPolygon poly, float size, CreateWriteKey key)
     {
@@ -20,7 +20,7 @@ public class Settlement : Location
         key.Create(s);
         return s;
     }
-    [SerializationConstructor] private Settlement(int id, EntityRef<MapPolygon> poly, float size,
+    [SerializationConstructor] protected Settlement(int id, EntityRef<MapPolygon> poly, float size,
         string name) : base(id)
     {
         Name = name;

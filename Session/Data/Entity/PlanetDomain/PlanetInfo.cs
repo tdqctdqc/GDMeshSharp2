@@ -9,7 +9,7 @@ public class PlanetInfo : Entity
     public override Type GetRepoEntityType() => RepoEntityType();
     private static Type RepoEntityType() => typeof(PlanetInfo);
     public override Type GetDomainType() => typeof(PlanetDomain);
-    public Vector2 Dimensions { get; private set; }
+    public Vector2 Dimensions { get; protected set; }
     public static PlanetInfo Create(Vector2 dimensions, CreateWriteKey key)
     {
         var pi =  new PlanetInfo(key.IdDispenser.GetID(), dimensions);

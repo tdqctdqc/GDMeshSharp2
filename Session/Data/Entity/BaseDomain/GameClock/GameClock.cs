@@ -6,7 +6,7 @@ public class GameClock : Entity
 {
     public override Type GetRepoEntityType() => RepoEntityType();
     private static Type RepoEntityType() => typeof(GameClock);
-    public int Tick { get; private set; }
+    public int Tick { get; protected set; }
     public static GameClock Create(GenWriteKey key)
     {
         var gc = new GameClock(key.IdDispenser.GetID(), 0);

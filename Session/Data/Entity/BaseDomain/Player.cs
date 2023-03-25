@@ -7,9 +7,9 @@ public class Player : Entity
     public override Type GetRepoEntityType() => RepoEntityType();
     private static Type RepoEntityType() => typeof(Player);
     public override Type GetDomainType() => typeof(BaseDomain);
-    public Guid PlayerGuid { get; private set; }
-    public string Name { get; private set; }
-    public EntityRef<Regime> Regime { get; private set; }
+    public Guid PlayerGuid { get; protected set; }
+    public string Name { get; protected set; }
+    public EntityRef<Regime> Regime { get; protected set; }
     public static Player Create(Guid guid, string name, 
         CreateWriteKey key)
     {

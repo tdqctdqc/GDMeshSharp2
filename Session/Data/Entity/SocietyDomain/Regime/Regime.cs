@@ -9,15 +9,15 @@ public class Regime : Entity
     public override Type GetDomainType() => typeof(SocietyDomain);
     public override Type GetRepoEntityType() => RepoEntityType();
     private static Type RepoEntityType() => typeof(Regime);
-    public EntityRef<MapPolygon> Capital { get; private set; }
-    public Color PrimaryColor { get; private set; }
-    public Color SecondaryColor { get; private set; }
-    public ItemWallet Items { get; private set; }
-    public ItemHistory ProdHistory { get; private set; }
-    public ItemHistory ConsumptionHistory { get; private set; }
-    public ItemHistory DemandHistory { get; private set; }
-    public string Name { get; private set; }
-    public EntityRefCollection<MapPolygon> Polygons { get; private set; }
+    public EntityRef<MapPolygon> Capital { get; protected set; }
+    public Color PrimaryColor { get; protected set; }
+    public Color SecondaryColor { get; protected set; }
+    public ItemWallet Items { get; protected set; }
+    public ItemHistory ProdHistory { get; protected set; }
+    public ItemHistory ConsumptionHistory { get; protected set; }
+    public ItemHistory DemandHistory { get; protected set; }
+    public string Name { get; protected set; }
+    public EntityRefCollection<MapPolygon> Polygons { get; protected set; }
 
 
     [SerializationConstructor] private Regime(int id, string name, Color primaryColor, Color secondaryColor, 

@@ -3,25 +3,29 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
+public static class NoticeHandler
+{
+    public static Action Clear { get; set; }
+}
 public abstract class NoticeHandler<TNotice> 
 {
-    protected static Action Clear { get; set; }
     private static Action<TNotice> _action;
     private static Action<TNotice> _oneTime;
 
     static NoticeHandler()
     {
         //todo fix 
-        Game.I.ClearNotices += () => Clear?.Invoke();
 
         _action = n => { };
         _oneTime = n => { };
-        Clear += () =>
-        {
-            //todo fix, or make sure things deregister themselves 
-            // _action = n => { };
-            // _oneTime = n => { };
-        };
+        NoticeHandler.Clear += Clear;
+    }
+
+    private static void Clear()
+    {
+        _action = n => { };
+        _oneTime = n => { };
+        NoticeHandler.Clear -= Clear;
     }
     protected static void Raise(TNotice notice)
     {

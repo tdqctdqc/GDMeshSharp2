@@ -12,14 +12,14 @@ public partial class MapPolygon : Entity,
     private static Type RepoEntityType() => typeof(MapPolygon);
     public Vector2 Center { get; protected set; }
     public EntityRefCollection<MapPolygon> Neighbors { get; protected set; }
-    public Dictionary<int, PolyBorderChain> NeighborBorders { get; private set; }
+    public Dictionary<int, PolyBorderChain> NeighborBorders { get; protected set; }
     public Color Color { get; protected set; }
-    public float Altitude { get; private set; }
-    public float Roughness { get; private set; }
-    public float Moisture { get; private set; }
-    public EntityRef<Regime> Regime { get; private set; }
-    public PolyTerrainTris TerrainTris { get; private set; }
-    public bool IsLand { get; private set; }
+    public float Altitude { get; protected set; }
+    public float Roughness { get; protected set; }
+    public float Moisture { get; protected set; }
+    public EntityRef<Regime> Regime { get; protected set; }
+    public PolyTerrainTris TerrainTris { get; protected set; }
+    public bool IsLand { get; protected set; }
     [SerializationConstructor] private MapPolygon(int id, Vector2 center, EntityRefCollection<MapPolygon> neighbors, 
         Dictionary<int, PolyBorderChain> neighborBorders, Color color, float altitude, float roughness, 
         float moisture, EntityRef<Regime> regime, PolyTerrainTris terrainTris, bool isLand) : base(id)

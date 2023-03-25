@@ -23,6 +23,7 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
     public EntityMeta()
     {
         var entityType = typeof(T);
+        GD.Print(entityType);
         //bc with generic parameters it will not capture all the classes
         if (entityType.ContainsGenericParameters) 
             throw new Exception();

@@ -13,9 +13,11 @@ public class EntityVarMeta<TEntity, TProperty> : IEntityVarMeta<TEntity> where T
     public EntityVarMeta(PropertyInfo prop)
     {
         var getMi = prop.GetGetMethod();
+        if (getMi == null) throw new Exception();
         GetProperty = getMi.MakeInstanceMethodDelegate<Func<TEntity, TProperty>>();
         
         var setMi = prop.GetSetMethod(true);
+        if (setMi == null) throw new Exception();
         SetProperty = setMi.MakeInstanceMethodDelegate<Action<TEntity, TProperty>>();
     }
 

@@ -7,19 +7,19 @@ public class RuleVars : Entity
 {
     public override Type GetRepoEntityType() => RepoEntityType();
     private static Type RepoEntityType() => typeof(RuleVars);
-    public int FoodConsumptionPerPeep { get; private set; } = 10;
+    public int FoodConsumptionPerPeep { get; protected set; } = 10;
     public static RuleVars Create(GenWriteKey key)
     {
         var v = new RuleVars(key.IdDispenser.GetID());
         key.Create(v);
         return v;
     }
-    [SerializationConstructor] private RuleVars(int foodConsumptionPerPeep, int id) : base(id)
+    [SerializationConstructor] protected RuleVars(int foodConsumptionPerPeep, int id) : base(id)
     {
         FoodConsumptionPerPeep = foodConsumptionPerPeep;
     }
 
-    private RuleVars(int id) : base(id)
+    protected RuleVars(int id) : base(id)
     {
         
     }
