@@ -6,7 +6,7 @@ public class TickDisplay
     public static Node Create()
     {
         var label = new Label();
-        ValueChangedHandler<GameClock, int>.RegisterForAll(nameof(GameClock.Tick),
+        EntityValChangedHandler<GameClock, int>.RegisterForAll(nameof(GameClock.Tick),
             n =>
             { 
                 label.Text = $"Tick: {n.NewVal}";

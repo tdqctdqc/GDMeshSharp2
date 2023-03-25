@@ -17,7 +17,7 @@ public class RepoEntityMultiIndexer<TSingle, TMult> : RepoAuxData<TMult>
     {
         _dic = new Dictionary<int, HashSet<int>>();
         _getSingle = getSingle;
-        ValueChangedHandler<TMult, EntityRef<TSingle>>.RegisterForAll(
+        EntityValChangedHandler<TMult, EntityRef<TSingle>>.RegisterForAll(
             fieldNameOnMult,
             n => 
             {

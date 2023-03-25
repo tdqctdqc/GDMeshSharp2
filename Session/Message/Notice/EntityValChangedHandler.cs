@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using Godot;
 
-public class ValueChangedHandler<TEntity, TProperty> 
+public class EntityValChangedHandler<TEntity, TProperty> 
     : EntityNoticeHandler<TEntity, ValueChangedNotice<TEntity, TProperty>>
     where TEntity : Entity
 {
@@ -11,7 +11,13 @@ public class ValueChangedHandler<TEntity, TProperty>
         = new Dictionary<string, Action<ValueChangedNotice<TEntity, TProperty>>>();
     private static Dictionary<int, Dictionary<string, Action<ValueChangedNotice<TEntity, TProperty>>>> _changedSpecific
         = new Dictionary<int, Dictionary<string, Action<ValueChangedNotice<TEntity, TProperty>>>>();
-  
+    public static void Raise(string valueName,
+        TEntity entity, TProperty oldVal, TProperty newVal, WriteKey key)
+    {
+        //todo raise up chain, check before create notice
+        var n = new ValueChangedNotice<TEntity, TProperty>(entity, newVal, oldVal);
+        Raise(valueName, n);
+    }
     public static void RegisterForAll(string fieldName, Action<ValueChangedNotice<TEntity, TProperty>> callback)
     {
         if(_changedAll.ContainsKey(fieldName) == false) _changedAll.Add(fieldName, n => { });
@@ -35,13 +41,7 @@ public class ValueChangedHandler<TEntity, TProperty>
         if (_changedAll.ContainsKey(fieldName) == false) throw new Exception();
         _changedAll[fieldName] -= callback;
     }
-    public static void Raise(string valueName,
-        TEntity entity, TProperty oldVal, TProperty newVal, WriteKey key)
-    {
-        //todo raise up chain, check before create notice
-        var n = new ValueChangedNotice<TEntity, TProperty>(entity, newVal, oldVal);
-        Raise(valueName, n);
-    }
+    
     protected static void Raise(string fieldName, ValueChangedNotice<TEntity, TProperty> n) 
     {
         if (_changedAll.TryGetValue(fieldName, out var a1))

@@ -36,7 +36,7 @@ public class Entity1to1PropIndexer<TEntity, TKey> : RepoAuxData<TEntity>
             if(n.OldVal != null) _dic.Remove(n.OldVal);
             if(n.NewVal != null) _dic[n.NewVal] = n.Entity;
         };
-        ValueChangedHandler<TEntity, TKey>.RegisterForAll(keyFieldName, callback);
+        EntityValChangedHandler<TEntity, TKey>.RegisterForAll(keyFieldName, callback);
         Initialize(data);
     }
     protected Entity1to1PropIndexer(Data data, Func<TEntity, TKey> get, RefAction trigger) : base(data)

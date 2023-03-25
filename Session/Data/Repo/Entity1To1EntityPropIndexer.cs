@@ -23,7 +23,7 @@ public class Entity1To1EntityPropIndexer<TEntity, TKey> : Entity1to1PropIndexer<
             if(n.OldVal != null) _dic.Remove(n.OldVal.Id);
             if(n.NewVal != null) _dic[n.NewVal.Id] = n.Entity;
         };
-        ValueChangedHandler<TEntity, TKey>.RegisterForAll(keyFieldName, callback);
+        EntityValChangedHandler<TEntity, TKey>.RegisterForAll(keyFieldName, callback);
     }
     private Entity1To1EntityPropIndexer(Data data, Func<TEntity, EntityRef<TKey>> get) 
         : base(data, e => get(e) == null ? (int?)null : get(e).RefId)
