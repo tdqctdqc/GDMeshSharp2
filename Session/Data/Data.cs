@@ -45,14 +45,15 @@ public class Data
         AddDomain(Society);
     }
     
-    public void AddEntity<TEntity>(TEntity e, StrongWriteKey key, Type repoType) where TEntity : Entity
+    public void AddEntity<TEntity>(TEntity e, StrongWriteKey key) where TEntity : Entity
     {
         if (Entities.ContainsKey(e.Id))
         {
             GD.Print($"trying to overwrite {Entities[e.Id].GetType().ToString()} with {e.GetType().ToString()}");
         }
         Entities.Add(e.Id, e);
-        var repo = _domains[e.GetDomainType()].Repos[repoType];
+        var dom = _domains[e.GetDomainType()];
+        var repo = dom.Repos[e.GetRepoEntityType()];
         repo.AddEntity(e, key);
         EntityRepoIndex.Add(e.Id, repo);
         if (key is HostWriteKey hKey)

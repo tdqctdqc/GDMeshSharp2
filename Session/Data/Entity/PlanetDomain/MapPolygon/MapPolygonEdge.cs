@@ -7,7 +7,8 @@ using MessagePack;
 
 public class MapPolygonEdge : Entity
 {
-    public override Type GetRepoEntityType() => GetType();
+    public override Type GetRepoEntityType() => RepoEntityType();
+    private static Type RepoEntityType() => typeof(MapPolygonEdge);
     public override Type GetDomainType() => typeof(PlanetDomain);
     public float MoistureFlow { get; private set; }
     public PolyBorderChain LowSegsRel() => LowId.Entity().NeighborBorders[HighId.RefId];

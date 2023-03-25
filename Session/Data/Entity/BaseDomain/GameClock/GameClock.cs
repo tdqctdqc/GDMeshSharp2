@@ -4,7 +4,8 @@ using MessagePack;
 
 public class GameClock : Entity
 {
-    public override Type GetRepoEntityType() => GetType();
+    public override Type GetRepoEntityType() => RepoEntityType();
+    private static Type RepoEntityType() => typeof(GameClock);
     public int Tick { get; private set; }
     public static GameClock Create(GenWriteKey key)
     {

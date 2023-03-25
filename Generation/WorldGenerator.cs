@@ -34,8 +34,8 @@ public class WorldGenerator
         var edgePointMargin = new Vector2(polySize, polySize);
         var dim = Data.GenMultiSettings.Dimensions;
         var id = _key.IdDispenser.GetID();
-        PlanetInfo.Create(Data.GenMultiSettings.Dimensions, _key);
         GameClock.Create(_key);
+        PlanetInfo.Create(Data.GenMultiSettings.Dimensions, _key);
         RuleVars.Create(_key);
         _sw.Start();
 

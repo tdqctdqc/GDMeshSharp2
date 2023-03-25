@@ -9,9 +9,8 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
 {
     public IReadOnlyList<string> FieldNames => _fieldNames;
     private List<string> _fieldNames;
-    public Dictionary<string, Type> FieldTypes => _fieldTypes;
+    public IReadOnlyDictionary<string, Type> FieldTypes => _fieldTypes;
 
-    public Type RepoEntityType { get; private set; }
     private Dictionary<string, Type> _fieldTypes;
 
     private Dictionary<string, IEntityVarMeta<T>> _vars;
@@ -27,9 +26,6 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
         //bc with generic parameters it will not capture all the classes
         if (entityType.ContainsGenericParameters) 
             throw new Exception();
-        RepoEntityType = (Type) entityType
-            .GetMethod(nameof(Entity.GetRepoEntityType))
-            .Invoke(null, null);
         
         var properties = entityType.GetProperties(BindingFlags.Instance | BindingFlags.Public);
         _fieldNames = properties.Select(p => p.Name).ToList();
@@ -80,7 +76,7 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
 
     public void AddToData(Entity e, StrongWriteKey key)
     {
-        key.Data.AddEntity<T>((T)e, key, RepoEntityType);
+        key.Data.AddEntity<T>((T)e, key);
     }
     public void RemoveFromData(Entity e, StrongWriteKey key)
     {

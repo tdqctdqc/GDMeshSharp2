@@ -3,7 +3,8 @@ using System;
 
 public class ResourceDeposit : Entity
 {
-    public override Type GetRepoEntityType() => GetType();
+    public override Type GetRepoEntityType() => RepoEntityType();
+    private static Type RepoEntityType() => typeof(ResourceDeposit);
     public ModelRef<Item> Item { get; private set; }
     public float Size { get; private set; }
     public EntityRef<MapPolygon> Poly { get; private set; }

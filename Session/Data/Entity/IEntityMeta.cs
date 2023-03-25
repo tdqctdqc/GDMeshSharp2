@@ -4,9 +4,8 @@ using System.Collections.Generic;
 
 public interface IEntityMeta
 {
-    Type RepoEntityType { get; }
     IReadOnlyList<string> FieldNames { get; }
-    Dictionary<string, Type> FieldTypes { get; }
+    IReadOnlyDictionary<string, Type> FieldTypes { get; }
     object[] GetPropertyValues(Entity entity);
     void UpdateEntityVarServer<TProperty>(string fieldName, Entity t, ServerWriteKey key, TProperty newValue);
     void UpdateEntityVar<TProperty>(string fieldName, Entity t, StrongWriteKey key, TProperty newValue);

@@ -7,7 +7,8 @@ using MessagePack;
 public class RoadSegment : Entity
 {
     public override Type GetDomainType() => typeof(SocietyDomain);
-    public override Type GetRepoEntityType() => GetType();
+    public override Type GetRepoEntityType() => RepoEntityType();
+    private static Type RepoEntityType() => typeof(RoadSegment);
 
     public EntityRef<MapPolygonEdge> Edge { get; private set; }
     public ModelRef<RoadModel> Road { get; private set; }

@@ -19,5 +19,4 @@ public abstract class Entity
     }
     public abstract Type GetDomainType();
     public abstract Type GetRepoEntityType();
-
 }

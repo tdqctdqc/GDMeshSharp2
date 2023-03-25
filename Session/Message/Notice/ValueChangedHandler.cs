@@ -38,6 +38,7 @@ public class ValueChangedHandler<TEntity, TProperty>
     public static void Raise(string valueName,
         TEntity entity, TProperty oldVal, TProperty newVal, WriteKey key)
     {
+        //todo raise up chain, check before create notice
         var n = new ValueChangedNotice<TEntity, TProperty>(entity, newVal, oldVal);
         Raise(valueName, n);
     }

@@ -4,7 +4,8 @@ using MessagePack;
 
 public class Building : Entity
 {
-    public override Type GetRepoEntityType() => GetType();
+    public override Type GetRepoEntityType() => RepoEntityType();
+    private static Type RepoEntityType() => typeof(Building);
     public PolyTriPositionSerializable Position { get; private set; }
     public ModelRef<BuildingModel> Model { get; private set; }
 

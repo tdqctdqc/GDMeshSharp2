@@ -5,7 +5,8 @@ using MessagePack;
 
 public class RuleVars : Entity
 {
-    public override Type GetRepoEntityType() => GetType();
+    public override Type GetRepoEntityType() => RepoEntityType();
+    private static Type RepoEntityType() => typeof(RuleVars);
     public int FoodConsumptionPerPeep { get; private set; } = 10;
     public static RuleVars Create(GenWriteKey key)
     {

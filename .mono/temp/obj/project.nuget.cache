@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "yLcoISSmij/z6sJyeCmEMyNTz7JvlxQyQKIqTcTiMAqAgJqP8oQEGZ38VvbRu11WH960Q5ptBFtaLGMinL+UrA==",
+  "dgSpecHash": "d7Ou6vlZ4v1mCt9C7J1BvHpEweGNc05riqCeRMHmHfq2e3jXRQRdWwCVSn47v+vWBvOEaKzmYMM0HCg2K6JZ0Q==",
   "success": true,
-  "projectFilePath": "C:\\Users\\Tynan Dion\\Desktop\\games\\gdMeshSharp2\\gdMeshSharp2.csproj",
+  "projectFilePath": "C:\\Users\\Tynan Dion\\desktop\\games\\gdMeshSharp2\\gdMeshSharp2.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\fsharp.core\\4.3.4\\fsharp.core.4.3.4.nupkg.sha512",
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\geometri\\1.4.0.3\\geometri.1.4.0.3.nupkg.sha512",

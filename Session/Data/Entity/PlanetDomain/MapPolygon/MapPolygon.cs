@@ -8,7 +8,8 @@ using MessagePack;
 public partial class MapPolygon : Entity, 
     IReadOnlyGraphNode<MapPolygon, PolyBorderChain>
 {
-    public override Type GetRepoEntityType() => GetType();
+    public override Type GetRepoEntityType() => RepoEntityType();
+    private static Type RepoEntityType() => typeof(MapPolygon);
     public Vector2 Center { get; protected set; }
     public EntityRefCollection<MapPolygon> Neighbors { get; protected set; }
     public Dictionary<int, PolyBorderChain> NeighborBorders { get; private set; }
