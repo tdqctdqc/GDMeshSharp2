@@ -39,7 +39,7 @@ public class SubscribedStatLabel : StatLabel
         string name, Label label,
         Func<TEntity, TProperty> getStat) where TEntity : Entity
     {
-        Action<ValueChangedNotice<TEntity, TProperty>> act = n => TriggerUpdate();
+        Action<ValChangeNotice<TProperty>> act = n => TriggerUpdate();
         EntityValChangedHandler<TEntity, TProperty>.RegisterForEntity(name,
             e, act);
         _unsubscribe = () => EntityValChangedHandler<TEntity, TProperty>.UnregisterForEntity(name, e, act);

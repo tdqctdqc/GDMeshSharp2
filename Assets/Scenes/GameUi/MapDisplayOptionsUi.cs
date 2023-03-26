@@ -19,7 +19,7 @@ public class MapDisplayOptionsUi : VBoxContainer
         _mousePos.Text = Game.I.Client.Cam?.GetMousePosInMapSpace().ToString();
     }
 
-    public void Setup(GameGraphics graphics, Data data)
+    public void Setup(MapGraphics graphics, Data data)
     {
         _data = data;
         _mousePos = new Label();

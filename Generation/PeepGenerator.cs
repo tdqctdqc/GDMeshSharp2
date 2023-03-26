@@ -71,14 +71,12 @@ public class PeepGenerator : Generator
                 numFarmers = Mathf.Clamp(numFarmers, farmCount, farmCount * farmLaborReq);
                 totalNumFarmers += numFarmers;
                 totalFoodProd += ((float)numFarmers / farmLaborReq) * farmProdCap;
-                for (var i = 0; i < numFarmers; i++)
-                {
-                    Peep.Create(
-                        poly,
-                        farmerJob,
-                        _key);
-                }
             }
+            Peep.Create(
+                poly,
+                farmerJob,
+                totalNumFarmers,
+                _key);
         }
 
         return Mathf.FloorToInt(totalFoodProd - totalNumFarmers * foodConPerPeep);
@@ -94,14 +92,13 @@ public class PeepGenerator : Generator
         for (var i = 0; i < polys.Count; i++)
         {
             var num = Mathf.FloorToInt(portions[i]);
-            for (var j = 0; j < num; j++)
-            {
-                Peep.Create(
-                    polys[i],
-                    laborerJob,
-                    _key
-                );
-            }
+            
+            Peep.Create(
+                polys[i],
+                laborerJob,
+                num,
+                _key
+            );
         }
         
         
@@ -122,32 +119,6 @@ public class PeepGenerator : Generator
 
             res += p.TerrainTris.Tris.Where(t => t.Landform == LandformManager.Urban).Count() * 5;
             return res;
-        }
-    }
-    private void GeneratePeepType(PeepJob job, Func<MapPolygon, int> getPoints,
-        int minPoints, int pointsPerPeep)
-    {
-        var numPeeps = 0;
-        var totalPoints = 0;
-        foreach (var poly in _data.Planet.Polygons.Entities)
-        {
-            var pointsInPoly = getPoints(poly);
-            totalPoints += pointsInPoly;
-            if (pointsInPoly < minPoints)
-            {
-                continue;
-            }
-            
-            var polyPeeps = Mathf.CeilToInt(pointsInPoly / pointsPerPeep);
-
-            numPeeps += polyPeeps;
-            for (int i = 0; i < polyPeeps; i++)
-            {
-                var peep = Peep.Create(
-                    poly,
-                    job,
-                    _key);
-            }
         }
     }
 }

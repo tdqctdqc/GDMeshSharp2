@@ -12,7 +12,7 @@ public class RoadSegment : Entity
 
     public EntityRef<MapPolygonEdge> Edge { get; protected set; }
     public ModelRef<RoadModel> Road { get; protected set; }
-    [SerializationConstructor] protected RoadSegment(int id, EntityRef<MapPolygonEdge> edge,
+    [SerializationConstructor] private RoadSegment(int id, EntityRef<MapPolygonEdge> edge,
         ModelRef<RoadModel> road) : base(id)
     {
         Edge = edge;

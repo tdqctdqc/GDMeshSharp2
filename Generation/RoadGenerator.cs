@@ -42,9 +42,10 @@ public class RoadGenerator : Generator
         var settlementPolys = lm.Where(p => p.HasSettlement(_data));
         if (settlementPolys.Count() < 3) return new Dictionary<MapPolygonEdge, RoadModel>();
         var first = lm.First();
+        
         var graph = GraphGenerator.GenerateDelaunayGraph(settlementPolys.ToList(),
             s => first.GetOffsetTo(s, _data),
-            (p1, p2) => new Edge<MapPolygon>(p1, p2, (a, b) => a.Id > b.Id));
+            (p1, p2) => new Edge<MapPolygon>(p1, p2, a => a.Id));
         
         var covered = new HashSet<Edge<MapPolygon>>();
         var segs = new Dictionary<MapPolygonEdge, RoadModel>();
@@ -118,6 +119,7 @@ public class RoadGenerator : Generator
             .6f, 
             RoadModelManager.PavedRoad, 1_000f,
             graph, covered, segs);
+        
     }
     private void GenerateRoadNetworkForMinSize(HashSet<MapPolygon> lm, float minSize, float minImprovementRatio, 
         RoadModel road, float roadBuildDist,

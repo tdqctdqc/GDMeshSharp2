@@ -17,9 +17,12 @@ public class SandboxSession : Node, ISession
         AddChild(client);
         _home = Vector2.Zero;
         Client = client;
-        client.Setup(Vector2.Zero);
     }
 
+    public void Setup()
+    {
+        Client.Setup(Vector2.Zero);
+    }
     public override void _Process(float delta)
     {
         Client?.Process(delta);

@@ -18,10 +18,10 @@ public class Entity1To1EntityPropIndexer<TEntity, TKey> : Entity1to1PropIndexer<
         string keyFieldName) 
         : base(data, e => get(e) == null ? (int?)null : get(e).RefId)
     {
-        Action<ValueChangedNotice<TEntity, TKey>> callback = n =>
+        Action<ValChangeNotice<TKey>> callback = n =>
         {
             if(n.OldVal != null) _dic.Remove(n.OldVal.Id);
-            if(n.NewVal != null) _dic[n.NewVal.Id] = n.Entity;
+            if(n.NewVal != null) _dic[n.NewVal.Id] = (TEntity)data[n.EntityId];
         };
         EntityValChangedHandler<TEntity, TKey>.RegisterForAll(keyFieldName, callback);
     }

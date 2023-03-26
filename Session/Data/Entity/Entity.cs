@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using MessagePack;
 
-
 public abstract class Entity
 {
     public int Id { get; protected set; }

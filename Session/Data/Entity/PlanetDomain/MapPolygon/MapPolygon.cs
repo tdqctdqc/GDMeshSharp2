@@ -89,7 +89,7 @@ public partial class MapPolygon : Entity,
     
     public override Type GetDomainType() => typeof(PlanetDomain);
     PolyBorderChain IReadOnlyGraphNode<MapPolygon, PolyBorderChain>.GetEdge(MapPolygon neighbor) =>
-        this.GetBorder(neighbor);
+        this.GetBorder(neighbor.Id);
     
     MapPolygon IReadOnlyGraphNode<MapPolygon>.Element => this;
 

@@ -51,6 +51,7 @@ public class CameraController : Camera2D, ICameraController
         
         return globalSpace;
     }
+    
     public override void _Process(float delta)
     {
         var mult = 1f;

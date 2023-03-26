@@ -6,11 +6,10 @@ public class GameClient : Node, IClient
     private EntityOverviewWindow _entityOverviewWindow;
     public GameUi Ui { get; private set; }
     private IServer _server;
-    public PolyHighlighter Highlighter { get; private set; }
     public ClientRequests Requests { get; private set; }
     public TooltipManager TooltipManager => Ui.TooltipManager;
     public ICameraController Cam { get; private set; }
-    public GameGraphics Graphics { get; private set; }
+    public MapGraphics Graphics { get; private set; }
     public Data Data { get; private set; }
     public ClientWriteKey Key { get; private set; }
     public ClientSettings Settings { get; private set; }
@@ -25,9 +24,8 @@ public class GameClient : Node, IClient
         Graphics?.Process(delta);
         Ui?.Process(delta, Key);
         TooltipManager?.Process(delta, Cam.GetMousePosInMapSpace());
-        
     }
-    public void Setup(GameSession session, IServer server, GameGraphics graphics)
+    public void Setup(GameSession session, IServer server, MapGraphics graphics)
     {
         Requests = new ClientRequests();
         Settings = ClientSettings.Load();
@@ -51,12 +49,11 @@ public class GameClient : Node, IClient
         AddChild(Graphics);
         BuildUi(session.Data, Key.Session.Server);
 
-        Highlighter = new PolyHighlighter();
     }
     
     private void BuildGraphics(Data data)
     {
-        Graphics = GameGraphics.Get();
+        Graphics = new MapGraphics();
         Graphics.Setup(data);
     }
 
@@ -72,5 +69,4 @@ public class GameClient : Node, IClient
     {
         
     }
-
 }

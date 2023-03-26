@@ -16,6 +16,8 @@ public class TooltipManager : Control
         _panel = new TooltipPanel();
         AddChild(_panel);
         _panel.Visible = false;
+        Game.I.Client.Requests.PromptTooltip.Subscribe(PromptTooltip);
+        Game.I.Client.Requests.HideTooltip.Subscribe(HideTooltip);
     }
 
     private TooltipManager()
@@ -27,14 +29,14 @@ public class TooltipManager : Control
         _panel.Move(GetLocalMousePosition() + _offsetFromMouse);
     }
 
-    public void PromptTooltip<T>(DataTooltipInstance<T> instance)
+    private void PromptTooltip(ITooltipInstance instance)
     {
         _panel.Visible = true;
         _panel.Setup(instance, _data);
         _currInstance = instance;
     }
 
-    public void HideTooltip<T>(DataTooltipInstance<T> instance)
+    private void HideTooltip(ITooltipInstance instance)
     {
         if (_currInstance == instance)
         {

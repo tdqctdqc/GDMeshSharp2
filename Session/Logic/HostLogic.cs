@@ -38,7 +38,6 @@ public class HostLogic : ILogic
     public void Process(float delta)
     {
         _frameTimer += delta;
-        GD.Print("framer time " + _frameTimer);
         if (_calculating != null && _calculating.IsCompleted)
         {
             if( _calculating.Exception != null)

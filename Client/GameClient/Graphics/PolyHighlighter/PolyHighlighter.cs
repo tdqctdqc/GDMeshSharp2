@@ -6,16 +6,21 @@ using Godot;
 public class PolyHighlighter : Node2D
 {
     private List<MeshInstance2D> _mis;
-    public PolyHighlighter()
+
+    public PolyHighlighter(Data data)
     {
+        Game.I.Client.Requests.MouseOver.Subscribe(pos => Draw(data, pos.Poly, pos.Tri));
         _mis = new List<MeshInstance2D>();
+    }
+    private PolyHighlighter()
+    {
     }
     public enum Modes
     {
         Simple,
         Complex
     }
-    public void Draw(Data data, MapPolygon poly, PolyTri pt, Vector2 offset)
+    public void Draw(Data data, MapPolygon poly, PolyTri pt)
     {
         Visible = true;
         Clear();
@@ -25,25 +30,23 @@ public class PolyHighlighter : Node2D
         var mode = Game.I.Client.Settings.PolyHighlightMode.Value;
         if (mode == Modes.Simple)
         {
-            DrawSimple(data, poly, pt, offset, mb);
+            DrawSimple(data, poly, pt, mb);
         }
         else if (mode == Modes.Complex)
         {
-            DrawComplex(data, poly, pt, offset, mb);
+            DrawComplex(data, poly, pt, mb);
         }
         else throw new Exception();
         
         TakeFromMeshBuilder(mb);
     }
 
-    private static void DrawSimple(Data data, MapPolygon poly, PolyTri pt, Vector2 offset, 
-        MeshBuilder mb)
+    private static void DrawSimple(Data data, MapPolygon poly, PolyTri pt, MeshBuilder mb)
     {
         DrawBordersSimple(poly, mb, data);
     }
 
-    private static void DrawComplex(Data data, MapPolygon poly, PolyTri pt, Vector2 offset, 
-        MeshBuilder mb)
+    private static void DrawComplex(Data data, MapPolygon poly, PolyTri pt, MeshBuilder mb)
     {
         DrawBoundarySegments(poly, mb, data);
         DrawPolyTriBorders(poly, mb, data);

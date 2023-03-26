@@ -17,8 +17,12 @@ public class GameSession : Node, ISession
         _logic?.Process(delta);
         Client?.Process(delta);
     }
-    
-    public void StartAsHost(GenData data, GameGraphics graphics = null)
+
+    public void Setup()
+    {
+        
+    }
+    public void StartAsHost(GenData data, MapGraphics graphics = null)
     {
         Data = data;
         var hServer = new HostServer();
@@ -33,7 +37,6 @@ public class GameSession : Node, ISession
         logic.SetDependencies(hServer, this, Data);
         StartServer(hServer);
         Player.Create(Game.I.PlayerGuid, "Doot", hKey);
-
         StartClient(hServer, graphics);
     }
     
@@ -54,7 +57,6 @@ public class GameSession : Node, ISession
         });
         server.Setup(this, logic, Data);
         StartServer(server);
-        
     }
 
     private void StartServer(IServer server)
@@ -63,7 +65,7 @@ public class GameSession : Node, ISession
         AddChild((Node)server);
     }
 
-    private void StartClient(IServer server, GameGraphics graphics)
+    private void StartClient(IServer server, MapGraphics graphics)
     {
         var client = new GameClient();
         Client = client;
@@ -74,11 +76,5 @@ public class GameSession : Node, ISession
     {
         var delta = GetProcessDeltaTime();
         Client?.HandleInput(e, delta);
-    }
-
-    public void TestSerialization()
-    {
-        if(Server is HostServer h) 
-            Game.I.Serializer.TestSerialization(new HostWriteKey(h, null, Data, this));
     }
 }

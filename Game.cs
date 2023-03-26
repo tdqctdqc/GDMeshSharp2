@@ -43,7 +43,7 @@ public class Game : Node
         session.StartAsRemote();
 
     }
-    public void StartHostSession(GenData data, GameGraphics graphics = null)
+    public void StartHostSession(GenData data, MapGraphics graphics = null)
     {
         var session = new GameSession();
         SetSession(session);
@@ -61,6 +61,7 @@ public class Game : Node
         _session?.QueueFree();
         session.Name = "Session";
         _session = (ISession)session;
+        _session.Setup();
         AddChild(session);
     }
 

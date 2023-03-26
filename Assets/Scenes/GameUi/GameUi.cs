@@ -4,7 +4,6 @@ using System.Collections.Generic;
 
 public class GameUi : Ui
 {
-    
     public PromptManager Prompts { get; private set; }
     public TooltipManager TooltipManager { get; private set; }
     public void Process(float delta, ClientWriteKey key)
@@ -12,7 +11,7 @@ public class GameUi : Ui
         Prompts.Process(delta, key);    
     }
 
-    public static GameUi Construct(IClient client, bool host, Data data, GameGraphics graphics)
+    public static GameUi Construct(IClient client, bool host, Data data, MapGraphics graphics)
     {
         var ui = new GameUi(client);
         ui.Setup(host, data, graphics);
@@ -27,7 +26,7 @@ public class GameUi : Ui
         
     }
 
-    public void Setup(bool host, Data data, GameGraphics graphics)
+    public void Setup(bool host, Data data, MapGraphics graphics)
     {
         AddWindow(LoggerWindow.Get(), Logger);
         AddWindow(EntityOverviewWindow.Get(data), Entities);

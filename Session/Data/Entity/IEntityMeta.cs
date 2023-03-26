@@ -12,4 +12,5 @@ public interface IEntityMeta
     IRefCollection GetRefCollection(string fieldName, Entity t, ProcedureWriteKey key);
     void AddToData(Entity e, StrongWriteKey key);
     void RemoveFromData(Entity e, StrongWriteKey key);
+    bool TestSerialization(Entity e);
 }

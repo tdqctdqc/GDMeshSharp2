@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 
 public class EntityMeta<T> : IEntityMeta where T : Entity
 {
@@ -12,7 +11,6 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
     public IReadOnlyDictionary<string, Type> FieldTypes => _fieldTypes;
 
     private Dictionary<string, Type> _fieldTypes;
-
     private Dictionary<string, IEntityVarMeta<T>> _vars;
 
     public void ForReference()
@@ -106,5 +104,12 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
             var bytes = Game.I.Serializer.MP.Serialize(newValue);
             hKey.HostServer.QueueUpdate(EntityVarUpdate.Create(fieldName, t.Id, bytes, hKey));
         }
+    }
+
+
+    public bool TestSerialization(Entity e)
+    {
+        var t = (T) e;
+        return SerializeChecker<T>.Test(t, _vars);
     }
 }

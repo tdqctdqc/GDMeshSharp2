@@ -11,9 +11,9 @@ public class GeneratorUi : Ui
     private bool _generated;
     private Label _progress;
     private MapDisplayOptionsUi _mapOptions;
-    private GameGraphics _graphics;
+    private MapGraphics _graphics;
     // public GeneratorSettingsWindow GenSettingsWindow { get; private set; }
-    public static GeneratorUi Construct(IClient client, GeneratorSession session, GameGraphics graphics)
+    public static GeneratorUi Construct(IClient client, GeneratorSession session, MapGraphics graphics)
     {
         var ui = new GeneratorUi(client);
         ui.Setup(graphics, session);
@@ -27,7 +27,7 @@ public class GeneratorUi : Ui
     {
         
     }
-    public void Setup(GameGraphics graphics, GeneratorSession session)
+    public void Setup(MapGraphics graphics, GeneratorSession session)
     {
         _session = session;
         _graphics = graphics;
@@ -35,7 +35,11 @@ public class GeneratorUi : Ui
         topBar.AddButton("Generate", PressedGenerate);
         topBar.AddButton("Done", GoToGameSession);
         topBar.AddWindowButton<GeneratorSettingsWindow>(Ui.GenSettings);
-        AddChild(topBar.Container);
+        topBar.AddButton("Test Serialization", () => Game.I.Serializer.Test(session.Data));
+
+        AddChild(topBar.Container); 
+
+        
         var genSettingsWindow = GeneratorSettingsWindow.Get(_session.GenMultiSettings);
         AddWindow(genSettingsWindow, GenSettings);
         

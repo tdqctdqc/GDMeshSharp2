@@ -56,8 +56,8 @@ public static class MapPolygonExt
     public static bool IsCoast(this MapPolygon poly) => poly.IsLand && poly.Neighbors.Entities().Any(n => n.IsWater());
     public static MapPolygonEdge GetEdge(this MapPolygon poly, MapPolygon neighbor, Data data) 
         => data.Planet.PolyEdges.GetEdge(poly, neighbor);
-    public static PolyBorderChain GetBorder(this MapPolygon poly, MapPolygon neighbor) => poly.NeighborBorders[neighbor.Id];
-    public static IEnumerable<PolyBorderChain> GetPolyBorders(this MapPolygon poly) => poly.Neighbors.Entities()
+    public static PolyBorderChain GetBorder(this MapPolygon poly, int nId) => poly.NeighborBorders[nId];
+    public static IEnumerable<PolyBorderChain> GetPolyBorders(this MapPolygon poly) => poly.Neighbors.RefIds
         .Select(n => poly.GetBorder(n));
     public static IChain<LineSegment> GetOrderedNeighborSegments(this MapPolygon poly, Data data)
     {

@@ -5,7 +5,7 @@ using MessagePack;
 
 public abstract class History<TElement, TData>
 {
-    public SnapshotHolder<TElement, TData> Snapshots { get; private set; }
+    public SnapshotHolder<TElement, TData> Snapshots { get; protected set; }
     [SerializationConstructor] protected History(SnapshotHolder<TElement, TData> snapshots)
     {
         Snapshots = snapshots;

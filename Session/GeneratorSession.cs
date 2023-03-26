@@ -19,6 +19,11 @@ public class GeneratorSession : Node, ISession
 
     public GeneratorSession()
     {
+        
+    }
+
+    public void Setup()
+    {
         Server = new DummyServer();
         GenMultiSettings = new GenerationMultiSettings();
         Data = new GenData(GenMultiSettings);

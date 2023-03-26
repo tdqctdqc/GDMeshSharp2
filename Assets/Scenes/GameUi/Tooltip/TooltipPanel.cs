@@ -23,7 +23,7 @@ public class TooltipPanel : Panel
     {
         _detailAction?.Process(delta);
     }
-    public void Setup<T>(DataTooltipInstance<T> instance, Data data)
+    public void Setup(ITooltipInstance instance, Data data)
     {
         Clear();
         _instance = instance;

@@ -118,11 +118,11 @@ public class MapPolygonEdge : Entity
     {
         if (poly == HighId.Entity())
         {
-            return HighId.Entity().GetBorder(LowId.Entity()).GetRiverSegment();
+            return HighId.Entity().GetBorder(LowId.RefId).GetRiverSegment();
         }
         else if (poly == LowId.Entity())
         {
-            return LowId.Entity().GetBorder(HighId.Entity()).GetRiverSegment();
+            return LowId.Entity().GetBorder(HighId.RefId).GetRiverSegment();
         }
         else throw new Exception("poly is not part of this border");
     }

@@ -204,6 +204,7 @@ public class GeologyGenerator : Generator
         var frictionAltEffectSetting = Data.GenMultiSettings.GeologySettings.FrictionAltEffect.Value;
         var roughnessErosionMult = Data.GenMultiSettings.GeologySettings.RoughnessErosionMult.Value;
         var oscilMetric = new OscillatingDownFunction(50f, 1f, 0f, 100f);
+        var passMetric = new OscillatingFunction(50f, 1f, 0f);
         var seaLevelSetting = Data.GenMultiSettings.GeologySettings.SeaLevel.Value;
         var frictionRoughnessEffectSetting = Data.GenMultiSettings.GeologySettings.FrictionRoughnessEffect.Value;
         ConcurrentBag<FaultLine> faults = new ConcurrentBag<FaultLine>();
@@ -277,15 +278,15 @@ public class GeologyGenerator : Generator
         
         void DoFaultLineEffect(MapPolygon poly, FaultLine fault)
         {
-            var dist = fault.GetDist(poly, Data);
+            var close = fault.GetClosestSeg(poly, Data);
+            var dist = close.DistanceTo(fault.Origin.GetOffsetTo(poly, Data));
             var faultRange = fault.Friction * faultRangeSetting;
             var distRatio = (faultRange - dist) / faultRange;
-
-            var osc =
+            var spineOsc =
                 // 1f;
                 oscilMetric.Calc(dist);
             
-            var distFactor = distRatio * osc;
+            var distFactor = distRatio * spineOsc;
             var altEffect = fault.Friction * frictionAltEffectSetting * distFactor;
             poly.Set(nameof(poly.Altitude), Mathf.Min(1f, poly.Altitude + altEffect), _key);
             float roughnessErosion = 0f;

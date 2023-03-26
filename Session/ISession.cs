@@ -7,4 +7,5 @@ public interface ISession
     IClient Client { get; }
     IServer Server { get; }
     void QueueFree();
+    void Setup();
 }

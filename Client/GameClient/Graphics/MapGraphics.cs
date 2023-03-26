@@ -4,18 +4,20 @@ using System.Diagnostics;
 using System.Linq;
 using Godot;
 
-public class GameGraphics : Node2D
+public class MapGraphics : Node2D
 {
-    public static GameGraphics Get() => (GameGraphics) ((PackedScene)GD.Load("res://Client/GameClient/Graphics/GameGraphics.tscn")).Instance();
+
+    public MapGraphics()
+    {
+        
+    }
     protected List<IGraphicsSegmenter> _segmenters;
     public PolyHighlighter Highlighter { get; private set; }
     public List<MapChunkGraphic> MapChunkGraphics { get; private set; }
     private Data _data;
-    private MouseOverPolyHandler _mousePolyHandler;
     public void Setup(Data data)
     {
         _data = data;
-        _mousePolyHandler = new MouseOverPolyHandler();
         Clear();
         _segmenters = new List<IGraphicsSegmenter>();
         MapChunkGraphics = new List<MapChunkGraphic>();
@@ -31,14 +33,20 @@ public class GameGraphics : Node2D
 
             return graphic;
         }).ToList();
+        
+        
+        
         polySegmenter.Setup(mapChunkGraphics, 10, n => n.Position, data);
 
-        Highlighter = new PolyHighlighter();
+        Highlighter = new PolyHighlighter(_data);
         Highlighter.ZIndex = 99;
         Highlighter.ZAsRelative = false;
         AddChild(Highlighter);
+
         
         AddChild(polySegmenter);
+        var inputCatcher = new MapInputCatcher(_data, this);
+        AddChild(inputCatcher);
     }
     public void Process(float delta)
     {
@@ -48,14 +56,9 @@ public class GameGraphics : Node2D
         }
     }
 
-    public override void _UnhandledInput(InputEvent e)
+    public override void _Input(InputEvent e)
     {
-        if (e is InputEventMouseMotion mm)
-        {
-            var mapPos = Game.I.Client.Cam.GetMousePosInMapSpace();
-            var d = GetProcessDeltaTime();
-            _mousePolyHandler?.Process(d, _data, mapPos);
-        }
+        
     }
 
     private void Clear()

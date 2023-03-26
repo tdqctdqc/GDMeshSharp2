@@ -40,27 +40,34 @@ public class ProductionAndConsumptionModule : LogicModule
         EntityWallet<ResourceDeposit> depletions)
     {
         var polys = regime.Polygons;
-        var avail = new HashSet<Peep>();
         foreach (var poly in polys)
         {
             var buildings = poly.GetBuildings(data);
             if (buildings == null) continue;
             var peeps = poly.GetPeeps(data);
             if (peeps == null) continue;
-            var notTakenPeeps = peeps.ToHashSet();
+            var peepAvailCounts = peeps.GetCounts();
+
             foreach (var building in buildings)
             {
-                if (notTakenPeeps.Count == 0) break;
                 if (building.Model.Model() is ProductionBuilding rb)
                 {
-                    avail.Clear();
-                    avail.AddRange(notTakenPeeps.Where(p => rb.JobTypes.Contains(p.Job.Model())));
-                    if (avail.Count == 0) continue;
-                    var num = Mathf.Min(rb.PeepsLaborReq, avail.Count());
+                    var avail = peepAvailCounts
+                        .Where(kvp => rb.JobTypes.Contains(kvp.Key.Job.Model())).ToList();
+                    if (avail.Count() == 0) continue;
+                    var availNum = avail.Sum(kvp => kvp.Value);
+                    if (availNum == 0) continue;
+                    var num = Mathf.Min(rb.PeepsLaborReq, availNum);
                     if (num == 0) continue;
-                    for (var i = 0; i < num; i++)
+
+                    var toTakeAway = num;
+                    
+                    foreach (var kvp in avail)
                     {
-                        notTakenPeeps.Remove(avail.ElementAt(i));
+                        if (toTakeAway <= 0) break;
+                        var takingAway = Mathf.Min(toTakeAway, kvp.Value);
+                        toTakeAway -= takingAway;
+                        peepAvailCounts[kvp.Key] -= takingAway;
                     }
                     var staffRatio = (float) num / rb.PeepsLaborReq;
                     rb.Produce(gains, depletions, building, staffRatio, data);

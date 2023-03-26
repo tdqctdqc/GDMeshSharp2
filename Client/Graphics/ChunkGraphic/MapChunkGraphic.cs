@@ -66,4 +66,6 @@ public class MapChunkGraphic : Node2D
                 return rs.First().Item.Model().Color;
             }
         );
+    
+    
 }

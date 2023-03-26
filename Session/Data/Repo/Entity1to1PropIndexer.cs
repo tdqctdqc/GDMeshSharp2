@@ -31,10 +31,10 @@ public class Entity1to1PropIndexer<TEntity, TKey> : RepoAuxData<TEntity>
     protected Entity1to1PropIndexer(Data data, Func<TEntity, TKey> get, string keyFieldName) : base(data)
     {
         _get = get;
-        Action<ValueChangedNotice<TEntity, TKey>> callback = n =>
+        Action<ValChangeNotice<TKey>> callback = n =>
         {
             if(n.OldVal != null) _dic.Remove(n.OldVal);
-            if(n.NewVal != null) _dic[n.NewVal] = n.Entity;
+            if(n.NewVal != null) _dic[n.NewVal] = (TEntity)data[n.EntityId];
         };
         EntityValChangedHandler<TEntity, TKey>.RegisterForAll(keyFieldName, callback);
         Initialize(data);

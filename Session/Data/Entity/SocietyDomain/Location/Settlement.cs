@@ -20,7 +20,7 @@ public class Settlement : Location
         key.Create(s);
         return s;
     }
-    [SerializationConstructor] protected Settlement(int id, EntityRef<MapPolygon> poly, float size,
+    [SerializationConstructor] private Settlement(int id, EntityRef<MapPolygon> poly, float size,
         string name) : base(id)
     {
         Name = name;

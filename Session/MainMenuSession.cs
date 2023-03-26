@@ -16,4 +16,8 @@ public class MainMenuSession : Node, ISession
         AddChild(client);
         Client = client;
     }
+
+    public void Setup()
+    {
+    }
 }

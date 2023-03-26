@@ -36,7 +36,7 @@ public class WorldGenerator
         var id = _key.IdDispenser.GetID();
         GameClock.Create(_key);
         PlanetInfo.Create(Data.GenMultiSettings.Dimensions, _key);
-        RuleVars.Create(_key);
+        RuleVars.CreateDefault(_key);
         _sw.Start();
 
         var points = PointsGenerator

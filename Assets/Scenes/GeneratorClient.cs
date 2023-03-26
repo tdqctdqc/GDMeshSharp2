@@ -9,7 +9,7 @@ public class GeneratorClient : Node, IClient
 {
     public ICameraController Cam { get; private set; }
     public ClientWriteKey Key { get; private set; }
-    private GameGraphics _graphics;
+    private MapGraphics _graphics;
     public CanvasLayer CanvasLayer => _ui;
     private GeneratorUi _ui; 
     public ClientSettings Settings { get; private set; }
@@ -29,9 +29,10 @@ public class GeneratorClient : Node, IClient
         AddChild(cam);
         cam.Current = true;
         Cam = cam;
-        _graphics = new GameGraphics();
+        _graphics = new MapGraphics();
         AddChild(_graphics);
         TooltipManager = new TooltipManager(session.Data);
+        AddChild(TooltipManager);
         _ui = GeneratorUi.Construct(this, session, _graphics);
         AddChild(_ui);
     }
@@ -42,6 +43,4 @@ public class GeneratorClient : Node, IClient
     {
         _ui.Process(delta);
     }
-    
-    
 }

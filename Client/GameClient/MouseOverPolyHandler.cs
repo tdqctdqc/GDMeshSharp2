@@ -5,11 +5,10 @@ using Godot;
 
 public class MouseOverPolyHandler
 {
-    private MapPolygon _mouseOverPoly;
-    private PolyTri _mouseOverTri;
+    public MapPolygon MouseOverPoly { get; private set; }
+    public PolyTri MouseOverTri { get; private set; }
     private TimerAction _action;
     private DataTooltipInstance<PolyTriPosition> _instance;
-
     public MouseOverPolyHandler()
     {
         _action = new TimerAction(.05f);
@@ -25,37 +24,39 @@ public class MouseOverPolyHandler
 
         if (mousePosMapSpace.y <= 0f || mousePosMapSpace.y >= data.Planet.Height)
         {
-            _mouseOverPoly = null;
-            _mouseOverTri = null;
-            Game.I.Client.TooltipManager.HideTooltip(_instance);
+            MouseOverPoly = null;
+            MouseOverTri = null;
+            Game.I.Client.Requests.HideTooltip.Invoke(_instance);
             return;
         }
-        else if (_mouseOverPoly != null && _mouseOverPoly.PointInPoly(mousePosMapSpace, data))
+        else if (MouseOverPoly != null && MouseOverPoly.PointInPoly(mousePosMapSpace, data))
         {
-            if (_mouseOverTri != null && _mouseOverTri.ContainsPoint(mousePosMapSpace - _mouseOverPoly.Center))
+            if (MouseOverTri != null && MouseOverTri.ContainsPoint(mousePosMapSpace - MouseOverPoly.Center))
             {
                 return;
             }
         }
-        else if (_mouseOverPoly != null && 
-                 _mouseOverPoly.Neighbors.Entities()
+        else if (MouseOverPoly != null && 
+                 MouseOverPoly.Neighbors.Entities()
                          .FirstOrDefault(n => n.PointInPoly(mousePosMapSpace, data))
                      is MapPolygon neighbor)
         {
-            _mouseOverPoly = neighbor;
+            MouseOverPoly = neighbor;
         }
         else
         {
-            _mouseOverPoly = data.Planet.Polygons.MapPolyGrid.GetElementAtPoint(mousePosMapSpace);
+            MouseOverPoly = data.Planet.Polygons.MapPolyGrid.GetElementAtPoint(mousePosMapSpace);
         }
-        FindTri(_mouseOverPoly, data, mousePosMapSpace);
-        var pos = new PolyTriPosition(_mouseOverPoly, _mouseOverTri);
+        FindTri(MouseOverPoly, data, mousePosMapSpace);
+
+        var pos = new PolyTriPosition(MouseOverPoly, MouseOverTri);
+        Game.I.Client.Requests.MouseOver.Invoke(pos);
         _instance.SetElement(pos);
-        Game.I.Client.TooltipManager.PromptTooltip(_instance);
+        Game.I.Client.Requests.PromptTooltip.Invoke(_instance);
     }
     private void FindTri(MapPolygon p, Data data,  Vector2 mousePosMapSpace)
     {
-        var offset = _mouseOverPoly.GetOffsetTo(mousePosMapSpace, data);
-        _mouseOverTri = _mouseOverPoly.TerrainTris.GetAtPoint(offset, data);
+        var offset = MouseOverPoly.GetOffsetTo(mousePosMapSpace, data);
+        MouseOverTri = MouseOverPoly.TerrainTris.GetAtPoint(offset, data);
     }
 }

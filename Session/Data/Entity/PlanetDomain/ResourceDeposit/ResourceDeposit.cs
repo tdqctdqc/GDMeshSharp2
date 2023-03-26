@@ -1,5 +1,6 @@
 
 using System;
+using MessagePack;
 
 public class ResourceDeposit : Entity
 {
@@ -15,7 +16,7 @@ public class ResourceDeposit : Entity
         return d;
     }
 
-    private ResourceDeposit(int id, ModelRef<Item> item, EntityRef<MapPolygon> poly, float size) : base(id)
+    [SerializationConstructor] private ResourceDeposit(int id, ModelRef<Item> item, EntityRef<MapPolygon> poly, float size) : base(id)
     {
         Item = item;
         Size = size;

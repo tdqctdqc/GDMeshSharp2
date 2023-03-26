@@ -12,6 +12,7 @@ public class EntityVarMeta<TEntity, TProperty> : IEntityVarMeta<TEntity> where T
     
     public EntityVarMeta(PropertyInfo prop)
     {
+        PropertyName = prop.Name;
         var getMi = prop.GetGetMethod();
         if (getMi == null) throw new Exception();
         GetProperty = getMi.MakeInstanceMethodDelegate<Func<TEntity, TProperty>>();
@@ -32,5 +33,22 @@ public class EntityVarMeta<TEntity, TProperty> : IEntityVarMeta<TEntity> where T
     public virtual void Set(TEntity e, object receivedValue, StrongWriteKey key)
     {
         SetProperty(e, (TProperty)receivedValue);
+    }
+
+    public bool Test(TEntity t)
+    {
+        var prop = GetProperty(t);
+        try
+        {
+            var bytes = Game.I.Serializer.MP.Serialize(prop);
+            var deserialized = Game.I.Serializer.MP.Deserialize<TProperty>(bytes);
+        }
+        catch (Exception e)
+        {
+            GD.Print($"Couldn't serialize property {PropertyName} for {typeof(TEntity)}");
+            throw;
+        }
+
+        return true;
     }
 }

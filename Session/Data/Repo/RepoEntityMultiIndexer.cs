@@ -23,9 +23,9 @@ public class RepoEntityMultiIndexer<TSingle, TMult> : RepoAuxData<TMult>
             {
                 if (_dic.TryGetValue(n.OldVal.RefId, out var hash))
                 {
-                    hash.Remove(n.Entity.Id);
+                    hash.Remove(n.EntityId);
                 }
-                _dic.AddOrUpdate(n.NewVal.RefId, n.Entity.Id);
+                _dic.AddOrUpdate(n.NewVal.RefId, n.EntityId);
             }
         );
         EntityDestroyedHandler<TSingle>.Register(HandleTSingleRemoved);
