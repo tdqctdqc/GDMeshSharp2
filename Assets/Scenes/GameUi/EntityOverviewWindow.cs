@@ -51,7 +51,7 @@ public class EntityOverviewWindow : WindowDialog
 
     private void DrawEntityTypes(Domain d)
     {
-        _entityTypeToken.Setup(d.Repos.Select(r => r.Value.EntityType).ToList(),
+        _entityTypeToken.Setup(d.Registers.Select(r => r.Value.EntityType).ToList(),
             t => t.Name,
             t => () => _entityType.SetValue(t));
     }
@@ -59,16 +59,16 @@ public class EntityOverviewWindow : WindowDialog
     private void DrawEntitiesOfType(Type type)
     {
         var d = _domain.Value;
-        var repo = d.GetRepo(type);
+        var register = d.Registers[type];
         
-        _entitiesToken.Setup(repo.Register.Entities.ToList(), 
+        _entitiesToken.Setup(register.Entities.ToList(), 
             e => e.Id.ToString(),
             e => () => _selectedEntity.SetValue(e));
         
         _entityTypePropsToken.Setup<string>(
             new List<string>
             {
-                "Number: " + repo.Register.Entities.Count
+                "Number: " + register.Entities.Count
             },
             i => i,
             i => () => { }

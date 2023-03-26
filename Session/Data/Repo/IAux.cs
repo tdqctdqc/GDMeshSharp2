@@ -5,5 +5,4 @@ using System.Collections.Generic;
 public interface IAux
 {
     Type EntityType { get; }
-    IEntityRegister Register { get; }
 }

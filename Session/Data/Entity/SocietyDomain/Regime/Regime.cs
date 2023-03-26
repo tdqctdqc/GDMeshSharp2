@@ -8,8 +8,6 @@ public class Regime : Entity
 {
     public override Type GetDomainType() => DomainType();
     private static Type DomainType() => typeof(SocietyDomain);
-    public override Type GetRepoEntityType() => RepoEntityType();
-    private static Type RepoEntityType() => typeof(Regime);
     public EntityRef<MapPolygon> Capital { get; protected set; }
     public Color PrimaryColor { get; protected set; }
     public Color SecondaryColor { get; protected set; }

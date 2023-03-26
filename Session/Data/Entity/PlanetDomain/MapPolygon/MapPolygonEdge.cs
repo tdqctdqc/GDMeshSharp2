@@ -7,8 +7,6 @@ using MessagePack;
 
 public class MapPolygonEdge : Entity
 {
-    public override Type GetRepoEntityType() => RepoEntityType();
-    private static Type RepoEntityType() => typeof(MapPolygonEdge);
     public override Type GetDomainType() => DomainType();
     private static Type DomainType() => typeof(PlanetDomain);
     public float MoistureFlow { get; protected set; }

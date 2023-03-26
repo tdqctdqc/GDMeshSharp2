@@ -14,14 +14,10 @@ public class BaseDomain : Domain
     {
         
     }
-
     protected override void Setup()
     {
         PlayerAux = new PlayerAux(this, Data);
         _gameClockAux = new GameClockAux(this, Data);
         _ruleVarsAux = new SingletonAux<RuleVars>(this, Data);
-        AddRepo(_gameClockAux);
-        AddRepo(PlayerAux);
-        AddRepo(_ruleVarsAux);
     }
 }

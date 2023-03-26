@@ -11,8 +11,8 @@ public class Data
     public RefFulfiller RefFulfiller { get; private set; }
     public IReadOnlyDictionary<Type, Domain> Domains => _domains;
     private Dictionary<Type, Domain> _domains;
+    private Dictionary<Type, Domain> _entityTypeDomainIndex;
     public Dictionary<int, Entity> Entities { get; private set; }
-    public Dictionary<int, IAux> EntityRepoIndex { get; private set; }
     public Entity this[int id] => Entities[id];
     public BaseDomain BaseDomain { get; private set; }
     public PlanetDomain Planet { get; private set; }
@@ -35,8 +35,9 @@ public class Data
         RefFulfiller = new RefFulfiller(this);
         Models = new Models();
         Entities = new Dictionary<int, Entity>();
-        EntityRepoIndex = new Dictionary<int, IAux>();
         _domains = new Dictionary<Type, Domain>();
+        _entityTypeDomainIndex = new Dictionary<Type, Domain>();
+
         BaseDomain = new BaseDomain();
         Planet = new PlanetDomain();
         Society = new SocietyDomain();
@@ -54,8 +55,6 @@ public class Data
         }
         Entities.Add(e.Id, e);
         var dom = _domains[e.GetDomainType()];
-        var repo = dom.Repos[e.GetRepoEntityType()];
-        EntityRepoIndex.Add(e.Id, repo);
         if (key is HostWriteKey hKey)
         {
             hKey.HostServer.QueueUpdate(EntityCreationUpdate.Create(e, hKey));
@@ -67,34 +66,25 @@ public class Data
     {
         EntityDestroyedHandler<TEntity>.Raise(e);
         Entities.Remove(e.Id);
-        EntityRepoIndex.Remove(e.Id);
         if (key is HostWriteKey hKey)
         {
             hKey.HostServer.QueueUpdate(EntityDeletionUpdate.Create(e.Id, hKey));
         }
     }
-    public T GetDomain<T>() where T : Domain
-    {
-        return (T) _domains[typeof(T)];
-    }
 
+    public EntityRegister<T> GetRegister<T>() where T : Entity
+    {
+        var t = typeof(T);
+        return _entityTypeDomainIndex[t].GetRegister<T>();
+    }
     protected void AddDomain(Domain dom)
     {
+        foreach (var domEntityType in dom.EntityTypes)
+        {
+            _entityTypeDomainIndex.Add(domEntityType, dom);
+        }
         dom.Setup(this);
         _domains.Add(dom.GetType(), dom);
-    }
-    public Domain GetDomain(Type domainType)
-    {
-        return _domains[domainType];
-    }
-
-    public Domain GetDomain(string domainType)
-    {
-        return _domains.First(e => e.Key.Name == domainType).Value;
-    }
-    public T GetEntity<T>(int id) where T : Entity
-    {
-        return (T) Entities[id];
     }
 
     public void GetIdDispenser(CreateWriteKey key)

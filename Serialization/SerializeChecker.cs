@@ -11,7 +11,6 @@ public static class SerializeChecker<TEntity> where TEntity : Entity
     {
         var res = true;
         var eType = typeof(TEntity);
-        var repoType = e.GetRepoEntityType();
         foreach (var varMeta in varMetas.Values)
         {
             res = res && varMeta.Test(e);

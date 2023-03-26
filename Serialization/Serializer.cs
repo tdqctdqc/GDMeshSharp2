@@ -49,9 +49,9 @@ public class Serializer
         var res = true;
         foreach (var keyValuePair in data.Domains)
         {
-            foreach (var valueRepo in keyValuePair.Value.Repos)
+            foreach (var valueRepo in keyValuePair.Value.Registers)
             {
-                var e = valueRepo.Value.Register.Entities.FirstOrDefault();
+                var e = valueRepo.Value.Entities.FirstOrDefault();
                 if(e != null)
                 {
                     GD.Print("testing " + e.GetType());

@@ -11,7 +11,6 @@ public class SocietyDomain : Domain
     public EntityRegister<Peep> Peeps => GetRegister<Peep>();
     public EntityRegister<Building> Buildings => GetRegister<Building>();
     public EntityRegister<RegimeRelation> RegimeRelations => GetRegister<RegimeRelation>();
-
     public SettlementAux SettlementAux { get; private set; }
     public RoadAux RoadAux { get; private set; }
     public RegimeAux RegimeAux { get; private set; }
@@ -23,7 +22,6 @@ public class SocietyDomain : Domain
     {
         
     }
-
     protected override void Setup()
     {
         SettlementAux = new SettlementAux(this, Data);
@@ -32,12 +30,5 @@ public class SocietyDomain : Domain
         PeepAux = new PeepAux(this, Data);
         RelationAux = new RegimeRelationAux(this, Data);
         BuildingAux = new BuildingAux(this, Data);
-        
-        AddRepo(SettlementAux);
-        AddRepo(RoadAux);
-        AddRepo(RegimeAux);
-        AddRepo(PeepAux);
-        AddRepo(RelationAux);
-        AddRepo(BuildingAux);
     }
 }

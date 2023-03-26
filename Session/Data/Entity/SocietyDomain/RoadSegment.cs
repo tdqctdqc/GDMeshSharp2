@@ -8,8 +8,6 @@ public class RoadSegment : Entity
 {
     public override Type GetDomainType() => DomainType();
     private static Type DomainType() => typeof(SocietyDomain);
-    public override Type GetRepoEntityType() => RepoEntityType();
-    private static Type RepoEntityType() => typeof(RoadSegment);
 
     public EntityRef<MapPolygonEdge> Edge { get; protected set; }
     public ModelRef<RoadModel> Road { get; protected set; }

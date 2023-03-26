@@ -51,12 +51,10 @@ public class Entity1to1PropIndexer<TEntity, TKey> : AuxData<TEntity>
     private void Initialize(Data data)
     {
         _dic = new Dictionary<TKey, TEntity>();
-        foreach (var aux in data.EntityRepoIndex.Values.Where(v => v.EntityType == typeof(TEntity)))
+        var register = data.GetRegister<TEntity>();
+        foreach (var e in register.Entities)
         {
-            foreach (var e in aux.Register.Entities)
-            {
-                _dic.Add(_get((TEntity)e), (TEntity)e);
-            }
+            _dic.Add(_get((TEntity)e), (TEntity)e);
         }
     }
     public bool ContainsKey(TKey e)

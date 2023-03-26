@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class EntityValueCache<TEntity, TValue> 
-    : AuxData<TEntity>
+public class EntityValueCache<TEntity, TValue> : AuxData<TEntity>
     where TEntity : Entity
 {
     public TValue this[TEntity t] => _dic.ContainsKey(t) ? _dic[t] : default;

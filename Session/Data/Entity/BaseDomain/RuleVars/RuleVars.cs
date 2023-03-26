@@ -7,8 +7,6 @@ public class RuleVars : Entity
 {
     public override Type GetDomainType() => DomainType();
     private static Type DomainType() => typeof(BaseDomain);
-    public override Type GetRepoEntityType() => RepoEntityType();
-    private static Type RepoEntityType() => typeof(RuleVars);
     public int FoodConsumptionPerPeep { get; protected set; }
     public static RuleVars CreateDefault(GenWriteKey key)
     {

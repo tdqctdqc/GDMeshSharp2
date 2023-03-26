@@ -26,18 +26,10 @@ public class HostSyncer : Syncer
         Player.Create(newPlayerGuid, "doot", key);
 
         var data = key.Data;
-        foreach (var kvp1 in data.Domains)
+        foreach (var e in data.Entities.Values)
         {
-            var dom = kvp1.Value;
-            foreach (var kvp2 in dom.Repos)
-            {
-                var repo = kvp2.Value;
-                foreach (var e in repo.Register.Entities)
-                {
-                    var u = EntityCreationUpdate.Create(e, key);
-                    QueuePacket(u.Wrap());
-                }
-            }
+            var u = EntityCreationUpdate.Create(e, key);
+            QueuePacket(u.Wrap());
         }
         
         var done = FinishedStateSyncUpdate.Create(newPlayerGuid, key);

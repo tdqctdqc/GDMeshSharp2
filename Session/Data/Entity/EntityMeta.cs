@@ -88,8 +88,6 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
     }
     public void UpdateEntityVarServer<TProperty>(string fieldName, Entity t, ServerWriteKey key, TProperty newValue)
     {
-        var repo = key.Data.EntityRepoIndex[t.Id];
-        
         var prop = _vars[fieldName].GetForSerialize((T)t);
         if (prop is TProperty == false)
         {

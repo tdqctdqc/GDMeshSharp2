@@ -10,8 +10,6 @@ public partial class MapPolygon : Entity,
 {
     public override Type GetDomainType() => DomainType();
     private static Type DomainType() => typeof(PlanetDomain);
-    public override Type GetRepoEntityType() => RepoEntityType();
-    private static Type RepoEntityType() => typeof(MapPolygon);
     public Vector2 Center { get; protected set; }
     public EntityRefCollection<MapPolygon> Neighbors { get; protected set; }
     public Dictionary<int, PolyBorderChain> NeighborBorders { get; protected set; }
