@@ -23,7 +23,7 @@ public class MapGraphics : Node2D
         MapChunkGraphics = new List<MapChunkGraphic>();
         var polySegmenter = new GraphicsSegmenter<MapChunkGraphic>();
         _segmenters.Add(polySegmenter);
-        var mapChunkGraphics = data.Planet.Polygons.Chunks.Select(u =>
+        var mapChunkGraphics = data.Planet.PolygonAux.Chunks.Select(u =>
         {
             var graphic = new MapChunkGraphic();
 

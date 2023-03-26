@@ -12,7 +12,7 @@ public class ChooseRegimeCommand : Command
 
     public override void Enact(HostWriteKey key)
     {
-        var player = key.Data.BaseDomain.Players.ByGuid[CommandingPlayerGuid];
+        var player = key.Data.BaseDomain.PlayerAux.ByGuid[CommandingPlayerGuid];
         player.Set(nameof(player.Regime), Regime, key);
     }
 

@@ -4,7 +4,7 @@ using System.Linq;
 using Godot;
 
 public class EntityValueCache<TEntity, TValue> 
-    : RepoAuxData<TEntity>
+    : AuxData<TEntity>
     where TEntity : Entity
 {
     public TValue this[TEntity t] => _dic.ContainsKey(t) ? _dic[t] : default;
@@ -12,23 +12,23 @@ public class EntityValueCache<TEntity, TValue>
     protected Func<TEntity, TValue> _get;
     
     public static EntityValueCache<TEntity, TValue> CreateConstant(Data data, Func<TEntity, TValue> get, 
-        Repository<TEntity> repo)
+        EntityRegister<TEntity> repo)
     {
         return new EntityValueCache<TEntity, TValue>(data, get, repo);
     }
     public static EntityValueCache<TEntity, TValue> CreateTrigger(Data data, Func<TEntity, TValue> get, 
-        Repository<TEntity> repo, params RefAction[] triggers)
+        EntityRegister<TEntity> repo, params RefAction[] triggers)
     {
         return new EntityValueCache<TEntity, TValue>(data, get, repo, triggers);
     }
 
-    private EntityValueCache(Data data, Func<TEntity, TValue> get, Repository<TEntity> repo) : base(data)
+    private EntityValueCache(Data data, Func<TEntity, TValue> get, EntityRegister<TEntity> repo) : base(data)
     {
         _dic = new Dictionary<TEntity, TValue>();
         _get = get;
         Initialize(repo, data);
     }
-    private EntityValueCache(Data data, Func<TEntity, TValue> get, Repository<TEntity> repo, 
+    private EntityValueCache(Data data, Func<TEntity, TValue> get, EntityRegister<TEntity> repo, 
         params RefAction[] triggers) : base(data)
     {
         _dic = new Dictionary<TEntity, TValue>();
@@ -43,7 +43,7 @@ public class EntityValueCache<TEntity, TValue>
         
         Initialize(repo, data);
     }
-    private void Initialize(Repository<TEntity> repo, Data data)
+    private void Initialize(EntityRegister<TEntity> repo, Data data)
     {
         _dic.Clear();
         

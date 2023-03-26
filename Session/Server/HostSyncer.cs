@@ -32,7 +32,7 @@ public class HostSyncer : Syncer
             foreach (var kvp2 in dom.Repos)
             {
                 var repo = kvp2.Value;
-                foreach (var e in repo.Entities)
+                foreach (var e in repo.Register.Entities)
                 {
                     var u = EntityCreationUpdate.Create(e, key);
                     QueuePacket(u.Wrap());

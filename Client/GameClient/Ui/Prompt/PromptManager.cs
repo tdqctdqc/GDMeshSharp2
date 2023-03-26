@@ -36,7 +36,7 @@ public class PromptManager
 
     private void Check(ClientWriteKey key)
     {
-        var player = key.Data.BaseDomain.Players.LocalPlayer;
+        var player = key.Data.BaseDomain.PlayerAux.LocalPlayer;
         if (player != null && player.Regime.Empty() && _currPrompts.Contains(typeof(ChooseRegimePrompt)) == false)
         {
             _currPrompts.Add(typeof(ChooseRegimePrompt));

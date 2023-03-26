@@ -23,6 +23,6 @@ public class CreatePlayerCommand : Command
     }
     public override bool Valid(Data data)
     {
-        return data.BaseDomain.Players.ByGuid.ContainsKey(Guid) == false;
+        return data.BaseDomain.PlayerAux.ByGuid.ContainsKey(Guid) == false;
     }
 }

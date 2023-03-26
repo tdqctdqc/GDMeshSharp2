@@ -8,6 +8,7 @@ public class EntityRegister<TEntity> : IEntityRegister
 {
     public Type EntityType => typeof(TEntity);
     private Data _data;
+    IReadOnlyCollection<Entity> IEntityRegister.Entities => Entities; 
     public ReadOnlyHash<TEntity> Entities { get; private set; }
     private HashSet<TEntity> _entities;
     public TEntity this[int id] => (TEntity)_data[id];

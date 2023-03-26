@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public class RepoEntityMultiIndexer<TSingle, TMult> : RepoAuxData<TMult>
+public class EntityMultiIndexer<TSingle, TMult> : AuxData<TMult>
     where TSingle : Entity where TMult : Entity
 {
     public HashSet<TMult> this[TSingle s] => _dic.ContainsKey(s.Id) 
@@ -12,7 +12,7 @@ public class RepoEntityMultiIndexer<TSingle, TMult> : RepoAuxData<TMult>
     protected Dictionary<int, HashSet<int>> _dic;
     private Func<TMult, EntityRef<TSingle>> _getSingle;
 
-    public RepoEntityMultiIndexer(Data data, Func<TMult, EntityRef<TSingle>> getSingle,
+    public EntityMultiIndexer(Data data, Func<TMult, EntityRef<TSingle>> getSingle,
         string fieldNameOnMult) : base(data)
     {
         _dic = new Dictionary<int, HashSet<int>>();

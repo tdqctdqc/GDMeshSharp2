@@ -7,26 +7,33 @@ using System.Reflection;
 public abstract class Domain 
 {
     public Dictionary<Type, IEntityRegister> Registers { get; private set; }
-    public IReadOnlyDictionary<Type, IRepo> Repos => _repos;
-    protected Dictionary<Type, IRepo> _repos;
+    public IReadOnlyDictionary<Type, IAux> Repos => _repos;
+    protected Dictionary<Type, IAux> _repos;
     public Data Data { get; private set; }
-    public Domain(Data data, Type domainType)
+    public Domain(Type domainType)
     {
-        Data = data;
         Registers = new Dictionary<Type, IEntityRegister>();
-        _repos = new Dictionary<Type, IRepo>();
+        _repos = new Dictionary<Type, IAux>();
         var s = Game.I.Serializer;
         var entityTypes = s.ConcreteEntityTypes
             .Where(t => s.GetEntityMeta(t).DomainType == domainType);
         foreach (var entityType in entityTypes)
         {
-            GD.Print("adding register for " + entityType.Name);
             AddRegister(entityType);
         }
     }
-    public Repository<T> GetRepo<T>() where T : Entity
+
+    public void Setup(Data data)
     {
-        return (Repository<T>)_repos[typeof(T)];
+        Data = data;
+        Setup();
+    }
+
+    protected abstract void Setup();
+    
+    public EntityAux<T> GetRepo<T>() where T : Entity
+    {
+        return (EntityAux<T>)_repos[typeof(T)];
     }
     public EntityRegister<T> GetRegister<T>() where T : Entity
     {
@@ -36,12 +43,12 @@ public abstract class Domain
     {
         Registers.Add(entityType, EntityRegister<Entity>.ConstructFromType(entityType, Data));
     }
-    public IRepo GetRepo(Type entityType)
+    public IAux GetRepo(Type entityType)
     {
         return _repos[entityType];
     }
 
-    protected void AddRepo<T>(Repository<T> repo) where T : Entity
+    protected void AddRepo<T>(EntityAux<T> repo) where T : Entity
     {
         _repos.Add(typeof(T), repo);
     }

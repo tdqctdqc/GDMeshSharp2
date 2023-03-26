@@ -71,7 +71,7 @@ public class ProdAndConsumeProcedure : Procedure
     }
     private void EnactConsume(ProcedureWriteKey key)
     {
-        var tick = key.Data.BaseDomain.GameClock.Value.Tick;
+        var tick = key.Data.BaseDomain.GameClock.Tick;
         foreach (var kvp in ConsumptionsByRegime)
         {
             var r = (Regime)key.Data[kvp.Key];

@@ -45,7 +45,7 @@ public class MouseOverPolyHandler
         }
         else
         {
-            MouseOverPoly = data.Planet.Polygons.MapPolyGrid.GetElementAtPoint(mousePosMapSpace);
+            MouseOverPoly = data.Planet.PolygonAux.MapPolyGrid.GetElementAtPoint(mousePosMapSpace);
         }
         FindTri(MouseOverPoly, data, mousePosMapSpace);
 

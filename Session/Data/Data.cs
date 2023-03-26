@@ -12,13 +12,13 @@ public class Data
     public IReadOnlyDictionary<Type, Domain> Domains => _domains;
     private Dictionary<Type, Domain> _domains;
     public Dictionary<int, Entity> Entities { get; private set; }
-    public Dictionary<int, IRepo> EntityRepoIndex { get; private set; }
+    public Dictionary<int, IAux> EntityRepoIndex { get; private set; }
     public Entity this[int id] => Entities[id];
     public BaseDomain BaseDomain { get; private set; }
     public PlanetDomain Planet { get; private set; }
     public SocietyDomain Society { get; private set; }
     
-    public int Tick => BaseDomain.GameClock.Value.Tick;
+    public int Tick => BaseDomain.GameClock.Tick;
 
     public Data()
     {
@@ -35,13 +35,14 @@ public class Data
         RefFulfiller = new RefFulfiller(this);
         Models = new Models();
         Entities = new Dictionary<int, Entity>();
-        EntityRepoIndex = new Dictionary<int, IRepo>();
+        EntityRepoIndex = new Dictionary<int, IAux>();
         _domains = new Dictionary<Type, Domain>();
-        BaseDomain = new BaseDomain(this);
+        BaseDomain = new BaseDomain();
+        Planet = new PlanetDomain();
+        Society = new SocietyDomain();
+        
         AddDomain(BaseDomain);
-        Planet = new PlanetDomain(this);
         AddDomain(Planet);
-        Society = new SocietyDomain(this);
         AddDomain(Society);
     }
     
@@ -54,7 +55,6 @@ public class Data
         Entities.Add(e.Id, e);
         var dom = _domains[e.GetDomainType()];
         var repo = dom.Repos[e.GetRepoEntityType()];
-        repo.AddEntity(e, key);
         EntityRepoIndex.Add(e.Id, repo);
         if (key is HostWriteKey hKey)
         {
@@ -66,7 +66,6 @@ public class Data
     public void RemoveEntity<TEntity>(TEntity e, StrongWriteKey key) where TEntity : Entity
     {
         EntityDestroyedHandler<TEntity>.Raise(e);
-        EntityRepoIndex[e.Id].RemoveEntity(e, key);
         Entities.Remove(e.Id);
         EntityRepoIndex.Remove(e.Id);
         if (key is HostWriteKey hKey)
@@ -81,6 +80,7 @@ public class Data
 
     protected void AddDomain(Domain dom)
     {
+        dom.Setup(this);
         _domains.Add(dom.GetType(), dom);
     }
     public Domain GetDomain(Type domainType)

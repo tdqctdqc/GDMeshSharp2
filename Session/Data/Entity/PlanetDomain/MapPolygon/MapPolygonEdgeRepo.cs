@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class MapPolygonEdgeRepo : Repository<MapPolygonEdge>
+public class MapPolygonEdgeRepo : EntityAux<MapPolygonEdge>
 {
     public Dictionary<Edge<MapPolygon>, MapPolygonEdge> BordersByEdge { get; private set; }
     public MapPolygonEdgeRepo(Domain domain, Data data) : base(domain, data)

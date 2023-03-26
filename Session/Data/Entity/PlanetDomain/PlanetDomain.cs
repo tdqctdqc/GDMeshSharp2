@@ -5,30 +5,30 @@ using Godot;
 
 public class PlanetDomain : Domain
 {
-    public EntityRegister<MapPolygon> MapPolygonR => GetRegister<MapPolygon>();
-    public EntityRegister<MapPolygonEdge> MapPolygonEdgeR => GetRegister<MapPolygonEdge>();
-    public EntityRegister<PlanetInfo> PlanetInfoR => GetRegister<PlanetInfo>();
-    public EntityRegister<ResourceDeposit> ResourceDepositR => GetRegister<ResourceDeposit>();
-
-    public MapPolygonRepo Polygons { get; private set; }
-    public MapPolygonEdgeRepo PolyEdges { get; private set; }
-    public SingletonRepo<PlanetInfo> PlanetInfo { get; private set; }
-    public ResourceDepositRepo ResourceDeposits { get; private set; }
-    public float Width => PlanetInfo.Value.Dimensions.x;
-    public float Height => PlanetInfo.Value.Dimensions.y;
-    public PlanetDomain(Data data) : base(data, typeof(BaseDomain))
+    public EntityRegister<MapPolygon> Polygons => GetRegister<MapPolygon>();
+    public EntityRegister<MapPolygonEdge> PolyEdges => GetRegister<MapPolygonEdge>();
+    public EntityRegister<ResourceDeposit> ResourceDeposits => GetRegister<ResourceDeposit>();
+    public MapPolygonRepo PolygonAux { get; private set; }
+    public MapPolygonEdgeRepo PolyEdgeAux { get; private set; }
+    public PlanetInfo Info => _planetInfoAux.Value;
+    private SingletonAux<PlanetInfo> _planetInfoAux;
+    public ResourceDepositRepo ResourceDepositAux { get; private set; }
+    public float Width => _planetInfoAux.Value.Dimensions.x;
+    public float Height => _planetInfoAux.Value.Dimensions.y;
+    public PlanetDomain() : base(typeof(PlanetDomain))
     {
-        Polygons = new MapPolygonRepo(this, data);
-        AddRepo(Polygons);
-
-        PolyEdges = new MapPolygonEdgeRepo(this, data);
-        AddRepo(PolyEdges);
-
-        PlanetInfo = new SingletonRepo<PlanetInfo>(this, data);
-        AddRepo(PlanetInfo);
         
-        ResourceDeposits = new ResourceDepositRepo(this, data);
-        AddRepo(ResourceDeposits);
     }
-    
+
+    protected override void Setup()
+    {
+        PolygonAux = new MapPolygonRepo(this, Data);
+        PolyEdgeAux = new MapPolygonEdgeRepo(this, Data);
+        _planetInfoAux = new SingletonAux<PlanetInfo>(this, Data);
+        ResourceDepositAux = new ResourceDepositRepo(this, Data);
+        AddRepo(PolygonAux);
+        AddRepo(PolyEdgeAux);
+        AddRepo(_planetInfoAux);
+        AddRepo(ResourceDepositAux);
+    }
 }

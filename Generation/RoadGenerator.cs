@@ -17,7 +17,7 @@ public class RoadGenerator : Generator
         
         genReport.StartSection();
         var allSegs = new ConcurrentBag<IDictionary<MapPolygonEdge, RoadModel>>();
-        Parallel.ForEach(_data.Planet.Polygons.LandSea.Landmasses, lm =>
+        Parallel.ForEach(_data.Planet.PolygonAux.LandSea.Landmasses, lm =>
         {
             allSegs.Add(GenerateForLandmass(lm));
         });
@@ -52,7 +52,7 @@ public class RoadGenerator : Generator
         
         GenerateLandmassRoadNetwork(lm, graph, covered, segs);
 
-        var regimeUnions = UnionFind.Find(_data.Planet.Polygons.BorderGraph, lm, (p, q) => p.Regime.RefId == q.Regime.RefId);
+        var regimeUnions = UnionFind.Find(_data.Planet.PolygonAux.BorderGraph, lm, (p, q) => p.Regime.RefId == q.Regime.RefId);
         regimeUnions.ForEach(u => GenerateNationalRoadNetwork(u, graph, covered, segs));
         
         return segs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
@@ -63,7 +63,7 @@ public class RoadGenerator : Generator
         Dictionary<MapPolygonEdge, RoadModel> segs)
     {
         // var first = union[0];
-        var settlementPolys = union.Where(p => _data.Society.Settlements.ByPoly.ContainsKey(p))
+        var settlementPolys = union.Where(p => _data.Society.SettlementAux.ByPoly.ContainsKey(p))
             .OrderByDescending(p => p.GetSettlement(_data).Size)
             .ToList();
         // var numTopTier = Mathf.CeilToInt(settlementPolys.Count / 5);
@@ -126,7 +126,7 @@ public class RoadGenerator : Generator
         IReadOnlyGraph<MapPolygon, Edge<MapPolygon>> graph, HashSet<Edge<MapPolygon>> covered,
         Dictionary<MapPolygonEdge, RoadModel> segs)
     {
-        var settlementPolys = lm.Where(p => _data.Society.Settlements.ByPoly.ContainsKey(p)
+        var settlementPolys = lm.Where(p => _data.Society.SettlementAux.ByPoly.ContainsKey(p)
                                             && p.GetSettlement(_data).Size >= minSize);
         if (settlementPolys.Count() < 3) return;
         BuildRoadNetwork(settlementPolys, minImprovementRatio, road, roadBuildDist,

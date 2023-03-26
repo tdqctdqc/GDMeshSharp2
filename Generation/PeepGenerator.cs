@@ -48,7 +48,7 @@ public class PeepGenerator : Generator
     {
         var farmModel = BuildingModelManager.Farm;
         var farmLaborReq = farmModel.PeepsLaborReq;
-        var foodConPerPeep = _data.BaseDomain.RuleVars.Value.FoodConsumptionPerPeep;
+        var foodConPerPeep = _data.BaseDomain.Rules.FoodConsumptionPerPeep;
         var totalFoodProd = 0f;
         var totalNumFarmers = 0;
         var farmerJob = PeepJobManager.Farmer;
@@ -84,7 +84,7 @@ public class PeepGenerator : Generator
 
     private void GenerateLaborersForRegime(Regime r, int foodBudget)
     {
-        var foodConPerPeep = _data.BaseDomain.RuleVars.Value.FoodConsumptionPerPeep;
+        var foodConPerPeep = _data.BaseDomain.Rules.FoodConsumptionPerPeep;
         var laborerJob = PeepJobManager.Laborer;
         var numLaborers = (foodBudget / foodConPerPeep);
         var polys = r.Polygons.Entities().ToList();

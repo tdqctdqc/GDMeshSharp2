@@ -29,15 +29,15 @@ public static class MapPolygonExt
     }
     public static IEnumerable<Peep> GetPeeps(this MapPolygon poly, Data data)
     {
-        return data.Planet.Polygons.PeepsInPoly[poly];
+        return data.Planet.PolygonAux.PeepsInPoly[poly];
     }
     public static IReadOnlyList<Triangle> GetWheelTris(this MapPolygon poly, Data data)
     {
-        return data.Planet.Polygons.AuxDatas[poly].WheelTris;
+        return data.Planet.PolygonAux.AuxDatas[poly].WheelTris;
     }
     public static float GetArea(this MapPolygon poly, Data data)
     {
-        return data.Planet.Polygons.AuxDatas[poly].WheelTris.Sum(t => t.GetArea());
+        return data.Planet.PolygonAux.AuxDatas[poly].WheelTris.Sum(t => t.GetArea());
     }
     public static float GetScore(this MapPolygon poly, MapPolygon closest, MapPolygon secondClosest, 
         Vector2 pRel, Data data, Func<MapPolygon, float> getScore)
@@ -55,7 +55,7 @@ public static class MapPolygonExt
     public static bool IsWater(this MapPolygon poly) => poly.IsLand == false;
     public static bool IsCoast(this MapPolygon poly) => poly.IsLand && poly.Neighbors.Entities().Any(n => n.IsWater());
     public static MapPolygonEdge GetEdge(this MapPolygon poly, MapPolygon neighbor, Data data) 
-        => data.Planet.PolyEdges.GetEdge(poly, neighbor);
+        => data.Planet.PolyEdgeAux.GetEdge(poly, neighbor);
     public static PolyBorderChain GetBorder(this MapPolygon poly, int nId) => poly.NeighborBorders[nId];
     public static IEnumerable<PolyBorderChain> GetPolyBorders(this MapPolygon poly) => poly.Neighbors.RefIds
         .Select(n => poly.GetBorder(n));
@@ -66,16 +66,16 @@ public static class MapPolygonExt
     }
     public static List<PolyBorderChain> GetOrderedNeighborBorders(this MapPolygon poly, Data data)
     {
-        return data.Planet.Polygons.AuxDatas[poly].OrderedNeighborBorders;
+        return data.Planet.PolygonAux.AuxDatas[poly].OrderedNeighborBorders;
     }
     public static List<LineSegment> GetOrderedBoundarySegs(this MapPolygon poly, Data data)
     {
-        return data.Planet.Polygons.AuxDatas[poly].OrderedBoundarySegs;
+        return data.Planet.PolygonAux.AuxDatas[poly].OrderedBoundarySegs;
     }
 
     public static ReadOnlyHash<ResourceDeposit> GetResourceDeposits(this MapPolygon p, Data data)
     {
-        var rd = data.Planet.ResourceDeposits.ByPoly[p];
+        var rd = data.Planet.ResourceDepositAux.ByPoly[p];
         return rd == null ? null : rd.ReadOnly();
     }
 
@@ -88,12 +88,12 @@ public static class MapPolygonExt
 
     public static IEnumerable<Building> GetBuildings(this MapPolygon poly, Data data)
     {
-        return data.Society.Buildings.ByPoly[poly];
+        return data.Society.BuildingAux.ByPoly[poly];
     }
 
     public static Vector2 GetGraphicalCenterOffset(this MapPolygon poly, Data data)
     {
-        return data.Planet.Polygons.AuxDatas[poly].GraphicalCenter;
+        return data.Planet.PolygonAux.AuxDatas[poly].GraphicalCenter;
     }
 
     public static bool HasSettlement(this MapPolygon p, Data data)
@@ -102,6 +102,6 @@ public static class MapPolygonExt
     }
     public static Settlement GetSettlement(this MapPolygon p, Data data)
     {
-        return data.Society.Settlements.ByPoly.ContainsKey(p) ? data.Society.Settlements.ByPoly[p] : null;
+        return data.Society.SettlementAux.ByPoly.ContainsKey(p) ? data.Society.SettlementAux.ByPoly[p] : null;
     }
 }

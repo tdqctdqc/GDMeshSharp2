@@ -22,9 +22,9 @@ public class RoadChunkGraphic : Node2D
                 if (p.Id > n.Id)
                 {
                     var border = p.GetEdge(n, data);
-                    if (data.Society.Roads.ByEdgeId.ContainsKey(border.Id))
+                    if (data.Society.RoadAux.ByEdgeId.ContainsKey(border.Id))
                     {
-                        var seg = data.Society.Roads.ByEdgeId[border.Id];
+                        var seg = data.Society.RoadAux.ByEdgeId[border.Id];
                         seg.Road.Model().Draw(mb, chunk.RelTo.GetOffsetTo(p.Center, data), 
                             chunk.RelTo.GetOffsetTo(n.Center, data), 10f);
                     }

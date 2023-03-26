@@ -33,7 +33,7 @@ public class RegimeGenerator : Generator
         var polysPerRegime = 30;
         var lmPickers = new ConcurrentDictionary<HashSet<MapPolygon>, WandererPicker>();
         
-        _data.Planet.Polygons.LandSea.Landmasses.ForEach(lm =>
+        _data.Planet.PolygonAux.LandSea.Landmasses.ForEach(lm =>
         {
             var picker = GenerateLandmassRegimes(lm, polysPerRegime);
             lmPickers.TryAdd(lm, picker);
@@ -41,7 +41,7 @@ public class RegimeGenerator : Generator
 
         var remainders = new ConcurrentBag<HashSet<MapPolygon>>();
         
-        Parallel.ForEach(_data.Planet.Polygons.LandSea.Landmasses, lm =>
+        Parallel.ForEach(_data.Planet.PolygonAux.LandSea.Landmasses, lm =>
         {
             var remainder = ExpandRegimes(lm, lmPickers[lm]);
             remainders.Add(remainder);

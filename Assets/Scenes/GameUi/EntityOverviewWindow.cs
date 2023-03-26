@@ -61,14 +61,14 @@ public class EntityOverviewWindow : WindowDialog
         var d = _domain.Value;
         var repo = d.GetRepo(type);
         
-        _entitiesToken.Setup(repo.Entities.ToList(), 
+        _entitiesToken.Setup(repo.Register.Entities.ToList(), 
             e => e.Id.ToString(),
             e => () => _selectedEntity.SetValue(e));
         
         _entityTypePropsToken.Setup<string>(
             new List<string>
             {
-                "Number: " + repo.Entities.Count
+                "Number: " + repo.Register.Entities.Count
             },
             i => i,
             i => () => { }

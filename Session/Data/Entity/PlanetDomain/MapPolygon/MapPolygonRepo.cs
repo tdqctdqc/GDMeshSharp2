@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class MapPolygonRepo : Repository<MapPolygon>
+public class MapPolygonRepo : EntityAux<MapPolygon>
 {
-    public RepoEntityMultiIndexer<MapPolygon, Peep> PeepsInPoly { get; private set; }
+    public EntityMultiIndexer<MapPolygon, Peep> PeepsInPoly { get; private set; }
     public IReadOnlyGraph<MapPolygon, PolyBorderChain> BorderGraph { get; private set; }
     public EntityValueCache<MapPolygon, PolyAuxData> AuxDatas { get; private set; }
     public PolyGrid MapPolyGrid { get; private set; }
@@ -15,10 +15,10 @@ public class MapPolygonRepo : Repository<MapPolygon>
     public MapPolygonRepo(Domain domain, Data data) : base(domain, data)
     {
         BorderGraph = ImplicitGraph.Get<MapPolygon, PolyBorderChain>(
-            () => Entities, 
-            () => Entities.SelectMany(e => e.GetPolyBorders()).ToHashSet()
+            () => Register.Entities, 
+            () => Register.Entities.SelectMany(e => e.GetPolyBorders()).ToHashSet()
         );
-        PeepsInPoly = new RepoEntityMultiIndexer<MapPolygon, Peep>(
+        PeepsInPoly = new EntityMultiIndexer<MapPolygon, Peep>(
             data,
             p => p.Home,
             nameof(Peep.Home)
@@ -26,7 +26,7 @@ public class MapPolygonRepo : Repository<MapPolygon>
         AuxDatas = EntityValueCache<MapPolygon, PolyAuxData>.CreateTrigger(
             data,
             p => new PolyAuxData(p, data),
-            this,
+            data.Planet.Polygons,
             data.Notices.SetPolyShapes, data.Notices.FinishedStateSync
         );
         data.Notices.SetPolyShapes.Subscribe(() => BuildPolyGrid(data));
@@ -49,8 +49,8 @@ public class MapPolygonRepo : Repository<MapPolygon>
     private void BuildPolyGrid(Data data)
     {
         var gridCellSize = 1000f;
-        var numPartitions = Mathf.CeilToInt(data.Planet.PlanetInfo.Value.Dimensions.x / gridCellSize);
-        MapPolyGrid = new PolyGrid(numPartitions, data.Planet.PlanetInfo.Value.Dimensions, data);
+        var numPartitions = Mathf.CeilToInt(data.Planet.Info.Dimensions.x / gridCellSize);
+        MapPolyGrid = new PolyGrid(numPartitions, data.Planet.Info.Dimensions, data);
         foreach (var p in data.Planet.Polygons.Entities)
         {
             MapPolyGrid.AddElement(p);

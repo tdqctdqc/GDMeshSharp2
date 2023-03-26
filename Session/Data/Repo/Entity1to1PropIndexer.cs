@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class Entity1to1PropIndexer<TEntity, TKey> : RepoAuxData<TEntity>
+public class Entity1to1PropIndexer<TEntity, TKey> : AuxData<TEntity>
     where TEntity : Entity
 {
     public TEntity this[TKey e] => _dic.ContainsKey(e) ? _dic[e] : null;
@@ -51,9 +51,9 @@ public class Entity1to1PropIndexer<TEntity, TKey> : RepoAuxData<TEntity>
     private void Initialize(Data data)
     {
         _dic = new Dictionary<TKey, TEntity>();
-        foreach (var repo in data.EntityRepoIndex.Values.Where(v => v.EntityType == typeof(TEntity)))
+        foreach (var aux in data.EntityRepoIndex.Values.Where(v => v.EntityType == typeof(TEntity)))
         {
-            foreach (var e in repo.Entities)
+            foreach (var e in aux.Register.Entities)
             {
                 _dic.Add(_get((TEntity)e), (TEntity)e);
             }

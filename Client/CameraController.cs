@@ -26,8 +26,7 @@ public class CameraController : Camera2D, ICameraController
     public Vector2 GetMousePosInMapSpace()
     {
         if(_data.Planet == null) return Vector2.Inf;
-        if(_data.Planet.PlanetInfo == null) return Vector2.Inf;
-        if(_data.Planet.PlanetInfo.Entities.Count == 0) return Vector2.Inf;
+        if(_data.Planet.Info == null) return Vector2.Inf;
         
         var mapWidth = _data.Planet.Width;
         var scrollDist = mapWidth * XScrollRatio;

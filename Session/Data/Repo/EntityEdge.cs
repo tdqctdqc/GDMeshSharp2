@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using Poly2Tri.Triangulation;
 
-public class RepoEntityEdge<TEntity, TEnd> : RepoAuxData<TEntity>
+public class EntityEdge<TEntity, TEnd> : AuxData<TEntity>
     where TEntity : Entity
 {
     public TEntity this[TEnd t1, TEnd t2] => Get(t1, t2);
@@ -12,7 +12,7 @@ public class RepoEntityEdge<TEntity, TEnd> : RepoAuxData<TEntity>
     private Func<TEnd, float> _getId;
     private Func<TEntity, Tuple<TEnd, TEnd>> _getEnds;
 
-    public RepoEntityEdge(Data data, Func<TEnd, float> getId, Func<TEntity, Tuple<TEnd, TEnd>> getEnds) : base(data)
+    public EntityEdge(Data data, Func<TEnd, float> getId, Func<TEntity, Tuple<TEnd, TEnd>> getEnds) : base(data)
     {
         _getId = getId;
         _getEnds = getEnds;

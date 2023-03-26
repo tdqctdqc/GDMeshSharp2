@@ -82,7 +82,7 @@ public class ProductionAndConsumptionModule : LogicModule
         var numPeeps = regime.Polygons
             .Where(p => p.GetPeeps(data) != null)
             .SelectMany(p => p.GetPeeps(data)).Count();
-        var foodDesired = numPeeps * data.BaseDomain.RuleVars.Value.FoodConsumptionPerPeep;
+        var foodDesired = numPeeps * data.BaseDomain.Rules.FoodConsumptionPerPeep;
         demands.Add(ItemManager.Food, foodDesired);
         var foodStock = regime.Items[ItemManager.Food] + gains[ItemManager.Food];
         var foodConsumption = Mathf.Min(foodDesired, foodStock);

@@ -2,11 +2,11 @@
     using System;
     using Godot;
 
-    public class PlayerRepo : Repository<Player>
+    public class PlayerAux : EntityAux<Player>
     {
         public Entity1To1EntityPropIndexer<Player, Regime> ByRegime { get; private set; }
         public Entity1to1PropIndexer<Player, Guid> ByGuid { get; private set; }
-        public PlayerRepo(Domain domain, Data data) : base(domain, data)
+        public PlayerAux(Domain domain, Data data) : base(domain, data)
         {
             ByRegime = Entity1To1EntityPropIndexer<Player, Regime>.CreateDynamic(data, 
                 p => p.Regime, 
