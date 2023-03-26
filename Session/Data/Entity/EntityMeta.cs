@@ -6,6 +6,7 @@ using System.Reflection;
 
 public class EntityMeta<T> : IEntityMeta where T : Entity
 {
+    public Type DomainType { get; private set; }
     public IReadOnlyList<string> FieldNames => _fieldNames;
     private List<string> _fieldNames;
     public IReadOnlyDictionary<string, Type> FieldTypes => _fieldTypes;
@@ -25,6 +26,10 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
         //bc with generic parameters it will not capture all the classes
         if (entityType.ContainsGenericParameters) 
             throw new Exception();
+
+        DomainType = (Type)entityType
+            .GetMethod(nameof(DomainType), BindingFlags.Static | BindingFlags.NonPublic)
+            .Invoke(null, null);
         
         var properties = entityType.GetProperties(BindingFlags.Instance | BindingFlags.Public);
         _fieldNames = properties.Select(p => p.Name).ToList();

@@ -7,7 +7,8 @@ using MessagePack;
 
 public class Settlement : Location
 {
-    public override Type GetDomainType() => typeof(SocietyDomain);
+    public override Type GetDomainType() => DomainType();
+    private static Type DomainType() => typeof(SocietyDomain);
     public override Type GetRepoEntityType() => RepoEntityType();
     private static Type RepoEntityType() => typeof(Settlement);
     public EntityRef<MapPolygon> Poly { get; protected set; }

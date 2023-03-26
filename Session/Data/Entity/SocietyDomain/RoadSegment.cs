@@ -6,7 +6,8 @@ using MessagePack;
 
 public class RoadSegment : Entity
 {
-    public override Type GetDomainType() => typeof(SocietyDomain);
+    public override Type GetDomainType() => DomainType();
+    private static Type DomainType() => typeof(SocietyDomain);
     public override Type GetRepoEntityType() => RepoEntityType();
     private static Type RepoEntityType() => typeof(RoadSegment);
 

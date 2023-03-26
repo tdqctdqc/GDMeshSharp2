@@ -4,6 +4,8 @@ using MessagePack;
 
 public class GameClock : Entity
 {
+    public override Type GetDomainType() => DomainType();
+    private static Type DomainType() => typeof(BaseDomain);
     public override Type GetRepoEntityType() => RepoEntityType();
     private static Type RepoEntityType() => typeof(GameClock);
     public int Tick { get; protected set; }
@@ -18,5 +20,4 @@ public class GameClock : Entity
         Tick = tick;
     }
 
-    public override Type GetDomainType() => typeof(BaseDomain);
 }

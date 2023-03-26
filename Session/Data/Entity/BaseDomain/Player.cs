@@ -6,7 +6,8 @@ public class Player : Entity
 {
     public override Type GetRepoEntityType() => RepoEntityType();
     private static Type RepoEntityType() => typeof(Player);
-    public override Type GetDomainType() => typeof(BaseDomain);
+    public override Type GetDomainType() => DomainType();
+    private static Type DomainType() => typeof(BaseDomain);
     public Guid PlayerGuid { get; protected set; }
     public string Name { get; protected set; }
     public EntityRef<Regime> Regime { get; protected set; }

@@ -9,7 +9,8 @@ public class MapPolygonEdge : Entity
 {
     public override Type GetRepoEntityType() => RepoEntityType();
     private static Type RepoEntityType() => typeof(MapPolygonEdge);
-    public override Type GetDomainType() => typeof(PlanetDomain);
+    public override Type GetDomainType() => DomainType();
+    private static Type DomainType() => typeof(PlanetDomain);
     public float MoistureFlow { get; protected set; }
     public PolyBorderChain LowSegsRel() => LowId.Entity().NeighborBorders[HighId.RefId];
     public PolyBorderChain HighSegsRel() => HighId.Entity().NeighborBorders[LowId.RefId];

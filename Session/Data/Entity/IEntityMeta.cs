@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 public interface IEntityMeta
 {
+    Type DomainType { get; }
     IReadOnlyList<string> FieldNames { get; }
     IReadOnlyDictionary<string, Type> FieldTypes { get; }
     object[] GetPropertyValues(Entity entity);

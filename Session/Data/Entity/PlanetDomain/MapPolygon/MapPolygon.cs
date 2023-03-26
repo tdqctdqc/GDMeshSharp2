@@ -8,6 +8,8 @@ using MessagePack;
 public partial class MapPolygon : Entity, 
     IReadOnlyGraphNode<MapPolygon, PolyBorderChain>
 {
+    public override Type GetDomainType() => DomainType();
+    private static Type DomainType() => typeof(PlanetDomain);
     public override Type GetRepoEntityType() => RepoEntityType();
     private static Type RepoEntityType() => typeof(MapPolygon);
     public Vector2 Center { get; protected set; }
@@ -87,7 +89,6 @@ public partial class MapPolygon : Entity,
     }
     
     
-    public override Type GetDomainType() => typeof(PlanetDomain);
     PolyBorderChain IReadOnlyGraphNode<MapPolygon, PolyBorderChain>.GetEdge(MapPolygon neighbor) =>
         this.GetBorder(neighbor.Id);
     

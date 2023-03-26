@@ -6,7 +6,8 @@ public class Building : Entity
 {
     public override Type GetRepoEntityType() => RepoEntityType();
     private static Type RepoEntityType() => typeof(Building);
-    public override Type GetDomainType() => typeof(SocietyDomain);
+    public override Type GetDomainType() => DomainType();
+    private static Type DomainType() => typeof(SocietyDomain);
     public PolyTriPositionSerializable Position { get; protected set; }
     public ModelRef<BuildingModel> Model { get; protected set; }
 

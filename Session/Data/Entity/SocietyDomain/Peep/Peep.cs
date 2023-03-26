@@ -9,7 +9,8 @@ public class Peep : Entity
 {
     public override Type GetRepoEntityType() => RepoEntityType();
     private static Type RepoEntityType() => typeof(Peep);
-    public override Type GetDomainType() => typeof(SocietyDomain);
+    public override Type GetDomainType() => DomainType();
+    private static Type DomainType() => typeof(SocietyDomain);
     public EntityRef<MapPolygon> Home { get; protected set; }
     public ModelRef<PeepJob> Job { get; protected set; }
     public int Size { get; private set; }

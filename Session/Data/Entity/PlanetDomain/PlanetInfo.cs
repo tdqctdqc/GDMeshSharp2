@@ -8,7 +8,8 @@ public class PlanetInfo : Entity
 {
     public override Type GetRepoEntityType() => RepoEntityType();
     private static Type RepoEntityType() => typeof(PlanetInfo);
-    public override Type GetDomainType() => typeof(PlanetDomain);
+    public override Type GetDomainType() => DomainType();
+    private static Type DomainType() => typeof(PlanetDomain);
     public Vector2 Dimensions { get; protected set; }
     public static PlanetInfo Create(Vector2 dimensions, CreateWriteKey key)
     {

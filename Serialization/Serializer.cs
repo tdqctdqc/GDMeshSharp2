@@ -8,6 +8,7 @@ using MessagePack;
 
 public class Serializer
 {
+    public IReadOnlyHash<Type> ConcreteEntityTypes { get; private set; }
     public MessagePackManager MP { get; private set; }
     public Dictionary<string, Type> Types { get; private set; }
     public Dictionary<Type, IEntityMeta> _entityMetas;
@@ -30,10 +31,10 @@ public class Serializer
         var reference = nameof(EntityMeta<Entity>.ForReference);
         _entityMetas = new Dictionary<Type, IEntityMeta>();
         var entityTypes = Assembly.GetExecutingAssembly().GetConcreteTypesOfType<Entity>();
+        ConcreteEntityTypes = new ReadOnlyHash<Type>(new HashSet<Type>(entityTypes));
         var metaTypes = typeof(EntityMeta<>);
         foreach (var entityType in entityTypes)
         {
-
             Types.Add(entityType.Name, entityType);
             var genericMeta = metaTypes.MakeGenericType(entityType);
             var constructor = genericMeta.GetConstructors()[0];
