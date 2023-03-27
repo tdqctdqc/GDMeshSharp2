@@ -5,12 +5,16 @@ using Godot;
 
 public class ItemBar : HBoxContainer
 {
+    private RefAction<ValChangeNotice<EntityRef<Regime>>> _setupForRegime;
     public void Setup(Data data)
     {
+        _setupForRegime = new RefAction<ValChangeNotice<EntityRef<Regime>>>();
+        _setupForRegime.Subscribe(n => SetupForRegime(n.NewVal.Entity(), data));
+        
         Game.I.Client.Requests.SubscribeForValChangeSpecific<Player, EntityRef<Regime>>(
             nameof(Player.Regime), 
             data.BaseDomain.PlayerAux.LocalPlayer, 
-            n => SetupForRegime(n.NewVal.Entity(), data)
+            _setupForRegime
         ); 
     }
     public void SetupForRegime(Regime r, Data data)
@@ -26,5 +30,10 @@ public class ItemBar : HBoxContainer
     {
         var display = RegimeItemDisplay.Create(sr, regime, data);
         this.AddChildWithVSeparator(display);
+    }
+
+    public override void _ExitTree()
+    {
+        _setupForRegime.EndSubscriptions();
     }
 }

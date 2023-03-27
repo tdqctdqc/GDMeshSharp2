@@ -65,7 +65,7 @@ public class ProdAndConsumeProcedure : Procedure
                 var deposit = (ResourceDeposit) key.Data[kvp2.Key];
                 var loss = kvp2.Value;
                 var newSize = Mathf.Max(0f, deposit.Size - loss);
-                deposit.Set(nameof(deposit.Size), newSize, key);
+                deposit.Set<float>(nameof(deposit.Size), newSize, key);
             }
         }
     }

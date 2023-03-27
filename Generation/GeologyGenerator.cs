@@ -193,7 +193,7 @@ public class GeologyGenerator : Generator
             {
                 var altNoise = Data.GenAuxData.GetAltPerlin(poly.Center);
                 var altValue = cont.Altitude + .2f * altNoise;
-                poly.Set(nameof(MapPolygon.Altitude), altValue, _key);
+                poly.Set<float>(nameof(MapPolygon.Altitude), altValue, _key);
             }
         });
     }
@@ -288,7 +288,7 @@ public class GeologyGenerator : Generator
             
             var distFactor = distRatio * spineOsc;
             var altEffect = fault.Friction * frictionAltEffectSetting * distFactor;
-            poly.Set(nameof(poly.Altitude), Mathf.Min(1f, poly.Altitude + altEffect), _key);
+            poly.Set<float>(nameof(poly.Altitude), Mathf.Min(1f, poly.Altitude + altEffect), _key);
             float roughnessErosion = 0f;
             if (poly.Altitude < seaLevelSetting) roughnessErosion 
                 = poly.Altitude * roughnessErosionMult;

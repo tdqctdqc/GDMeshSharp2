@@ -11,22 +11,24 @@ public class EntityMultiIndexer<TSingle, TMult> : AuxData<TMult>
         : null;
     protected Dictionary<int, HashSet<int>> _dic;
     private Func<TMult, EntityRef<TSingle>> _getSingle;
-
+    private RefAction<ValChangeNotice<EntityRef<TSingle>>> _changedMult;
     public EntityMultiIndexer(Data data, Func<TMult, EntityRef<TSingle>> getSingle,
         string fieldNameOnMult) : base(data)
     {
         _dic = new Dictionary<int, HashSet<int>>();
         _getSingle = getSingle;
+        _changedMult = new RefAction<ValChangeNotice<EntityRef<TSingle>>>();
+        _changedMult.Subscribe(n => 
+        {
+            if (_dic.TryGetValue(n.OldVal.RefId, out var hash))
+            {
+                hash.Remove(n.Entity.Id);
+            }
+            _dic.AddOrUpdate(n.NewVal.RefId, n.Entity.Id);
+        });
         data.SubscribeForValueChange<TMult, EntityRef<TSingle>>(
             fieldNameOnMult,
-            n => 
-            {
-                if (_dic.TryGetValue(n.OldVal.RefId, out var hash))
-                {
-                    hash.Remove(n.Entity.Id);
-                }
-                _dic.AddOrUpdate(n.NewVal.RefId, n.Entity.Id);
-            }
+            _changedMult
         );
         data.SubscribeForDestruction<TSingle>(HandleTSingleRemoved);
     }

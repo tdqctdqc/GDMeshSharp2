@@ -23,24 +23,7 @@ public class EntityValChangeHandler
             r.Handle(notice);
         }
     }
-    public void Subscribe(string fieldName, Action<ValChangeNotice> callback)
-    {
-        if(_valHandlers.ContainsKey(fieldName) == false)
-        {
-            if (_meta.FieldNameHash.Contains(fieldName) == false)
-            {
-                foreach (var s in _meta.FieldNameList)
-                {
-                    GD.Print(s);
-                }
-                throw new NoticeException($"field {fieldName} not found for {_meta.EntityType}");
-            }
-            _valHandlers.Add(fieldName, ValChangeHandler.ConstructFromType(_meta.FieldTypes[fieldName]));
-        }
-        var handler = _valHandlers[fieldName];
-        handler.Subscribe(callback);
-    }
-    public void Subscribe<TProperty>(string fieldName, Action<ValChangeNotice<TProperty>> callback)
+    public void Subscribe<TEntity, TProperty>(string fieldName, RefAction<ValChangeNotice<TProperty>> callback)
     {
         if(_valHandlers.ContainsKey(fieldName) == false)
         {
@@ -69,19 +52,5 @@ public class EntityValChangeHandler
         }
         var handler = (ValChangeHandler<TProperty>) _valHandlers[fieldName];
         handler.Subscribe(callback);
-    }
-    public void SubscribeForSpecific<TProperty>(int entityId, string fieldName, Action<ValChangeNotice<TProperty>> callback)
-    {
-        if(_valHandlers.ContainsKey(fieldName) == false)
-        {
-            //todo make hash
-            if (_meta.FieldNameList.Contains(fieldName) == false)
-            {
-                throw new SerializationException($"No field named {fieldName} for {_meta.EntityType}");
-            }
-            _valHandlers.Add(fieldName, new ValChangeHandler<TProperty>());
-        }
-        var valHandler = (ValChangeHandler<TProperty>) _valHandlers[fieldName];
-        valHandler.SubscribeForSpecific(entityId, n => callback((ValChangeNotice<TProperty>)n));
     }
 }

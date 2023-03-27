@@ -1,15 +1,21 @@
 
 using Godot;
 
-public class TickDisplay 
+public class TickDisplay : Label
 {
-    public static Node Create()
+    private RefAction<ValChangeNotice<int>> _tick;
+
+    public TickDisplay()
     {
-        var label = new Label();
+        _tick = new RefAction<ValChangeNotice<int>>();
+        _tick.Subscribe(n => Text = $"Tick: {n.NewVal}");
         Game.I.Client.Requests.SubscribeForValChange<GameClock, int>(
             nameof(GameClock.Tick),
-            n => label.Text = $"Tick: {n.NewVal}"
+            _tick
         );
-        return label;
+    }
+    public override void _ExitTree()
+    {
+        _tick.EndSubscriptions();
     }
 }

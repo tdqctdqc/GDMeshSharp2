@@ -14,7 +14,6 @@ public abstract class ValChangeHandler
             .Invoke(null, null);
     }
 
-    public abstract void Subscribe(Action<ValChangeNotice> callback);
 }
 
 public class ValChangeHandler<TProperty> : ValChangeHandler
@@ -36,7 +35,8 @@ public class ValChangeHandler<TProperty> : ValChangeHandler
     {
         if (n is ValChangeNotice<TProperty> p == false)
         {
-            throw new SerializationException($"notice is not for val type {typeof(TProperty)}");
+            throw new SerializationException($"notice for field {n.FieldName} of type {n.GetType()}" +
+                                             $"is not for val type {typeof(TProperty)}");
         }
         _refAction.Invoke(p);
         if(_specifics.TryGetValue(n.Entity.Id, out var specificAction))
@@ -44,15 +44,11 @@ public class ValChangeHandler<TProperty> : ValChangeHandler
             specificAction.Invoke(p);
         }
     }
-    public void Subscribe(Action<ValChangeNotice<TProperty>> callback)
+    public void Subscribe(RefAction<ValChangeNotice<TProperty>> callback)
     {
         _refAction.Subscribe(callback);
     }
-    public override void Subscribe(Action<ValChangeNotice> callback)
-    {
-        _refAction.Subscribe(callback);
-    }
-    public void SubscribeForSpecific(int entityId, Action<ValChangeNotice<TProperty>> callback)
+    public void SubscribeForSpecific(int entityId, RefAction<ValChangeNotice<TProperty>> callback)
     {
         if (_specifics.ContainsKey(entityId) == false)
         {

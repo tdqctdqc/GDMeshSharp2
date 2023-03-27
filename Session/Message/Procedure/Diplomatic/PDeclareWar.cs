@@ -22,6 +22,6 @@ public class PDeclareWar : Procedure
     public override void Enact(ProcedureWriteKey key)
     {
         var relation = Declarer.Entity().RelationWith(Declaree.Entity(), key.Data);
-        relation.Set(nameof(RegimeRelation.AtWar), true, key);
+        relation.Set<bool>(nameof(RegimeRelation.AtWar), true, key);
     }
 }

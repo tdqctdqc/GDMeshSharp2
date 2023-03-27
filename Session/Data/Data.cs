@@ -136,8 +136,8 @@ public class Data
     }
 
     public void SubscribeForValueChange<TEntity, TProperty>(string fieldName, 
-        Action<ValChangeNotice<TProperty>> callback)
+        RefAction<ValChangeNotice<TProperty>> callback)
     {
-        EntityTypeTree[typeof(TEntity)].EntityValChanged.Subscribe(fieldName, callback);
+        EntityTypeTree[typeof(TEntity)].EntityValChanged.Subscribe<TEntity, TProperty>(fieldName, callback);
     }
 }

@@ -2,17 +2,17 @@
 using System.Collections.Generic;
 using MessagePack;
 
-public class PAddToRefCol : Procedure
+public class AddToRefColProcedure : Procedure
 {
     public EntityRef<Entity> Entity { get; private set; }
     public string CollectionName { get; private set; }
     public List<int> ToAdd { get; private set; }
 
-    public static PAddToRefCol Create(Entity e, string colName, List<int> toAdd)
+    public static AddToRefColProcedure Create(Entity e, string colName, List<int> toAdd)
     {
-        return new PAddToRefCol(e.MakeRef(), colName, toAdd);
+        return new AddToRefColProcedure(e.MakeRef(), colName, toAdd);
     }
-    [SerializationConstructor] private PAddToRefCol(EntityRef<Entity> entity, string collectionName, List<int> toAdd)
+    [SerializationConstructor] private AddToRefColProcedure(EntityRef<Entity> entity, string collectionName, List<int> toAdd)
     {
         Entity = entity;
         CollectionName = collectionName;

@@ -22,7 +22,7 @@ public class GameUiTopBarToken : ButtonBarToken
         var hostClientLabel = new Label();
         hostClientLabel.Text = host ? "Host" : "Client";
         Container.AddChildWithVSeparator(hostClientLabel);
-        Container.AddChildWithVSeparator(TickDisplay.Create());
+        Container.AddChildWithVSeparator(new TickDisplay());
         Container.AddChildWithVSeparator(PlayerRegimeDisplay.Create(data));
 
         var resourceBar = new ItemBar();

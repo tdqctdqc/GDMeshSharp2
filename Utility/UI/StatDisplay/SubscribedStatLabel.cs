@@ -4,7 +4,6 @@ using Godot;
 
 public class SubscribedStatLabel : StatLabel
 {
-    private Action _unsubscribe;
     private SubscribedStatLabel()
     {
         
@@ -25,31 +24,28 @@ public class SubscribedStatLabel : StatLabel
         d.SetupForEntityDynamic(e, name, label, getStat);
         return d;
     }
-    
     private void SetupForEntityTrigger<TEntity, TProperty>(TEntity e,
         string name, Label label,
         Func<TEntity, TProperty> getStat, RefAction trigger)
     {
         trigger.Subscribe(TriggerUpdate);
-        _unsubscribe = () => trigger.Unsubscribe(TriggerUpdate);
         base.Setup<TEntity, TProperty>(e, name, label, getStat);
     }
-    
     private void SetupForEntityDynamic<TEntity, TProperty>(TEntity e,
         string name, Label label,
         Func<TEntity, TProperty> getStat) where TEntity : Entity
     {
-        Action<ValChangeNotice> act = n => TriggerUpdate();
-        Game.I.Client.Requests.SubscribeForValChangeSpecific<TEntity, TProperty>(name, e, act);
-        _unsubscribe = () => Game.I.Client.Requests
-            .UnsubscribeForValChangeSpecific<TEntity, TProperty>(e.Id, name);
+        var r = new RefAction<ValChangeNotice<TProperty>>();
+        r.Subscribe(n => TriggerUpdate());
+
+        Game.I.Client.Requests.SubscribeForValChangeSpecific<TEntity, TProperty>(name, e, r);
+        
 
         base.Setup<TEntity, TProperty>(e, name, label, getStat);
     }
     
     public override void _ExitTree()
     {
-        _unsubscribe();
         base._ExitTree();
     }
 }

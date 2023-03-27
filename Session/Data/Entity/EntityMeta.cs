@@ -48,7 +48,6 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
             makeFuncsGeneric.Invoke(this, new []{propertyInfo});
         }
     }
-
     private void MakeFuncs<TProperty>(PropertyInfo prop)
     {
         var name = prop.Name;
@@ -63,7 +62,6 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
         var eVar = new EntityVarMeta<T, TProperty>(prop);
         _vars.Add(prop.Name, eVar);
     }
-    
     public object[] GetPropertyValues(Entity entity)
     {
         var t = (T) entity;
@@ -73,42 +71,16 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
             var fieldName = _fieldNames[i];
             args[i] = _vars[fieldName].GetForSerialize(t);
         }
-
         return args;
     }
-
     public IRefCollection GetRefCollection(string fieldName, Entity t, ProcedureWriteKey key)
     {
         return (IRefCollection)_vars[fieldName].GetForSerialize((T)t);
     }
-
-    public void UpdateEntityVarServer<TProperty>(string fieldName, Entity t, ServerWriteKey key, TProperty newValue)
-    {
-        var prop = _vars[fieldName].GetForSerialize((T)t);
-        if (prop is TProperty == false)
-        {
-            throw new SerializationException($"{fieldName} is not {typeof(TProperty)}");
-        }
-        var oldValue = (TProperty)prop;
-        _vars[fieldName].Set((T)t, newValue, key);
-        key.Data.EntityTypeTree[typeof(T)]
-            .Propagate(new ValChangeNotice<TProperty>(t, fieldName, newValue, oldValue));
-        
-    }
     public void UpdateEntityVar<TProperty>(string fieldName, Entity t, StrongWriteKey key, TProperty newValue)
     {
-        var oldValue = (TProperty)_vars[fieldName].GetForSerialize((T)t);
-        _vars[fieldName].Set((T)t, newValue, key);
-        var notice = new ValChangeNotice<TProperty>(t, fieldName, newValue, oldValue);
-        key.Data.EntityTypeTree[t.GetType()].EntityValChanged.HandleChange(notice);
-        if (key is HostWriteKey hKey)
-        {
-            var bytes = Game.I.Serializer.MP.Serialize(newValue);
-            hKey.HostServer.QueueUpdate(EntityVarUpdate.Create(fieldName, t.Id, bytes, hKey));
-        }
+        _vars[fieldName].UpdateVar(fieldName, t, key, newValue);
     }
-
-
     public bool TestSerialization(Entity e)
     {
         var t = (T) e;

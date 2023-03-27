@@ -36,7 +36,7 @@ public class DecideAlliance : Decision
             k =>
             {
                 var relation = Decider.Entity().RelationWith(Offerer.Entity(), k.Data);
-                relation.Set(nameof(relation.Alliance), true, k);
+                relation.Set<bool>(nameof(relation.Alliance), true, k);
             }
         );
         var reject = new DecisionOption(

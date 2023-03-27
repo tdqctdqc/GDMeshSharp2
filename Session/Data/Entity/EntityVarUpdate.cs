@@ -25,6 +25,6 @@ public sealed class EntityVarUpdate : Update
         var entity = key.Data[EntityId];
         var meta = entity.GetMeta();
         var newVal = Game.I.Serializer.MP.Deserialize(NewValBytes, meta.FieldTypes[FieldName]);
-        meta.UpdateEntityVarServer(FieldName, entity, key, newVal);
+        meta.UpdateEntityVar(FieldName, entity, key, newVal);
     }
 }

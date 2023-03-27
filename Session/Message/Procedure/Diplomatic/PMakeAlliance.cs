@@ -19,6 +19,6 @@ public class PMakeAlliance : Procedure
     public override void Enact(ProcedureWriteKey key)
     {
         var relation = Offerer.Entity().RelationWith(Accepter.Entity(), key.Data);
-        relation.Set(nameof(RegimeRelation.Alliance), true, key);
+        relation.Set<bool>(nameof(RegimeRelation.Alliance), true, key);
     }
 }

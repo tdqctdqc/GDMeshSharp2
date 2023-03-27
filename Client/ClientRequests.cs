@@ -22,25 +22,17 @@ public class ClientRequests
         _tree = tree;
     }
 
-    public void SubscribeForValChange<TEntity, TProperty>(string fieldName, Action<ValChangeNotice<TProperty>> callback)
+    public void SubscribeForValChange<TEntity, TProperty>(string fieldName, RefAction<ValChangeNotice<TProperty>> callback)
     {
-        _tree?[typeof(TEntity)].EntityValChanged.Subscribe(fieldName, callback);
+        _tree?[typeof(TEntity)].EntityValChanged.Subscribe<TEntity, TProperty>(fieldName, callback);
     }
 
     public void SubscribeForValChangeSpecific<TEntity, TProperty>(string fieldName, TEntity t, 
-        Action<ValChangeNotice<TProperty>> callback)
+        RefAction<ValChangeNotice<TProperty>> callback)
     {
-        _tree?[typeof(TEntity)].EntityValChanged.Subscribe(fieldName, callback);
+        _tree?[typeof(TEntity)].EntityValChanged.Subscribe<TEntity, TProperty>(fieldName, callback);
     }
 
-    public void UnsubscribeForValChange<TEntity, TProperty>(string fieldName)
-    {
-        throw new NotImplementedException();
-    }
-    public void UnsubscribeForValChangeSpecific<TEntity, TProperty>(int entityId, string fieldName)
-    {
-        throw new NotImplementedException();
-    }
     public void OpenWindow<T>(string name) where T : WindowDialog
     {
         OpenWindowRequest?.Invoke(name);

@@ -1,5 +1,6 @@
 
 using System;
+using System.Collections.Generic;
 
 public class RefAction
 {
@@ -20,22 +21,39 @@ public class RefAction
         _action -= a;
     }
 }
-public class RefAction<T>
+public class RefAction<TArg>
 {
-    private Action<T> _action;
-
-    public void Invoke(T t)
+    private Action<TArg> _action;
+    private HashSet<RefAction<TArg>> _subscribingTo;
+    public void Invoke(TArg t)
     {
         _action?.Invoke(t);
     }
-
-    public void Subscribe(Action<T> a)
+    
+    public void Subscribe(RefAction<TArg> a)
     {
-        _action += t => a(t);
+        _action += a.Invoke;
+        if (a._subscribingTo == null) a._subscribingTo = new HashSet<RefAction<TArg>>();
+        a._subscribingTo.Add(this);
     }
-
-    public void Unsubscribe(Action<T> a)
+    public void Subscribe(Action<TArg> a)
     {
-        _action -= a;
+        _action += a.Invoke;
+    }
+    public void Unsubscribe(RefAction<TArg> a)
+    {
+        _action -= a.Invoke;
+    }
+    public void Unsubscribe(ref Action<TArg> a)
+    {
+        _action -= a.Invoke;
+    }
+    public void EndSubscriptions()
+    {
+        if (_subscribingTo == null) return;
+        foreach (var refAction in _subscribingTo)
+        {
+            refAction.Unsubscribe(this);
+        }
     }
 }

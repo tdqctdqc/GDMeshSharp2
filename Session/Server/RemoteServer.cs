@@ -27,6 +27,7 @@ public class RemoteServer : Node, IServer
             _packetStream = new PacketPeerStream();
             _packetStream.StreamPeer = _streamPeer;
             _syncer = new RemoteSyncer(_packetStream, logic);
+            //todo have special loading syncer that will just store messages til sync finished
             SetProcess(true);
         }
     }

@@ -9,7 +9,6 @@ public class EntityVarMeta<TEntity, TProperty> : IEntityVarMeta<TEntity> where T
     public string PropertyName { get; private set; }
     protected Func<TEntity, TProperty> GetProperty { get; private set; }
     protected Action<TEntity, TProperty> SetProperty { get; private set; }
-    
     public EntityVarMeta(PropertyInfo prop)
     {
         PropertyName = prop.Name;
@@ -21,20 +20,24 @@ public class EntityVarMeta<TEntity, TProperty> : IEntityVarMeta<TEntity> where T
         if (setMi == null) throw new SerializationException($"No set method for {PropertyName}");
         SetProperty = setMi.MakeInstanceMethodDelegate<Action<TEntity, TProperty>>();
     }
-
-    public virtual object GetForSerialize(TEntity e)
+    public object GetForSerialize(TEntity e)
     {
         return GetProperty(e);
     }
-    public virtual void Set(TEntity e, object receivedValue, ServerWriteKey key)
-    {
-        SetProperty(e, (TProperty)receivedValue);
-    }
-    public virtual void Set(TEntity e, object receivedValue, StrongWriteKey key)
-    {
-        SetProperty(e, (TProperty)receivedValue);
-    }
 
+    public void UpdateVar(string fieldName, Entity t, StrongWriteKey key, object newValueOb)
+    {
+        var oldValue = (TProperty)GetForSerialize((TEntity)t);
+        var newValue = (TProperty) newValueOb;
+        SetProperty((TEntity)t, newValue);
+        var notice = new ValChangeNotice<TProperty>(t, fieldName, newValue, oldValue);
+        key.Data.EntityTypeTree[t.GetType()].Propagate(notice);
+        if (key is HostWriteKey hKey)
+        {
+            var bytes = Game.I.Serializer.MP.Serialize(newValue);
+            hKey.HostServer.QueueUpdate(EntityVarUpdate.Create(fieldName, t.Id, bytes, hKey));
+        }
+    }
     public bool Test(TEntity t)
     {
         var prop = GetProperty(t);

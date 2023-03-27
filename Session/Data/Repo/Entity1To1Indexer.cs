@@ -23,7 +23,9 @@ public class Entity1To1Indexer<TEntity, TKey> : Entity1to1PropIndexer<TEntity, i
             if(n.OldVal != null) _dic.Remove(n.OldVal.RefId);
             if(n.NewVal != null) _dic[n.NewVal.RefId] = (TEntity)data[n.Entity.Id];
         };
-        data.SubscribeForValueChange<TEntity, EntityRef<TKey>>(keyFieldName, callback);
+        var refAction = new RefAction<ValChangeNotice<EntityRef<TKey>>>();
+        refAction.Subscribe(callback);
+        data.SubscribeForValueChange<TEntity, EntityRef<TKey>>(keyFieldName, refAction);
     }
     private Entity1To1Indexer(Data data, Func<TEntity, EntityRef<TKey>> get) 
         : base(data, e => get(e) == null ? (int?)null : get(e).RefId)
