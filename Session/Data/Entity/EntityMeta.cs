@@ -95,7 +95,9 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
         }
         var oldValue = (TProperty)prop;
         _vars[fieldName].Set((T)t, newValue, key);
-        EntityValChangedHandler<T, TProperty>.Raise(fieldName, (T)t, oldValue, newValue, key);
+        key.Data.EntityTypeTree[typeof(T)]
+            .Propagate(new ValChangeNotice<TProperty>(t, newValue, oldValue));
+        // EntityValChangedHandler<T, TProperty>.Raise(fieldName, (T)t, oldValue, newValue, key);
     }
     public void UpdateEntityVar<TProperty>(string fieldName, Entity t, StrongWriteKey key, TProperty newValue)
     {

@@ -3,7 +3,7 @@ public static class RegimeExt
 {
     public static RegimeRelation RelationWith(this Regime r1, Regime r2, Data data)
     {
-        return data.Society.RelationAux.ByRegime[r1, r2];
+        return data.Society.RelationAux.ByRegime[r1.Id, r2.Id];
     }
 
     public static bool IsPlayerRegime(this Regime r, Data data)

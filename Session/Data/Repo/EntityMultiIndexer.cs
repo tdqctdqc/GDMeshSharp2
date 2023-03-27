@@ -23,12 +23,12 @@ public class EntityMultiIndexer<TSingle, TMult> : AuxData<TMult>
             {
                 if (_dic.TryGetValue(n.OldVal.RefId, out var hash))
                 {
-                    hash.Remove(n.EntityId);
+                    hash.Remove(n.Entity.Id);
                 }
-                _dic.AddOrUpdate(n.NewVal.RefId, n.EntityId);
+                _dic.AddOrUpdate(n.NewVal.RefId, n.Entity.Id);
             }
         );
-        EntityDestroyedHandler<TSingle>.Register(HandleTSingleRemoved);
+        data.RegisterForDestruction<TSingle>(HandleTSingleRemoved);
     }
     
     public override void HandleAdded(TMult added)
@@ -37,7 +37,7 @@ public class EntityMultiIndexer<TSingle, TMult> : AuxData<TMult>
         if(single != null) _dic.AddOrUpdate(single.RefId, added.Id);
     }
 
-    private void HandleTSingleRemoved(EntityDestroyedNotice<TSingle> n)
+    private void HandleTSingleRemoved(EntityDestroyedNotice n)
     {
         _dic.Remove(n.Entity.Id);
     }

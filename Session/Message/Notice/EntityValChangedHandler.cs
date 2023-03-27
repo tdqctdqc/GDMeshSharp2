@@ -1,20 +1,21 @@
-
 using System;
 using System.Collections.Generic;
 using Godot;
 
-public class EntityValChangedHandler<TEntity, TProperty> 
-    : EntityNoticeHandler<TEntity, ValChangeNotice<TProperty>>
-    where TEntity : Entity
+public static class EntityValChangedHandlers
+{
+    private Dictionary<Type, E>
+}
+public class EntityValChangedHandler<TProperty> 
 {
     private static Dictionary<string, Action<ValChangeNotice<TProperty>>> _changedAll
         = new Dictionary<string, Action<ValChangeNotice<TProperty>>>();
     private static Dictionary<int, Dictionary<string, Action<ValChangeNotice<TProperty>>>> _changedSpecific
         = new Dictionary<int, Dictionary<string, Action<ValChangeNotice<TProperty>>>>();
-    public static void Raise(string valueName,
-        TEntity entity, TProperty oldVal, TProperty newVal, WriteKey key)
+    public static void Raise(string valueName, Entity entity, 
+        TProperty oldVal, TProperty newVal, WriteKey key)
     {
-        var n = new ValChangeNotice<TProperty>(entity.Id, newVal, oldVal);
+        var n = new ValChangeNotice<TProperty>(entity, newVal, oldVal);
         Raise(valueName, n);
     }
     public static void RegisterForAll(string fieldName, Action<ValChangeNotice<TProperty>> callback)
@@ -22,7 +23,7 @@ public class EntityValChangedHandler<TEntity, TProperty>
         if(_changedAll.ContainsKey(fieldName) == false) _changedAll.Add(fieldName, n => { });
         _changedAll[fieldName] += callback;
     }
-    public static void RegisterForEntity(string fieldName, TEntity t, Action<ValChangeNotice<TProperty>> callback)
+    public static void RegisterForEntity(string fieldName, Entity t, Action<ValChangeNotice<TProperty>> callback)
     {
         if (_changedSpecific.ContainsKey(t.Id) == false)
         {
@@ -34,7 +35,7 @@ public class EntityValChangedHandler<TEntity, TProperty>
         }
         _changedSpecific[t.Id][fieldName] += callback;
     }
-    public static void UnregisterForEntity(string fieldName, TEntity t, 
+    public static void UnregisterForEntity(string fieldName, Entity t, 
         Action<ValChangeNotice<TProperty>> callback)
     {
         if (_changedSpecific.ContainsKey(t.Id) == false) throw new Exception();
@@ -54,7 +55,7 @@ public class EntityValChangedHandler<TEntity, TProperty>
             a1?.Invoke(n);
         }
 
-        if (_changedSpecific.TryGetValue(n.EntityId, out var byFieldName))
+        if (_changedSpecific.TryGetValue(n.Entity.Id, out var byFieldName))
         {
             if (byFieldName.TryGetValue(fieldName, out var a2))
             {

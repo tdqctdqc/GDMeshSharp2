@@ -17,7 +17,7 @@ public class Data
     public BaseDomain BaseDomain { get; private set; }
     public PlanetDomain Planet { get; private set; }
     public SocietyDomain Society { get; private set; }
-    
+    public EntityTypeTree EntityTypeTree { get; private set; }
     public int Tick => BaseDomain.GameClock.Tick;
 
     public Data()
@@ -38,6 +38,8 @@ public class Data
         _domains = new Dictionary<Type, Domain>();
         _entityTypeDomainIndex = new Dictionary<Type, Domain>();
 
+        EntityTypeTree = new EntityTypeTree(Game.I.Serializer.ConcreteEntityTypes);
+        
         BaseDomain = new BaseDomain();
         Planet = new PlanetDomain();
         Society = new SocietyDomain();
@@ -54,17 +56,16 @@ public class Data
             GD.Print($"trying to overwrite {Entities[e.Id].GetType().ToString()} with {e.GetType().ToString()}");
         }
         Entities.Add(e.Id, e);
-        var dom = _domains[e.GetDomainType()];
+        EntityTypeTree.Propagate(new EntityCreatedNotice(e));
         if (key is HostWriteKey hKey)
         {
             hKey.HostServer.QueueUpdate(EntityCreationUpdate.Create(e, hKey));
         }
-        EntityCreatedHandler<TEntity>.Raise(e);
     }
 
     public void RemoveEntity<TEntity>(TEntity e, StrongWriteKey key) where TEntity : Entity
     {
-        EntityDestroyedHandler<TEntity>.Raise(e);
+        EntityTypeTree.Propagate(new EntityDestroyedNotice(e));
         Entities.Remove(e.Id);
         if (key is HostWriteKey hKey)
         {
@@ -90,5 +91,18 @@ public class Data
     public void GetIdDispenser(CreateWriteKey key)
     {
         key.SetIdDispenser(_idDispenser);
+    }
+    public void RegisterForCreation<TEntity>(Action<EntityCreatedNotice> callback) where TEntity : Entity
+    {
+        EntityTypeTree[typeof(TEntity)].Register<EntityCreatedNotice>(callback);
+    }
+    public void RegisterForDestruction<TEntity>(Action<EntityDestroyedNotice> callback) where TEntity : Entity
+    {
+        EntityTypeTree[typeof(TEntity)].Register<EntityDestroyedNotice>(callback);
+    }
+    public void RegisterForValueChange<TEntity, TProperty>
+        (string fieldName, Action<ValChangeNotice<TProperty>> callback) where TEntity : Entity
+    {
+        EntityTypeTree[typeof(TEntity)].RegisterForValueChange<TProperty>(fieldName, callback);
     }
 }

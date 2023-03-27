@@ -12,7 +12,7 @@ public abstract class AuxData<TEntity>
 
     public AuxData(Data data)
     {
-        EntityCreatedHandler<TEntity>.Register(n => HandleAdded(n.Entity));
-        EntityDestroyedHandler<TEntity>.Register(n => HandleRemoved(n.Entity));
+        data.RegisterForCreation<TEntity>(n => HandleAdded((TEntity)n.Entity));
+        data.RegisterForDestruction<TEntity>(n => HandleRemoved((TEntity)n.Entity));
     }
 }

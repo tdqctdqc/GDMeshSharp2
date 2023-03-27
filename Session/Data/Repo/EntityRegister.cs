@@ -30,18 +30,17 @@ public class EntityRegister<TEntity> : IEntityRegister
         _data = data;
         _entities = new HashSet<TEntity>();
         Entities = new ReadOnlyHash<TEntity>(_entities);
-        
-        EntityCreatedHandler<TEntity>.Register(Add);
-        EntityDestroyedHandler<TEntity>.Register(Remove);
+        data.RegisterForCreation<TEntity>(n => Add(n));
+        data.RegisterForDestruction<TEntity>(n => Remove(n));
     }
 
-    private void Add(EntityCreatedNotice<TEntity> n)
+    private void Add(EntityCreatedNotice n)
     {
-        _entities.Add(n.Entity);
+        _entities.Add((TEntity)n.Entity);
     }
 
-    private void Remove(EntityDestroyedNotice<TEntity> n)
+    private void Remove(EntityDestroyedNotice n)
     {
-        _entities.Remove(n.Entity);
+        _entities.Remove((TEntity)n.Entity);
     }
 }

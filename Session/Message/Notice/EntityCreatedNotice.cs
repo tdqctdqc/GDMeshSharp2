@@ -1,10 +1,12 @@
 
-public class EntityCreatedNotice<TEntity> 
-    where TEntity : Entity
-{
-    public TEntity Entity { get; private set; }
+using System;
 
-    public EntityCreatedNotice(TEntity entity)
+public class EntityCreatedNotice : IEntityNotice
+{
+    public Entity Entity { get; private set; }
+    Type IEntityNotice.EntityType => Entity.GetType();
+
+    public EntityCreatedNotice(Entity entity)
     {
         Entity = entity;
     }
