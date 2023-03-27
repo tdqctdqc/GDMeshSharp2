@@ -44,8 +44,6 @@ public class MessagePackManager
     }
     public void Setup()
     {
-        GD.Print("setting up messagepack");
-        
         var resolver = MessagePack.Resolvers.CompositeResolver.Create(
             // enable extension packages first
             GodotCustomResolver.Instance, //need this one to make fe Color transfer lossless

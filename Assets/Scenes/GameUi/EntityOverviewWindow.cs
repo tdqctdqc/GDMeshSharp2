@@ -43,7 +43,6 @@ public class EntityOverviewWindow : WindowDialog
     }
     private void Draw()
     {
-        GD.Print("drawing");
         _domainToken.Setup(_data.Domains.Values.ToList(), 
             d => d.GetType().Name,
             d => () => _domain.SetValue(d));
@@ -79,8 +78,8 @@ public class EntityOverviewWindow : WindowDialog
         var meta = e.GetMeta();
         var vals = meta.GetPropertyValues(e);
         _entityPropsToken.Setup<int>(
-            Enumerable.Range(0, e.GetMeta().FieldNames.Count).ToList(),
-            i => meta.FieldNames[i] + ": " + vals[i].ToString(),
+            Enumerable.Range(0, e.GetMeta().FieldNameList.Count).ToList(),
+            i => meta.FieldNameList[i] + ": " + vals[i].ToString(),
             i => () => { }
         );
     }

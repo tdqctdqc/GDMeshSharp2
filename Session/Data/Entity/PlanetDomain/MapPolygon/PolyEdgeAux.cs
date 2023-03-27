@@ -9,7 +9,7 @@ public class PolyEdgeAux : EntityAux<MapPolygonEdge>
     public PolyEdgeAux(Domain domain, Data data) : base(domain, data)
     {
         _bordersByEdge = new Dictionary<Edge<int>, MapPolygonEdge>();
-        data.RegisterForCreation<MapPolygonEdge>(
+        data.SubscribeForCreation<MapPolygonEdge>(
             n =>
             {
                 var border = (MapPolygonEdge)n.Entity;

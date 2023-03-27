@@ -40,9 +40,9 @@ public class Data
 
         EntityTypeTree = new EntityTypeTree(Game.I.Serializer.ConcreteEntityTypes);
         
-        BaseDomain = new BaseDomain();
-        Planet = new PlanetDomain();
-        Society = new SocietyDomain();
+        BaseDomain = new BaseDomain(this);
+        Planet = new PlanetDomain(this);
+        Society = new SocietyDomain(this);
         
         AddDomain(BaseDomain);
         AddDomain(Planet);
@@ -62,7 +62,6 @@ public class Data
             hKey.HostServer.QueueUpdate(EntityCreationUpdate.Create(e, hKey));
         }
     }
-
     public void RemoveEntity<TEntity>(TEntity e, StrongWriteKey key) where TEntity : Entity
     {
         EntityTypeTree.Propagate(new EntityDestroyedNotice(e));
@@ -84,7 +83,7 @@ public class Data
         {
             _entityTypeDomainIndex.Add(domEntityType, dom);
         }
-        dom.Setup(this);
+        dom.Setup();
         _domains.Add(dom.GetType(), dom);
     }
 
@@ -92,17 +91,18 @@ public class Data
     {
         key.SetIdDispenser(_idDispenser);
     }
-    public void RegisterForCreation<TEntity>(Action<EntityCreatedNotice> callback) where TEntity : Entity
+    public void SubscribeForCreation<TEntity>(Action<EntityCreatedNotice> callback) where TEntity : Entity
     {
-        EntityTypeTree[typeof(TEntity)].Register<EntityCreatedNotice>(callback);
+        EntityTypeTree[typeof(TEntity)].Created.Subscribe(callback);
     }
-    public void RegisterForDestruction<TEntity>(Action<EntityDestroyedNotice> callback) where TEntity : Entity
+    public void SubscribeForDestruction<TEntity>(Action<EntityDestroyedNotice> callback) where TEntity : Entity
     {
-        EntityTypeTree[typeof(TEntity)].Register<EntityDestroyedNotice>(callback);
+        EntityTypeTree[typeof(TEntity)].Destroyed.Subscribe(callback);
     }
-    public void RegisterForValueChange<TEntity, TProperty>
-        (string fieldName, Action<ValChangeNotice<TProperty>> callback) where TEntity : Entity
+
+    public void SubscribeForValueChange<TEntity, TProperty>(string fieldName, 
+        Action<ValChangeNotice<TProperty>> callback)
     {
-        EntityTypeTree[typeof(TEntity)].RegisterForValueChange<TProperty>(fieldName, callback);
+        EntityTypeTree[typeof(TEntity)].EntityValChanged.Subscribe(fieldName, callback);
     }
 }

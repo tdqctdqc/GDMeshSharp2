@@ -18,11 +18,11 @@ public class SocietyDomain : Domain
     public RegimeRelationAux RelationAux { get; private set; }
     public BuildingAux BuildingAux { get; private set; }
     
-    public SocietyDomain() : base(typeof(SocietyDomain))
+    public SocietyDomain(Data data) : base(typeof(SocietyDomain), data)
     {
         
     }
-    protected override void Setup()
+    public override void Setup()
     {
         SettlementAux = new SettlementAux(this, Data);
         RoadAux = new RoadAux(this, Data);

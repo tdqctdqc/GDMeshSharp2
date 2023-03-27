@@ -10,11 +10,11 @@ public class BaseDomain : Domain
     private GameClockAux _gameClockAux;
     public RuleVars Rules => _ruleVarsAux.Value;
     private SingletonAux<RuleVars> _ruleVarsAux;
-    public BaseDomain() : base(typeof(BaseDomain))
+    public BaseDomain(Data data) : base(typeof(BaseDomain), data)
     {
         
     }
-    protected override void Setup()
+    public override void Setup()
     {
         PlayerAux = new PlayerAux(this, Data);
         _gameClockAux = new GameClockAux(this, Data);

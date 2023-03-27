@@ -36,7 +36,7 @@ public class Entity1to1PropIndexer<TEntity, TKey> : AuxData<TEntity>
             if(n.OldVal != null) _dic.Remove(n.OldVal);
             if(n.NewVal != null) _dic[n.NewVal] = (TEntity)data[n.Entity.Id];
         };
-        EntityValChangedHandler<TEntity, TKey>.RegisterForAll(keyFieldName, callback);
+        data.SubscribeForValueChange<TEntity, TKey>(keyFieldName, callback);
         Initialize(data);
     }
     protected Entity1to1PropIndexer(Data data, Func<TEntity, TKey> get, RefAction trigger) : base(data)

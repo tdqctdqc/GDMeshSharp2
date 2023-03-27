@@ -4,15 +4,26 @@ using System.Linq;
 using Godot;
 
 
-public class ValChangeNotice<TProperty> : IEntityNotice
+public abstract class ValChangeNotice : IEntityNotice
 {
+    public string FieldName { get; private set; }
     Type IEntityNotice.EntityType => Entity.GetType();
     public Entity Entity { get; private set; }
+    public ValChangeNotice(string fieldName, Entity entity)
+    {
+        FieldName = fieldName;
+        Entity = entity;
+    }
+}
+
+public class ValChangeNotice<TProperty> : ValChangeNotice
+{
     public TProperty NewVal { get; private set; }
     public TProperty OldVal { get; private set; }
-    public ValChangeNotice(Entity entity, TProperty newVal, TProperty oldVal)
+
+    public ValChangeNotice(Entity entity, string fieldName, TProperty newVal, TProperty oldVal) 
+        : base(fieldName, entity)
     {
-        Entity = entity;
         NewVal = newVal;
         OldVal = oldVal;
     }

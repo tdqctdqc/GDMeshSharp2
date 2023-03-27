@@ -12,7 +12,6 @@ public abstract class Message
 
     public static void Setup()
     {
-        GD.Print("setting up messages");
         _typeManagers = new Dictionary<Type, IMessageTypeManager>();
         _markers = new Dictionary<Type, byte>();
         _typesByMarker = new Dictionary<byte, Type>();

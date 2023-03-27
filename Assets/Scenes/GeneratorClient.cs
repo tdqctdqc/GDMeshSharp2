@@ -13,7 +13,7 @@ public class GeneratorClient : Node, IClient
     public CanvasLayer CanvasLayer => _ui;
     private GeneratorUi _ui; 
     public ClientSettings Settings { get; private set; }
-    public ClientRequests Requests { get; } = new ClientRequests();
+    public ClientRequests Requests { get; private set; }
     public TooltipManager TooltipManager { get; private set; }
 
     public override void _Ready()
@@ -23,6 +23,8 @@ public class GeneratorClient : Node, IClient
 
     public void Setup(GeneratorSession session)
     {
+        Requests = new ClientRequests();
+        Requests.GiveTree(session.Data.EntityTypeTree);
         Key = new ClientWriteKey(session.Data, session);
         Settings = ClientSettings.Load();
         var cam = CameraController.Construct(session.Data);

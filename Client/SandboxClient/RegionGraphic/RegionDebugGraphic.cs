@@ -123,7 +123,6 @@ public class RegionDebugGraphic : Node2D
             .SelectMany(c => c.Border.Segments).ToList();
         var borderPairs = _region.ContiguousRegions
             .SelectMany(c => c.Border.OrderedBorderPairs).ToList();
-        GD.Print("boundary seg count " + boundarySegs.Count);
         var mb = new MeshBuilder();
         mb.AddLines(borderPairs.Select(p =>
         {

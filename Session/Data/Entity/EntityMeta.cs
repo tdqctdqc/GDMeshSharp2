@@ -6,8 +6,10 @@ using System.Reflection;
 
 public class EntityMeta<T> : IEntityMeta where T : Entity
 {
+    public Type EntityType => typeof(T);
     public Type DomainType { get; private set; }
-    public IReadOnlyList<string> FieldNames => _fieldNames;
+    public IReadOnlyList<string> FieldNameList => _fieldNames;
+    public HashSet<string> FieldNameHash { get; }
     private List<string> _fieldNames;
     public IReadOnlyDictionary<string, Type> FieldTypes => _fieldTypes;
 
@@ -22,7 +24,6 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
     public EntityMeta()
     {
         var entityType = typeof(T);
-        GD.Print(entityType);
         //bc with generic parameters it will not capture all the classes
         if (entityType.ContainsGenericParameters) 
             throw new Exception();
@@ -33,6 +34,7 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
         
         var properties = entityType.GetProperties(BindingFlags.Instance | BindingFlags.Public);
         _fieldNames = properties.Select(p => p.Name).ToList();
+        FieldNameHash = _fieldNames.ToHashSet();
         _fieldTypes = properties.ToDictionary(p => p.Name, p => p.PropertyType);
         _vars = new Dictionary<string, IEntityVarMeta<T>>();
         
@@ -96,14 +98,14 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
         var oldValue = (TProperty)prop;
         _vars[fieldName].Set((T)t, newValue, key);
         key.Data.EntityTypeTree[typeof(T)]
-            .Propagate(new ValChangeNotice<TProperty>(t, newValue, oldValue));
-        // EntityValChangedHandler<T, TProperty>.Raise(fieldName, (T)t, oldValue, newValue, key);
+            .Propagate(new ValChangeNotice<TProperty>(t, fieldName, newValue, oldValue));
     }
     public void UpdateEntityVar<TProperty>(string fieldName, Entity t, StrongWriteKey key, TProperty newValue)
     {
         var oldValue = (TProperty)_vars[fieldName].GetForSerialize((T)t);
         _vars[fieldName].Set((T)t, newValue, key);
-        EntityValChangedHandler<T, TProperty>.Raise(fieldName, (T)t, oldValue, newValue, key);
+        var notice = new ValChangeNotice<TProperty>(t, fieldName, newValue, oldValue);
+        key.Data.EntityTypeTree[t.GetType()].EntityValChanged.HandleChange(notice);
         if (key is HostWriteKey hKey)
         {
             var bytes = Game.I.Serializer.MP.Serialize(newValue);

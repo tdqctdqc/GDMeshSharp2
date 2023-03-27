@@ -4,8 +4,10 @@ using System.Collections.Generic;
 
 public interface IEntityMeta
 {
+    Type EntityType { get; }
     Type DomainType { get; }
-    IReadOnlyList<string> FieldNames { get; }
+    IReadOnlyList<string> FieldNameList { get; }
+    HashSet<string> FieldNameHash { get; }
     IReadOnlyDictionary<string, Type> FieldTypes { get; }
     object[] GetPropertyValues(Entity entity);
     void UpdateEntityVarServer<TProperty>(string fieldName, Entity t, ServerWriteKey key, TProperty newValue);

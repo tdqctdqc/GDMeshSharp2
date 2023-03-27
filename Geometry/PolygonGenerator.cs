@@ -89,7 +89,6 @@ public class PolygonGenerator : Generator
     }
     private void BuildBorders(MapGenInfo info, Graph<MapPolygon, LineSegment> graph, GenWriteKey key)
     {
-        GD.Print("building borders");
         var rHash = new HashSet<MapPolygon>(info.RightPolys);
         rHash.Add(info.CornerPolys[1]);
         rHash.Add(info.CornerPolys[3]);

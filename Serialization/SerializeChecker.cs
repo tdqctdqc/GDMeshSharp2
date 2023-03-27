@@ -55,7 +55,7 @@ public static class SerializeChecker<TEntity> where TEntity : Entity
         if (c.IsPublic) throw new Exception();
         if (c.HasAttribute<SerializationConstructorAttribute>() == false) throw new Exception();
         var meta = Game.I.Serializer.GetEntityMeta<TEntity>();
-        var fields = meta.FieldNames.ToDictionary(n => n, n => meta.FieldTypes[n]);
+        var fields = meta.FieldNameList.ToDictionary(n => n, n => meta.FieldTypes[n]);
         var paramInfos = c.GetParameters().ToDictionary(pi => pi.Name, pi => pi.ParameterType);
         
         foreach (var kvp in paramInfos)

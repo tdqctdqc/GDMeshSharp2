@@ -15,11 +15,11 @@ public class PlanetDomain : Domain
     public ResourceDepositAux ResourceDepositAux { get; private set; }
     public float Width => _planetInfoAux.Value.Dimensions.x;
     public float Height => _planetInfoAux.Value.Dimensions.y;
-    public PlanetDomain() : base(typeof(PlanetDomain))
+    public PlanetDomain(Data data) : base(typeof(PlanetDomain), data)
     {
         
     }
-    protected override void Setup()
+    public override void Setup()
     {
         _planetInfoAux = new SingletonAux<PlanetInfo>(this, Data);
         PolygonAux = new MapPolygonRepo(this, Data);

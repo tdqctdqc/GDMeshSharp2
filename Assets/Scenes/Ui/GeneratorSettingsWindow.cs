@@ -12,12 +12,7 @@ public class GeneratorSettingsWindow : SettingsWindow
         return w;
     }
 
-    private void Doot()
-    {
-        GD.Print("doot");
-    }
     private GeneratorSettingsWindow()
     {
-        Connect("about_to_show", this, "Doot");
     }
 }

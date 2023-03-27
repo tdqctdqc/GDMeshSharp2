@@ -3,50 +3,67 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-public class EntityTypeTreeNode 
+public class EntityTypeTreeNode
 {
+    private IEntityMeta _meta;
     public Type Value { get; private set; }
     public EntityTypeTreeNode Parent { get; private set; }
-    public Dictionary<string, entva> I { get; private set; }
     public List<EntityTypeTreeNode> Children { get; private set; }
-    private Dictionary<Type, RefAction<IEntityNotice>> _publishersByNoticeType;
+    public RefAction<EntityCreatedNotice> Created { get; private set; }    
+    public RefAction<EntityDestroyedNotice> Destroyed { get; private set; }
+    public EntityValChangeHandler EntityValChanged { get; private set; }
     
-
     public EntityTypeTreeNode(Type value)
     {
+        _meta = Game.I.Serializer.GetEntityMeta(value);
         Value = value;
-        _publishersByNoticeType = new Dictionary<Type, RefAction<IEntityNotice>>();
         Children = new List<EntityTypeTreeNode>();
+        Created = new RefAction<EntityCreatedNotice>();
+        Destroyed = new RefAction<EntityDestroyedNotice>();
+        EntityValChanged = new EntityValChangeHandler(value);
     }
     
     public void Propagate(IEntityNotice notice)
     {
         if (notice.EntityType != Value) throw new Exception();
-        BubbleUp(notice);
+        Parent?.BubbleUp(notice);
         Publish(notice);
-        BubbleDown(notice);
+        for (var i = 0; i < Children.Count; i++)
+        {
+            if (notice.EntityType.IsAssignableFrom(Children[i].Value))
+            {
+                Children[i].BubbleDown(notice);
+                break;
+            }
+        }
     }
-
+    
     private void Publish(IEntityNotice notice)
     {
-        _publishersByNoticeType[notice.GetType()].Invoke(notice);
-    }
-    public void Register<TNotice>(Action<TNotice> callback) where TNotice : IEntityNotice
-    {
-        var noticeType = typeof(TNotice);
-        if (_publishersByNoticeType.ContainsKey(noticeType) == false)
+        //todo maybe make dic 
+        if (notice is ValChangeNotice v)
         {
-            _publishersByNoticeType.Add(noticeType, new RefAction<IEntityNotice>());
+            EntityValChanged.HandleChange(v);
         }
-        _publishersByNoticeType[noticeType].Subscribe(a => callback((TNotice)a));
+        else if (notice is EntityCreatedNotice c)
+        {
+            Created.Invoke(c);
+        }
+        else if (notice is EntityDestroyedNotice d)
+        {
+            Destroyed.Invoke(d);
+        }
     }
 
-    public void RegisterForValueChange<TProperty>(string fieldName, Action<ValChangeNotice<TProperty>> callback)
+    private bool Relevant(IEntityNotice n)
     {
-        EntityValChangedHandler<asdfwaef>
+        if (n.EntityType.IsAssignableFrom(Value) == false) return false;
+        if (n is ValChangeNotice v && _meta.FieldNameHash.Contains(v.FieldName) == false) return false;
+        return true;
     }
     private void BubbleUp(IEntityNotice notice)
     {
+        if (Relevant(notice) == false) return;
         if (Value.IsAssignableFrom(notice.EntityType)) return;
         if (Parent != null)
         {
@@ -57,6 +74,7 @@ public class EntityTypeTreeNode
 
     private void BubbleDown(IEntityNotice notice)
     {
+        if (Relevant(notice) == false) return;
         Publish(notice);
         for (var i = 0; i < Children.Count; i++)
         {

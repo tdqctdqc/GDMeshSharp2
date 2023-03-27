@@ -114,7 +114,7 @@ public static class GeometryExt
         catch (Exception e)
         {
             // GD.Print(points.Distinct().Select(p => p.ToString()).ToArray());
-            // throw;
+            throw;
         }
         
     }

@@ -1,9 +1,12 @@
 
 public class BuildingAux : EntityAux<Building>
 {
-    public EntityMultiIndexer<MapPolygon, Building> ByPoly { get; private set; }
+    public AuxMultiIndexer<MapPolygon, Building> ByPoly { get; private set; }
     public BuildingAux(Domain domain, Data data) : base(domain, data)
     {
-        ByPoly = new EntityMultiIndexer<MapPolygon, Building>(data, b => b.Position.Poly, nameof(Building.Position));
+        ByPoly = AuxMultiIndexer<MapPolygon, Building>.ConstructConstant(
+            data, 
+            b => b.Position.Poly.Entity(), 
+            nameof(Building.Position));
     }
 }

@@ -10,25 +10,23 @@ public class EntityValueCache<TEntity, TValue> : AuxData<TEntity>
     protected Dictionary<TEntity, TValue> _dic;
     protected Func<TEntity, TValue> _get;
     
-    public static EntityValueCache<TEntity, TValue> CreateConstant(Data data, Func<TEntity, TValue> get, 
-        EntityRegister<TEntity> repo)
+    public static EntityValueCache<TEntity, TValue> CreateConstant(Data data, Func<TEntity, TValue> get)
     {
-        return new EntityValueCache<TEntity, TValue>(data, get, repo);
+        return new EntityValueCache<TEntity, TValue>(data, get);
     }
     public static EntityValueCache<TEntity, TValue> CreateTrigger(Data data, Func<TEntity, TValue> get, 
         EntityRegister<TEntity> repo, params RefAction[] triggers)
     {
-        return new EntityValueCache<TEntity, TValue>(data, get, repo, triggers);
+        return new EntityValueCache<TEntity, TValue>(data, get, triggers);
     }
 
-    private EntityValueCache(Data data, Func<TEntity, TValue> get, EntityRegister<TEntity> repo) : base(data)
+    private EntityValueCache(Data data, Func<TEntity, TValue> get) : base(data)
     {
         _dic = new Dictionary<TEntity, TValue>();
         _get = get;
-        Initialize(repo, data);
+        Initialize(data);
     }
-    private EntityValueCache(Data data, Func<TEntity, TValue> get, EntityRegister<TEntity> repo, 
-        params RefAction[] triggers) : base(data)
+    private EntityValueCache(Data data, Func<TEntity, TValue> get, params RefAction[] triggers) : base(data)
     {
         _dic = new Dictionary<TEntity, TValue>();
         _get = get;
@@ -36,17 +34,18 @@ public class EntityValueCache<TEntity, TValue> : AuxData<TEntity>
         {
             trigger.Subscribe(() =>
             {
-                Initialize(repo, data);
+                Initialize(data);
             });
         }
         
-        Initialize(repo, data);
+        Initialize(data);
     }
-    private void Initialize(EntityRegister<TEntity> repo, Data data)
+    private void Initialize(Data data)
     {
+        var register = data.GetRegister<TEntity>();
         _dic.Clear();
         
-        foreach (var e in repo.Entities)
+        foreach (var e in register.Entities)
         {
             if (_dic.ContainsKey((TEntity) e))
             {

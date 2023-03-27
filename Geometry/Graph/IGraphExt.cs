@@ -137,7 +137,6 @@ public static class IGraphExt
             GD.Print("no pairs");
             return new List<Segment<TNode>>();
         }
-        GD.Print(borderPairs.Count + " pairs");
         var from = borderPairs[0].Native;
         var res = new List<Segment<TNode>> {};
 

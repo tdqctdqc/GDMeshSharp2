@@ -28,6 +28,7 @@ public class GameClient : Node, IClient
     public void Setup(GameSession session, IServer server, MapGraphics graphics)
     {
         Requests = new ClientRequests();
+        Requests.GiveTree(session.Data.EntityTypeTree);
         Settings = ClientSettings.Load();
         Key = new ClientWriteKey(session.Data, session);
         Data = session.Data;

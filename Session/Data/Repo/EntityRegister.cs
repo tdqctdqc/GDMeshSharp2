@@ -15,6 +15,7 @@ public class EntityRegister<TEntity> : IEntityRegister
 
     public static IEntityRegister ConstructFromType(Type type, Data data)
     {
+        if (data == null) throw new Exception();
         if (typeof(Entity).IsAssignableFrom(type) == false) throw new Exception();
         var construct = typeof(EntityRegister<TEntity>).GetMethod(nameof(ConstructFromType),
             BindingFlags.Static | BindingFlags.NonPublic);
@@ -30,8 +31,8 @@ public class EntityRegister<TEntity> : IEntityRegister
         _data = data;
         _entities = new HashSet<TEntity>();
         Entities = new ReadOnlyHash<TEntity>(_entities);
-        data.RegisterForCreation<TEntity>(n => Add(n));
-        data.RegisterForDestruction<TEntity>(n => Remove(n));
+        data.SubscribeForCreation<TEntity>(n => Add(n));
+        data.SubscribeForDestruction<TEntity>(n => Remove(n));
     }
 
     private void Add(EntityCreatedNotice n)

@@ -7,8 +7,11 @@ public class ItemBar : HBoxContainer
 {
     public void Setup(Data data)
     {
-        EntityValChangedHandler<Player, EntityRef<Regime>>.RegisterForEntity(nameof(Player.Regime), 
-            data.BaseDomain.PlayerAux.LocalPlayer, n => SetupForRegime(n.NewVal.Entity(), data)); 
+        Game.I.Client.Requests.RegisterForSpecific<Player, EntityRef<Regime>>(
+            nameof(Player.Regime), 
+            data.BaseDomain.PlayerAux.LocalPlayer, 
+            n => SetupForRegime(n.NewVal.Entity(), data)
+        ); 
     }
     public void SetupForRegime(Regime r, Data data)
     {

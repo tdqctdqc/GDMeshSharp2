@@ -33,7 +33,6 @@ public static class EdgeDisturber
                 }
             }
         }
-        GD.Print($"altered {iter} / {edges.Count}" );
     }
     
     public static void DisturbEdges(IReadOnlyCollection<MapPolygon> polys, Vector2 dimensions, GenWriteKey key)

@@ -17,7 +17,7 @@ public class EntityMultiIndexer<TSingle, TMult> : AuxData<TMult>
     {
         _dic = new Dictionary<int, HashSet<int>>();
         _getSingle = getSingle;
-        EntityValChangedHandler<TMult, EntityRef<TSingle>>.RegisterForAll(
+        data.SubscribeForValueChange<TMult, EntityRef<TSingle>>(
             fieldNameOnMult,
             n => 
             {
@@ -28,7 +28,7 @@ public class EntityMultiIndexer<TSingle, TMult> : AuxData<TMult>
                 _dic.AddOrUpdate(n.NewVal.RefId, n.Entity.Id);
             }
         );
-        data.RegisterForDestruction<TSingle>(HandleTSingleRemoved);
+        data.SubscribeForDestruction<TSingle>(HandleTSingleRemoved);
     }
     
     public override void HandleAdded(TMult added)

@@ -64,7 +64,6 @@ public class OrToolsExt
         }
         var status = minCostFlow.Solve();
        
-        GD.Print(_results[status]);
         
         var graph = new Graph<T, int>();
         nodes.ForEach(n => graph.AddNode(n));
@@ -132,7 +131,6 @@ public class OrToolsExt
         var status = minCostFlow.Solve();
 
         // Find the min cost flow.
-        GD.Print(_results[status]);
 
         // if (status == MinCostFlow.Status.OPTIMAL)
         // {

@@ -9,8 +9,9 @@ public abstract class Domain
     public Dictionary<Type, IEntityRegister> Registers { get; private set; }
     public IReadOnlyHash<Type> EntityTypes { get; private set; }
     public Data Data { get; private set; }
-    public Domain(Type domainType)
+    public Domain(Type domainType, Data data)
     {
+        Data = data;
         Registers = new Dictionary<Type, IEntityRegister>();
         var s = Game.I.Serializer;
         var entityTypes = s.ConcreteEntityTypes
@@ -22,13 +23,7 @@ public abstract class Domain
         }
     }
 
-    public void Setup(Data data)
-    {
-        Data = data;
-        Setup();
-    }
-
-    protected abstract void Setup();
+    public abstract void Setup();
     
     public EntityRegister<T> GetRegister<T>() where T : Entity
     {
