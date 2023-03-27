@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class BadTriangulationError : DisplayableException
+public class BadTriangulationException : DisplayableException
 {
     public MapPolygon Poly { get; private set; }
     public GenData Data { get; private set; }
@@ -11,7 +11,7 @@ public class BadTriangulationError : DisplayableException
     public List<Color> Colors { get; private set; }
     public List<List<LineSegment>> Outlines { get; private set; }
 
-    public BadTriangulationError(MapPolygon poly, IReadOnlyList<Triangle> tris, List<Color> colors, GenData data,
+    public BadTriangulationException(MapPolygon poly, IReadOnlyList<Triangle> tris, List<Color> colors, GenData data,
         params List<LineSegment>[] outlines)
     {
         Poly = poly;

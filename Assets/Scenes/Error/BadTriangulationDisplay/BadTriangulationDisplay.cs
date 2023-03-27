@@ -5,7 +5,7 @@ using Godot;
 
 public class BadTriangulationDisplay : Node2D
 {
-    public void Setup(BadTriangulationError err)
+    public void Setup(BadTriangulationException err)
     {
         var label = (Label) FindNode("Label");
         label.Text = err.Poly.Id + " at " + err.Poly.Center;

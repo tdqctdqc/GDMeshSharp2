@@ -5,7 +5,6 @@ using MessagePack;
 public class EntityDeletionUpdate : Update
 {
     public int EntityId { get; private set; }
-
     public static EntityDeletionUpdate Create(int entityId, HostWriteKey key)
     {
         return new EntityDeletionUpdate(entityId);
@@ -14,10 +13,8 @@ public class EntityDeletionUpdate : Update
     {
         EntityId = entityId;
     }
-
     public override void Enact(ServerWriteKey key)
     {
-        var e = key.Data.Entities[EntityId];
-        key.Delete(e);
+        key.Data.RemoveEntity(EntityId, key);
     }
 }

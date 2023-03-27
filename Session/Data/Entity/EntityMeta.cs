@@ -25,9 +25,11 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
     {
         var entityType = typeof(T);
         //bc with generic parameters it will not capture all the classes
-        if (entityType.ContainsGenericParameters) 
-            throw new Exception();
-
+        if (entityType.ContainsGenericParameters)
+        {
+            throw new SerializationException($"Entity {entityType.Name} cannot have generic parameters");
+        }
+        
         DomainType = (Type)entityType
             .GetMethod(nameof(DomainType), BindingFlags.Static | BindingFlags.NonPublic)
             .Invoke(null, null);
@@ -80,25 +82,18 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
         return (IRefCollection)_vars[fieldName].GetForSerialize((T)t);
     }
 
-    public void AddToData(Entity e, StrongWriteKey key)
-    {
-        key.Data.AddEntity<T>((T)e, key);
-    }
-    public void RemoveFromData(Entity e, StrongWriteKey key)
-    {
-        key.Data.RemoveEntity<T>((T)e, key);
-    }
     public void UpdateEntityVarServer<TProperty>(string fieldName, Entity t, ServerWriteKey key, TProperty newValue)
     {
         var prop = _vars[fieldName].GetForSerialize((T)t);
         if (prop is TProperty == false)
         {
-            GD.Print($"{fieldName} is not {typeof(TProperty)}");
+            throw new SerializationException($"{fieldName} is not {typeof(TProperty)}");
         }
         var oldValue = (TProperty)prop;
         _vars[fieldName].Set((T)t, newValue, key);
         key.Data.EntityTypeTree[typeof(T)]
             .Propagate(new ValChangeNotice<TProperty>(t, fieldName, newValue, oldValue));
+        
     }
     public void UpdateEntityVar<TProperty>(string fieldName, Entity t, StrongWriteKey key, TProperty newValue)
     {

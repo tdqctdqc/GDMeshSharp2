@@ -39,8 +39,11 @@ public class SubscribedStatLabel : StatLabel
         string name, Label label,
         Func<TEntity, TProperty> getStat) where TEntity : Entity
     {
-        Action<ValChangeNotice<TProperty>> act = n => TriggerUpdate();
-        Game.I.Client.Requests.RegisterForSpecific(name, e, act);
+        Action<ValChangeNotice> act = n => TriggerUpdate();
+        Game.I.Client.Requests.SubscribeForValChangeSpecific<TEntity, TProperty>(name, e, act);
+        _unsubscribe = () => Game.I.Client.Requests
+            .UnsubscribeForValChangeSpecific<TEntity, TProperty>(e.Id, name);
+
         base.Setup<TEntity, TProperty>(e, name, label, getStat);
     }
     

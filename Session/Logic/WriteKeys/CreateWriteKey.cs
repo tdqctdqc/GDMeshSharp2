@@ -13,7 +13,7 @@ public class CreateWriteKey : StrongWriteKey
 
     public void Create<TEntity>(TEntity t) where TEntity : Entity
     {
-        t.GetMeta().AddToData(t, this);
+        Data.AddEntity(t, this);
     }
 
     public void SetIdDispenser(IdDispenser id)

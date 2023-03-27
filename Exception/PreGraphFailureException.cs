@@ -1,10 +1,10 @@
 using Godot;
 
-public class PreGraphFailure : DisplayableException
+public class PreGraphFailureException : DisplayableException
 {
     public Graph<MapPolygon, LineSegment> Graph { get; private set; }
 
-    public PreGraphFailure(Graph<MapPolygon, LineSegment> graph)
+    public PreGraphFailureException(Graph<MapPolygon, LineSegment> graph)
     {
         Graph = graph;
     }

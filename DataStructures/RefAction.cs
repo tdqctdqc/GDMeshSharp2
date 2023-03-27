@@ -31,7 +31,7 @@ public class RefAction<T>
 
     public void Subscribe(Action<T> a)
     {
-        _action += a;
+        _action += t => a(t);
     }
 
     public void Unsubscribe(Action<T> a)

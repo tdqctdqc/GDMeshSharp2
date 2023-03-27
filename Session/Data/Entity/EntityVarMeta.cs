@@ -14,11 +14,11 @@ public class EntityVarMeta<TEntity, TProperty> : IEntityVarMeta<TEntity> where T
     {
         PropertyName = prop.Name;
         var getMi = prop.GetGetMethod();
-        if (getMi == null) throw new Exception();
+        if (getMi == null) throw new SerializationException($"No get method for {PropertyName}");
         GetProperty = getMi.MakeInstanceMethodDelegate<Func<TEntity, TProperty>>();
         
         var setMi = prop.GetSetMethod(true);
-        if (setMi == null) throw new Exception();
+        if (setMi == null) throw new SerializationException($"No set method for {PropertyName}");
         SetProperty = setMi.MakeInstanceMethodDelegate<Action<TEntity, TProperty>>();
     }
 

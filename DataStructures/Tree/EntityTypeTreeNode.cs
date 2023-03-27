@@ -25,7 +25,10 @@ public class EntityTypeTreeNode
     
     public void Propagate(IEntityNotice notice)
     {
-        if (notice.EntityType != Value) throw new Exception();
+        if (notice.EntityType != Value)
+        {
+            throw new NoticeException($"notice entity type {notice.EntityType.Name} is not {Value.Name}");
+        }
         Parent?.BubbleUp(notice);
         Publish(notice);
         for (var i = 0; i < Children.Count; i++)
@@ -55,16 +58,13 @@ public class EntityTypeTreeNode
         }
     }
 
-    private bool Relevant(IEntityNotice n)
+    private bool RelevantField(IEntityNotice n)
     {
-        if (n.EntityType.IsAssignableFrom(Value) == false) return false;
-        if (n is ValChangeNotice v && _meta.FieldNameHash.Contains(v.FieldName) == false) return false;
-        return true;
+        return n is ValChangeNotice v == false || _meta.FieldNameHash.Contains(v.FieldName);
     }
     private void BubbleUp(IEntityNotice notice)
     {
-        if (Relevant(notice) == false) return;
-        if (Value.IsAssignableFrom(notice.EntityType)) return;
+        if (RelevantField(notice) == false) return;
         if (Parent != null)
         {
             ((EntityTypeTreeNode)Parent).BubbleUp(notice);
@@ -74,11 +74,10 @@ public class EntityTypeTreeNode
 
     private void BubbleDown(IEntityNotice notice)
     {
-        if (Relevant(notice) == false) return;
         Publish(notice);
         for (var i = 0; i < Children.Count; i++)
         {
-            if (notice.EntityType.IsAssignableFrom(Children[i].Value))
+            if (Children[i].Value.IsAssignableFrom(notice.EntityType))
             {
                 Children[i].BubbleDown(notice);
                 break;

@@ -23,25 +23,43 @@ public class EntityValChangeHandler
             r.Handle(notice);
         }
     }
+    public void Subscribe(string fieldName, Action<ValChangeNotice> callback)
+    {
+        if(_valHandlers.ContainsKey(fieldName) == false)
+        {
+            if (_meta.FieldNameHash.Contains(fieldName) == false)
+            {
+                foreach (var s in _meta.FieldNameList)
+                {
+                    GD.Print(s);
+                }
+                throw new NoticeException($"field {fieldName} not found for {_meta.EntityType}");
+            }
+            _valHandlers.Add(fieldName, ValChangeHandler.ConstructFromType(_meta.FieldTypes[fieldName]));
+        }
+        var handler = _valHandlers[fieldName];
+        handler.Subscribe(callback);
+    }
     public void Subscribe<TProperty>(string fieldName, Action<ValChangeNotice<TProperty>> callback)
     {
         if(_valHandlers.ContainsKey(fieldName) == false)
         {
             if (_meta.FieldNameHash.Contains(fieldName) == false)
             {
-                GD.Print($"field {fieldName} not found for {_meta.EntityType}");
                 foreach (var s in _meta.FieldNameList)
                 {
                     GD.Print(s);
                 }
-                throw new Exception();
+                throw new NoticeException($"field {fieldName} not found for {_meta.EntityType}");
             }
             _valHandlers.Add(fieldName, new ValChangeHandler<TProperty>());
         }
 
         var propType = _meta.FieldTypes[fieldName];
-        if (typeof(TProperty).IsAssignableFrom(propType) == false) throw new Exception();
-
+        if (typeof(TProperty).IsAssignableFrom(propType) == false)
+        {
+            throw new NoticeException($"{fieldName} type is {propType} not assignable to {typeof(TProperty)}");
+        }
 
         var h = _valHandlers[fieldName];
         if (h is ValChangeHandler<TProperty> == false)
@@ -50,9 +68,8 @@ public class EntityValChangeHandler
             GD.Print(typeof(ValChangeHandler<TProperty>));
         }
         var handler = (ValChangeHandler<TProperty>) _valHandlers[fieldName];
-        handler.Subscribe(n => callback((ValChangeNotice<TProperty>)n));
+        handler.Subscribe(callback);
     }
-    
     public void SubscribeForSpecific<TProperty>(int entityId, string fieldName, Action<ValChangeNotice<TProperty>> callback)
     {
         if(_valHandlers.ContainsKey(fieldName) == false)
@@ -60,7 +77,7 @@ public class EntityValChangeHandler
             //todo make hash
             if (_meta.FieldNameList.Contains(fieldName) == false)
             {
-                throw new Exception();
+                throw new SerializationException($"No field named {fieldName} for {_meta.EntityType}");
             }
             _valHandlers.Add(fieldName, new ValChangeHandler<TProperty>());
         }

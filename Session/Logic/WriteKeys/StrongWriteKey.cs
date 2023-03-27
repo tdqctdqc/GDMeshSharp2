@@ -9,6 +9,10 @@ public class StrongWriteKey : WriteKey
 
     public void Delete<TEntity>(TEntity t) where TEntity : Entity
     {
-        t.GetMeta().RemoveFromData(t, this);
+        Data.RemoveEntity(t.Id, this);
+    }
+    public void Delete(int id) 
+    {
+        Data.RemoveEntity(id, this);
     }
 }

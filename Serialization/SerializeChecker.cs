@@ -15,8 +15,6 @@ public static class SerializeChecker<TEntity> where TEntity : Entity
         {
             res = res && varMeta.Test(e);
         }
-
-        
         res = res && TestConstructor();
         return res;
     }
@@ -27,8 +25,7 @@ public static class SerializeChecker<TEntity> where TEntity : Entity
         var constructors = eType.GetConstructors();
         if (constructors.Length > 0)
         {
-            GD.Print(typeof(TEntity) + " has public constructor");
-            throw new Exception();
+            throw new SerializationException(typeof(TEntity) + " has public constructor");
         }
         constructors = constructors
             .Union(eType.GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance))
@@ -37,23 +34,20 @@ public static class SerializeChecker<TEntity> where TEntity : Entity
 
         if (constructors.Count() == 0)
         {
-            GD.Print(typeof(TEntity) + " has no constructors");
-            throw new Exception();
+            throw new SerializationException(typeof(TEntity) + " has no constructors");
         }
         
         if (constructors.Count() > 1)
         {
-            GD.Print(typeof(TEntity) + " has multiple constructors");
+            GD.Print();
             foreach (var con in constructors)
             {
                 GD.Print(con.GetParameters().Select(p => p.Name + " " +  p.ParameterType.ToString()).ToArray());
             }
-            throw new Exception();
+            throw new SerializationException(typeof(TEntity) + " has multiple constructors");
         }
 
         var c = constructors[0];
-        if (c.IsPublic) throw new Exception();
-        if (c.HasAttribute<SerializationConstructorAttribute>() == false) throw new Exception();
         var meta = Game.I.Serializer.GetEntityMeta<TEntity>();
         var fields = meta.FieldNameList.ToDictionary(n => n, n => meta.FieldTypes[n]);
         var paramInfos = c.GetParameters().ToDictionary(pi => pi.Name, pi => pi.ParameterType);
@@ -65,13 +59,13 @@ public static class SerializeChecker<TEntity> where TEntity : Entity
             var capFirst = char.ToUpper(paramName[0]) + paramName.Substring(1);
             if (fields.ContainsKey(capFirst) == false)
             {
-                throw new Exception($"No matching var found for param {paramName} for {typeof(TEntity)}");
+                throw new SerializationException($"No matching var found for param {paramName} for {typeof(TEntity)}");
             }
 
             if (paramType != fields[capFirst])
             {
-                throw new Exception($"Param type {paramType} is not the same as var type {fields[capFirst]} " +
-                                    $"for param {paramName} for {typeof(TEntity)}");
+                throw new SerializationException($"Param type {paramType} is not the same as var type {fields[capFirst]} " +
+                                                 $"for param {paramName} for {typeof(TEntity)}");
             }
         }
         foreach (var kvp in fields)
@@ -81,18 +75,17 @@ public static class SerializeChecker<TEntity> where TEntity : Entity
             var minFirst = char.ToLower(fieldName[0]) + fieldName.Substring(1);
             if (paramInfos.ContainsKey(minFirst) == false)
             {
-                GD.Print($"No matching param found for var {minFirst} for {typeof(TEntity)}");
                 GD.Print("Params ");
                 foreach (var keyValuePair in paramInfos)
                 {
                     GD.Print(keyValuePair.Key);
                 }
-                throw new Exception();
+                throw new SerializationException($"No matching param found for var {minFirst} for {typeof(TEntity)}");
             }
 
             if (fieldType != paramInfos[minFirst])
             {
-                throw new Exception($"Param type {fieldType} is not the same as var type {fields[minFirst]} " +
+                throw new SerializationException($"Param type {fieldType} is not the same as var type {fields[minFirst]} " +
                                     $"for param {fieldName} for {typeof(TEntity)}");
             }
         }

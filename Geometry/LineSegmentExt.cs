@@ -122,7 +122,7 @@ public static class LineSegmentExt
         if (boundarySegs.IsCircuit() == false)
         {
             GD.Print("not circuit");
-            throw new BadTriangulationError(poly, new List<Triangle>(), new List<Color>(), data, boundarySegs.ToList());
+            throw new BadTriangulationException(poly, new List<Triangle>(), new List<Color>(), data, boundarySegs.ToList());
         }
         
         var points = boundarySegs.GetPoints().GetPoly2TriTriPoints();

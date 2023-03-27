@@ -6,7 +6,6 @@ using System.Reflection;
 public abstract class ValChangeHandler
 {
     public abstract void Handle(ValChangeNotice n);
-
     public static ValChangeHandler ConstructFromType(Type propertyType)
     {
         return (ValChangeHandler) typeof(ValChangeHandler<>)
@@ -14,6 +13,8 @@ public abstract class ValChangeHandler
             .GetMethod(nameof(ValChangeHandler<int>.Construct), BindingFlags.Static | BindingFlags.Public)
             .Invoke(null, null);
     }
+
+    public abstract void Subscribe(Action<ValChangeNotice> callback);
 }
 
 public class ValChangeHandler<TProperty> : ValChangeHandler
@@ -25,7 +26,7 @@ public class ValChangeHandler<TProperty> : ValChangeHandler
     {
         return new ValChangeHandler<TProperty>();
     }
-    public ValChangeHandler()
+    public ValChangeHandler() : base()
     {
         _refAction = new RefAction<ValChangeNotice<TProperty>>();
         _specifics = new Dictionary<int, RefAction<ValChangeNotice<TProperty>>>();
@@ -33,15 +34,21 @@ public class ValChangeHandler<TProperty> : ValChangeHandler
 
     public override void Handle(ValChangeNotice n)
     {
-        if (n is ValChangeNotice<TProperty> p == false) throw new Exception();
+        if (n is ValChangeNotice<TProperty> p == false)
+        {
+            throw new SerializationException($"notice is not for val type {typeof(TProperty)}");
+        }
         _refAction.Invoke(p);
         if(_specifics.TryGetValue(n.Entity.Id, out var specificAction))
         {
             specificAction.Invoke(p);
         }
     }
-
     public void Subscribe(Action<ValChangeNotice<TProperty>> callback)
+    {
+        _refAction.Subscribe(callback);
+    }
+    public override void Subscribe(Action<ValChangeNotice> callback)
     {
         _refAction.Subscribe(callback);
     }

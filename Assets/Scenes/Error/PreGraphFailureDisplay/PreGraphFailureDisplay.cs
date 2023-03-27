@@ -4,7 +4,7 @@ using Godot;
 
 public class PreGraphFailureDisplay : Node2D
 {
-    public void Setup(PreGraphFailure e)
+    public void Setup(PreGraphFailureException e)
     {
         var mb = new MeshBuilder();
         foreach (var lineSegment in e.Graph.Edges)

@@ -49,7 +49,7 @@ public class Data
         AddDomain(Society);
     }
     
-    public void AddEntity<TEntity>(TEntity e, StrongWriteKey key) where TEntity : Entity
+    public void AddEntity(Entity e, StrongWriteKey key)
     {
         if (Entities.ContainsKey(e.Id))
         {
@@ -62,13 +62,48 @@ public class Data
             hKey.HostServer.QueueUpdate(EntityCreationUpdate.Create(e, hKey));
         }
     }
-    public void RemoveEntity<TEntity>(TEntity e, StrongWriteKey key) where TEntity : Entity
+    public void AddEntities(IEnumerable<Entity> es, StrongWriteKey key) 
     {
-        EntityTypeTree.Propagate(new EntityDestroyedNotice(e));
-        Entities.Remove(e.Id);
+        foreach (var e in es)
+        {
+            if (Entities.ContainsKey(e.Id))
+            {
+                throw new EntityTypeException($"trying to overwrite {Entities[e.Id].GetType().ToString()} " +
+                                              $"with {e.GetType().ToString()}");
+            }
+            Entities.Add(e.Id, e);
+        }
         if (key is HostWriteKey hKey)
         {
-            hKey.HostServer.QueueUpdate(EntityDeletionUpdate.Create(e.Id, hKey));
+            hKey.HostServer.QueueUpdate(EntitiesCreationUpdate.Create(es, hKey));
+        }
+        foreach (var e in es)
+        {
+            EntityTypeTree.Propagate(new EntityCreatedNotice(e));
+        }
+    }
+    public void RemoveEntities(int[] entityIds, StrongWriteKey key)
+    {
+        if (key is HostWriteKey hKey)
+        {
+            hKey.HostServer.QueueUpdate(EntitiesDeletionUpdate.Create(entityIds, hKey));
+        }
+        foreach (var eId in entityIds)
+        {
+            EntityTypeTree.Propagate(new EntityDestroyedNotice(Entities[eId]));
+        }
+        foreach (var eId in entityIds)
+        {
+            Entities.Remove(eId);
+        }
+    }
+    public void RemoveEntity(int eId, StrongWriteKey key)
+    {
+        EntityTypeTree.Propagate(new EntityDestroyedNotice(Entities[eId]));
+        Entities.Remove(eId);
+        if (key is HostWriteKey hKey)
+        {
+            hKey.HostServer.QueueUpdate(EntityDeletionUpdate.Create(eId, hKey));
         }
     }
 

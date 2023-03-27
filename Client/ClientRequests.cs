@@ -22,15 +22,24 @@ public class ClientRequests
         _tree = tree;
     }
 
-    public void RegisterForAll<TEntity, TProperty>(string fieldName, Action<ValChangeNotice<TProperty>> callback)
+    public void SubscribeForValChange<TEntity, TProperty>(string fieldName, Action<ValChangeNotice<TProperty>> callback)
     {
         _tree?[typeof(TEntity)].EntityValChanged.Subscribe(fieldName, callback);
     }
 
-    public void RegisterForSpecific<TEntity, TProperty>(string fieldName, TEntity t, 
+    public void SubscribeForValChangeSpecific<TEntity, TProperty>(string fieldName, TEntity t, 
         Action<ValChangeNotice<TProperty>> callback)
     {
         _tree?[typeof(TEntity)].EntityValChanged.Subscribe(fieldName, callback);
+    }
+
+    public void UnsubscribeForValChange<TEntity, TProperty>(string fieldName)
+    {
+        throw new NotImplementedException();
+    }
+    public void UnsubscribeForValChangeSpecific<TEntity, TProperty>(int entityId, string fieldName)
+    {
+        throw new NotImplementedException();
     }
     public void OpenWindow<T>(string name) where T : WindowDialog
     {
