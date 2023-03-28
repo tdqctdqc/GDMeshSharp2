@@ -14,7 +14,9 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
     public IReadOnlyDictionary<string, Type> FieldTypes => _fieldTypes;
 
     private Dictionary<string, Type> _fieldTypes;
-    private Dictionary<string, IEntityVarMeta<T>> _vars;
+    public IReadOnlyDictionary<string, IEntityVarMeta> Vars => _vars;
+    
+    private Dictionary<string, IEntityVarMeta> _vars;
 
     public void ForReference()
     {
@@ -38,7 +40,7 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
         _fieldNames = properties.Select(p => p.Name).ToList();
         FieldNameHash = _fieldNames.ToHashSet();
         _fieldTypes = properties.ToDictionary(p => p.Name, p => p.PropertyType);
-        _vars = new Dictionary<string, IEntityVarMeta<T>>();
+        _vars = new Dictionary<string, IEntityVarMeta>();
         
         var makeFuncsMi = typeof(EntityMeta<T>).GetMethod(nameof(MakeFuncs),
             BindingFlags.Instance | BindingFlags.NonPublic);

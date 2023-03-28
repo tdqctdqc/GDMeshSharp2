@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using DelaunatorSharp;
 using Godot;
 
 public class RoadGenerator : Generator
@@ -16,7 +18,7 @@ public class RoadGenerator : Generator
         var genReport = new GenReport(nameof(RoadGenerator));
         
         genReport.StartSection();
-        var allSegs = new ConcurrentBag<IDictionary<MapPolygonEdge, RoadModel>>();
+        var allSegs = new ConcurrentBag<IDictionary<Edge<MapPolygon>, RoadModel>>();
         Parallel.ForEach(_data.Planet.PolygonAux.LandSea.Landmasses, lm =>
         {
             allSegs.Add(GenerateForLandmass(lm));
@@ -25,105 +27,85 @@ public class RoadGenerator : Generator
         {
             foreach (var kvp in dic)
             {
-                RoadSegment.Create(kvp.Key, kvp.Value, _key);
+                var edge = kvp.Key;
+                var polyEdge = edge.T1.GetEdge(edge.T2, _data);
+                RoadSegment.Create(polyEdge, kvp.Value, _key);
             }
         }
         genReport.StopSection(nameof(GenerateForLandmass));
         return genReport;
     }
 
-    private IDictionary<MapPolygonEdge, RoadModel> GenerateForLandmass(HashSet<MapPolygon> lm)
+    private IDictionary<Edge<MapPolygon>, RoadModel> GenerateForLandmass(HashSet<MapPolygon> lm)
     {
         var settlementPolys = lm.Where(p => p.HasSettlement(_data));
-        if (settlementPolys.Count() < 3) return new Dictionary<MapPolygonEdge, RoadModel>();
+        if (settlementPolys.Count() < 3) return new Dictionary<Edge<MapPolygon>, RoadModel>();
         var first = lm.First();
         
-        var graph = GraphGenerator.GenerateDelaunayGraph(settlementPolys.ToList(),
-            s => first.GetOffsetTo(s, _data),
-            (p1, p2) => new Edge<MapPolygon>(p1, p2, a => a.Id));
-        
-        
-        var covered = new HashSet<Edge<MapPolygon>>();
-        var segs = new Dictionary<MapPolygonEdge, RoadModel>();
-        foreach (var graphEdge in graph.Edges)
+        // var allSettlementsGraph = GraphGenerator.GenerateDelaunayGraph(settlementPolys.ToList(),
+        //     s => first.GetOffsetTo(s, _data),
+        //     (p1, p2) => new Edge<MapPolygon>(p1, p2, a => a.Id));
+
+        bool rail(Settlement s)
         {
-            
+            return s.Size >= 50f;
         }
-        // GenerateLandmassRoadNetwork(lm, graph, covered, segs);
-
-        // var regimeUnions = UnionFind.Find(_data.Planet.PolygonAux.BorderGraph, lm, (p, q) => p.Regime.RefId == q.Regime.RefId);
-        // regimeUnions.ForEach(u => GenerateNationalRoadNetwork(u, graph, covered, segs));
-        //
+        bool paved(Settlement s)
+        {
+            return s.Size >= 25f;
+        }
+        bool dirt(Settlement s)
+        {
+            return s.Size >= 5f;
+        }
+        var covered = new HashSet<Edge<MapPolygon>>();
+        var segs = new Dictionary<Edge<MapPolygon>, RoadModel>();
+        
+        
+        
+        
+        var sw = new Stopwatch();
+        sw.Start();
+        var railSettlements = settlementPolys.Where(p => rail(p.GetSettlement(_data))).ToList();
+        if(railSettlements.Count > 2)
+        {
+            var railGraph = GraphGenerator.GenerateDelaunayGraph(railSettlements,
+                s => first.GetOffsetTo(s, _data),
+                (p1, p2) => new Edge<MapPolygon>(p1, p2, a => a.Id));
+            BuildRoadNetworkLocal(RoadModelManager.Railroad, 2000f, .7f,
+                railGraph, covered, segs, true);
+        }
+        
+        var pavedSettlements = settlementPolys.Where(p => paved(p.GetSettlement(_data))).ToList();
+        if(pavedSettlements.Count > 2)
+        {
+            var pavedGraph = GraphGenerator.GenerateDelaunayGraph(pavedSettlements,
+                s => first.GetOffsetTo(s, _data),
+                (p1, p2) => new Edge<MapPolygon>(p1, p2, a => a.Id));
+            BuildRoadNetworkLocal(RoadModelManager.PavedRoad, 1000f, .7f,
+                pavedGraph, covered, segs, true);
+        }
+        
+        var dirtSettlements = settlementPolys.Where(p => dirt(p.GetSettlement(_data))).ToList();
+        if(dirtSettlements.Count > 2)
+        {
+            var dirtGraph = GraphGenerator.GenerateDelaunayGraph(dirtSettlements,
+                s => first.GetOffsetTo(s, _data),
+                (p1, p2) => new Edge<MapPolygon>(p1, p2, a => a.Id));
+            BuildRoadNetworkLocal(RoadModelManager.DirtRoad, 500f, .7f,
+                dirtGraph, covered, segs, true);
+        }
+        
+        sw.Stop();
+        var time = sw.Elapsed.TotalMilliseconds;
+        
+        GD.Print($"Time {time}");
         return segs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-    }
-
-    private void GenerateNationalRoadNetwork(List<MapPolygon> union, 
-        IReadOnlyGraph<MapPolygon, Edge<MapPolygon>> graph, HashSet<Edge<MapPolygon>> covered,
-        Dictionary<MapPolygonEdge, RoadModel> segs)
-    {
-        // var first = union[0];
-        var settlementPolys = union.Where(p => _data.Society.SettlementAux.ByPoly.ContainsKey(p))
-            .OrderByDescending(p => p.GetSettlement(_data).Size)
-            .ToList();
-        // var numTopTier = Mathf.CeilToInt(settlementPolys.Count / 5);
-        // var numMidTier = Mathf.CeilToInt(settlementPolys.Count / 3);
-        // var numLowTier = Mathf.CeilToInt(settlementPolys.Count - (numTopTier + numMidTier));
-        // if (numTopTier + numMidTier + numLowTier != settlementPolys.Count) throw new Exception();
-        //
-        // var topTier = settlementPolys.GetRange(0, numTopTier);
-        // var midTier = settlementPolys.GetRange(numTopTier, numMidTier);
-        // var lowTier = settlementPolys.GetRange(numTopTier + numMidTier, numLowTier);
-        //
-        // if (settlementPolys.Count < 3) return;
-        //
-        // var nationalGraph = GraphGenerator.GenerateDelaunayGraph(settlementPolys,
-        //     p => first.GetOffsetTo(p, _data),
-        //     (p, q) => p.GetOffsetTo(q, _data).Length());
-        
-        // var lowNetwork = GraphGenerator.GenerateSpanningGraph<MapPolygon>(
-        //     nationalGraph, 5, int.MaxValue);
-        //
-        // lowNetwork.DoForEachEdge(
-        //     (p, q, f) =>
-        //     {
-        //         var buildPath = PathFinder<MapPolygon>.FindPath(p, q, x => x.Neighbors.Entities(),
-        //             BuildRoadEdgeCostNational, (p1, p2) => p1.GetOffsetTo(p2, _data).Length());
-        //         if (buildPath == null) return;
-        //         for (var i = 0; i < buildPath.Count - 1; i++)
-        //         {
-        //             var pathEdge = buildPath[i].GetEdge(buildPath[i + 1], _data);
-        //             if(segs.ContainsKey(pathEdge)) continue;
-        //             segs.Add(pathEdge, RoadModelManager.DirtRoad);
-        //         }
-        //     },
-        //     p => p.Id
-        // );
-        
-        BuildRoadNetwork(settlementPolys, Mathf.Inf, 
-            RoadModelManager.DirtRoad,500f, graph, 
-            covered, segs, false);
-    }
-
-    private void GenerateLandmassRoadNetwork(HashSet<MapPolygon> lm,
-        IReadOnlyGraph<MapPolygon, Edge<MapPolygon>> graph, HashSet<Edge<MapPolygon>> covered,
-        Dictionary<MapPolygonEdge, RoadModel> segs)
-    {
-        //todo make these dependent on city rank for regime rather than size
-        GenerateRoadNetworkForMinSize(lm, 50f, 
-            .4f, 
-            RoadModelManager.Railroad, 2_000f,
-            graph, covered, segs);
-        
-        GenerateRoadNetworkForMinSize(lm, 25f, 
-            .6f, 
-            RoadModelManager.PavedRoad, 1_000f,
-            graph, covered, segs);
-        
     }
     private void GenerateRoadNetworkForMinSize(HashSet<MapPolygon> lm, float minSize, float minImprovementRatio, 
         RoadModel road, float roadBuildDist,
         IReadOnlyGraph<MapPolygon, Edge<MapPolygon>> graph, HashSet<Edge<MapPolygon>> covered,
-        Dictionary<MapPolygonEdge, RoadModel> segs)
+        Dictionary<Edge<MapPolygon>, RoadModel> segs)
     {
         var settlementPolys = lm.Where(p => _data.Society.SettlementAux.ByPoly.ContainsKey(p)
                                             && p.GetSettlement(_data).Size >= minSize);
@@ -131,14 +113,28 @@ public class RoadGenerator : Generator
         BuildRoadNetwork(settlementPolys, minImprovementRatio, road, roadBuildDist,
             graph, covered, segs, true);
     }
-
+    
     private void BuildRoadNetwork(IEnumerable<MapPolygon> settlementPolys, float minImprovementRatio, RoadModel road, float roadBuildDist,
         IReadOnlyGraph<MapPolygon, Edge<MapPolygon>> graph, HashSet<Edge<MapPolygon>> covered,
-        Dictionary<MapPolygonEdge, RoadModel> segs, bool international)
+        Dictionary<Edge<MapPolygon>, RoadModel> segs, bool international)
     {
+        
+        foreach (var s1 in settlementPolys)
+        {
+            foreach (var s2 in settlementPolys)
+            {
+                if (s1 == s2) continue;
+                if (s1.GetOffsetTo(s2, _data).Length() > roadBuildDist) continue;
+                var edge = new Edge<MapPolygon>(s1, s2, p => p.Id);
+                if (covered.Contains(edge)) continue;
+                covered.Add(edge);
+                TryBuildNewPath(s1, s2, international, minImprovementRatio, road,
+                    segs, covered, travelEdgeCost, buildRoadEdgeCost);
+            }
+        };
         float travelEdgeCost(MapPolygon p1, MapPolygon p2)
         {
-            var e = p1.GetEdge(p2, _data);
+            var e = new Edge<MapPolygon>(p1, p2, p => p.Id);
             if (p1.IsWater() || p2.IsWater()) return Mathf.Inf;
             var dist = p1.GetOffsetTo(p2, _data).Length();
             if (segs.ContainsKey(e))
@@ -150,37 +146,68 @@ public class RoadGenerator : Generator
                 return dist * (p1.Roughness + p2.Roughness);
             }
         }
-        foreach (var s1 in settlementPolys)
+        float buildRoadEdgeCost(MapPolygon p1, MapPolygon p2)
         {
-            foreach (var s2 in settlementPolys)
+            if (p1.IsWater() || p2.IsWater()) return Mathf.Inf;
+            if (international == false && p1.Regime.RefId != p2.Regime.RefId) return Mathf.Inf;
+            if (segs.TryGetValue(new Edge<MapPolygon>(p1, p2, p => p.Id), out var rm))
             {
-                if (s1 == s2) continue;
-                if (s1.GetOffsetTo(s2, _data).Length() > roadBuildDist) continue;
-                var edge = new Edge<MapPolygon>(s1, s2, p => p.Id);
-                if (covered.Contains(edge)) continue;
-                covered.Add(edge);
-
-                var oldPath = PathFinder.FindTravelPath(s1, s2, _data, travelEdgeCost);
-                var oldCost = PathFinder.GetTravelPathCost(oldPath, _data, travelEdgeCost);
-                
-                var buildPath = PathFinder.FindRoadBuildPath(s1, s2, _data, international);
-                var newCost = PathFinder.GetBuildPathCost(oldPath, _data);
-
-                if (newCost > minImprovementRatio * oldCost)
-                {
-                    //todo in this case 'hook into' old path
-                    continue;
-                }
-
-                for (var i = 0; i < buildPath.Count - 1; i++)
-                {
-                    var pathEdge = buildPath[i].GetEdge(buildPath[i + 1], _data);
-                    if(segs.ContainsKey(pathEdge)) continue;
-                    segs.Add(pathEdge, road);
-                }
+                if (rm == road) return 0f;
             }
-        };
-
+            var dist = p1.GetOffsetTo(p2, _data).Length();
+            return dist * (p1.Roughness + p2.Roughness) / 2f;
+        }
     }
-    
+
+    private void TryBuildNewPath(MapPolygon s1, MapPolygon s2, bool international, float minImprovementRatio,
+         RoadModel road, Dictionary<Edge<MapPolygon>, RoadModel> segs, HashSet<Edge<MapPolygon>> covered, 
+         Func<MapPolygon, MapPolygon, float> travelEdgeCost = null, Func<MapPolygon, MapPolygon, float> buildEdgeCost = null)
+    {
+        var oldPath = PathFinder.FindTravelPath(s1, s2, _data, travelEdgeCost);
+        var oldCost = PathFinder.GetTravelPathCost(oldPath, _data, travelEdgeCost);
+                
+        var buildPath = PathFinder.FindRoadBuildPath(s1, s2, road, _data, 
+            international, buildEdgeCost);
+        var newCost = PathFinder.GetBuildPathCost(oldPath, road, _data, 
+            international, buildEdgeCost);
+
+        if (newCost > minImprovementRatio * oldCost)
+        {
+            //todo in this case 'hook into' old path
+            return;
+        }
+
+        for (var i = 0; i < buildPath.Count - 1; i++)
+        {
+            var pathEdge = new Edge<MapPolygon>(buildPath[i], buildPath[i + 1], mp => mp.Id); 
+            buildPath[i].GetEdge(buildPath[i + 1], _data);
+            covered.Add(pathEdge);
+            if(segs.ContainsKey(pathEdge)) continue;
+            segs.Add(pathEdge, road);
+        }
+    }
+    private void BuildRoadNetworkLocal(RoadModel road, float roadBuildDist, float minImprovementRatio,
+        IReadOnlyGraph<MapPolygon, Edge<MapPolygon>> graph, HashSet<Edge<MapPolygon>> covered,
+        Dictionary<Edge<MapPolygon>, RoadModel> segs, bool international)
+    {
+        var distSqr = roadBuildDist * roadBuildDist;
+        foreach (var e in graph.Edges)
+        {
+            if (covered.Contains(e)) continue;
+            covered.Add(e);
+            var s1 = e.T1;
+            var s2 = e.T2;
+            if (s1.GetOffsetTo(s2, _data).LengthSquared() > distSqr) continue;
+
+            var buildPath = PathFinder.FindRoadBuildPath(s1, s2, road, _data, international);
+            for (var i = 0; i < buildPath.Count - 1; i++)
+            {
+                var pathEdge = new Edge<MapPolygon>(buildPath[i], buildPath[i + 1], mp => mp.Id); 
+                buildPath[i].GetEdge(buildPath[i + 1], _data);
+                covered.Add(pathEdge);
+                if(segs.ContainsKey(pathEdge)) continue;
+                segs.Add(pathEdge, road);
+            }
+        }
+    }
 }

@@ -6,6 +6,8 @@ public class Building : Entity
 {
     public override Type GetDomainType() => DomainType();
     private static Type DomainType() => typeof(SocietyDomain);
+    public override EntityTypeTreeNode GetEntityTypeTreeNode() => EntityTypeTreeNode;
+    public static EntityTypeTreeNode EntityTypeTreeNode { get; private set; }
     public PolyTriPositionSerializable Position { get; protected set; }
     public ModelRef<BuildingModel> Model { get; protected set; }
 

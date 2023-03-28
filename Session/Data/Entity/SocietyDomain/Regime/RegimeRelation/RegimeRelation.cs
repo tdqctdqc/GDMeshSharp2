@@ -6,6 +6,8 @@ using MessagePack;
 
 public class RegimeRelation : Entity
 {
+    public override EntityTypeTreeNode GetEntityTypeTreeNode() => EntityTypeTreeNode;
+    public static EntityTypeTreeNode EntityTypeTreeNode { get; private set; }
     public override Type GetDomainType() => DomainType();
     private static Type DomainType() => typeof(SocietyDomain);
     public EntityRef<Regime> HighId { get; protected set; }

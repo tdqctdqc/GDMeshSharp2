@@ -8,16 +8,26 @@ using Priority_Queue;
 
 public static class PathFinder
 {
-    public static List<MapPolygon> FindRoadBuildPath(MapPolygon s1, MapPolygon s2, Data data, bool international)
+    public static List<MapPolygon> FindRoadBuildPath(MapPolygon s1, MapPolygon s2, RoadModel road, Data data,
+        bool international, Func<MapPolygon, MapPolygon, float> buildRoadEdgeCost = null)
     {
+        if (buildRoadEdgeCost == null)
+        {
+            buildRoadEdgeCost = (p, q) => BuildRoadEdgeCost(p, q, road, data, international);
+        }
         return PathFinder<MapPolygon>.FindPath(s1, s2, p => p.Neighbors.Entities(),
-            (p, q) => BuildRoadEdgeCost(p, q, data, international), 
+            buildRoadEdgeCost, 
             (p1, p2) => p1.GetOffsetTo(p2, data).Length());
     }
 
-    public static float GetBuildPathCost(List<MapPolygon> path, Data data)
+    public static float GetBuildPathCost(List<MapPolygon> path, RoadModel road, Data data, 
+        bool international, Func<MapPolygon, MapPolygon, float> buildRoadEdgeCost = null)
     {
-        return PathFinder<MapPolygon>.GetPathCost(path, (p, q) => BuildRoadEdgeCost(p, q, data));
+        if (buildRoadEdgeCost == null)
+        {
+            buildRoadEdgeCost = (p, q) => BuildRoadEdgeCost(p, q, road, data, international);
+        }
+        return PathFinder<MapPolygon>.GetPathCost(path, (p, q) => BuildRoadEdgeCost(p, q, road, data));
     }
     public static List<MapPolygon> FindTravelPath(MapPolygon s1, MapPolygon s2, Data data,
         Func<MapPolygon, MapPolygon, float> travelEdgeCost = null)
@@ -48,7 +58,7 @@ public static class PathFinder
         }
     }
     
-    private static float BuildRoadEdgeCost(MapPolygon p1, MapPolygon p2, Data data, bool international = true)
+    private static float BuildRoadEdgeCost(MapPolygon p1, MapPolygon p2, RoadModel road, Data data, bool international = true)
     {
         if (p1.IsWater() || p2.IsWater()) return Mathf.Inf;
         if (international == false && p1.Regime.RefId != p2.Regime.RefId) return Mathf.Inf;

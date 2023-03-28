@@ -201,4 +201,20 @@ public static class EnumerableExt
         }
         return res;
     }
+
+    public static List<List<T>> Partition<T>(this List<T> en, int numChunks)
+    {
+        if (numChunks > en.Count) throw new Exception("too many chunks");
+        var chunkSize = Mathf.FloorToInt((float)en.Count / numChunks);
+        var res = new List<List<T>>();
+        int index = 0;
+        for (var i = 0; i < numChunks - 1; i++)
+        {
+            res.Add(en.GetRange(index, chunkSize));
+            index += chunkSize;
+        }
+        res.Add(en.GetRange(index, en.Count - chunkSize * (numChunks - 1)));
+        if (res.Sum(r => r.Count) != en.Count) throw new Exception();
+        return res;
+    }
 }

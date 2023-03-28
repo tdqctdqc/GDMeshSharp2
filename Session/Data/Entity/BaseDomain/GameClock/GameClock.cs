@@ -6,6 +6,8 @@ public class GameClock : Entity
 {
     public override Type GetDomainType() => DomainType();
     private static Type DomainType() => typeof(BaseDomain);
+    public override EntityTypeTreeNode GetEntityTypeTreeNode() => EntityTypeTreeNode;
+    public static EntityTypeTreeNode EntityTypeTreeNode { get; private set; }
     public int Tick { get; protected set; }
     public static GameClock Create(GenWriteKey key)
     {

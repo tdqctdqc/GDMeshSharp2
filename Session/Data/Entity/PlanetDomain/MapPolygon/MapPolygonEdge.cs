@@ -9,6 +9,8 @@ public class MapPolygonEdge : Entity
 {
     public override Type GetDomainType() => DomainType();
     private static Type DomainType() => typeof(PlanetDomain);
+    public override EntityTypeTreeNode GetEntityTypeTreeNode() => EntityTypeTreeNode;
+    public static EntityTypeTreeNode EntityTypeTreeNode { get; private set; }
     public float MoistureFlow { get; protected set; }
     public PolyBorderChain LowSegsRel() => LowId.Entity().NeighborBorders[HighId.RefId];
     public PolyBorderChain HighSegsRel() => HighId.Entity().NeighborBorders[LowId.RefId];
@@ -39,21 +41,49 @@ public class MapPolygonEdge : Entity
             highId = new EntityRef<MapPolygon>(poly1, key);
         }
         
-        var highSegsRel = RelativizeSegments(segments, highId.Entity(), key.Data, out _);
-        var lowSegsRel = RelativizeSegments(segments, lowId.Entity(), key.Data, out _);
-        var lowBorder = PolyBorderChain.Construct(lowId.Entity(), highId.Entity(), lowSegsRel);
-        var highBorder = PolyBorderChain.Construct(highId.Entity(), lowId.Entity(), highSegsRel);
-        
+        var lowBorder = ConstructBorderChain(lowId.Entity(), highId.Entity(), segments, key.Data);//PolyBorderChain.Construct(lowId.Entity(), highId.Entity(), lowSegsRel);
+        var highBorder = ConstructBorderChain(highId.Entity(), lowId.Entity(), segments, key.Data);
         
         lowId.Entity().AddNeighbor(highId.Entity(), lowBorder, key);
         highId.Entity().AddNeighbor(lowId.Entity(), highBorder, key);
         var b =  new MapPolygonEdge(
             key.IdDispenser.GetID(), 0f, lowId, highId);
-
         key.Create(b);
         return b;
     }
 
+    public static MapPolygonEdge Create(PolyBorderChain chain1, PolyBorderChain chain2, GenWriteKey key)
+    {
+        EntityRef<MapPolygon> lowId;
+        EntityRef<MapPolygon> highId;
+        if (chain1.Native.Entity().Id < chain2.Native.Entity().Id)
+        {
+            lowId = new EntityRef<MapPolygon>(chain1.Native.Entity(), key);
+            highId = new EntityRef<MapPolygon>(chain2.Native.Entity(), key);
+        }
+        else
+        {
+            lowId = new EntityRef<MapPolygon>(chain2.Native.Entity(), key);
+            highId = new EntityRef<MapPolygon>(chain1.Native.Entity(), key);
+        }
+        
+        PolyBorderChain lowChain = chain1.Native.Entity() == lowId.Entity() 
+            ? chain1 : chain2;
+        PolyBorderChain hiChain = chain1.Native.Entity() == lowId.Entity() 
+            ? chain2 : chain1;
+        lowId.Entity().AddNeighbor(highId.Entity(), lowChain, key);
+        highId.Entity().AddNeighbor(lowId.Entity(), hiChain, key);
+        var b =  new MapPolygonEdge(
+            key.IdDispenser.GetID(), 0f, lowId, highId);
+        key.Create(b);
+        return b;
+    }
+    public static PolyBorderChain ConstructBorderChain(MapPolygon native, MapPolygon foreign, 
+        List<LineSegment> segments, Data data)
+    {
+        var segsRel = RelativizeSegments(segments, native, data, out _);
+        return PolyBorderChain.Construct(native, foreign, segsRel);
+    }
     private static List<LineSegment> RelativizeSegments(List<LineSegment> abs, MapPolygon poly, Data data, out bool reversed)
     {
         reversed = false;

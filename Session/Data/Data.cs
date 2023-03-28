@@ -56,7 +56,7 @@ public class Data
             GD.Print($"trying to overwrite {Entities[e.Id].GetType().ToString()} with {e.GetType().ToString()}");
         }
         Entities.Add(e.Id, e);
-        EntityTypeTree.Propagate(new EntityCreatedNotice(e));
+        e.GetEntityTypeTreeNode().Propagate(new EntityCreatedNotice(e));
         if (key is HostWriteKey hKey)
         {
             hKey.HostServer.QueueUpdate(EntityCreationUpdate.Create(e, hKey));
@@ -79,7 +79,7 @@ public class Data
         }
         foreach (var e in es)
         {
-            EntityTypeTree.Propagate(new EntityCreatedNotice(e));
+            e.GetEntityTypeTreeNode().Propagate(new EntityCreatedNotice(e));
         }
     }
     public void RemoveEntities(int[] entityIds, StrongWriteKey key)
@@ -90,7 +90,8 @@ public class Data
         }
         foreach (var eId in entityIds)
         {
-            EntityTypeTree.Propagate(new EntityDestroyedNotice(Entities[eId]));
+            var n = new EntityDestroyedNotice(Entities[eId]);
+            n.Entity.GetEntityTypeTreeNode().Propagate(n);
         }
         foreach (var eId in entityIds)
         {
@@ -99,7 +100,8 @@ public class Data
     }
     public void RemoveEntity(int eId, StrongWriteKey key)
     {
-        EntityTypeTree.Propagate(new EntityDestroyedNotice(Entities[eId]));
+        var n = new EntityDestroyedNotice(Entities[eId]);
+        n.Entity.GetEntityTypeTreeNode().Propagate(n);
         Entities.Remove(eId);
         if (key is HostWriteKey hKey)
         {
@@ -121,7 +123,6 @@ public class Data
         dom.Setup();
         _domains.Add(dom.GetType(), dom);
     }
-
     public void GetIdDispenser(CreateWriteKey key)
     {
         key.SetIdDispenser(_idDispenser);
@@ -134,7 +135,6 @@ public class Data
     {
         EntityTypeTree[typeof(TEntity)].Destroyed.Subscribe(callback);
     }
-
     public void SubscribeForValueChange<TEntity, TProperty>(string fieldName, 
         RefAction<ValChangeNotice<TProperty>> callback)
     {

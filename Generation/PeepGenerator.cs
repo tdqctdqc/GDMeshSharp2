@@ -72,6 +72,8 @@ public class PeepGenerator : Generator
                 totalNumFarmers += numFarmers;
                 totalFoodProd += ((float)numFarmers / farmLaborReq) * farmProdCap;
             }
+
+            if (totalNumFarmers == 0) continue;
             Peep.Create(
                 poly,
                 farmerJob,
@@ -92,7 +94,7 @@ public class PeepGenerator : Generator
         for (var i = 0; i < polys.Count; i++)
         {
             var num = Mathf.FloorToInt(portions[i]);
-            
+            if (num == 0) continue;
             Peep.Create(
                 polys[i],
                 laborerJob,

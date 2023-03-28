@@ -3,9 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public interface IEntityVarMeta<TEntity> where TEntity : Entity
+public interface IEntityVarMeta
 {
-    object GetForSerialize(TEntity e);
-    bool Test(TEntity t);
     void UpdateVar(string fieldName, Entity t, StrongWriteKey key, object newValueOb);
+    object GetForSerialize(Entity e);
+    bool Test(Entity t);
+}
+public interface IEntityVarMeta<TEntity> : IEntityVarMeta
+    where TEntity : Entity
+{
 }

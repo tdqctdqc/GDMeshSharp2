@@ -5,7 +5,7 @@ using System.Reflection;
 
 public class EntityTypeTreeNode
 {
-    private IEntityMeta _meta;
+    public IEntityMeta Meta { get; private set; }
     public Type Value { get; private set; }
     public EntityTypeTreeNode Parent { get; private set; }
     public List<EntityTypeTreeNode> Children { get; private set; }
@@ -15,12 +15,17 @@ public class EntityTypeTreeNode
     
     public EntityTypeTreeNode(Type value)
     {
-        _meta = Game.I.Serializer.GetEntityMeta(value);
+        Meta = Game.I.Serializer.GetEntityMeta(value);
         Value = value;
         Children = new List<EntityTypeTreeNode>();
         Created = new RefAction<EntityCreatedNotice>();
         Destroyed = new RefAction<EntityDestroyedNotice>();
         EntityValChanged = new EntityValChangeHandler(value);
+        value
+            .GetProperty(nameof(RoadSegment.EntityTypeTreeNode), 
+                BindingFlags.Public | BindingFlags.Static)
+            .SetMethod
+            .Invoke(null, new object[]{this});
     }
     
     public void Propagate(IEntityNotice notice)
@@ -47,31 +52,30 @@ public class EntityTypeTreeNode
         if (notice is ValChangeNotice v)
         {
             EntityValChanged.HandleChange(v);
+            return;
         }
-        else if (notice is EntityCreatedNotice c)
+        if (notice is EntityCreatedNotice c)
         {
             Created.Invoke(c);
+            return;
         }
-        else if (notice is EntityDestroyedNotice d)
+        if (notice is EntityDestroyedNotice d)
         {
             Destroyed.Invoke(d);
+            return;
         }
     }
 
     private bool RelevantField(IEntityNotice n)
     {
-        return n is ValChangeNotice v == false || _meta.FieldNameHash.Contains(v.FieldName);
+        return n is ValChangeNotice v == false || Meta.FieldNameHash.Contains(v.FieldName);
     }
     private void BubbleUp(IEntityNotice notice)
     {
         if (RelevantField(notice) == false) return;
-        if (Parent != null)
-        {
-            ((EntityTypeTreeNode)Parent).BubbleUp(notice);
-        }
+        Parent?.BubbleUp(notice);
         Publish(notice);
     }
-
     private void BubbleDown(IEntityNotice notice)
     {
         Publish(notice);

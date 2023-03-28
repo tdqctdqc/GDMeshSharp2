@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Godot;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using DelaunatorSharp;
 
@@ -93,8 +94,28 @@ public class PolygonGenerator : Generator
         rHash.Add(info.CornerPolys[1]);
         rHash.Add(info.CornerPolys[3]);
 
-        var constructBorders = new ConcurrentBag<Action>();
+        // var constructBorders = new ConcurrentBag<Action>();
+        var borderChains = new ConcurrentDictionary<PolyBorderChain, PolyBorderChain>();
         
+        //todo partition into bigger chunks for parallel 
+        var partitions = graph.Elements.Partition(10);
+        
+        Parallel.ForEach(partitions, buildBordersForChunk);
+
+        foreach (var a in borderChains)
+        {
+            MapPolygonEdge.Create(a.Key, a.Value, key);
+        }
+        key.Data.Notices.SetPolyShapes.Invoke();
+
+
+        void buildBordersForChunk(List<MapPolygon> polys)
+        {
+            foreach (var mapPolygon in polys)
+            {
+                buildBorders(mapPolygon);
+            }
+        }
         void buildBorders(MapPolygon mp)
         {
             if (info.LRWrap && rHash.Contains(mp))
@@ -105,6 +126,7 @@ public class PolygonGenerator : Generator
             if (neighbors.Count == 0) throw new Exception(); 
             neighbors.ForEach(nMp =>
             {
+                if (nMp.Id > mp.Id) return;
                 var edge = graph.GetEdge(mp, nMp);
                 if (edge.From == edge.To)
                 {
@@ -115,18 +137,14 @@ public class PolygonGenerator : Generator
                 {
                     edge = edge.Reverse();
                 }
-                constructBorders.Add(() => MapPolygonEdge.Create(mp, nMp, new List<LineSegment> {edge}, key));
+
+                var chain1 = MapPolygonEdge.ConstructBorderChain(mp, nMp,
+                    new List<LineSegment> {edge}, key.Data);
+                var chain2 = MapPolygonEdge.ConstructBorderChain(nMp, mp,
+                    new List<LineSegment> {edge}, key.Data);
+                borderChains.TryAdd(chain1, chain2);
             });
         }
-
-        Parallel.ForEach(graph.Elements, buildBorders);
-        
-        foreach (var a in constructBorders)
-        {
-            a.Invoke();
-        }
-        key.Data.Notices.SetPolyShapes.Invoke();
-        
     }
 }
 public class MapGenInfo

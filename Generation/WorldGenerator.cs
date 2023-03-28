@@ -24,11 +24,11 @@ public class WorldGenerator
     public GenReport Generate()
     {
         var report = new GenReport(GetType().Name);
-        Failed = ! ExceptionCatcher.Try(() => GenerateInner(), GenerationFailed);
+        Failed = ! ExceptionCatcher.Try(() => GenerateInner(report), GenerationFailed);
         return report;
     }
 
-    private GenData GenerateInner()
+    private GenData GenerateInner(GenReport r)
     {
         var polySize = 200f;
         var edgePointMargin = new Vector2(polySize, polySize);
@@ -38,16 +38,20 @@ public class WorldGenerator
         PlanetInfo.Create(Data.GenMultiSettings.Dimensions, _key);
         RuleVars.CreateDefault(_key);
         _sw.Start();
-
+        
+        
+        
+        
         var points = PointsGenerator
             .GenerateConstrainedSemiRegularPoints
                 (Data.GenMultiSettings.Dimensions - edgePointMargin, polySize, polySize * .75f, false, true)
             .Select(v => v + edgePointMargin / 2f).ToList();
+
+        
+        
         
         RunGenerator(new PolygonGenerator(points, Data.GenMultiSettings.Dimensions, true, polySize));
 
-        // EdgeDisturber.DisturbEdges(Data.Planet.Polygons.Entities, 
-        //     Data.Planet.PlanetInfo.Value.Dimensions, _key);
         
         RunGenerator(new GeologyGenerator());
         
@@ -55,16 +59,27 @@ public class WorldGenerator
         
         RunGenerator(new MoistureGenerator());
         
+        var sw1 = new Stopwatch();
+        sw1.Start();
         EdgeDisturber.SplitEdges(Data.Planet.Polygons.Entities, _key, 
             Data.GenMultiSettings.PlanetSettings.PreferredMinPolyEdgeLength.Value);
+        sw1.Stop();
+        GD.Print("split edge time " + sw1.Elapsed.TotalMilliseconds);
+
         GenerationFeedback?.Invoke("Edge split", "");
         
         RunGenerator(new PolyTriGenerator());
+
+        var sw2 = new Stopwatch();
+        sw2.Start();
         Data.Notices.SetPolyShapes.Invoke();
+        sw2.Stop();
+        GD.Print("set poly shape time " + sw2.Elapsed.TotalMilliseconds);
         
         RunGenerator(new RegimeGenerator());
         
         RunGenerator(new LocationGenerator());
+        
         RunGenerator(new RoadGenerator());
         
         RunGenerator(new BuildingGenerator());

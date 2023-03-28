@@ -6,7 +6,7 @@ using MessagePack;
 public abstract class Entity
 {
     public int Id { get; protected set; }
-    public IEntityMeta GetMeta() => Game.I.Serializer.GetEntityMeta(GetType());
+    public IEntityMeta GetMeta() => GetEntityTypeTreeNode().Meta;
     protected Entity(int id)
     {
         Id = id;  
@@ -14,7 +14,8 @@ public abstract class Entity
 
     public void Set<TValue>(string fieldName, TValue newValue, StrongWriteKey key)
     {
-        GetMeta().UpdateEntityVar<TValue>(fieldName, this, key, newValue);
+        GetEntityTypeTreeNode().Meta.Vars[fieldName].UpdateVar(fieldName, this, key, newValue);
     }
     public abstract Type GetDomainType();
+    public abstract EntityTypeTreeNode GetEntityTypeTreeNode();
 }

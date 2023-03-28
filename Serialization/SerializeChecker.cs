@@ -7,7 +7,7 @@ using MessagePack;
 
 public static class SerializeChecker<TEntity> where TEntity : Entity
 {
-    public static bool Test(TEntity e, IReadOnlyDictionary<string, IEntityVarMeta<TEntity>> varMetas)
+    public static bool Test(TEntity e, IReadOnlyDictionary<string, IEntityVarMeta> varMetas)
     {
         var res = true;
         var eType = typeof(TEntity);

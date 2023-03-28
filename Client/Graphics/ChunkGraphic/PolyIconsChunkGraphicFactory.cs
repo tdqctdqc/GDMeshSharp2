@@ -12,11 +12,16 @@ public class PolyIconsChunkGraphicFactory : ChunkGraphicFactory
     }
     private IEnumerable<IEnumerable<Icon>> GetIconGroups(MapPolygon p, Data d)
     {
+        var rds = p.GetResourceDeposits(d);
+        var peeps = p.GetPeeps(d);
+        IEnumerable<Icon> peepGroup = null;
+        if (peeps != null && peeps.Count() > 0)
+            peepGroup = peeps.Where(pe => pe.Size > 0)
+                .SelectMany(peep => Enumerable.Range(0, peep.Size).Select(i => peep.Job.Model().JobIcon));
         return new List<IEnumerable<Icon>>
         {
-            p.GetResourceDeposits(d)?.Select(r => r.Item.Model().ResIcon),
-            p.GetPeeps(d)?
-                .SelectMany(peep => Enumerable.Range(0, peep.Size).Select(i => peep.Job.Model().JobIcon))
+            rds?.Select(r => r.Item.Model().ResIcon),
+            peepGroup
         };
     }
 }

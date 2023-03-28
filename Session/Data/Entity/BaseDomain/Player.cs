@@ -6,6 +6,8 @@ public class Player : Entity
 {
     public override Type GetDomainType() => DomainType();
     private static Type DomainType() => typeof(BaseDomain);
+    public override EntityTypeTreeNode GetEntityTypeTreeNode() => EntityTypeTreeNode;
+    public static EntityTypeTreeNode EntityTypeTreeNode { get; private set; }
     public Guid PlayerGuid { get; protected set; }
     public string Name { get; protected set; }
     public EntityRef<Regime> Regime { get; protected set; }

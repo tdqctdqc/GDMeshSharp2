@@ -9,6 +9,7 @@ public interface IEntityMeta
     IReadOnlyList<string> FieldNameList { get; }
     HashSet<string> FieldNameHash { get; }
     IReadOnlyDictionary<string, Type> FieldTypes { get; }
+    IReadOnlyDictionary<string, IEntityVarMeta> Vars { get; }
     object[] GetPropertyValues(Entity entity);
     void UpdateEntityVar<TProperty>(string fieldName, Entity t, StrongWriteKey key, TProperty newValue);
     IRefCollection GetRefCollection(string fieldName, Entity t, ProcedureWriteKey key);

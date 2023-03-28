@@ -6,6 +6,8 @@ public class ResourceDeposit : Entity
 {
     public override Type GetDomainType() => DomainType();
     private static Type DomainType() => typeof(PlanetDomain);
+    public override EntityTypeTreeNode GetEntityTypeTreeNode() => EntityTypeTreeNode;
+    public static EntityTypeTreeNode EntityTypeTreeNode { get; private set; }
     public ModelRef<Item> Item { get; protected set; }
     public float Size { get; protected set; }
     public EntityRef<MapPolygon> Poly { get; protected set; }

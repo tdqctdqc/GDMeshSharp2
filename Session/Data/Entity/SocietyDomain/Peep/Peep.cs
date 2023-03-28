@@ -9,6 +9,8 @@ public class Peep : Entity
 {
     public override Type GetDomainType() => DomainType();
     private static Type DomainType() => typeof(SocietyDomain);
+    public override EntityTypeTreeNode GetEntityTypeTreeNode() => EntityTypeTreeNode;
+    public static EntityTypeTreeNode EntityTypeTreeNode { get; private set; }
     public EntityRef<MapPolygon> Home { get; protected set; }
     public ModelRef<PeepJob> Job { get; protected set; }
     public int Size { get; private set; }

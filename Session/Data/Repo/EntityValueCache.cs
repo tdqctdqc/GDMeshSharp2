@@ -44,7 +44,7 @@ public class EntityValueCache<TEntity, TValue> : AuxData<TEntity>
     {
         var register = data.GetRegister<TEntity>();
         _dic.Clear();
-        
+        //todo multithread?
         foreach (var e in register.Entities)
         {
             if (_dic.ContainsKey((TEntity) e))

@@ -6,6 +6,8 @@ using MessagePack;
 
 public class Regime : Entity
 {
+    public override EntityTypeTreeNode GetEntityTypeTreeNode() => EntityTypeTreeNode;
+    public static EntityTypeTreeNode EntityTypeTreeNode { get; private set; }
     public override Type GetDomainType() => DomainType();
     private static Type DomainType() => typeof(SocietyDomain);
     public EntityRef<MapPolygon> Capital { get; protected set; }

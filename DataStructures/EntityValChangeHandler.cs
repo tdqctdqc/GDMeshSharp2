@@ -18,10 +18,7 @@ public class EntityValChangeHandler
     }
     public void HandleChange(ValChangeNotice notice)
     {
-        if(_valHandlers.TryGetValue(notice.FieldName, out var r))
-        {
-            r.Handle(notice);
-        }
+        _valHandlers[notice.FieldName].Handle(notice);
     }
     public void Subscribe<TEntity, TProperty>(string fieldName, RefAction<ValChangeNotice<TProperty>> callback)
     {
@@ -39,17 +36,17 @@ public class EntityValChangeHandler
         }
 
         var propType = _meta.FieldTypes[fieldName];
-        if (typeof(TProperty).IsAssignableFrom(propType) == false)
-        {
-            throw new NoticeException($"{fieldName} type is {propType} not assignable to {typeof(TProperty)}");
-        }
+        // if (typeof(TProperty).IsAssignableFrom(propType) == false)
+        // {
+        //     throw new NoticeException($"{fieldName} type is {propType} not assignable to {typeof(TProperty)}");
+        // }
 
         var h = _valHandlers[fieldName];
-        if (h is ValChangeHandler<TProperty> == false)
-        {
-            GD.Print(h.GetType());
-            GD.Print(typeof(ValChangeHandler<TProperty>));
-        }
+        // if (h is ValChangeHandler<TProperty> == false)
+        // {
+        //     GD.Print(h.GetType());
+        //     GD.Print(typeof(ValChangeHandler<TProperty>));
+        // }
         var handler = (ValChangeHandler<TProperty>) _valHandlers[fieldName];
         handler.Subscribe(callback);
     }
