@@ -31,7 +31,7 @@ public class RegimeItemDisplay : HBoxContainer
             "", 
             amount, 
             r => r.Items[item], 
-            data.Notices.FinishedFrame);
+            data.Notices.Ticked);
         
         var template = new RegimeItemStockDataTooltipTemplate();
         var instance = new DataTooltipInstance<RegimeItemDisplay>(template, this);

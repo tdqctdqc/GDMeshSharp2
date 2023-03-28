@@ -26,7 +26,8 @@ public class MapInputCatcher : Node
             var mapPos = Game.I.Client.Cam.GetMousePosInMapSpace();
             var d = GetProcessDeltaTime();
             _mouseOverHandler.Process(d, _data, mapPos);
+            GetViewport().SetInputAsHandled();
         }
-        // GetViewport().SetInputAsHandled();
+        Game.I.Client.Cam.Process(e);
     }
 }

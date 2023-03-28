@@ -21,10 +21,6 @@ public class RoadGenerator : Generator
         {
             allSegs.Add(GenerateForLandmass(lm));
         });
-        // _data.Planet.Polygons.LandSea.Landmasses.ForEach(lm =>
-        // {
-        //     allSegs.AddRange(GenerateForLandmass(lm));
-        // });
         foreach (var dic in allSegs)
         {
             foreach (var kvp in dic)
@@ -32,7 +28,6 @@ public class RoadGenerator : Generator
                 RoadSegment.Create(kvp.Key, kvp.Value, _key);
             }
         }
-        // GenerateRoadNetwork();
         genReport.StopSection(nameof(GenerateForLandmass));
         return genReport;
     }
@@ -47,14 +42,18 @@ public class RoadGenerator : Generator
             s => first.GetOffsetTo(s, _data),
             (p1, p2) => new Edge<MapPolygon>(p1, p2, a => a.Id));
         
+        
         var covered = new HashSet<Edge<MapPolygon>>();
         var segs = new Dictionary<MapPolygonEdge, RoadModel>();
-        
-        GenerateLandmassRoadNetwork(lm, graph, covered, segs);
+        foreach (var graphEdge in graph.Edges)
+        {
+            
+        }
+        // GenerateLandmassRoadNetwork(lm, graph, covered, segs);
 
-        var regimeUnions = UnionFind.Find(_data.Planet.PolygonAux.BorderGraph, lm, (p, q) => p.Regime.RefId == q.Regime.RefId);
-        regimeUnions.ForEach(u => GenerateNationalRoadNetwork(u, graph, covered, segs));
-        
+        // var regimeUnions = UnionFind.Find(_data.Planet.PolygonAux.BorderGraph, lm, (p, q) => p.Regime.RefId == q.Regime.RefId);
+        // regimeUnions.ForEach(u => GenerateNationalRoadNetwork(u, graph, covered, segs));
+        //
         return segs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
     }
 
@@ -102,7 +101,7 @@ public class RoadGenerator : Generator
         
         BuildRoadNetwork(settlementPolys, Mathf.Inf, 
             RoadModelManager.DirtRoad,500f, graph, 
-            covered, segs);
+            covered, segs, false);
     }
 
     private void GenerateLandmassRoadNetwork(HashSet<MapPolygon> lm,
@@ -130,15 +129,13 @@ public class RoadGenerator : Generator
                                             && p.GetSettlement(_data).Size >= minSize);
         if (settlementPolys.Count() < 3) return;
         BuildRoadNetwork(settlementPolys, minImprovementRatio, road, roadBuildDist,
-            graph, covered, segs);
+            graph, covered, segs, true);
     }
 
     private void BuildRoadNetwork(IEnumerable<MapPolygon> settlementPolys, float minImprovementRatio, RoadModel road, float roadBuildDist,
         IReadOnlyGraph<MapPolygon, Edge<MapPolygon>> graph, HashSet<Edge<MapPolygon>> covered,
-        Dictionary<MapPolygonEdge, RoadModel> segs)
+        Dictionary<MapPolygonEdge, RoadModel> segs, bool international)
     {
-        
-
         float travelEdgeCost(MapPolygon p1, MapPolygon p2)
         {
             var e = p1.GetEdge(p2, _data);
@@ -162,15 +159,12 @@ public class RoadGenerator : Generator
                 var edge = new Edge<MapPolygon>(s1, s2, p => p.Id);
                 if (covered.Contains(edge)) continue;
                 covered.Add(edge);
+
+                var oldPath = PathFinder.FindTravelPath(s1, s2, _data, travelEdgeCost);
+                var oldCost = PathFinder.GetTravelPathCost(oldPath, _data, travelEdgeCost);
                 
-                var oldPath = PathFinder<MapPolygon>.FindPath(s1, s2, p => p.Neighbors.Entities(),
-                    travelEdgeCost, (p1, p2) => p1.GetOffsetTo(p2, _data).Length());
-                var oldCost = PathFinder<MapPolygon>.GetPathCost(oldPath, travelEdgeCost);
-                
-                var buildPath = PathFinder<MapPolygon>.FindPath(s1, s2, p => p.Neighbors.Entities(),
-                    BuildRoadEdgeCost, (p1, p2) => p1.GetOffsetTo(p2, _data).Length());
-                var newCost = PathFinder<MapPolygon>.GetPathCost(oldPath, 
-                    (p1, p2) => p1.GetOffsetTo(p2,_data).Length() / road.Speed);
+                var buildPath = PathFinder.FindRoadBuildPath(s1, s2, _data, international);
+                var newCost = PathFinder.GetBuildPathCost(oldPath, _data);
 
                 if (newCost > minImprovementRatio * oldCost)
                 {
@@ -188,17 +182,5 @@ public class RoadGenerator : Generator
         };
 
     }
-    private float BuildRoadEdgeCostNational(MapPolygon p1, MapPolygon p2)
-    {
-        if (p1.IsWater() || p2.IsWater()) return Mathf.Inf;
-        if (p1.Regime.RefId != p2.Regime.RefId) return Mathf.Inf;
-        var dist = p1.GetOffsetTo(p2, _data).Length();
-        return dist * (p1.Roughness + p2.Roughness) / 2f;
-    }
-    private float BuildRoadEdgeCost(MapPolygon p1, MapPolygon p2)
-    {
-        if (p1.IsWater() || p2.IsWater()) return Mathf.Inf;
-        var dist = p1.GetOffsetTo(p2, _data).Length();
-        return dist * (p1.Roughness + p2.Roughness) / 2f;
-    }
+    
 }

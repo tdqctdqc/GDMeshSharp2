@@ -6,5 +6,5 @@ public interface ICameraController
     Vector2 GetMapPosInGlobalSpace(Vector2 mapPos);
     Vector2 GetGlobalMousePosition();
     float XScrollRatio { get; }
-
+    void Process(InputEvent e);
 }

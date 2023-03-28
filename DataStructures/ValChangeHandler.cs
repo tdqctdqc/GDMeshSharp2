@@ -13,7 +13,6 @@ public abstract class ValChangeHandler
             .GetMethod(nameof(ValChangeHandler<int>.Construct), BindingFlags.Static | BindingFlags.Public)
             .Invoke(null, null);
     }
-
 }
 
 public class ValChangeHandler<TProperty> : ValChangeHandler

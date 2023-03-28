@@ -3,8 +3,59 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Priority_Queue;
 
+public static class PathFinder
+{
+    public static List<MapPolygon> FindRoadBuildPath(MapPolygon s1, MapPolygon s2, Data data, bool international)
+    {
+        return PathFinder<MapPolygon>.FindPath(s1, s2, p => p.Neighbors.Entities(),
+            (p, q) => BuildRoadEdgeCost(p, q, data, international), 
+            (p1, p2) => p1.GetOffsetTo(p2, data).Length());
+    }
+
+    public static float GetBuildPathCost(List<MapPolygon> path, Data data)
+    {
+        return PathFinder<MapPolygon>.GetPathCost(path, (p, q) => BuildRoadEdgeCost(p, q, data));
+    }
+    public static List<MapPolygon> FindTravelPath(MapPolygon s1, MapPolygon s2, Data data,
+        Func<MapPolygon, MapPolygon, float> travelEdgeCost = null)
+    {
+        if (travelEdgeCost == null) travelEdgeCost = (p, q) => TravelEdgeCost(p, q, data);
+        return PathFinder<MapPolygon>.FindPath(s1, s2, p => p.Neighbors.Entities(),
+            travelEdgeCost, (p1, p2) => p1.GetOffsetTo(p2, data).Length());
+    }
+
+    public static float GetTravelPathCost(List<MapPolygon> path, Data data,
+        Func<MapPolygon, MapPolygon, float> travelEdgeCost = null)
+    {
+        if (travelEdgeCost == null) travelEdgeCost = (p, q) => TravelEdgeCost(p, q, data);
+        return PathFinder<MapPolygon>.GetPathCost(path, travelEdgeCost);
+    }
+    private static float TravelEdgeCost(MapPolygon p1, MapPolygon p2, Data data)
+    {
+        var e = p1.GetEdge(p2, data);
+        if (p1.IsWater() || p2.IsWater()) return Mathf.Inf;
+        var dist = p1.GetOffsetTo(p2, data).Length();
+        if (data.Society.RoadAux.ByEdgeId[e.Id] is RoadSegment r)
+        {
+            return dist / r.Road.Model().Speed;
+        }
+        else
+        {
+            return dist * (p1.Roughness + p2.Roughness);
+        }
+    }
+    
+    private static float BuildRoadEdgeCost(MapPolygon p1, MapPolygon p2, Data data, bool international = true)
+    {
+        if (p1.IsWater() || p2.IsWater()) return Mathf.Inf;
+        if (international == false && p1.Regime.RefId != p2.Regime.RefId) return Mathf.Inf;
+        var dist = p1.GetOffsetTo(p2, data).Length();
+        return dist * (p1.Roughness + p2.Roughness) / 2f;
+    }
+}
 public static class PathFinder<T>
 {
     public static List<T> FindPath(T start, T end, 

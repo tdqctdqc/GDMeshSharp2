@@ -8,7 +8,7 @@ public class RoadSegment : Entity
 {
     public override Type GetDomainType() => DomainType();
     private static Type DomainType() => typeof(SocietyDomain);
-
+    
     public EntityRef<MapPolygonEdge> Edge { get; protected set; }
     public ModelRef<RoadModel> Road { get; protected set; }
     [SerializationConstructor] private RoadSegment(int id, EntityRef<MapPolygonEdge> edge,

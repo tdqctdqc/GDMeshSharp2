@@ -1,10 +1,17 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 
 public class CameraController : Camera2D, ICameraController
 {
     private float _udScrollSpeed = 1000f;
     private float _lrScrollSpeed = .02f;
+    private float _zoomIncr = .01f;
+    private float _zoomLevel = 1f;
+    private float _maxZoom = 50f;
+    private float _minZoom = .5f;
+    private float _minZoomLevel = .05f;
+    private float _maxZoomLevel = .9f;
     public float XScrollRatio { get; private set; }
     private Data _data;
 
@@ -16,7 +23,7 @@ public class CameraController : Camera2D, ICameraController
     }
     private CameraController()
     {
-        
+        UpdateZoom();
     }
     public void Setup(Data data)
     {
@@ -50,7 +57,14 @@ public class CameraController : Camera2D, ICameraController
         
         return globalSpace;
     }
-    
+
+    public void Process(InputEvent e)
+    {
+        if (e is InputEventMouseButton mb)
+        {
+            HandleMouseButton(mb);
+        }
+    }
     public override void _Process(float delta)
     {
         var mult = 1f;
@@ -63,8 +77,6 @@ public class CameraController : Camera2D, ICameraController
         {
             Position += Vector2.Down * delta * Zoom * _udScrollSpeed * mult;
         }
-        
-        
         if(Input.IsKeyPressed((int)KeyList.A))
         {
             XScrollRatio -= delta * Zoom.Length() * _lrScrollSpeed * mult;
@@ -77,7 +89,6 @@ public class CameraController : Camera2D, ICameraController
             if (XScrollRatio > 1f) XScrollRatio -= 1f;
             if (XScrollRatio < 0f) XScrollRatio += 1f;
         }
-        
         if(Input.IsKeyPressed((int)KeyList.Q))
         {
             Position += Vector2.Left * delta * Zoom * _udScrollSpeed * mult;
@@ -86,22 +97,28 @@ public class CameraController : Camera2D, ICameraController
         {
             Position += Vector2.Right * delta * Zoom * _udScrollSpeed * mult;
         }
+    }
 
-        if(Input.IsKeyPressed((int)KeyList.Z))
+    
+    private void HandleMouseButton(InputEventMouseButton mb)
+    {
+        if(mb.ButtonIndex == (int)ButtonList.WheelUp)
         {
-            Zoom *= .9f;
-            Zoom = new Vector2(
-                Mathf.Clamp(Zoom.x, .1f, 100f),
-                Mathf.Clamp(Zoom.y, .1f, 100f)
-            );
+            _zoomLevel -= _zoomIncr;
         }
-        if(Input.IsKeyPressed((int)KeyList.X))
+        if(mb.ButtonIndex == (int)ButtonList.WheelDown)
         {
-            Zoom *= 1.1f;
-            Zoom = new Vector2(
-                Mathf.Clamp(Zoom.x, .1f, 100f),
-                Mathf.Clamp(Zoom.y, .1f, 100f)
-            );
+            _zoomLevel += _zoomIncr;
         }
+
+        UpdateZoom();
+    }
+    
+    private void UpdateZoom()
+    {
+        _zoomLevel = Mathf.Clamp(_zoomLevel, _minZoomLevel, _maxZoomLevel);
+        var zoomFactor = ShapingFunctions.EaseInCubic(_zoomLevel, _maxZoom, _minZoom);
+        zoomFactor = Mathf.Clamp(zoomFactor, _minZoom, _maxZoom);
+        Zoom = Vector2.One * zoomFactor;
     }
 }

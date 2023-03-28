@@ -59,7 +59,7 @@ public class HostLogic : ILogic
                 if(_sw.Elapsed.TotalSeconds > _framePeriod) GD.Print("logic lagging");
                 DoCommands(); 
                 _calculating = null;
-                _data.Notices.FinishedFrame.Invoke();
+                _data.Notices.Ticked.Invoke();
             });
         }
         else if (_calculating == null)

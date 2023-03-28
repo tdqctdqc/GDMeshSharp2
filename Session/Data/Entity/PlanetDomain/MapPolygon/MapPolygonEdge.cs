@@ -14,7 +14,6 @@ public class MapPolygonEdge : Entity
     public PolyBorderChain HighSegsRel() => HighId.Entity().NeighborBorders[LowId.RefId];
     public EntityRef<MapPolygon> LowId { get; protected set; }
     public EntityRef<MapPolygon> HighId { get; protected set; }
-
     [SerializationConstructor] private MapPolygonEdge(int id, float moistureFlow, EntityRef<MapPolygon> lowId, 
         EntityRef<MapPolygon> highId) : base(id)
     {

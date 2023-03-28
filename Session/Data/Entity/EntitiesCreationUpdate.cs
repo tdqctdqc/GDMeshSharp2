@@ -14,6 +14,12 @@ public class EntitiesCreationUpdate : Update
         var entityTypes = entities.Select(e => e.GetType()).ToArray();
         return new EntitiesCreationUpdate(entityTypes, entityBytes);
     }
+    public static EntitiesCreationUpdate Create(IEnumerable<EntityCreationUpdate> updates, WriteKey key)
+    {
+        var entityBytes = updates.Select(e => e.EntityBytes).ToArray();
+        var entityTypes = updates.Select(e => e.EntityType).ToArray();
+        return new EntitiesCreationUpdate(entityTypes, entityBytes);
+    }
     [SerializationConstructor] public EntitiesCreationUpdate(Type[] entityTypes, byte[][] entityBytes) 
     {
         EntityBytes = entityBytes;
