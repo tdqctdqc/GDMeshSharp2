@@ -6,7 +6,8 @@ using Godot;
 
 public class ProductionAndConsumptionModule : LogicModule
 {
-    public override void Calculate(Data data, Action<Message> queue)
+    public override void Calculate(Data data, Action<Message> queueMessage,
+        Action<Func<HostWriteKey, Entity>> queueEntityCreation)
     {
         var gainsByRegime = new Dictionary<int, ItemWallet>();
         var demandsByRegime = new Dictionary<int, ItemWallet>();
@@ -33,7 +34,7 @@ public class ProductionAndConsumptionModule : LogicModule
 
         var proc = ProdAndConsumeProcedure.Create(gainsByRegime, 
             depletionsByRegime, consumptionsByRegime, demandsByRegime);
-        queue(proc);
+        queueMessage(proc);
     }
 
     private void ProduceForRegime(Regime regime, Data data, ItemWallet gains,

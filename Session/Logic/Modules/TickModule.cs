@@ -5,8 +5,9 @@ using System.Reflection;
 
 public class TickModule : LogicModule
 {
-    public override void Calculate(Data data, Action<Message> queue)
+    public override void Calculate(Data data, Action<Message> queueMessage,
+        Action<Func<HostWriteKey, Entity>> queueEntityCreation)
     {
-        queue(new TickProcedure());
+        queueMessage(new TickProcedure());
     }
 }

@@ -58,6 +58,7 @@ public class HostLogic : ILogic
                 DoFrame();
                 _sw.Stop();
                 if(_sw.Elapsed.TotalSeconds > _framePeriod) GD.Print("logic lagging");
+                GD.Print("frame time " + _sw.Elapsed.TotalMilliseconds);
                 DoCommands(); 
                 _calculating = null;
             });
@@ -88,6 +89,13 @@ public class HostLogic : ILogic
         {
             logicResult.Procedures[i].Enact(_pKey);
         }
+
+        for (int i = 0; i < logicResult.CreateEntities.Count; i++)
+        {
+            logicResult.CreateEntities[i].Invoke(_hKey);
+        }
+        
+        
         for (var i = 0; i < logicResult.Decisions.Count; i++)
         {
             var d = logicResult.Decisions[i];

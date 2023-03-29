@@ -8,7 +8,6 @@ using Godot;
 public class LogicFrame
 {
     private LogicModule[] _modules;
-    private ConcurrentBag<Message> _results;
     public LogicFrame(params LogicModule[] modules)
     {
         _modules = modules;
@@ -17,12 +16,13 @@ public class LogicFrame
     public LogicResults Calculate(Data data)
     {
         var results = new ConcurrentBag<Message>();
+        var entityCreateFuncs = new ConcurrentBag<Func<HostWriteKey, Entity>>();
         var modCount = _modules.Length;
         Parallel.ForEach(_modules, m =>
         {
-            m.Calculate(data, results.Add);
+            m.Calculate(data, results.Add, entityCreateFuncs.Add);
         });
-
-        return new LogicResults(results);
+        
+        return new LogicResults(results, entityCreateFuncs);
     }
 }

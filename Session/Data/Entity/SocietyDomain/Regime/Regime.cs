@@ -31,7 +31,7 @@ public class Regime : Entity
         ProdHistory = prodHistory;
         ConsumptionHistory = consumptionHistory;
         DemandHistory = demandHistory;
-        CurrentConstruction = new CurrentConstructionManager();
+        CurrentConstruction = currentConstruction;
     }
 
     public static Regime Create(string name, Color primaryColor, Color secondaryColor, 
@@ -41,7 +41,7 @@ public class Regime : Entity
         var polygons = EntityRefCollection<MapPolygon>.Construct(new HashSet<int>{seed.Id}, key.Data);
         var r = new Regime(id.GetID(), name, primaryColor, secondaryColor, polygons, new EntityRef<MapPolygon>(seed.Id),
             ItemWallet.Construct(), ItemHistory.Construct(), ItemHistory.Construct(),
-            ItemHistory.Construct(), new CurrentConstructionManager());
+            ItemHistory.Construct(), CurrentConstructionManager.Construct());
         key.Create(r);
         seed.SetRegime(r, key);
         

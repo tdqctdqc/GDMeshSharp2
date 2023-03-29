@@ -48,6 +48,7 @@ public class PolyTerrainTris
             orderedTris.AddRange(exclusive);
         }
 
+        if (orderedTris.Count != tris.Count) throw new Exception();
         var ts = new PolyTerrainTris(orderedTris.ToArray(), sectionTriStartIndices, sectionTriCounts);
         
         return ts;

@@ -16,7 +16,7 @@ public sealed partial class EntityCreationUpdate : Update
         var entityBytes = Game.I.Serializer.MP.Serialize(entity, entity.GetType());
         return new EntityCreationUpdate(entity.GetType(), entityBytes);
     }
-    [SerializationConstructor] public EntityCreationUpdate(Type entityType, byte[] entityBytes) 
+    [SerializationConstructor] private EntityCreationUpdate(Type entityType, byte[] entityBytes) 
     {
         EntityBytes = entityBytes;
         EntityType = entityType;

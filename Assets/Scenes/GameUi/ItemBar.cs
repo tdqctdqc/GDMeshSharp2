@@ -5,7 +5,6 @@ using Godot;
 
 public class ItemBar : HBoxContainer
 {
-    private RefAction _draw;
     public void Setup(Data data)
     {
         AddItem(ItemManager.Food, data);
@@ -18,10 +17,5 @@ public class ItemBar : HBoxContainer
     {
         var display = RegimeItemDisplay.Create(sr, data);
         this.AddChildWithVSeparator(display);
-    }
-
-    public override void _ExitTree()
-    {
-        _draw.EndSubscriptions();
     }
 }
