@@ -3,10 +3,10 @@ using MessagePack;
 
 public struct PolyTriPosition
 {
-    public int TriIndex { get; private set; }
+    public byte TriIndex { get; private set; }
     public int PolyId { get; private set; }
     public MapPolygon Poly(Data data) => (MapPolygon)data[PolyId];
-    [SerializationConstructor] public PolyTriPosition(int polyId, int triIndex)
+    [SerializationConstructor] public PolyTriPosition(int polyId, byte triIndex)
     {
         PolyId = polyId;
         TriIndex = triIndex;
@@ -14,7 +14,7 @@ public struct PolyTriPosition
 
     public PolyTri Tri(Data data)
     {
-        if(TriIndex != -1) return Poly(data).TerrainTris.Tris[TriIndex];
+        if(TriIndex != -1) return Poly(data).Tris.Tris[TriIndex];
         return null;
     }
 }

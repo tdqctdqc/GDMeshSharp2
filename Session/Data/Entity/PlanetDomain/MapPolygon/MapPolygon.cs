@@ -20,11 +20,11 @@ public partial class MapPolygon : Entity,
     public float Roughness { get; protected set; }
     public float Moisture { get; protected set; }
     public EntityRef<Regime> Regime { get; protected set; }
-    public PolyTerrainTris TerrainTris { get; protected set; }
+    public PolyTris Tris { get; protected set; }
     public bool IsLand { get; protected set; }
     [SerializationConstructor] private MapPolygon(int id, Vector2 center, EntityRefCollection<MapPolygon> neighbors, 
         Dictionary<int, PolyBorderChain> neighborBorders, Color color, float altitude, float roughness, 
-        float moisture, EntityRef<Regime> regime, PolyTerrainTris terrainTris, bool isLand) : base(id)
+        float moisture, EntityRef<Regime> regime, PolyTris tris, bool isLand) : base(id)
     {
         Center = center;
         Neighbors = neighbors;
@@ -34,7 +34,7 @@ public partial class MapPolygon : Entity,
         Roughness = roughness;
         Moisture = moisture;
         Regime = regime;
-        TerrainTris = terrainTris;
+        Tris = tris;
         IsLand = isLand;
     }
 
@@ -51,7 +51,7 @@ public partial class MapPolygon : Entity,
             0f,
             0f,
             new EntityRef<Regime>(-1),
-            PolyTerrainTris.Create(new List<PolyTri>(), key),
+            PolyTris.Create(new List<PolyTri>(), key),
             true
         );
         key.Create(p);
@@ -78,9 +78,9 @@ public partial class MapPolygon : Entity,
     {
         GetMeta().UpdateEntityVar<EntityRef<Regime>>(nameof(Regime), this, key, new EntityRef<Regime>(r.Id));
     }
-    public void SetTerrainTris(PolyTerrainTris tris, GenWriteKey key)
+    public void SetTerrainTris(PolyTris tris, GenWriteKey key)
     {
-        TerrainTris = tris;
+        Tris = tris;
     }
 
     public void SetIsLand(bool isLand, GenWriteKey key)

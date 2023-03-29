@@ -13,7 +13,7 @@ public class PolyTriChunkGraphic : Node2D
         foreach (var p in chunk.Polys)
         {
             var offset = first.GetOffsetTo(p, data);
-            var tris = p.TerrainTris.Tris;
+            var tris = p.Tris.Tris;
             for (var j = 0; j < tris.Length; j++)
             {
                 var t = tris[j];

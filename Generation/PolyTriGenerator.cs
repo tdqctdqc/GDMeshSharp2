@@ -125,7 +125,7 @@ public class PolyTriGenerator : Generator
         {
             tris = DoLandPolyNoRivers(poly, key);
         }
-        var polyTerrainTris = PolyTerrainTris.Create(tris, key);
+        var polyTerrainTris = PolyTris.Create(tris, key);
         poly.SetTerrainTris(polyTerrainTris, key);
     }
 
@@ -142,7 +142,7 @@ public class PolyTriGenerator : Generator
             {
                 return new PolyTri(t.A, t.B, t.C, 
                     LandformManager.Sea.MakeRef(), 
-                    VegetationManager.Barren.MakeRef());
+                    VegetationManager.Barren.MakeRef(), (byte)255);
             })
             .ToList();
         return tris;
@@ -195,7 +195,7 @@ public class PolyTriGenerator : Generator
             .ToList();
 
         var rTri = new PolyTri(rSeg.From, rSeg.To, Vector2.Zero, LandformManager.River.MakeRef(), 
-            VegetationManager.Barren.MakeRef());
+            VegetationManager.Barren.MakeRef(), (byte)255);
         tris.Add(rTri);
         var outline = GetOutline(poly, Vector2.Zero, between);
         var count1 = outline.Count / 2;
@@ -252,20 +252,20 @@ public class PolyTriGenerator : Generator
             if (riverSegs.Count == 2)
             {
                 tris.Add(new PolyTri(rSeg.From, rSeg.To, nextIntersect,
-                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
+                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef(), (byte)255));
                 tris.Add(new PolyTri(rSeg.From, nextIntersect, -nextIntersect,
-                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
+                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef(), (byte)255));
             }
             else
             {
                 tris.Add(new PolyTri(rSeg.From, rSeg.To, Vector2.Zero,
-                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
+                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef(), (byte)255));
                 
                 tris.Add(new PolyTri(-nextIntersect, Vector2.Zero, nextRSeg.To, 
-                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
+                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef(), (byte)255));
                 
                 tris.Add(new PolyTri(rSeg.From, -nextIntersect, Vector2.Zero,
-                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
+                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef(), (byte)255));
             }
         }
         

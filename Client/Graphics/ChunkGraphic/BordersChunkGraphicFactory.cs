@@ -21,7 +21,7 @@ public class BordersChunkGraphicFactory : ChunkGraphicFactory
                 c.Polys.SelectMany(p =>
                     p.GetOrderedBoundarySegs(d).Select(bs => bs.Translate(c.RelTo.GetOffsetTo(p, d)))).ToList(),
                 c.Polys.SelectMany(p =>
-                        p.TerrainTris.Tris.SelectMany(t => t.Transpose(c.RelTo.GetOffsetTo(p, d)).GetSegments()))
+                        p.Tris.Tris.SelectMany(t => t.Transpose(c.RelTo.GetOffsetTo(p, d)).GetSegments()))
                     .ToList()
             },
             new List<float> {5f, 1f},

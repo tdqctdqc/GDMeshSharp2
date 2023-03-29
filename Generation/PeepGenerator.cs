@@ -115,7 +115,7 @@ public class PeepGenerator : Generator
                 }
             }
 
-            res += p.TerrainTris.Tris.Where(t => t.Landform == LandformManager.Urban).Count() * 5;
+            res += p.Tris.Tris.Where(t => t.Landform == LandformManager.Urban).Count() * 5;
             return res;
         }
     }

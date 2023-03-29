@@ -36,7 +36,7 @@ public class BuildingGenerator : Generator
         Parallel.ForEach(_data.Planet.Polygons.Entities, p =>
         {
             if (farm.CanBuildInPoly(p, _data) == false) return;
-            var tris = p.TerrainTris.Tris;
+            var tris = p.Tris.Tris;
             var totalFert = p.GetFertility();
             var numFarms = Mathf.FloorToInt(totalFert / fertilityPerFarm);
             if (numFarms == 0 && totalFert > minFertToGetOneFarm) numFarms = 1;
@@ -50,8 +50,8 @@ public class BuildingGenerator : Generator
                 .OrderByDescending(i => tris[i].GetFertility()).ToList();
             for (var i = 0; i < min; i++)
             {
-                var tri = thisFarmTris[i];
-                farmTris.Add(new PolyTriPosition(p.Id, tri));
+                var tri = tris[thisFarmTris[i]];
+                farmTris.Add(new PolyTriPosition(p.Id, tri.Index));
             }
         });
         
@@ -83,7 +83,7 @@ public class BuildingGenerator : Generator
             var numMines = Mathf.FloorToInt(totalSize / depositSizePerMine);
             var distinctItems = mineableDeposits.Select(d => d.Item.Model()).Distinct().Count();
             if (numMines < distinctItems) numMines = distinctItems;
-            var tris = p.TerrainTris.Tris;
+            var tris = p.Tris.Tris;
             var allowedTris = Enumerable.Range(0, tris.Length)
                 .Where(i => tris[i].HasBuilding(_data) == false)
                 .Where(i => Mine.CanBuildInTri(tris[i])).ToList();
@@ -94,9 +94,9 @@ public class BuildingGenerator : Generator
                 .OrderByDescending(i => tris[i].Landform.MinRoughness).ToList();
             for (var i = 0; i < numMines; i++)
             {
-                var tri = thisMineTris[i];
+                var tri = tris[thisMineTris[i]];
                 var item = mineableDeposits.Modulo(i).Item.Model();
-                var pos = new PolyTriPosition(p.Id, tri);
+                var pos = new PolyTriPosition(p.Id, tri.Index);
                 mineTris.TryAdd(pos, item);
             }
         });

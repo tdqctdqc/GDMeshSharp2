@@ -83,8 +83,8 @@ public static class MapPolygonExt
 
     public static float GetFertility(this MapPolygon poly)
     {
-        return poly.TerrainTris.Tris.Count() > 0 
-            ? poly.TerrainTris.Tris.Select(i => i.GetFertility()).Sum()
+        return poly.Tris.Tris.Count() > 0 
+            ? poly.Tris.Tris.Select(i => i.GetFertility()).Sum()
             : 0f;
     }
 
