@@ -15,7 +15,10 @@ public class CreateWriteKey : StrongWriteKey
     {
         Data.AddEntity(t, this);
     }
-
+    public void Create<TEntity>(IReadOnlyList<TEntity> ts) where TEntity : Entity
+    {
+        Data.AddEntities<TEntity>(ts, this);
+    }
     public void SetIdDispenser(IdDispenser id)
     {
         IdDispenser = id;

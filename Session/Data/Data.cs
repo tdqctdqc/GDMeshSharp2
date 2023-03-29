@@ -1,6 +1,8 @@
 using Godot;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 public class Data
@@ -78,12 +80,31 @@ public class Data
         }
         if (key is HostWriteKey hKey)
         {
-            hKey.HostServer.QueueUpdate(EntitiesCreationUpdate.Create(es, hKey));
+            hKey.HostServer.QueueUpdate(EntitiesCreationUpdate.Create(es.ToList(), hKey));
         }
         foreach (var e in es)
         {
             e.GetEntityTypeTreeNode().PropagateCreation(e);
         }
+    }
+    public void AddEntities<TEntity>(IReadOnlyList<TEntity> es, StrongWriteKey key) where TEntity : Entity
+    {
+        foreach (var e in es)
+        {
+            if (Entities.ContainsKey(e.Id))
+            {
+                throw new EntityTypeException($"trying to overwrite {Entities[e.Id].GetType().ToString()} " +
+                                              $"with {e.GetType().ToString()}");
+            }
+            Entities.Add(e.Id, e);
+        }
+
+        if (key is HostWriteKey hKey)
+        {
+            hKey.HostServer.QueueUpdate(EntitiesCreationUpdate.Create(es, hKey));
+        }
+        
+        es.First().GetEntityTypeTreeNode().PropagateCreations(es);
     }
     public void RemoveEntities(int[] entityIds, StrongWriteKey key)
     {
@@ -136,6 +157,10 @@ public class Data
         key.SetIdDispenser(_idDispenser);
     }
     public void SubscribeForCreation<TEntity>(Action<EntityCreatedNotice> callback) where TEntity : Entity
+    {
+        EntityTypeTree[typeof(TEntity)].Created.Subscribe(callback);
+    }
+    public void SubscribeForCreation<TEntity>(RefAction<EntityCreatedNotice> callback) where TEntity : Entity
     {
         EntityTypeTree[typeof(TEntity)].Created.Subscribe(callback);
     }

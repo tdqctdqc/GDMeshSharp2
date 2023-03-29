@@ -143,6 +143,15 @@
           "lib/netstandard2.0/Microsoft.Bcl.AsyncInterfaces.dll": {}
         }
       },
+      "Microsoft.Extensions.ObjectPool/7.0.4": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/Microsoft.Extensions.ObjectPool.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.Extensions.ObjectPool.dll": {}
+        }
+      },
       "Microsoft.NET.StringTools/17.4.0": {
         "type": "package",
         "dependencies": {
@@ -844,6 +853,25 @@
         "useSharedDesignerContext.txt"
       ]
     },
+    "Microsoft.Extensions.ObjectPool/7.0.4": {
+      "sha512": "Q2OUDSQUpipgANtOyPN8aejB5eqwiT7t95N4QVXbZO/dBLvJ3DE75moVDQ/1idUouigFgvVfhTRq/wyorzigSw==",
+      "type": "package",
+      "path": "microsoft.extensions.objectpool/7.0.4",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/net462/Microsoft.Extensions.ObjectPool.dll",
+        "lib/net462/Microsoft.Extensions.ObjectPool.xml",
+        "lib/net7.0/Microsoft.Extensions.ObjectPool.dll",
+        "lib/net7.0/Microsoft.Extensions.ObjectPool.xml",
+        "lib/netstandard2.0/Microsoft.Extensions.ObjectPool.dll",
+        "lib/netstandard2.0/Microsoft.Extensions.ObjectPool.xml",
+        "microsoft.extensions.objectpool.7.0.4.nupkg.sha512",
+        "microsoft.extensions.objectpool.nuspec"
+      ]
+    },
     "Microsoft.NET.StringTools/17.4.0": {
       "sha512": "06T6Hqfs3JDIaBvJaBRFFMIdU7oE0OMab5Xl8LKQjWPxBQr3BgVFKMQPTC+GsSEuYREWmK6g5eOd7Xqd9p1YCA==",
       "type": "package",
@@ -1472,6 +1500,7 @@
       "Google.OrTools >= 6.7.4973",
       "MarkovNextGen >= 1.2.6",
       "MessagePack >= 2.4.59",
+      "Microsoft.Extensions.ObjectPool >= 7.0.4",
       "NETStandard.Library >= 2.0.3",
       "OptimizedPriorityQueue >= 5.1.0",
       "Poly2Tri >= 1.0.1",
@@ -1536,6 +1565,10 @@
           "MessagePack": {
             "target": "Package",
             "version": "[2.4.59, )"
+          },
+          "Microsoft.Extensions.ObjectPool": {
+            "target": "Package",
+            "version": "[7.0.4, )"
           },
           "NETStandard.Library": {
             "suppressParent": "All",

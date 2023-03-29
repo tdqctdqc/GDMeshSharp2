@@ -67,6 +67,7 @@ public class PolygonGenerator : Generator
 
     private void CreateAndRegisterPolys(IEnumerable<IPoint> points, MapGenInfo info, GenWriteKey key)
     {
+        var polys = new List<MapPolygon>(points.Count());
         foreach (var dPoint in points)
         {
             var center = dPoint.GetIntV2();
@@ -95,7 +96,6 @@ public class PolygonGenerator : Generator
         rHash.Add(info.CornerPolys[1]);
         rHash.Add(info.CornerPolys[3]);
 
-        // var constructBorders = new ConcurrentBag<Action>();
         var borderChains = new ConcurrentDictionary<PolyBorderChain, PolyBorderChain>();
         var sw = new Stopwatch(); 
         
@@ -109,15 +109,10 @@ public class PolygonGenerator : Generator
         sw.Reset();
         
         sw.Start();
-        var l = borderChains.ToList();
-        for (var i = 0; i < l.Count; i++)
+        foreach (var b in borderChains)
         {
-            MapPolygonEdge.Create(l[i].Key, l[i].Value, key);
+            MapPolygonEdge.Create(b.Key, b.Value, key);
         }
-        // foreach (var a in borderChains)
-        // {
-        //     MapPolygonEdge.Create(a.Key, a.Value, key);
-        // }
         sw.Stop();
         GD.Print($"create time {sw.Elapsed.TotalMilliseconds}");
         sw.Reset();

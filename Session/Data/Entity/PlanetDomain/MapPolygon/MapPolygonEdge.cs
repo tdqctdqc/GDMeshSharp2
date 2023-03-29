@@ -23,36 +23,29 @@ public class MapPolygonEdge : Entity
         LowId = lowId;
         HighId = highId;
     }
-
-    public static MapPolygonEdge Create(MapPolygon poly1, MapPolygon poly2, 
-        List<LineSegment> segments, GenWriteKey key)
+    // public static IEnumerable<MapPolygonEdge> CreateMany(
+    //     List<KeyValuePair<PolyBorderChain, PolyBorderChain>> pairs, GenWriteKey key)
+    // {
+    //     var es = new List<MapPolygonEdge>(pairs.Count);
+    //     for (var i = 0; i < pairs.Count; i++)
+    //     {
+    //         var p = pairs[i];
+    //         var chain1 = p.Key;
+    //         var chain2 = p.Value;
+    //         var b = CreateInner(chain1, chain2, key);
+    //         es.Add(b);
+    //     }
+    //     key.Create(es);
+    //     return es;
+    // }
+    public static MapPolygonEdge Create(PolyBorderChain chain1, PolyBorderChain chain2, GenWriteKey key)
     {
-        EntityRef<MapPolygon> lowId;
-        EntityRef<MapPolygon> highId;
-        
-        if (poly1.Id < poly2.Id)
-        {
-            lowId = new EntityRef<MapPolygon>(poly1, key);
-            highId = new EntityRef<MapPolygon>(poly2, key);
-        }
-        else
-        {
-            lowId = new EntityRef<MapPolygon>(poly2, key);
-            highId = new EntityRef<MapPolygon>(poly1, key);
-        }
-        
-        var lowBorder = ConstructBorderChain(lowId.Entity(), highId.Entity(), segments, key.Data);//PolyBorderChain.Construct(lowId.Entity(), highId.Entity(), lowSegsRel);
-        var highBorder = ConstructBorderChain(highId.Entity(), lowId.Entity(), segments, key.Data);
-        
-        lowId.Entity().AddNeighbor(highId.Entity(), lowBorder, key);
-        highId.Entity().AddNeighbor(lowId.Entity(), highBorder, key);
-        var b =  new MapPolygonEdge(
-            key.IdDispenser.GetID(), 0f, lowId, highId);
+        var b = CreateInner(chain1, chain2, key);
         key.Create(b);
         return b;
     }
 
-    public static MapPolygonEdge Create(PolyBorderChain chain1, PolyBorderChain chain2, GenWriteKey key)
+    private static MapPolygonEdge CreateInner(PolyBorderChain chain1, PolyBorderChain chain2, GenWriteKey key)
     {
         EntityRef<MapPolygon> lowId;
         EntityRef<MapPolygon> highId;
@@ -75,9 +68,9 @@ public class MapPolygonEdge : Entity
         highId.Entity().AddNeighbor(lowId.Entity(), hiChain, key);
         var b = new MapPolygonEdge(
             key.IdDispenser.GetID(), 0f, lowId, highId);
-        key.Create(b);
         return b;
     }
+    
     public static PolyBorderChain ConstructBorderChain(MapPolygon native, MapPolygon foreign, 
         List<LineSegment> segments, Data data)
     {

@@ -1,12 +1,13 @@
 
 using System;
 using System.Collections.Generic;
+using Godot;
 
 public class RefAction
 {
     private Action _action;
     private HashSet<RefAction> _subscribingTo;
-    private int _subscriberCount;
+    public int Subscribers { get; private set; }
     
     public void Invoke()
     {
@@ -16,24 +17,24 @@ public class RefAction
     public void Subscribe(Action a)
     {
         _action += a;
-        _subscriberCount++;
+        Subscribers++;
     }
     public void Subscribe(RefAction a)
     {
         _action += a.Invoke;
-        _subscriberCount++;
+        Subscribers++;
         if (a._subscribingTo == null) a._subscribingTo = new HashSet<RefAction>();
         a._subscribingTo.Add(this);
     }
     public void Unsubscribe(Action a)
     {
         _action -= a;
-        _subscriberCount--;
+        Subscribers--;
     }
     public void Unsubscribe(RefAction a)
     {
         _action -= a.Invoke;
-        _subscriberCount--;
+        Subscribers--;
     }
     public void EndSubscriptions()
     {
@@ -59,6 +60,15 @@ public class RefAction<TArg>
     public void Invoke(TArg t)
     {
         if (Subscribers > 0) _action?.Invoke(t);
+        Blank.Invoke();
+    }
+    public void InvokeLog(TArg t)
+    {
+        GD.Print("Subscribers " + Subscribers);
+        if (Subscribers > 0) _action?.Invoke(t);
+        
+        GD.Print("Blank subscribers " + Blank.Subscribers);
+
         Blank.Invoke();
     }
     //todo ambiguity w/ subscriber count and blank

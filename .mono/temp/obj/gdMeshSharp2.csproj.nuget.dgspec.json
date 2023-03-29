@@ -59,6 +59,10 @@
               "target": "Package",
               "version": "[2.4.59, )"
             },
+            "Microsoft.Extensions.ObjectPool": {
+              "target": "Package",
+              "version": "[7.0.4, )"
+            },
             "NETStandard.Library": {
               "suppressParent": "All",
               "target": "Package",

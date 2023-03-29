@@ -13,6 +13,7 @@
           "Google.OrTools": "6.7.4973",
           "MarkovNextGen": "1.2.6",
           "MessagePack": "2.4.59",
+          "Microsoft.Extensions.ObjectPool": "7.0.4",
           "NETStandard.Library": "2.0.3",
           "OptimizedPriorityQueue": "5.1.0",
           "Poly2Tri": "1.0.1",
@@ -152,6 +153,14 @@
           "lib/netstandard2.0/Microsoft.Bcl.AsyncInterfaces.dll": {
             "assemblyVersion": "6.0.0.0",
             "fileVersion": "6.0.21.52210"
+          }
+        }
+      },
+      "Microsoft.Extensions.ObjectPool/7.0.4": {
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.Extensions.ObjectPool.dll": {
+            "assemblyVersion": "7.0.0.0",
+            "fileVersion": "7.0.423.11903"
           }
         }
       },
@@ -357,6 +366,13 @@
       "sha512": "sha512-UcSjPsst+DfAdJGVDsu346FX0ci0ah+lw3WRtn18NUwEqRt70HaOQ7lI72vy3+1LxtqI3T5GWwV39rQSrCzAeg==",
       "path": "microsoft.bcl.asyncinterfaces/6.0.0",
       "hashPath": "microsoft.bcl.asyncinterfaces.6.0.0.nupkg.sha512"
+    },
+    "Microsoft.Extensions.ObjectPool/7.0.4": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Q2OUDSQUpipgANtOyPN8aejB5eqwiT7t95N4QVXbZO/dBLvJ3DE75moVDQ/1idUouigFgvVfhTRq/wyorzigSw==",
+      "path": "microsoft.extensions.objectpool/7.0.4",
+      "hashPath": "microsoft.extensions.objectpool.7.0.4.nupkg.sha512"
     },
     "Microsoft.NET.StringTools/17.4.0": {
       "type": "package",

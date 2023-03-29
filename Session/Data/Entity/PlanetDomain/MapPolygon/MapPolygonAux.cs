@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class MapPolygonRepo : EntityAux<MapPolygon>
+public class MapPolygonAux : EntityAux<MapPolygon>
 {
     public EntityMultiIndexer<MapPolygon, Peep> PeepsInPoly { get; private set; }
     public IReadOnlyGraph<MapPolygon, PolyBorderChain> BorderGraph { get; private set; }
@@ -12,7 +12,7 @@ public class MapPolygonRepo : EntityAux<MapPolygon>
     public HashSet<MapChunk> Chunks { get; private set; }
     public LandSeaManager LandSea { get; private set; }
 
-    public MapPolygonRepo(Domain domain, Data data) : base(domain, data)
+    public MapPolygonAux(Domain domain, Data data) : base(domain, data)
     {
         BorderGraph = ImplicitGraph.Get<MapPolygon, PolyBorderChain>(
             () => Register.Entities, 

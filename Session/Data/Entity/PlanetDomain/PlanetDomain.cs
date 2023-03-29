@@ -8,7 +8,7 @@ public class PlanetDomain : Domain
     public EntityRegister<MapPolygon> Polygons => GetRegister<MapPolygon>();
     public EntityRegister<MapPolygonEdge> PolyEdges => GetRegister<MapPolygonEdge>();
     public EntityRegister<ResourceDeposit> ResourceDeposits => GetRegister<ResourceDeposit>();
-    public MapPolygonRepo PolygonAux { get; private set; }
+    public MapPolygonAux PolygonAux { get; private set; }
     public PolyEdgeAux PolyEdgeAux { get; private set; }
     public PlanetInfo Info => _planetInfoAux != null ? _planetInfoAux.Value : null;
     private SingletonAux<PlanetInfo> _planetInfoAux;
@@ -22,7 +22,7 @@ public class PlanetDomain : Domain
     public override void Setup()
     {
         _planetInfoAux = new SingletonAux<PlanetInfo>(this, Data);
-        PolygonAux = new MapPolygonRepo(this, Data);
+        PolygonAux = new MapPolygonAux(this, Data);
         PolyEdgeAux = new PolyEdgeAux(this, Data);
         ResourceDepositAux = new ResourceDepositAux(this, Data);
     }

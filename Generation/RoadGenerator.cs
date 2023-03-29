@@ -61,11 +61,6 @@ public class RoadGenerator : Generator
         var covered = new HashSet<Edge<MapPolygon>>();
         var segs = new Dictionary<Edge<MapPolygon>, RoadModel>();
         
-        
-        
-        
-        var sw = new Stopwatch();
-        sw.Start();
         var railSettlements = settlementPolys.Where(p => rail(p.GetSettlement(_data))).ToList();
         if(railSettlements.Count > 2)
         {
@@ -95,11 +90,6 @@ public class RoadGenerator : Generator
             BuildRoadNetworkLocal(RoadModelManager.DirtRoad, 500f, .7f,
                 dirtGraph, covered, segs, true);
         }
-        
-        sw.Stop();
-        var time = sw.Elapsed.TotalMilliseconds;
-        
-        GD.Print($"Time {time}");
         return segs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
     }
     private void GenerateRoadNetworkForMinSize(HashSet<MapPolygon> lm, float minSize, float minImprovementRatio, 

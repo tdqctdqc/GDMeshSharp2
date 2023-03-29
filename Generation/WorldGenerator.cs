@@ -51,7 +51,6 @@ public class WorldGenerator
         
         
         RunGenerator(new PolygonGenerator(points, Data.GenMultiSettings.Dimensions, true, polySize));
-
         
         RunGenerator(new GeologyGenerator());
         

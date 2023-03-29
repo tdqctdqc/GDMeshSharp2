@@ -6,14 +6,18 @@ using Godot;
 
 public abstract class ValChangeNotice : IEntityNotice
 {
-    public string FieldName { get; private set; }
+    public string FieldName { get; protected set; }
     Type IEntityNotice.EntityType => Entity.GetType();
+    
+
     public Entity Entity { get; private set; }
     protected ValChangeNotice(string fieldName, Entity entity)
     {
         FieldName = fieldName;
         Entity = entity;
     }
+
+    public abstract void Clear();
 }
 
 public class ValChangeNotice<TProperty> : ValChangeNotice
@@ -26,5 +30,11 @@ public class ValChangeNotice<TProperty> : ValChangeNotice
     {
         NewVal = newVal;
         OldVal = oldVal;
+    }
+    public override void Clear()
+    {
+        NewVal = default;
+        OldVal = default;
+        FieldName = "";
     }
 }

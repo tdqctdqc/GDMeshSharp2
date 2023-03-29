@@ -24,6 +24,7 @@ public class Entity1to1PropIndexer<TEntity, TKey> : AuxData<TEntity>
         params RefAction<ValChangeNotice<TKey>>[] changedValTriggers) : base(data)
     {
         _get = get;
+        _dic = new Dictionary<TKey, TEntity>();
         foreach (var trigger in changedValTriggers)
         {
             trigger.Subscribe(n =>
@@ -40,7 +41,7 @@ public class Entity1to1PropIndexer<TEntity, TKey> : AuxData<TEntity>
                 _dic[n.NewVal] = (TEntity)n.Entity;
             });
         }
-        Initialize(data);
+        // Initialize(data);
     }
     private void Initialize(Data data)
     {

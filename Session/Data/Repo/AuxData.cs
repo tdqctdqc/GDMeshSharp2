@@ -13,7 +13,13 @@ public abstract class AuxData<TEntity> : IEntityAux
 
     public AuxData(Data data)
     {
-        data.SubscribeForCreation<TEntity>(n => HandleAdded((TEntity)n.Entity));
+        data.SubscribeForCreation<TEntity>(n =>
+        {
+            foreach (var t in n.Entities)
+            {
+                HandleAdded((TEntity) t);
+            }
+        });
         data.SubscribeForDestruction<TEntity>(n => HandleRemoved((TEntity)n.Entity));
     }
 

@@ -36,7 +36,10 @@ public class EntityRegister<TEntity> : IEntityRegister
 
     private void Add(EntityCreatedNotice n)
     {
-        _entities.Add((TEntity)n.Entity);
+        foreach (var nEntity in n.Entities)
+        {
+            _entities.Add((TEntity)nEntity);
+        }
     }
 
     private void Remove(EntityDestroyedNotice n)
