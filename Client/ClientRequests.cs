@@ -22,17 +22,6 @@ public class ClientRequests
         _tree = tree;
     }
 
-    public void SubscribeForValChange<TEntity, TProperty>(string fieldName, RefAction<ValChangeNotice<TProperty>> callback)
-    {
-        _tree?[typeof(TEntity)].EntityValChanged.Subscribe<TEntity, TProperty>(fieldName, callback);
-    }
-
-    public void SubscribeForValChangeSpecific<TEntity, TProperty>(string fieldName, TEntity t, 
-        RefAction<ValChangeNotice<TProperty>> callback)
-    {
-        _tree?[typeof(TEntity)].EntityValChanged.Subscribe<TEntity, TProperty>(fieldName, callback);
-    }
-
     public void OpenWindow<T>(string name) where T : WindowDialog
     {
         OpenWindowRequest?.Invoke(name);

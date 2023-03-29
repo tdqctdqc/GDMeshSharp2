@@ -58,11 +58,11 @@ public partial class MapPolygon : Entity,
         return p;
     }
     
-    public void AddNeighbor(MapPolygon poly, PolyBorderChain border, GenWriteKey key)
+    public void AddNeighbor(MapPolygon n, PolyBorderChain border, GenWriteKey key)
     {
-        if (Neighbors.Contains(poly)) return;
-        Neighbors.AddRef(poly, key);
-        NeighborBorders.Add(poly.Id, border);
+        if (Neighbors.Contains(n)) return;
+        Neighbors.AddRef(n, key);
+        NeighborBorders.Add(n.Id, border);
     }
     public void SetNeighborBorder(MapPolygon n, PolyBorderChain border, GenWriteKey key)
     {

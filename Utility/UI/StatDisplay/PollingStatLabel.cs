@@ -5,21 +5,22 @@ using Godot;
 public class PollingStatLabel : StatLabel
 {
     private TimerAction _timer;
-    
-    public static PollingStatLabel ConstructForEntity<TEntity, TProperty>(TEntity e,
+    private RefAction _timerRing;
+    public static PollingStatLabel Construct<TProperty>(
         string name, Label label,
-        Func<TEntity, TProperty> getStat, float timerPeriod)
+        Func<TProperty> getStat, float timerPeriod)
     {
         var d = new PollingStatLabel();
-        d.Setup(e, name, label, getStat, timerPeriod);
+        d.Setup<TProperty>(name, label, getStat, timerPeriod);
         return d;
     }
-    protected void Setup<TEntity, TProperty>(TEntity e,
+    protected void Setup<TProperty>(
         string name, Label label,
-        Func<TEntity, TProperty> getStat, float timerPeriod)
+        Func<TProperty> getStat, float timerPeriod)
     {
-        _timer = new TimerAction(timerPeriod, timerPeriod, TriggerUpdate);
-        base.Setup<TEntity, TProperty>(e, name, label, getStat);
+        _timerRing = new RefAction();
+        _timer = new TimerAction(timerPeriod, timerPeriod, _timerRing.Invoke);
+        base.Setup<TProperty>(name, label, getStat, _timerRing);
     }
 
     public override void _Process(float delta)

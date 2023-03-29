@@ -17,20 +17,15 @@ public class EntityTypeTree
         _rootTypes = new HashSet<Type>();
         foreach (var node in _nodes.Values)
         {
-            var parentType = node.Value.BaseType;
+            var parentType = node.EntityType.BaseType;
             if(_nodes.TryGetValue(parentType, out var pNode))
             {
                 node.SetParent(pNode);
             }
             else
             {
-                _rootTypes.Add(node.Value);
+                _rootTypes.Add(node.EntityType);
             }
         }
-    }
-
-    public void Propagate(IEntityNotice notice)
-    {
-        _nodes[notice.EntityType].Propagate(notice);
     }
 }

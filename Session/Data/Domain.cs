@@ -7,12 +7,14 @@ using System.Reflection;
 public abstract class Domain 
 {
     public Dictionary<Type, IEntityRegister> Registers { get; private set; }
+    public Dictionary<Type, IAuxData> Auxes { get; private set; }
     public IReadOnlyHash<Type> EntityTypes { get; private set; }
     public Data Data { get; private set; }
     public Domain(Type domainType, Data data)
     {
         Data = data;
         Registers = new Dictionary<Type, IEntityRegister>();
+        Auxes = new Dictionary<Type, IAuxData>();
         var s = Game.I.Serializer;
         var entityTypes = s.ConcreteEntityTypes
             .Where(t => s.GetEntityMeta(t).DomainType == domainType);

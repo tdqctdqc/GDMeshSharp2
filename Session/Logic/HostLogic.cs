@@ -14,6 +14,7 @@ public class HostLogic : ILogic
     private ProcedureWriteKey _pKey;
     private Data _data;
     private readonly LogicFrame[] _frames;
+    private int _tick = 0;
     private int _frameIter = 0;
     private float _framePeriod = 1f;
     private float _frameTimer = 1f;
@@ -59,7 +60,6 @@ public class HostLogic : ILogic
                 if(_sw.Elapsed.TotalSeconds > _framePeriod) GD.Print("logic lagging");
                 DoCommands(); 
                 _calculating = null;
-                _data.Notices.Ticked.Invoke();
             });
         }
         else if (_calculating == null)

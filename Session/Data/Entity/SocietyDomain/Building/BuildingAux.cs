@@ -6,7 +6,6 @@ public class BuildingAux : EntityAux<Building>
     {
         ByPoly = AuxMultiIndexer<MapPolygon, Building>.ConstructConstant(
             data, 
-            b => b.Position.Poly.Entity(), 
-            nameof(Building.Position));
+            b => b.Position.Poly.Entity());
     }
 }

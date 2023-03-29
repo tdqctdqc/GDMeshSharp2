@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Godot;
 using System.Linq;
 using System.Net;
@@ -96,18 +97,35 @@ public class PolygonGenerator : Generator
 
         // var constructBorders = new ConcurrentBag<Action>();
         var borderChains = new ConcurrentDictionary<PolyBorderChain, PolyBorderChain>();
+        var sw = new Stopwatch(); 
         
-        //todo partition into bigger chunks for parallel 
         var partitions = graph.Elements.Partition(10);
         
+        
+        sw.Start();
         Parallel.ForEach(partitions, buildBordersForChunk);
-
-        foreach (var a in borderChains)
+        sw.Stop();
+        GD.Print($"parallel time {sw.Elapsed.TotalMilliseconds}");
+        sw.Reset();
+        
+        sw.Start();
+        var l = borderChains.ToList();
+        for (var i = 0; i < l.Count; i++)
         {
-            MapPolygonEdge.Create(a.Key, a.Value, key);
+            MapPolygonEdge.Create(l[i].Key, l[i].Value, key);
         }
+        // foreach (var a in borderChains)
+        // {
+        //     MapPolygonEdge.Create(a.Key, a.Value, key);
+        // }
+        sw.Stop();
+        GD.Print($"create time {sw.Elapsed.TotalMilliseconds}");
+        sw.Reset();
+        
+        sw.Start();
         key.Data.Notices.SetPolyShapes.Invoke();
-
+        sw.Stop();
+        GD.Print($"set poly shapes time {sw.Elapsed.TotalMilliseconds}");
 
         void buildBordersForChunk(List<MapPolygon> polys)
         {

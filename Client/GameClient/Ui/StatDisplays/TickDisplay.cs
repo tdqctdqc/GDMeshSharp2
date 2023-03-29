@@ -3,16 +3,23 @@ using Godot;
 
 public class TickDisplay : Label
 {
-    private RefAction<ValChangeNotice<int>> _tick;
+    private RefAction<int> _tick;
 
-    public TickDisplay()
+    public static TickDisplay Create(Data data)
     {
-        _tick = new RefAction<ValChangeNotice<int>>();
-        _tick.Subscribe(n => Text = $"Tick: {n.NewVal}");
-        Game.I.Client.Requests.SubscribeForValChange<GameClock, int>(
-            nameof(GameClock.Tick),
-            _tick
-        );
+        var d = new TickDisplay();
+        data.Notices.Ticked.Subscribe(d._tick);
+        return d;
+    }
+    private TickDisplay()
+    {
+        _tick = new RefAction<int>();
+        _tick.Subscribe(n => Text = $"Tick: {n}");
+    }
+
+    private void Setup(Data data)
+    {
+        
     }
     public override void _ExitTree()
     {

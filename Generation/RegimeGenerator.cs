@@ -24,6 +24,7 @@ public class RegimeGenerator : Generator
         var report = new GenReport(GetType().Name);
         report.StartSection();
         GenerateRegimes();
+        _data.Notices.GeneratedRegimes.Invoke();
         report.StopSection("all");
         return report;
     }

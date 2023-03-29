@@ -11,13 +11,11 @@ public class AuxMultiIndexer<TSingle, TMult> : AuxData<TMult>
         : null;
     protected Dictionary<TSingle, HashSet<TMult>> _dic;
     private Func<TMult, TSingle> _getSingle;
-    public static AuxMultiIndexer<TSingle, TMult> ConstructConstant(Data data, Func<TMult, TSingle> getSingle,
-        string fieldNameOnMult)
+    public static AuxMultiIndexer<TSingle, TMult> ConstructConstant(Data data, Func<TMult, TSingle> getSingle)
     {
-        return new AuxMultiIndexer<TSingle, TMult>(data, getSingle, fieldNameOnMult);
+        return new AuxMultiIndexer<TSingle, TMult>(data, getSingle);
     }
-    private AuxMultiIndexer(Data data, Func<TMult, TSingle> getSingle,
-        string fieldNameOnMult) : base(data)
+    private AuxMultiIndexer(Data data, Func<TMult, TSingle> getSingle) : base(data)
     {
         _dic = new Dictionary<TSingle, HashSet<TMult>>();
         _getSingle = getSingle;

@@ -83,6 +83,10 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
     {
         _vars[fieldName].UpdateVar(fieldName, t, key, newValue);
     }
+    public EntityVarMeta<T, TProperty> GetEntityVarMeta<TProperty>(string fieldName)
+    {
+        return (EntityVarMeta<T, TProperty>)_vars[fieldName];
+    }
     public bool TestSerialization(Entity e)
     {
         var t = (T) e;

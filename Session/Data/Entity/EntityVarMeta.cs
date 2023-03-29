@@ -7,11 +7,13 @@ using Godot;
 public class EntityVarMeta<TEntity, TProperty> : IEntityVarMeta<TEntity> where TEntity : Entity
 {
     public string PropertyName { get; private set; }
+    public RefAction<ValChangeNotice<TProperty>> ValChanged { get; private set; }
     protected Func<TEntity, TProperty> GetProperty { get; private set; }
     protected Action<TEntity, TProperty> SetProperty { get; private set; }
     public EntityVarMeta(PropertyInfo prop)
     {
         PropertyName = prop.Name;
+        ValChanged = new RefAction<ValChangeNotice<TProperty>>();
         var getMi = prop.GetGetMethod();
         if (getMi == null) throw new SerializationException($"No get method for {PropertyName}");
         GetProperty = getMi.MakeInstanceMethodDelegate<Func<TEntity, TProperty>>();
@@ -30,8 +32,11 @@ public class EntityVarMeta<TEntity, TProperty> : IEntityVarMeta<TEntity> where T
         var oldValue = (TProperty)GetForSerialize((TEntity)t);
         var newValue = (TProperty) newValueOb;
         SetProperty((TEntity)t, newValue);
-        var notice = new ValChangeNotice<TProperty>(t, fieldName, newValue, oldValue);
-        t.GetEntityTypeTreeNode().Propagate(notice);
+        if(ValChanged.Subscribers > 0)
+        {
+            ValChanged.Invoke(new ValChangeNotice<TProperty>(t, fieldName, 
+                newValue, oldValue));
+        }
         if (key is HostWriteKey hKey)
         {
             var bytes = Game.I.Serializer.MP.Serialize(newValue);

@@ -73,7 +73,7 @@ public class MapPolygonEdge : Entity
             ? chain2 : chain1;
         lowId.Entity().AddNeighbor(highId.Entity(), lowChain, key);
         highId.Entity().AddNeighbor(lowId.Entity(), hiChain, key);
-        var b =  new MapPolygonEdge(
+        var b = new MapPolygonEdge(
             key.IdDispenser.GetID(), 0f, lowId, highId);
         key.Create(b);
         return b;

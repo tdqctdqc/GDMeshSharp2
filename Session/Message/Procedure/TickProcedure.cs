@@ -11,6 +11,6 @@ public class TickProcedure : Procedure
     {
         var gc = key.Data.BaseDomain.GameClock;
         gc.Set<int>(nameof(GameClock.Tick), gc.Tick + 1, key);
-        key.Data.Notices.Ticked.Invoke();
+        key.Data.Notices.Ticked.Invoke(gc.Tick);
     }
 }

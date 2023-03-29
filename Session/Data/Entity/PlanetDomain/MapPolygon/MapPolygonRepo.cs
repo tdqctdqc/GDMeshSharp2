@@ -21,7 +21,8 @@ public class MapPolygonRepo : EntityAux<MapPolygon>
         PeepsInPoly = new EntityMultiIndexer<MapPolygon, Peep>(
             data,
             p => p.Home,
-            nameof(Peep.Home)
+            new RefAction[]{data.Notices.FinishedStateSync, data.Notices.PopulatedWorld},
+            new RefAction<ValChangeNotice<EntityRef<MapPolygon>>>[]{}
         );
         AuxDatas = EntityValueCache<MapPolygon, PolyAuxData>.CreateTrigger(
             data,

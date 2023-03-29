@@ -12,6 +12,7 @@ public class Data
     public IReadOnlyDictionary<Type, Domain> Domains => _domains;
     private Dictionary<Type, Domain> _domains;
     private Dictionary<Type, Domain> _entityTypeDomainIndex;
+    
     public Dictionary<int, Entity> Entities { get; private set; }
     public Entity this[int id] => Entities[id];
     public BaseDomain BaseDomain { get; private set; }
@@ -43,7 +44,9 @@ public class Data
         BaseDomain = new BaseDomain(this);
         Planet = new PlanetDomain(this);
         Society = new SocietyDomain(this);
-        
+        RegisterDomain(BaseDomain);
+        RegisterDomain(Planet);
+        RegisterDomain(Society);
         AddDomain(BaseDomain);
         AddDomain(Planet);
         AddDomain(Society);
@@ -56,7 +59,7 @@ public class Data
             GD.Print($"trying to overwrite {Entities[e.Id].GetType().ToString()} with {e.GetType().ToString()}");
         }
         Entities.Add(e.Id, e);
-        e.GetEntityTypeTreeNode().Propagate(new EntityCreatedNotice(e));
+        e.GetEntityTypeTreeNode().PropagateCreation(e);
         if (key is HostWriteKey hKey)
         {
             hKey.HostServer.QueueUpdate(EntityCreationUpdate.Create(e, hKey));
@@ -79,7 +82,7 @@ public class Data
         }
         foreach (var e in es)
         {
-            e.GetEntityTypeTreeNode().Propagate(new EntityCreatedNotice(e));
+            e.GetEntityTypeTreeNode().PropagateCreation(e);
         }
     }
     public void RemoveEntities(int[] entityIds, StrongWriteKey key)
@@ -90,8 +93,8 @@ public class Data
         }
         foreach (var eId in entityIds)
         {
-            var n = new EntityDestroyedNotice(Entities[eId]);
-            n.Entity.GetEntityTypeTreeNode().Propagate(n);
+            var e = Entities[eId];
+            e.GetEntityTypeTreeNode().PropagateDestruction(e);
         }
         foreach (var eId in entityIds)
         {
@@ -100,8 +103,8 @@ public class Data
     }
     public void RemoveEntity(int eId, StrongWriteKey key)
     {
-        var n = new EntityDestroyedNotice(Entities[eId]);
-        n.Entity.GetEntityTypeTreeNode().Propagate(n);
+        var e = Entities[eId];
+        e.GetEntityTypeTreeNode().PropagateDestruction(e);
         Entities.Remove(eId);
         if (key is HostWriteKey hKey)
         {
@@ -114,12 +117,17 @@ public class Data
         var t = typeof(T);
         return _entityTypeDomainIndex[t].GetRegister<T>();
     }
+
+    private void RegisterDomain(Domain d)
+    {
+        foreach (var domEntityType in d.EntityTypes)
+        {
+            _entityTypeDomainIndex.Add(domEntityType, d);
+        }
+    }
     protected void AddDomain(Domain dom)
     {
-        foreach (var domEntityType in dom.EntityTypes)
-        {
-            _entityTypeDomainIndex.Add(domEntityType, dom);
-        }
+        
         dom.Setup();
         _domains.Add(dom.GetType(), dom);
     }
@@ -134,10 +142,5 @@ public class Data
     public void SubscribeForDestruction<TEntity>(Action<EntityDestroyedNotice> callback) where TEntity : Entity
     {
         EntityTypeTree[typeof(TEntity)].Destroyed.Subscribe(callback);
-    }
-    public void SubscribeForValueChange<TEntity, TProperty>(string fieldName, 
-        RefAction<ValChangeNotice<TProperty>> callback)
-    {
-        EntityTypeTree[typeof(TEntity)].EntityValChanged.Subscribe<TEntity, TProperty>(fieldName, callback);
     }
 }

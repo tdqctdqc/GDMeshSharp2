@@ -14,6 +14,7 @@ public class ResourceGenerator : Generator
         _key = key;
         var report = new GenReport(GetType().Name);
         GenerateResources();
+        key.Data.Notices.MadeResources.Invoke();
         return report;
     }
 

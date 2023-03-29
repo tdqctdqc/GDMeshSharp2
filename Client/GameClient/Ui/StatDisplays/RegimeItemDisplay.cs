@@ -4,16 +4,18 @@ using Godot;
 
 public class RegimeItemDisplay : HBoxContainer
 {
-    public Regime Regime { get; private set; }
+    public Regime Regime => _data.BaseDomain.PlayerAux.LocalPlayer.Regime.Entity(); 
     public Item Item { get; private set; }
-    public static RegimeItemDisplay Create(Item item, Regime regime, Data data)
+    private Data _data;
+
+    public static RegimeItemDisplay Create(Item item, Data data)
     {
-        return new RegimeItemDisplay(item, regime, data);
+        return new RegimeItemDisplay(item, data);
     }
 
-    private RegimeItemDisplay(Item item, Regime regime, Data data)
+    private RegimeItemDisplay(Item item, Data data)
     {
-        Regime = regime;
+        _data = data;
         Item = item;
         float height = 50f;
         float width = 100f;
@@ -26,12 +28,16 @@ public class RegimeItemDisplay : HBoxContainer
         icon.RectScale = new Vector2(1f, -1f);
         
         //todo make so updates when player switches regime
-        SubscribedStatLabel.ConstructForEntityTrigger<Regime, float>(
-            regime, 
+        SubscribedStatLabel.Construct<int>(
             "", 
-            amount, 
-            r => r.Items[item], 
-            data.Notices.Ticked);
+            amount,
+            () =>
+            {
+                var r = data.BaseDomain.PlayerAux.LocalPlayer.Regime.Entity();
+                return r != null ? r.Items[item] : 0;
+            }, 
+            data.Notices.Ticked.Blank
+        );
         
         var template = new RegimeItemStockDataTooltipTemplate();
         var instance = new DataTooltipInstance<RegimeItemDisplay>(template, this);

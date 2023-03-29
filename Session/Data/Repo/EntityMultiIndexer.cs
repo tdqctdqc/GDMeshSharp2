@@ -13,7 +13,8 @@ public class EntityMultiIndexer<TSingle, TMult> : AuxData<TMult>
     private Func<TMult, EntityRef<TSingle>> _getSingle;
     private RefAction<ValChangeNotice<EntityRef<TSingle>>> _changedMult;
     public EntityMultiIndexer(Data data, Func<TMult, EntityRef<TSingle>> getSingle,
-        string fieldNameOnMult) : base(data)
+        RefAction[] recalcTriggers,
+        RefAction<ValChangeNotice<EntityRef<TSingle>>>[] changeTriggers) : base(data)
     {
         _dic = new Dictionary<int, HashSet<int>>();
         _getSingle = getSingle;
@@ -26,13 +27,26 @@ public class EntityMultiIndexer<TSingle, TMult> : AuxData<TMult>
             }
             _dic.AddOrUpdate(n.NewVal.RefId, n.Entity.Id);
         });
-        data.SubscribeForValueChange<TMult, EntityRef<TSingle>>(
-            fieldNameOnMult,
-            _changedMult
-        );
+        foreach (var recalcTrigger in recalcTriggers)
+        {
+            recalcTrigger.Subscribe(() => Recalc(data));
+        }
+        foreach (var changeTrigger in changeTriggers)
+        {
+            changeTrigger.Subscribe(_changedMult);
+        }
         data.SubscribeForDestruction<TSingle>(HandleTSingleRemoved);
     }
-    
+
+    private void Recalc(Data data)
+    {
+        _dic.Clear();
+        var mults = data.GetRegister<TMult>().Entities;
+        foreach (var entity in mults)
+        {
+            HandleAdded(entity);
+        }
+    }
     public override void HandleAdded(TMult added)
     {
         var single = _getSingle(added);

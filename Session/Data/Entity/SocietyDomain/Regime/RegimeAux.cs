@@ -11,7 +11,8 @@ public class RegimeAux : EntityAux<Regime>
         Territories = new EntityMultiIndexer<Regime, MapPolygon>(
             data, 
             p => p.Regime,
-            nameof(MapPolygon.Regime)
+            new RefAction[]{data.Notices.FinishedStateSync, data.Notices.GeneratedRegimes},
+            new RefAction<ValChangeNotice<EntityRef<Regime>>>[]{}
         );
     }
 }

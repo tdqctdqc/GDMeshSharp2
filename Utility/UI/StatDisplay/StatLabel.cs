@@ -5,18 +5,20 @@ using Godot;
 public class StatLabel : Node
 {
     private Label _label;
-    private Func<string> _update;
-    protected void Setup<TEntity, TProperty>(TEntity e,
+    private Action _update;
+    protected void Setup<TProperty>(
         string name, Label label,
-        Func<TEntity, TProperty> getStat)
+        Func<TProperty> getStat,
+        RefAction trigger)
     {
         _label = label;
         if (_label == null) throw new Exception();
         _label.AddChild(this);
         _update = () =>
-        {
-            return _label.Text = $"{name}: {getStat(e).ToString()}";
+        { 
+            _label.Text = $"{name}: {getStat().ToString()}";
         };
+        trigger.Subscribe(_update);
     }
 
     protected void TriggerUpdate()

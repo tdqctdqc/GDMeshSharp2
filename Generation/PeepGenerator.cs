@@ -27,13 +27,7 @@ public class PeepGenerator : Generator
             GenerateForRegime(r);
         }
         
-        // report.StartSection();
-        // var byPoly = _data.Society.Settlements.ByPoly;
-        // GeneratePeepType(PeepJobManager.Laborer,
-        //     p => (int)(byPoly.ContainsKey(p)
-        //         ? byPoly[p].Size * 100
-        //         : 0), 
-        //     50, 50);
+        _data.Notices.PopulatedWorld.Invoke();
         report.StopSection("All");
 
         return report;
@@ -50,16 +44,16 @@ public class PeepGenerator : Generator
         var farmLaborReq = farmModel.PeepsLaborReq;
         var foodConPerPeep = _data.BaseDomain.Rules.FoodConsumptionPerPeep;
         var totalFoodProd = 0f;
-        var totalNumFarmers = 0;
         var farmerJob = PeepJobManager.Farmer;
+        var regimeFarmers = 0;
         foreach (var poly in r.Polygons)
         {
+            var polyFarmers = 0;
             var buildings = poly.GetBuildings(_data);
             if (buildings == null) continue;
             var farms = buildings.Where(b => b.Model.Model() == farmModel);
             var farmCount = farms.Count();
             if (farmCount == 0) continue;
-            //todo foodProd not taking into account fertility
             foreach (var farm in farms)
             {
                 var farmProdCap = farmModel.FullProduction * farm.Position.Tri().GetFertility();
@@ -67,21 +61,23 @@ public class PeepGenerator : Generator
                 if (prodPerPeep < foodConPerPeep) continue;
                 var surplusPerFarmer = prodPerPeep - foodConPerPeep;
                 var surplusRatio = surplusPerFarmer / prodPerPeep;
-                var numFarmers = Mathf.CeilToInt(Mathf.Sqrt(surplusRatio) * farmLaborReq);
-                numFarmers = Mathf.Clamp(numFarmers, farmCount, farmCount * farmLaborReq);
-                totalNumFarmers += numFarmers;
-                totalFoodProd += ((float)numFarmers / farmLaborReq) * farmProdCap;
+                var triFarmers = Mathf.CeilToInt(Mathf.Sqrt(surplusRatio) * farmLaborReq);
+                triFarmers = Mathf.Clamp(triFarmers, farmCount, farmCount * farmLaborReq);
+                polyFarmers += triFarmers;
+                totalFoodProd += ((float)triFarmers / farmLaborReq) * farmProdCap;
             }
 
-            if (totalNumFarmers == 0) continue;
+            if (polyFarmers == 0) continue;
+            
             Peep.Create(
                 poly,
                 farmerJob,
-                totalNumFarmers,
+                polyFarmers,
                 _key);
+            regimeFarmers += polyFarmers;
         }
 
-        return Mathf.FloorToInt(totalFoodProd - totalNumFarmers * foodConPerPeep);
+        return Mathf.FloorToInt(totalFoodProd - regimeFarmers * foodConPerPeep);
     }
 
     private void GenerateLaborersForRegime(Regime r, int foodBudget)

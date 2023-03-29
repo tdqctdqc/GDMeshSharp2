@@ -9,27 +9,31 @@ public class Entity1To1Indexer<TEntity, TKey> : Entity1to1PropIndexer<TEntity, i
     {
         return new Entity1To1Indexer<TEntity, TKey>(data, get);
     }
-    public static Entity1To1Indexer<TEntity, TKey> CreateDynamic(Data data, Func<TEntity, EntityRef<TKey>> get, string keyFieldName)
+    public static Entity1To1Indexer<TEntity, TKey> CreateDynamic(Data data, Func<TEntity, EntityRef<TKey>> get,
+        params RefAction<ValChangeNotice<EntityRef<TKey>>>[] changedValTriggers)
     {
-        return new Entity1To1Indexer<TEntity, TKey>(data, get, keyFieldName);
+        return new Entity1To1Indexer<TEntity, TKey>(data, get, changedValTriggers);
     }
-    private Entity1To1Indexer(Data data, 
-        Func<TEntity, EntityRef<TKey>> get, 
-        string keyFieldName) 
+    private Entity1To1Indexer(Data data, Func<TEntity, EntityRef<TKey>> get,
+        params RefAction<ValChangeNotice<EntityRef<TKey>>>[] changedValTriggers) 
         : base(data, e => get(e) == null ? (int?)null : get(e).RefId)
     {
-        Action<ValChangeNotice<EntityRef<TKey>>> callback = n =>
+        foreach (var trigger in changedValTriggers)
         {
-            if(n.OldVal != null) _dic.Remove(n.OldVal.RefId);
-            if(n.NewVal != null) _dic[n.NewVal.RefId] = (TEntity)data[n.Entity.Id];
-        };
-        var refAction = new RefAction<ValChangeNotice<EntityRef<TKey>>>();
-        refAction.Subscribe(callback);
-        data.SubscribeForValueChange<TEntity, EntityRef<TKey>>(keyFieldName, refAction);
-    }
-    private Entity1To1Indexer(Data data, Func<TEntity, EntityRef<TKey>> get) 
-        : base(data, e => get(e) == null ? (int?)null : get(e).RefId)
-    {
+            trigger.Subscribe(n =>
+            {
+                var t = (TEntity) n.Entity;
+                if (n.OldVal != null)
+                {
+                    if (_dic.ContainsKey(n.OldVal.RefId) == false) throw new Exception();
+                    if (_dic[n.OldVal.RefId] == t)
+                    {
+                        _dic.Remove(n.OldVal.RefId);
+                    }
+                }
+                _dic.Add(n.NewVal.RefId, (TEntity)n.Entity);
+            });
+        }
     }
 
     public bool ContainsKey(TKey k)

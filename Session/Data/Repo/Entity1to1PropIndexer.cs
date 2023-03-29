@@ -15,39 +15,31 @@ public class Entity1to1PropIndexer<TEntity, TKey> : AuxData<TEntity>
     {
         return new Entity1to1PropIndexer<TEntity, TKey>(data, get);
     }
-    public static Entity1to1PropIndexer<TEntity, TKey> CreateDynamic(Data data, Func<TEntity, TKey> get, string keyFieldName)
+    public static Entity1to1PropIndexer<TEntity, TKey> CreateDynamic(Data data, Func<TEntity, TKey> get,
+        params RefAction<ValChangeNotice<TKey>>[] changedValTriggers)
     {
-        return new Entity1to1PropIndexer<TEntity, TKey>(data, get, keyFieldName);
+        return new Entity1to1PropIndexer<TEntity, TKey>(data, get, changedValTriggers);
     }
-    public static Entity1to1PropIndexer<TEntity, TKey> CreateTrigger(Data data, Func<TEntity, TKey> get, RefAction trigger)
-    {
-        return new Entity1to1PropIndexer<TEntity, TKey>(data, get, trigger);
-    }
-    protected Entity1to1PropIndexer(Data data, Func<TEntity, TKey> get) : base(data)
+    protected Entity1to1PropIndexer(Data data, Func<TEntity, TKey> get,
+        params RefAction<ValChangeNotice<TKey>>[] changedValTriggers) : base(data)
     {
         _get = get;
-        Initialize(data);
-    }
-    protected Entity1to1PropIndexer(Data data, Func<TEntity, TKey> get, string keyFieldName) : base(data)
-    {
-        _get = get;
-        Action<ValChangeNotice<TKey>> callback = n =>
+        foreach (var trigger in changedValTriggers)
         {
-            if(n.OldVal != null) _dic.Remove(n.OldVal);
-            if(n.NewVal != null) _dic[n.NewVal] = (TEntity)data[n.Entity.Id];
-        };
-        var refAction = new RefAction<ValChangeNotice<TKey>>();
-        refAction.Subscribe(callback);
-        data.SubscribeForValueChange<TEntity, TKey>(keyFieldName, refAction);
-        Initialize(data);
-    }
-    protected Entity1to1PropIndexer(Data data, Func<TEntity, TKey> get, RefAction trigger) : base(data)
-    {
-        _get = get;
-        trigger.Subscribe(() =>
-        {
-            Initialize(data);
-        });
+            trigger.Subscribe(n =>
+            {
+                var t = (TEntity) n.Entity;
+                if (n.OldVal != null)
+                {
+                    if (_dic.ContainsKey(n.OldVal) == false) throw new Exception();
+                    if (_dic[n.OldVal] == t)
+                    {
+                        _dic.Remove(n.OldVal);
+                    }
+                }
+                _dic[n.NewVal] = (TEntity)n.Entity;
+            });
+        }
         Initialize(data);
     }
     private void Initialize(Data data)
