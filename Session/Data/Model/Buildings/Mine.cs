@@ -5,7 +5,8 @@ using Godot;
 
 public class Mine : ProductionBuilding
 {
-    public Mine(string name, Item item) : base(item, name, true)
+    public Mine(string name, Item item) 
+        : base(item, name, true, 100f)
     {
         if (item.Attributes.Has<MineableAttribute>() == false) throw new Exception();
     }

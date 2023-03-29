@@ -51,6 +51,8 @@ public static class MapPolygonExt
 
         return closeInt + secondInt;
     }
+
+    
     public static bool HasNeighbor(this MapPolygon poly, MapPolygon n) => poly.Neighbors.Entities().Contains(n);
     public static bool IsWater(this MapPolygon poly) => poly.IsLand == false;
     public static bool IsCoast(this MapPolygon poly) => poly.IsLand && poly.Neighbors.Entities().Any(n => n.IsWater());

@@ -11,6 +11,6 @@ public class BuildingsChunkGraphicFactory : ChunkGraphicFactory
     public override Node2D GetNode(MapChunk c, Data d)
     {
         return TriIconChunkGraphic.Create(c, d, p => p.GetBuildings(d),
-            b => b.Position.Tri(), b => b.Model.Model().BuildingIcon);
+            b => b.Position.Tri(d), b => b.Model.Model().BuildingIcon);
     }
 }

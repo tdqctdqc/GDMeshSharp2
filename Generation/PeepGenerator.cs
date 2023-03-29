@@ -56,7 +56,7 @@ public class PeepGenerator : Generator
             if (farmCount == 0) continue;
             foreach (var farm in farms)
             {
-                var farmProdCap = farmModel.FullProduction * farm.Position.Tri().GetFertility();
+                var farmProdCap = farmModel.FullProduction * farm.Position.Tri(_data).GetFertility();
                 var prodPerPeep = farmProdCap / farmLaborReq;
                 if (prodPerPeep < foodConPerPeep) continue;
                 var surplusPerFarmer = prodPerPeep - foodConPerPeep;

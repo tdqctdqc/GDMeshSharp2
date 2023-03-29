@@ -5,7 +5,8 @@ using Godot;
 
 public class Farm : ProductionBuilding
 {
-    public Farm() : base(ItemManager.Food, nameof(Farm), false)
+    public Farm() 
+        : base(ItemManager.Food, nameof(Farm), false, 100f)
     {
     }
     public override int PeepsLaborReq { get; } = 2;
@@ -24,7 +25,7 @@ public class Farm : ProductionBuilding
     }
     protected override float GetProductionRatio(Building p, float staffingRatio, Data data)
     {
-         var tri = p.Position.Tri();
+         var tri = p.Position.Tri(data);
          return tri.Landform.FertilityMod * tri.Vegetation.FertilityMod * staffingRatio; 
     }
 }

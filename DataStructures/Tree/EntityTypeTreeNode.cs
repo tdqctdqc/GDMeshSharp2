@@ -39,7 +39,6 @@ public class EntityTypeTreeNode
     {
         var n = EntityCreatedNotice.ConstructMultiple<TEntity>(es);
         
-        
         Parent?.BubbleUp(n);
         
         Created.InvokeLog(n);

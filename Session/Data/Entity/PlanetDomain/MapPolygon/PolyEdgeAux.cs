@@ -13,20 +13,13 @@ public class PolyEdgeAux : EntityAux<MapPolygonEdge>
     }
     private Vector2 MakeEdge(MapPolygonEdge e)
     {
-        return new Vector2(e.HighId.RefId, e.LowId.RefId);
-    }
-    private Vector2 MakeEdge(int p1, int p2)
-    {
-        var hi = p1 > p2 ? p1 : p2;
-        var lo = p1 > p2 ? p2 : p1;
-        
-        return new Vector2(hi, lo);
+        return e.HighId.Entity().GetV2EdgeKey(e.LowId.Entity());
     }
     public MapPolygonEdge GetEdge(MapPolygon p1, MapPolygon p2)
     {
         if (p1.HasNeighbor(p2) == false) throw new Exception();
         if (p2.HasNeighbor(p1) == false) throw new Exception();
-        var e = MakeEdge(p1.Id, p2.Id);
+        var e = p1.GetV2EdgeKey( p2);
         return _byEdge[e];
     }
 }

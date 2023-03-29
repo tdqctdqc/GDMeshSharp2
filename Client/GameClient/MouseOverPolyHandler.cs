@@ -12,7 +12,8 @@ public class MouseOverPolyHandler
     public MouseOverPolyHandler()
     {
         _action = new TimerAction(.05f);
-        _instance = new DataTooltipInstance<PolyTriPosition>(new PolyDataTooltipTemplate(), null);
+        _instance = new DataTooltipInstance<PolyTriPosition>(new PolyDataTooltipTemplate(), 
+            new PolyTriPosition(-1, -1));
     }
     public void Process(float delta, Data data, Vector2 mousePosMapSpace)
     {
@@ -49,7 +50,7 @@ public class MouseOverPolyHandler
         }
         FindTri(MouseOverPoly, data, mousePosMapSpace);
 
-        var pos = new PolyTriPosition(MouseOverPoly, MouseOverTri);
+        var pos = new PolyTriPosition(MouseOverPoly.Id, MouseOverPoly.TerrainTris.Tris.IndexOf(MouseOverTri));
         Game.I.Client.Requests.MouseOver.Invoke(pos);
         _instance.SetElement(pos);
         Game.I.Client.Requests.PromptTooltip.Invoke(_instance);

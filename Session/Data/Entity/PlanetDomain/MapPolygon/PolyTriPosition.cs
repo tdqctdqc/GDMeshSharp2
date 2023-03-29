@@ -1,15 +1,16 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
-public class PolyTriPosition
+using MessagePack;
+
+public struct PolyTriPosition
 {
-    public MapPolygon Poly { get; private set; }
-    public PolyTri Tri { get; private set; }
-
-    public PolyTriPosition(MapPolygon poly, PolyTri tri)
+    public int TriIndex { get; private set; }
+    public int PolyId { get; private set; }
+    public PolyTri Tri(Data data) => Poly(data).TerrainTris.Tris[TriIndex];
+    public MapPolygon Poly(Data data) => (MapPolygon)data[PolyId];
+    [SerializationConstructor] public PolyTriPosition(int polyId, int triIndex)
     {
-        Poly = poly;
-        Tri = tri;
+        PolyId = polyId;
+        TriIndex = triIndex;
     }
+    
 }

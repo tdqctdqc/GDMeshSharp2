@@ -11,7 +11,8 @@ public abstract class ProductionBuilding : BuildingModel
     public abstract HashSet<PeepJob> JobTypes { get; }
     public abstract int FullProduction { get; }
     public bool FromDeposit { get; private set; }
-    protected ProductionBuilding(Item item, string name, bool fromDeposit) : base(name)
+    protected ProductionBuilding(Item item, string name, bool fromDeposit, float buildCost)
+        : base(name, buildCost)
     {
         Item = item;
         FromDeposit = fromDeposit;
@@ -27,7 +28,7 @@ public abstract class ProductionBuilding : BuildingModel
         gains.Add(Item, prod);
         if (FromDeposit)
         {
-            var deposit = p.Position.Poly.Entity().GetResourceDeposits(data)
+            var deposit = p.Position.Poly(data).GetResourceDeposits(data)
                 .First(d => d.Item.Model() == Item);
             depletions.Add(deposit, prod);
         }

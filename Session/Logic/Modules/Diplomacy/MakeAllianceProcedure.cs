@@ -1,13 +1,13 @@
-public class PMakeAlliance : Procedure
+public class MakeAllianceProcedure : Procedure
 {
     public EntityRef<Regime> Offerer { get; private set; }
     public EntityRef<Regime> Accepter { get; private set; }
 
-    public static PMakeAlliance Create(Regime declarer, Regime declaree)
+    public static MakeAllianceProcedure Create(Regime declarer, Regime declaree)
     {
-        return new PMakeAlliance(declarer.MakeRef(), declaree.MakeRef());
+        return new MakeAllianceProcedure(declarer.MakeRef(), declaree.MakeRef());
     }
-    private PMakeAlliance(EntityRef<Regime> offerer, EntityRef<Regime> accepter)
+    private MakeAllianceProcedure(EntityRef<Regime> offerer, EntityRef<Regime> accepter)
     {
         Offerer = offerer;
         Accepter = accepter;

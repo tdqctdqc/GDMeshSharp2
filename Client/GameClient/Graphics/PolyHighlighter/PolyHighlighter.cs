@@ -9,7 +9,7 @@ public class PolyHighlighter : Node2D
 
     public PolyHighlighter(Data data)
     {
-        Game.I.Client.Requests.MouseOver.Subscribe(pos => Draw(data, pos.Poly, pos.Tri));
+        Game.I.Client.Requests.MouseOver.Subscribe(pos => Draw(data, pos));
         _mis = new List<MeshInstance2D>();
     }
     private PolyHighlighter()
@@ -20,10 +20,12 @@ public class PolyHighlighter : Node2D
         Simple,
         Complex
     }
-    public void Draw(Data data, MapPolygon poly, PolyTri pt)
+    public void Draw(Data data, PolyTriPosition pos)
     {
         Visible = true;
         Clear();
+        var poly = pos.Poly(data);
+        var pt = pos.Tri(data);
         Move(poly);
         var mb = new MeshBuilder();
         

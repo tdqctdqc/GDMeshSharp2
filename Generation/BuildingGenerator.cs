@@ -30,8 +30,9 @@ public class BuildingGenerator : Generator
     {
         var fertilityPerFarm = _data.GenMultiSettings.SocietySettings.FertilityPerFarm.Value;
         var minFertToGetOneFarm = _data.GenMultiSettings.SocietySettings.FertilityToGetOneFarm.Value;
-        var farmTris = new ConcurrentBag<PolyTriPositionSerializable>();
+        var farmTris = new ConcurrentBag<PolyTriPosition>();
         var farm = BuildingModelManager.Farm;
+        var buildingTris = _data.Society.BuildingAux.ByTri;
         Parallel.ForEach(_data.Planet.Polygons.Entities, p =>
         {
             if (farm.CanBuildInPoly(p, _data) == false) return;
@@ -41,6 +42,7 @@ public class BuildingGenerator : Generator
             if (numFarms == 0 && totalFert > minFertToGetOneFarm) numFarms = 1;
             if (numFarms == 0) return;
             var allowedTris = Enumerable.Range(0, tris.Length)
+                .Where(i => tris[i].HasBuilding(_data) == false)
                 .Where(i => farm.CanBuildInTri(tris[i], _data));
             if (allowedTris.Count() == 0) return;
             var min = Math.Min(numFarms, allowedTris.Count());
@@ -49,7 +51,7 @@ public class BuildingGenerator : Generator
             for (var i = 0; i < min; i++)
             {
                 var tri = thisFarmTris[i];
-                farmTris.Add(new PolyTriPositionSerializable(p.MakeRef(), tri));
+                farmTris.Add(new PolyTriPosition(p.Id, tri));
             }
         });
         
@@ -63,7 +65,7 @@ public class BuildingGenerator : Generator
     {
         var minSizeToGetOneMine = 20f;
         var depositSizePerMine = 100f;
-        var mineTris = new ConcurrentDictionary<PolyTriPositionSerializable, Item>();
+        var mineTris = new ConcurrentDictionary<PolyTriPosition, Item>();
         
         var mineable = _data.Models.Items.Models.Values.Where(v => v.Attributes.Has<MineableAttribute>());
         
@@ -83,6 +85,7 @@ public class BuildingGenerator : Generator
             if (numMines < distinctItems) numMines = distinctItems;
             var tris = p.TerrainTris.Tris;
             var allowedTris = Enumerable.Range(0, tris.Length)
+                .Where(i => tris[i].HasBuilding(_data) == false)
                 .Where(i => Mine.CanBuildInTri(tris[i])).ToList();
             if (allowedTris.Count == 0) return;
             if (numMines > allowedTris.Count) numMines = allowedTris.Count;
@@ -93,7 +96,7 @@ public class BuildingGenerator : Generator
             {
                 var tri = thisMineTris[i];
                 var item = mineableDeposits.Modulo(i).Item.Model();
-                var pos = new PolyTriPositionSerializable(p.MakeRef(), tri);
+                var pos = new PolyTriPosition(p.Id, tri);
                 mineTris.TryAdd(pos, item);
             }
         });

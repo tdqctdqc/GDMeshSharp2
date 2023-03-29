@@ -12,7 +12,7 @@ public class DataTooltipInstance<T> : ITooltipInstance
         Template = template;
         Element = element;
     }
-
+    
     public void SetElement(T element)
     {
         Element = element;

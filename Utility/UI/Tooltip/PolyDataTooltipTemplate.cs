@@ -31,7 +31,7 @@ public class PolyDataTooltipTemplate : DataTooltipTemplate<PolyTriPosition>
 
     private static Control GetBuildings(PolyTriPosition t, Data d)
     {
-            var bs = t.Poly.GetBuildings(d);
+            var bs = t.Poly(d).GetBuildings(d);
             if (bs != null)
             {
                 var label = new Label();
@@ -50,50 +50,51 @@ public class PolyDataTooltipTemplate : DataTooltipTemplate<PolyTriPosition>
 
     private static Control GetAltitude(PolyTriPosition t, Data d)
     {
-        return NodeExt.CreateLabel("Altitude: " + t.Poly.Altitude);
+        return NodeExt.CreateLabel("Altitude: " + t.Poly(d).Altitude);
     }
 
     private static Control GetFertility(PolyTriPosition t, Data d)
     {
-        var tri = t.Tri;
+        var tri = t.Tri(d);
         if (tri == null) return null; //todo this should be fixed when the tri holes are fixed
-        return NodeExt.CreateLabel("Fertility: " + t.Poly.GetFertility());
+        return NodeExt.CreateLabel("Fertility: " + t.Poly(d).GetFertility());
     }
 
     private static Control GetVeg(PolyTriPosition t, Data d)
     {
-        var tri = t.Tri;
+        var tri = t.Tri(d);
         if (tri == null) return null; //todo this should be fixed when the tri holes are fixed
-        return NodeExt.CreateLabel("Landform: " + t.Tri.Vegetation.Name);
+        return NodeExt.CreateLabel("Landform: " + tri.Vegetation.Name);
     }
 
     private static Control GetLandform(PolyTriPosition t, Data d)
     {
-        var tri = t.Tri;
+        var tri = t.Tri(d);
         if (tri == null) return null; //todo this should be fixed when the tri holes are fixed
-        return NodeExt.CreateLabel("Landform: " + t.Tri.Landform.Name);
+        return NodeExt.CreateLabel("Landform: " + tri.Landform.Name);
     }
 
     private static Control GetRegime(PolyTriPosition t, Data d)
     {
-        var txt = "Regime: " + (t.Poly.Regime.Empty()
+        var polyR = t.Poly(d).Regime;
+        var txt = "Regime: " + (polyR.Empty()
             ? "None"
-            : t.Poly.Regime.Entity().Name);
+            : polyR.Entity().Name);
         return NodeExt.CreateLabel(txt);
     }
 
     private static Control GetPeeps(PolyTriPosition t, Data d)
     {
-        var peeps = t.Poly.GetPeeps(d);
+        var peeps = t.Poly(d).GetPeeps(d);
         var txt = "Num Peeps: " + (peeps != null ? 
-            t.Poly.GetPeeps(d).Count().ToString() 
+            peeps.Count().ToString() 
             : "0");
         return NodeExt.CreateLabel(txt);
     }
 
     private static Control GetId(PolyTriPosition t, Data d)
     {
-        return NodeExt.CreateLabel("Poly Id: " + t.Poly.Id.ToString());
+        return NodeExt.CreateLabel("Poly Id: " + t.Poly(d).Id.ToString());
     }
 
     
@@ -101,7 +102,7 @@ public class PolyDataTooltipTemplate : DataTooltipTemplate<PolyTriPosition>
     private static Control GetResourceDeposits(PolyTriPosition t, Data d)
     {
     
-        var rs = t.Poly.GetResourceDeposits(d);
+        var rs = t.Poly(d).GetResourceDeposits(d);
         if (rs != null)
         {
             var label = new Label();
@@ -119,14 +120,14 @@ public class PolyDataTooltipTemplate : DataTooltipTemplate<PolyTriPosition>
 
     private static Control GetSettlementSize(PolyTriPosition t, Data d)
     {
-        return  d.Society.SettlementAux.ByPoly[t.Poly] is Settlement s
+        return  d.Society.SettlementAux.ByPoly[t.Poly(d)] is Settlement s
             ? NodeExt.CreateLabel("Settlement Size: " + s.Size)
             : null;
     }
 
     private static Control GetSettlementName(PolyTriPosition t, Data d)
     {
-        return  d.Society.SettlementAux.ByPoly[t.Poly] is Settlement s
+        return  d.Society.SettlementAux.ByPoly[t.Poly(d)] is Settlement s
             ? NodeExt.CreateLabel("Settlement Name: " + s.Name)
             : null;
     }

@@ -5,4 +5,13 @@ public static class PolyTriExt
     {
         return t.Landform.FertilityMod * t.Vegetation.FertilityMod;
     }
+
+    public static bool HasBuilding(this PolyTri t, Data data)
+    {
+        return data.Society.BuildingAux.ByTri[t] != null;
+    }
+    public static Building GetBuilding(this PolyTri t, Data data)
+    {
+        return data.Society.BuildingAux.ByTri[t];
+    }
 }
