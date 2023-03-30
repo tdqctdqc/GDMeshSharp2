@@ -51,7 +51,7 @@ public partial class MapPolygon : Entity,
             0f,
             0f,
             new EntityRef<Regime>(-1),
-            PolyTris.Create(new List<PolyTri>(), key),
+            PolyTris.Create(new List<PolyTri>(), null, key),
             true
         );
         key.Create(p);

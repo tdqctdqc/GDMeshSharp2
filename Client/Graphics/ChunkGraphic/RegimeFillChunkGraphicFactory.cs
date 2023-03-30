@@ -11,11 +11,16 @@ public class RegimeFillChunkGraphicFactory : ChunkGraphicFactory
 
     public override Node2D GetNode(MapChunk c, Data d)
     {
-        return new PolygonChunkGraphic(
+        return new PolyFillChunkGraphic(
             c, d,
             p => p.Regime.Empty()
-                ? Colors.Transparent
-                : new Color(p.Regime.Entity().PrimaryColor, .4f)
+                    ? Colors.Transparent
+                    : p.Regime.Entity().PrimaryColor,
+            1f, 
+            p =>
+            {
+                p.Modulate = new Color(p.Modulate, Game.I.Client.Cam.ScaledZoomOut);
+            }
         );
     }
 }

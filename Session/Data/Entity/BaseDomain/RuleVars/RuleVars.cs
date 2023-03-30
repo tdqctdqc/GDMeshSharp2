@@ -13,7 +13,7 @@ public class RuleVars : Entity
     public static RuleVars CreateDefault(GenWriteKey key)
     {
         var v = new RuleVars(
-            10,
+            1,
             key.IdDispenser.GetID());
         key.Create(v);
         return v;

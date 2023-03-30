@@ -9,8 +9,8 @@ public class Farm : ProductionBuilding
         : base(ItemManager.Food, nameof(Farm), false, 100f)
     {
     }
-    public override int PeepsLaborReq { get; } = 2;
-    public override int FullProduction { get; } = 50;
+    public override int PeepsLaborReq { get; } = 200;
+    public override int FullProduction { get; } = 1000;
     public override HashSet<PeepJob> JobTypes { get; }
         = new HashSet<PeepJob> { PeepJobManager.Farmer };
 

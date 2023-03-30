@@ -22,7 +22,18 @@ public static class SorterExt
         return dic;
     }
     
-
+    public static Dictionary<TKey, int> Sort<TKey, TSource>(this IEnumerable<TSource> sources,
+        Func<TSource, TKey> getKey, Func<TSource, int> getValue)
+    {
+        var dic = new Dictionary<TKey, int>();
+        foreach (var source in sources)
+        {
+            var key = getKey(source);
+            var val = getValue(source);
+            dic.AddOrSum(key, val);
+        }
+        return dic;
+    }
     
     
 }

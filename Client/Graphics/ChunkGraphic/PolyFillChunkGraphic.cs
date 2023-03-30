@@ -4,25 +4,36 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class PolygonChunkGraphic : Node2D
+public class PolyFillChunkGraphic : Node2D
 {
-    public PolygonChunkGraphic(MapChunk chunk, Data data, Func<MapPolygon, Color> getColor, bool labels = false)
+    private Action _update;
+    public PolyFillChunkGraphic(MapChunk chunk, Data data, Func<MapPolygon, Color> getColor, 
+        float transparency = 1f, 
+        Action<PolyFillChunkGraphic> update = null)
     {
+        _update = () => update(this);
         var mb = new MeshBuilder();
         mb.AddPolysRelative(chunk.RelTo, chunk.Polys, getColor, data);
         var mesh = mb.GetMeshInstance();
         AddChild(mesh);
-        if (labels) AddLabels(chunk.Polys, data);
+        Modulate = new Color(Colors.Transparent, transparency);
     }
 
-    private PolygonChunkGraphic()
+    private PolyFillChunkGraphic()
     {
         
     }
+
+    public override void _Process(float delta)
+    {
+        _update?.Invoke();
+    }
+
     private void AddLabels(IEnumerable<MapPolygon> polys, Data data)
     {
         var mb = new MeshBuilder();
-        mb.AddPointMarkers(polys.Select(p => polys.First().GetOffsetTo(p, data)).ToList(), 40f, Colors.White);
+        mb.AddPointMarkers(polys.Select(p => polys.First().GetOffsetTo(p, data)).ToList(), 
+            40f, Colors.White);
         var backgrounds = mb.GetMeshInstance();
         AddChild(backgrounds);
         foreach (var p in polys)

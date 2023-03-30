@@ -12,6 +12,7 @@ public class DelaunayTriangulator
         var tris = new List<Triangle>();
         for (int i = 0; i < d.Triangles.Length; i+=3)
         {
+            var triIndex = i / 3;
             var pointId1 = d.Triangles[i];
             var dPoint1 = d.Points[pointId1];
             
@@ -20,11 +21,43 @@ public class DelaunayTriangulator
             
             var pointId3 = d.Triangles[i + 2];
             var dPoint3 = d.Points[pointId3];
+            var adj = d.TrianglesAdjacentToTriangle(triIndex);
+            
             tris.Add(new Triangle(dPoint1.GetV2(), dPoint2.GetV2(), dPoint3.GetV2()));
         }
         return tris;
     }
-    
+    public static List<T> TriangulatePointsAndGetTriAdjacencies<T>(List<Vector2> points,
+        IGraph<T, bool> graph,  Func<Vector2,Vector2,Vector2,T> constructor) where T : Triangle
+    {
+        var d = new Delaunator(points.Select(p => new DelaunatorPoint(p)).ToArray());
+        var tris = new List<T>();
+        for (int i = 0; i < d.Triangles.Length; i+=3)
+        {
+            var triIndex = i / 3;
+            var pointId1 = d.Triangles[i];
+            var dPoint1 = d.Points[pointId1];
+            
+            var pointId2 = d.Triangles[i + 1];
+            var dPoint2 = d.Points[pointId2];
+            
+            var pointId3 = d.Triangles[i + 2];
+            var dPoint3 = d.Points[pointId3];
+            var tri = constructor(dPoint1.GetV2(), dPoint2.GetV2(), dPoint3.GetV2());
+            tris.Add(tri);
+            graph.AddNode(tri);
+        }
+        for (var i = 0; i < tris.Count; i++)
+        {
+            var adj = d.TrianglesAdjacentToTriangle(i);
+            var tri = tris[i];
+            foreach (var j in adj)
+            {
+                graph.AddEdge(tri, tris[j], true);
+            }
+        }
+        return tris;
+    }
     public class DelaunatorPoint : IPoint
     {
         public double X {get; set;}

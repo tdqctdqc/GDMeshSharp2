@@ -47,14 +47,14 @@ public class ProductionAndConsumptionModule : LogicModule
             if (buildings == null) continue;
             var peeps = poly.GetPeeps(data);
             if (peeps == null) continue;
-            var peepAvailCounts = peeps.GetCounts();
-
+            var peepAvailCounts = peeps.Sort(p => p.Job, p => p.Size);
+            
             foreach (var building in buildings)
             {
                 if (building.Model.Model() is ProductionBuilding rb)
                 {
                     var avail = peepAvailCounts
-                        .Where(kvp => rb.JobTypes.Contains(kvp.Key.Job.Model())).ToList();
+                        .Where(kvp => rb.JobTypes.Contains(kvp.Key.Model()));
                     if (avail.Count() == 0) continue;
                     var availNum = avail.Sum(kvp => kvp.Value);
                     if (availNum == 0) continue;
@@ -63,15 +63,19 @@ public class ProductionAndConsumptionModule : LogicModule
 
                     var toTakeAway = num;
                     
-                    foreach (var kvp in avail)
+                    
+                    var staffRatio = (float) num / rb.PeepsLaborReq;
+                    rb.Produce(gains, depletions, building, staffRatio, data);
+                    int iter = 0;
+                    while (num >= 0)
                     {
                         if (toTakeAway <= 0) break;
+                        var kvp = avail.ElementAt(iter);
+                        iter++;
                         var takingAway = Mathf.Min(toTakeAway, kvp.Value);
                         toTakeAway -= takingAway;
                         peepAvailCounts[kvp.Key] -= takingAway;
                     }
-                    var staffRatio = (float) num / rb.PeepsLaborReq;
-                    rb.Produce(gains, depletions, building, staffRatio, data);
                 }
             }
         }
@@ -82,7 +86,7 @@ public class ProductionAndConsumptionModule : LogicModule
     {
         var numPeeps = regime.Polygons
             .Where(p => p.GetPeeps(data) != null)
-            .SelectMany(p => p.GetPeeps(data)).Count();
+            .SelectMany(p => p.GetPeeps(data)).Sum(p => p.Size);
         var foodDesired = numPeeps * data.BaseDomain.Rules.FoodConsumptionPerPeep;
         demands.Add(ItemManager.Food, foodDesired);
         var foodStock = regime.Items[ItemManager.Food] + gains[ItemManager.Food];

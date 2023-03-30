@@ -49,11 +49,15 @@ public class MouseOverPolyHandler
             MouseOverPoly = data.Planet.PolygonAux.MapPolyGrid.GetElementAtPoint(mousePosMapSpace);
         }
         FindTri(MouseOverPoly, data, mousePosMapSpace);
-
-        var pos = new PolyTriPosition(MouseOverPoly.Id, MouseOverTri.Index);
-        Game.I.Client.Requests.MouseOver.Invoke(pos);
-        _instance.SetElement(pos);
-        Game.I.Client.Requests.PromptTooltip.Invoke(_instance);
+        
+        if(MouseOverTri != null)
+        {
+            var pos = new PolyTriPosition(MouseOverPoly.Id, MouseOverTri.Index);
+            Game.I.Client.Requests.MouseOver.Invoke(pos);
+            _instance.SetElement(pos);
+            Game.I.Client.Requests.PromptTooltip.Invoke(_instance);
+        }
+        
     }
     private void FindTri(MapPolygon p, Data data,  Vector2 mousePosMapSpace)
     {

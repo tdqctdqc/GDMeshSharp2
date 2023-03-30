@@ -18,6 +18,6 @@ public abstract class Item : IModel
         }
         Name = name;
         Color = color;
-        ResIcon = Icon.Create(Name, Icon.AspectRatio._1x1, 20f);
+        ResIcon = Icon.Create(Name, Icon.AspectRatio._1x1, 50f);
     }
 }

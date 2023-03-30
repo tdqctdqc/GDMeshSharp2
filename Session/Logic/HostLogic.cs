@@ -58,7 +58,7 @@ public class HostLogic : ILogic
                 DoFrame();
                 _sw.Stop();
                 if(_sw.Elapsed.TotalSeconds > _framePeriod) GD.Print("logic lagging");
-                GD.Print("frame time " + _sw.Elapsed.TotalMilliseconds);
+                // GD.Print("frame time " + _sw.Elapsed.TotalMilliseconds);
                 DoCommands(); 
                 _calculating = null;
             });

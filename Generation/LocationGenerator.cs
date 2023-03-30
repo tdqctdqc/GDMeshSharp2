@@ -34,7 +34,7 @@ public class LocationGenerator : Generator
         var unions = UnionFind.Find(landPolys.ToList(), (p, q) => p.Regime.Entity() == q.Regime.Entity(),
             p => p.Neighbors.Entities());
 
-        var dic = new ConcurrentDictionary<List<MapPolygon>, List<float>>();
+        var dic = new ConcurrentDictionary<List<MapPolygon>, List<int>>();
         
         Parallel.ForEach(unions, u =>
         {
@@ -51,7 +51,7 @@ public class LocationGenerator : Generator
         });
     }
     
-    private (List<MapPolygon> settlementPolys, List<float> settlementSizes)
+    private (List<MapPolygon> settlementPolys, List<int> settlementSizes)
         PregenerateSettlements(List<MapPolygon> regimeUnionPolys)
     {
         // float minSettlementScore = 1f;
@@ -88,7 +88,7 @@ public class LocationGenerator : Generator
             settlementPolys.Add(poly);
         }
         numSettlements = Math.Min(numSettlements, settlementPolys.Count);
-        var settlementSizes = new List<float>();
+        var settlementSizes = new List<int>();
 
         var tierSize = score;
         var tier = 1;
@@ -99,7 +99,7 @@ public class LocationGenerator : Generator
             for (var i = 0; i < tier; i++)
             {
                 if (settlementSizes.Count >= numSettlements) break;
-                settlementSizes.Add(tierSize);
+                settlementSizes.Add(Mathf.RoundToInt(tierSize));
             }
             tier++;
         }
@@ -108,7 +108,7 @@ public class LocationGenerator : Generator
         return (settlementPolys, settlementSizes);
     }
 
-    private void CreateSettlements(List<MapPolygon> settlementPolys, List<float> settlementSizes)
+    private void CreateSettlements(List<MapPolygon> settlementPolys, List<int> settlementSizes)
     {
         var numSettlements = Mathf.Min(settlementPolys.Count, settlementSizes.Count);
         for (var i = 0; i < numSettlements; i++)
@@ -121,7 +121,7 @@ public class LocationGenerator : Generator
                 p, size, _key);
         }
     }
-    private void SetUrbanTris(List<MapPolygon> settlementPolys, List<float> settlementSizes)
+    private void SetUrbanTris(List<MapPolygon> settlementPolys, List<int> settlementSizes)
     {
         var numSettlements = Mathf.Min(settlementPolys.Count, settlementSizes.Count);
         var sizeForFirstTri = 2f;

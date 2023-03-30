@@ -5,20 +5,29 @@ using Godot;
 public class PolyTri : Triangle
 {
     public byte Index { get; private set; }
+    public int NeighborStartIndex { get; private set; }
+    public int NeighborCount { get; private set; }
     public Landform Landform => LandformModel.Model();
     public Vegetation Vegetation => VegetationModel.Model();
     public ModelRef<Landform> LandformModel { get; private set; }
     public ModelRef<Vegetation> VegetationModel { get; private set; }
 
+    public static PolyTri Construct(Vector2 a, Vector2 b, Vector2 c, ModelRef<Landform> landformModel, 
+        ModelRef<Vegetation> vegetationModel)
+    {
+        return new PolyTri(a, b, c, landformModel, vegetationModel,
+            (byte) 255, -1, 0);
+    }
     public PolyTri(Vector2 a, Vector2 b, Vector2 c, ModelRef<Landform> landformModel, 
-        ModelRef<Vegetation> vegetationModel, byte index)
+        ModelRef<Vegetation> vegetationModel, byte index, int neighborStartIndex, int neighborCount)
     : base(a,b,c)
     {
         Index = index;
         LandformModel = landformModel;
         VegetationModel = vegetationModel;
+        NeighborCount = neighborCount;
+        NeighborStartIndex = neighborStartIndex;
     }
-
     public void SetLandform(Landform lf, GenWriteKey key)
     {
         LandformModel = lf.MakeRef();
@@ -28,6 +37,14 @@ public class PolyTri : Triangle
         VegetationModel = v.MakeRef();
     }
 
+    public void SetNeighborStart(int start, GenWriteKey key)
+    {
+        NeighborStartIndex = start;
+    }
+    public void SetNeighborCount(int count, GenWriteKey key)
+    {
+        NeighborCount = count;
+    }
     public void SetIndex(byte index, GenWriteKey key)
     {
         Index = index;
@@ -35,6 +52,7 @@ public class PolyTri : Triangle
     public PolyTri Transpose(Vector2 offset)
     {
         return new PolyTri(A + offset, B + offset, C + offset, 
-            LandformModel.Copy(), VegetationModel.Copy(), Index);
+            LandformModel.Copy(), VegetationModel.Copy(), Index,
+            NeighborStartIndex, NeighborCount);
     }
 }

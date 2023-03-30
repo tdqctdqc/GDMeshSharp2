@@ -15,7 +15,7 @@ public class VegetationManager : TerrainAspectManager<Vegetation>
     
     public static Vegetation Desert = new Vegetation(
         new HashSet<Landform>{LandformManager.Hill, LandformManager.Plain}, 
-        0f, .05f, Colors.Tan, "Desert", true);
+        0f, .2f, Colors.Tan, "Desert", true);
     
     public static Vegetation Barren = new Vegetation(
         new HashSet<Landform>{LandformManager.Mountain, LandformManager.Peak, LandformManager.Urban, LandformManager.River, LandformManager.Sea}, 

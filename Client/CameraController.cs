@@ -4,10 +4,13 @@ using System.Collections.Generic;
 
 public class CameraController : Camera2D, ICameraController
 {
+    public float ScaledZoomOut => _zoomLevel / _maxZoomLevel;
+    public float ZoomOut => Zoom.x;
+
     private float _udScrollSpeed = 1000f;
     private float _lrScrollSpeed = .02f;
     private float _zoomIncr = .01f;
-    private float _zoomLevel = 1f;
+    private float _zoomLevel = .9f;
     private float _maxZoom = 50f;
     private float _minZoom = .5f;
     private float _minZoomLevel = .05f;
@@ -27,6 +30,7 @@ public class CameraController : Camera2D, ICameraController
     }
     public void Setup(Data data)
     {
+        
         _data = data;
     }
     

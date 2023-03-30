@@ -113,36 +113,42 @@ public class PolyTriGenerator : Generator
     private void BuildTris(MapPolygon poly, GenWriteKey key)
     {
         List<PolyTri> tris;
+        var graph = new Graph<PolyTri, bool>();
         if (poly.IsWater())
         {
             tris = DoSeaPoly(poly, key);
         }
-        else if (poly.Neighbors.Entities().Any(n => _riverBorders.ContainsKey(poly.GetEdge(n, _data))))
-        {
-            tris = DoRiverPoly(poly, key);
-        }
+        // else if (poly.Neighbors.Entities().Any(n => _riverBorders.ContainsKey(poly.GetEdge(n, _data))))
+        // {
+        //     tris = DoRiverPoly(poly, key);
+        // }
         else
         {
             tris = DoLandPolyNoRivers(poly, key);
         }
-        var polyTerrainTris = PolyTris.Create(tris, key);
+            
+        var polyTerrainTris = PolyTris.Create(tris,  null, key);
         poly.SetTerrainTris(polyTerrainTris, key);
     }
-
+    
     private List<PolyTri> DoSeaPoly(MapPolygon poly, GenWriteKey key)
     {
         var borderSegsRel = poly.GetOrderedBoundarySegs(key.Data);
         var lf = _data.Models.Landforms;
         var v = _data.Models.Vegetation;
-        var points = new List<Vector2> {Vector2.Zero};
-        points.AddRange(borderSegsRel.GetPoints());
+        var points = borderSegsRel.GetPoints().ToList();
+        
+            
+            
+            
+        points.Add(Vector2.Zero);
         
         var tris = DelaunayTriangulator.TriangulatePoints(points)
             .Select(t =>
             {
-                return new PolyTri(t.A, t.B, t.C, 
+                return PolyTri.Construct(t.A, t.B, t.C, 
                     LandformManager.Sea.MakeRef(), 
-                    VegetationManager.Barren.MakeRef(), (byte)255);
+                    VegetationManager.Barren.MakeRef());
             })
             .ToList();
         return tris;
@@ -151,9 +157,20 @@ public class PolyTriGenerator : Generator
     private List<PolyTri> DoLandPolyNoRivers(MapPolygon poly, GenWriteKey key)
     {
         var borderSegs = poly.GetOrderedBoundarySegs(key.Data);
-        var points = borderSegs.GenerateInteriorPoints(50f, 10f)
-            .ToHashSet();
-        var tris = borderSegs.PolyTriangulate(key.GenData, poly, _idd, points);
+        var points = borderSegs.GetPoints().ToList();
+        points.AddRange(borderSegs.GenerateInteriorPoints(50f, 10f));
+        var graph = new Graph<PolyTri, bool>();
+        var tris = DelaunayTriangulator.TriangulatePointsAndGetTriAdjacencies<PolyTri>
+        (
+            points, 
+            graph,
+            (a, b, c) =>
+            {
+                var lf = key.Data.Models.Landforms.GetAtPoint(poly, (a + b + c) / 3f, key.Data);
+                var v = key.Data.Models.Vegetation.GetAtPoint(poly, (a + b + c) / 3f, lf, key.Data);
+                return PolyTri.Construct(a,b,c,lf.MakeRef(), v.MakeRef());
+            }
+        );
 
         return tris;
     }
@@ -194,8 +211,8 @@ public class PolyTriGenerator : Generator
             .Select(i => boundarySegs.Modulo(rSegIndex + i))
             .ToList();
 
-        var rTri = new PolyTri(rSeg.From, rSeg.To, Vector2.Zero, LandformManager.River.MakeRef(), 
-            VegetationManager.Barren.MakeRef(), (byte)255);
+        var rTri = PolyTri.Construct(rSeg.From, rSeg.To, Vector2.Zero, LandformManager.River.MakeRef(), 
+            VegetationManager.Barren.MakeRef());
         tris.Add(rTri);
         var outline = GetOutline(poly, Vector2.Zero, between);
         var count1 = outline.Count / 2;
@@ -251,21 +268,21 @@ public class PolyTriGenerator : Generator
 
             if (riverSegs.Count == 2)
             {
-                tris.Add(new PolyTri(rSeg.From, rSeg.To, nextIntersect,
-                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef(), (byte)255));
-                tris.Add(new PolyTri(rSeg.From, nextIntersect, -nextIntersect,
-                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef(), (byte)255));
+                tris.Add(PolyTri.Construct(rSeg.From, rSeg.To, nextIntersect,
+                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
+                tris.Add(PolyTri.Construct(rSeg.From, nextIntersect, -nextIntersect,
+                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
             }
             else
             {
-                tris.Add(new PolyTri(rSeg.From, rSeg.To, Vector2.Zero,
-                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef(), (byte)255));
+                tris.Add(PolyTri.Construct(rSeg.From, rSeg.To, Vector2.Zero,
+                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
                 
-                tris.Add(new PolyTri(-nextIntersect, Vector2.Zero, nextRSeg.To, 
-                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef(), (byte)255));
+                tris.Add(PolyTri.Construct(-nextIntersect, Vector2.Zero, nextRSeg.To, 
+                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
                 
-                tris.Add(new PolyTri(rSeg.From, -nextIntersect, Vector2.Zero,
-                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef(), (byte)255));
+                tris.Add(PolyTri.Construct(rSeg.From, -nextIntersect, Vector2.Zero,
+                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
             }
         }
         

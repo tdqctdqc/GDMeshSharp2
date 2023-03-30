@@ -14,6 +14,6 @@ public class PolygonChunkGraphicFactory : ChunkGraphicFactory
 
     public override Node2D GetNode(MapChunk c, Data d)
     {
-        return new PolygonChunkGraphic(c, d, p => _getColor(p, d));
+        return new PolyFillChunkGraphic(c, d, p => _getColor(p, d));
     }
 }

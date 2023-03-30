@@ -7,4 +7,7 @@ public interface ICameraController
     Vector2 GetGlobalMousePosition();
     float XScrollRatio { get; }
     void Process(InputEvent e);
+    float ScaledZoomOut { get; }
+    float ZoomOut { get; }
+
 }

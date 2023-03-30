@@ -10,6 +10,6 @@ public class PeepJob : IModel
     public PeepJob(string name)
     {
         Name = name;
-        JobIcon = Icon.Create(Name, Icon.AspectRatio._1x2, 30f);
+        JobIcon = Icon.Create(Name, Icon.AspectRatio._1x2, 75f);
     }
 }
