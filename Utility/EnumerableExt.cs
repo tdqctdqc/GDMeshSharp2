@@ -47,18 +47,19 @@ public static class EnumerableExt
     }
     public static List<T> GetDistinctRandomElements<T>(this IEnumerable<T> enumerable, int n)
     {
-        var indices = new HashSet<int>();
         var choices = new List<T>(enumerable);
-        var count = choices.Count();
+        var indices = new HashSet<int>();
+        var count = choices.Count;
+        int iter = 0;
         while (indices.Count < n)
         {
-            indices.Add(Game.I.Random.RandiRange(0, count - 1));
+            indices.Add(Game.I.Random.RandiRange(iter, count - 1 - iter));
+            iter++;
         }
 
         return indices.Select(i => choices[i]).ToList();
     }
     
-
     public static float Product(this IEnumerable<float> floats)
     {
         var res = 1f;

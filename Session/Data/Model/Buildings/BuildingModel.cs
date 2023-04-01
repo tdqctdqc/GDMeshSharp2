@@ -10,10 +10,14 @@ public abstract class BuildingModel : IModel
     {
         Name = name;
         BuildCost = buildCost;
-        BuildingIcon = Icon.Create(Name, Icon.AspectRatio._1x1, 20f);
+        BuildingIcon = Icon.Create(Name, Icon.AspectRatio._1x1, 25f);
     }
 
-    public abstract bool CanBuildInTri(PolyTri t, Data data);
+    protected abstract bool CanBuildInTriSpec(PolyTri t, Data data);
     public abstract bool CanBuildInPoly(MapPolygon p, Data data);
-    
+
+    public bool CanBuildInTri(PolyTri t, Data data)
+    {
+        return t.GetBuilding(data) == null && CanBuildInTriSpec(t, data);
+    }
 }

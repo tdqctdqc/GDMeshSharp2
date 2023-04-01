@@ -6,6 +6,7 @@ public class CameraController : Camera2D, ICameraController
 {
     public float ScaledZoomOut => _zoomLevel / _maxZoomLevel;
     public float ZoomOut => Zoom.x;
+    public float MaxZoomOut => _maxZoom;
 
     private float _udScrollSpeed = 1000f;
     private float _lrScrollSpeed = .02f;

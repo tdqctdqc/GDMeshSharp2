@@ -6,7 +6,6 @@ using Godot;
 
 public class MapGraphics : Node2D
 {
-
     public MapGraphics()
     {
         

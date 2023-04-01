@@ -7,7 +7,7 @@ public class AuxMultiIndexer<TSingle, TMult> : AuxData<TMult>
     where TMult : Entity
 {
     public HashSet<TMult> this[TSingle s] => _dic.ContainsKey(s) 
-        ? _dic[s].Select(i => Game.I.RefFulfiller.Get<TMult>(i.Id)).ToHashSet() 
+        ? _dic[s].ToHashSet() 
         : null;
     protected Dictionary<TSingle, HashSet<TMult>> _dic;
     private Func<TMult, TSingle> _getSingle;

@@ -3,36 +3,31 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class Mine : ProductionBuilding
+public class Mine : ExtractionBuildingModel
 {
-    public Mine(string name, Item item) 
-        : base(item, name, true, 100f)
+    public Mine(string name, Item prodItem) 
+        : base(prodItem, name, true, 100f)
     {
-        if (item.Attributes.Has<MineableAttribute>() == false) throw new Exception();
+        if (prodItem.Attributes.Has<MineableAttribute>() == false) throw new Exception();
     }
-    public override int PeepsLaborReq { get; } = 5;
-    public override HashSet<PeepJob> JobTypes { get; }
-        = new HashSet<PeepJob>
-        {
-            PeepJobManager.Laborer
-        };
+    public override int PeepsLaborReq { get; } = 500;
+    public override PeepJob JobType { get; }
+        = PeepJobManager.Miner;
 
-    public override int FullProduction { get; } = 10;
-    protected override float GetProductionRatio(Building p, float staffingRatio, Data data)
+    public override int ProductionCap { get; } = 10;
+    public override float GetProductionRatio(Building p, float staffingRatio, Data data)
     {
         return staffingRatio;
     }
 
-    public override bool CanBuildInTri(PolyTri t, Data data) => CanBuildInTri(t);
-
+    protected override bool CanBuildInTriSpec(PolyTri t, Data data) => CanBuildInTri(t);
     public static bool CanBuildInTri(PolyTri t)
     {
         return t.Landform.IsLand;
     }
-
     public override bool CanBuildInPoly(MapPolygon p, Data data)
     {
         var ds = p.GetResourceDeposits(data);
-        return ds != null && ds.Any(d => d.Item.Model() == Item);
+        return ds != null && ds.Any(d => d.Item.Model() == ProdItem);
     }
 }

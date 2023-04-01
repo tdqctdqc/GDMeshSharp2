@@ -106,4 +106,9 @@ public static class MapPolygonExt
     {
         return data.Society.SettlementAux.ByPoly.ContainsKey(p) ? data.Society.SettlementAux.ByPoly[p] : null;
     }
+
+    public static bool HasPeeps(this MapPolygon poly, Data data)
+    {
+        return data.Planet.PolygonAux.PeepsInPoly[poly] != null;
+    }
 }

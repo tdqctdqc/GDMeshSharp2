@@ -14,6 +14,7 @@ public class Models
     public VegetationManager Vegetation { get; private set; }
     public PeepJobManager PeepJobs { get; private set; }
     public ItemManager Items { get; private set; }
+    public SettlementTierManager SettlementTiers { get; private set; }
     public BuildingModelManager Buildings { get; private set; }
     public RoadModelManager Roads { get; private set; }
     public Models()
@@ -32,6 +33,8 @@ public class Models
         AddManager(Buildings);
         Roads = new RoadModelManager();
         AddManager(Roads);
+        SettlementTiers = new SettlementTierManager();
+        AddManager(SettlementTiers);
     }
 
     public T GetModel<T>(string name)

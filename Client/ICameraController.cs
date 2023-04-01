@@ -8,6 +8,7 @@ public interface ICameraController
     float XScrollRatio { get; }
     void Process(InputEvent e);
     float ScaledZoomOut { get; }
+    float MaxZoomOut { get; }
     float ZoomOut { get; }
 
 }

@@ -18,7 +18,7 @@ public class Building : Entity
         return b;
     }
 
-    [SerializationConstructor] private Building(int id, PolyTriPosition position, ModelRef<BuildingModel> model) : base(id)
+    [SerializationConstructor] protected Building(int id, PolyTriPosition position, ModelRef<BuildingModel> model) : base(id)
     {
         Position = position;
         Model = model;

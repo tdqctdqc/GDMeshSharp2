@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/Farmer.svg-7a606ac76ad80e237690a173cbf3e877.stex"
+path="res://.import/City.svg-a7e2ec12b3af0ae8dbd07fd33aa47e4f.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Textures/Icons/Peep/Farmer.svg"
-dest_files=[ "res://.import/Farmer.svg-7a606ac76ad80e237690a173cbf3e877.stex" ]
+source_file="res://Assets/Textures/Icons/Settlement/City.svg"
+dest_files=[ "res://.import/City.svg-a7e2ec12b3af0ae8dbd07fd33aa47e4f.stex" ]
 
 [params]
 

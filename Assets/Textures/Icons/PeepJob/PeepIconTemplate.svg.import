@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/PeepIconTemplate.svg-aa68715e12ae8e36ccd6c123d3a8839e.stex"
+path="res://.import/PeepIconTemplate.svg-4c259bbc4909cadf510b8125f74de87a.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Textures/Icons/Peep/PeepIconTemplate.svg"
-dest_files=[ "res://.import/PeepIconTemplate.svg-aa68715e12ae8e36ccd6c123d3a8839e.stex" ]
+source_file="res://Assets/Textures/Icons/PeepJob/PeepIconTemplate.svg"
+dest_files=[ "res://.import/PeepIconTemplate.svg-4c259bbc4909cadf510b8125f74de87a.stex" ]
 
 [params]
 

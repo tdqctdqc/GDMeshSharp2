@@ -21,7 +21,7 @@ public class RegimeItemDisplay : HBoxContainer
         float width = 100f;
         RectMinSize = new Vector2(width, height);
         var amount = new Label();
-        var icon = item.ResIcon.GetTextureRect(Vector2.One * height);
+        var icon = item.Icon.GetTextureRect(Vector2.One * height);
         icon.RectMinSize = icon.RectSize;
         AddChild(icon);
         AddChild(amount);

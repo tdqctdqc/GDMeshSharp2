@@ -120,6 +120,7 @@ public class Data
         foreach (var eId in entityIds)
         {
             Entities.Remove(eId);
+            RefFulfiller.EntityRemoved(eId);
         }
     }
     public void RemoveEntity(int eId, StrongWriteKey key)
@@ -127,6 +128,7 @@ public class Data
         var e = Entities[eId];
         e.GetEntityTypeTreeNode().PropagateDestruction(e);
         Entities.Remove(eId);
+        RefFulfiller.EntityRemoved(eId);
         if (key is HostWriteKey hKey)
         {
             hKey.HostServer.QueueUpdate(EntityDeletionUpdate.Create(eId, hKey));

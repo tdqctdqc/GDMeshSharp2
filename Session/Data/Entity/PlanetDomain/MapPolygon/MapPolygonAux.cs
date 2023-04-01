@@ -27,8 +27,8 @@ public class MapPolygonAux : EntityAux<MapPolygon>
         AuxDatas = EntityValueCache<MapPolygon, PolyAuxData>.CreateTrigger(
             data,
             p => new PolyAuxData(p, data),
-            data.Planet.Polygons,
-            data.Notices.SetPolyShapes, data.Notices.FinishedStateSync
+             new RefAction[] {data.Notices.SetPolyShapes, data.Notices.FinishedStateSync},
+            new RefAction<Tuple<MapPolygon, PolyAuxData>>[]{}
         );
         data.Notices.SetPolyShapes.Subscribe(() => BuildPolyGrid(data));
         data.Notices.FinishedStateSync.Subscribe(() => BuildPolyGrid(data));

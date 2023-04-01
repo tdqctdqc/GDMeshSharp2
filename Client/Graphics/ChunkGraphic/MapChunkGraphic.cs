@@ -22,6 +22,7 @@ public class MapChunkGraphic : Node2D
             Roads,
             ResourceDepositPolyFill,
             Buildings,
+            Settlements,
             PolyIcons
         );
     }
@@ -39,6 +40,8 @@ public class MapChunkGraphic : Node2D
     }
     public static ChunkGraphicFactory Buildings { get; private set; }
         = new BuildingsChunkGraphicFactory(nameof(Buildings), true);
+    public static ChunkGraphicFactory Settlements { get; private set; }
+        = new SettlementsChunkGraphicFactory(nameof(Settlements), true);
     public static ChunkGraphicFactory RegimeFill { get; private set; }
         = new RegimeFillChunkGraphicFactory(nameof(RegimeFill), true);
     public static ChunkGraphicFactory RegimeBorders { get; private set; }

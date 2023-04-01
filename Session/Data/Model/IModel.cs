@@ -10,7 +10,7 @@ public interface IModel
 
 public static class IModelExt
 {
-    public static ModelRef<T> MakeRef<T>(this T model) where T : IModel
+    public static ModelRef<T> MakeRef<T>(this T model) where T : class, IModel
     {
         return new ModelRef<T>(model.Name);
     }

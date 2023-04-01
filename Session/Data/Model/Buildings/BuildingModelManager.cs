@@ -1,22 +1,21 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 public class BuildingModelManager : IModelManager<BuildingModel>
 {
     public Dictionary<string, BuildingModel> Models { get; private set; }
     public static Farm Farm { get; private set; } = new Farm();
-    public static Mine IronMine => Mines[ItemManager.Iron];
+    public static Mine IronMine { get; private set; } = new Mine(nameof(IronMine), ItemManager.Iron);
+    public static Factory Factory { get; private set; } = new Factory();
     public static Dictionary<Item, Mine> Mines { get; private set; }
         
     public BuildingModelManager()
     {
-        Models = new Dictionary<string, BuildingModel>();
-        Mines = new Dictionary<Item, Mine>
-        {
-            {ItemManager.Iron, new Mine(nameof(Iron) + nameof(Mine), ItemManager.Iron)}
-        }; 
-        AddBuildings(Mines.Values.ToArray());
-        AddBuildings(Farm);
+        var buildings = GetType().GetStaticPropertiesOfType<BuildingModel>();
+        Models = buildings.ToDictionary(b => b.Name, b => b);
+        Mines = buildings.SelectWhereOfType<BuildingModel, Mine>()
+            .ToDictionary(b => b.ProdItem, b => b);
     }
     private void AddBuildings(params BuildingModel[] models)
     {

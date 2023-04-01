@@ -6,13 +6,23 @@ using Godot;
 
 public class PolygonIconsChunkGraphic : Node2D
 {
-    private List<PolyIconGroups> _groups;
+    private MapChunk _chunk;
+    private Dictionary<int, IconGroups> _groups;
+    private Func<MapPolygon, IconGroups> _getIconGroups;
     private PolygonIconsChunkGraphic()
     {}
+
+    private HashSet<int> _updatePolyCache;
+    private RefAction<Tuple<Building, int>> _updatePoly;
+    private Data _data;
     public PolygonIconsChunkGraphic(MapChunk chunk, Data data, 
-        Func<MapPolygon, PolyIconGroups> getIconGroups)
+        Func<MapPolygon, IconGroups> getIconGroups)
     {
-        _groups = new List<PolyIconGroups>();
+        _updatePolyCache = new HashSet<int>();
+        _data = data;
+        _chunk = chunk;
+        _getIconGroups = getIconGroups;
+        _groups = new Dictionary<int, IconGroups>();
         var yMargin = 10f * Vector2.Down;
         foreach (var p in chunk.Polys)
         {
@@ -20,13 +30,56 @@ public class PolygonIconsChunkGraphic : Node2D
             var group = getIconGroups(p);
             group.Position = polyOffset;
             AddChild(group);
-            _groups.Add(group);
+            _groups.Add(p.Id, group);
         }
+
+        _updatePoly = new RefAction<Tuple<Building, int>>();
+        _updatePoly.Subscribe(a =>
+        {
+            var poly = a.Item1.Position.Poly(data);
+            if (_groups.ContainsKey(poly.Id))
+            {
+                _updatePolyCache.Add(poly.Id);
+            }
+        });
+        data.Society.BuildingAux.LaborersDelta.Subscribe(_updatePoly);
+    }
+
+    private void UpdatePolyIcons(MapPolygon p)
+    {
+        var oldGroup = _groups[p.Id];
+        _groups.Remove(p.Id);
+        var oldPos = oldGroup.Position;
+        oldGroup.QueueFree();
+        var newGroup = _getIconGroups(p);
+        newGroup.Position = oldPos;
+        AddChild(newGroup);
+        _groups[p.Id] = newGroup;
     }
     public override void _Process(float delta)
     {
-        _groups.ForEach(g => g.DoScaling());
+        foreach (var kvp in _groups)
+        {
+            kvp.Value.DoScaling();
+        }
+
+        var cache = _updatePolyCache;
+        _updatePolyCache = new HashSet<int>();
+        foreach (var id in cache)
+        {
+            UpdatePolyIcons(_data.Planet.Polygons[id]);
+        }
     }
-    
-    
+
+    public override void _Draw()
+    {
+        
+        base._Draw();
+    }
+
+    public override void _ExitTree()
+    {
+        _updatePoly.EndSubscriptions();
+        base._ExitTree();
+    }
 }

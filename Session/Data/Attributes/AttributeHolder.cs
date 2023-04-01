@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Godot;
 
 public class AttributeHolder<TAttr> where TAttr : GameAttribute
 {
@@ -19,5 +20,10 @@ public class AttributeHolder<TAttr> where TAttr : GameAttribute
     public bool Has<T>()
     {
         return Attributes.ContainsKey(typeof(T));
+    }
+
+    public T Get<T>() where T : TAttr
+    {
+        return (T) Attributes[typeof(T)];
     }
 }

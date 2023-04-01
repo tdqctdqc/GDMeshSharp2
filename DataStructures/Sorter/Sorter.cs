@@ -10,7 +10,7 @@ public abstract class Sorter
 
 public static class SorterExt
 {
-    public static Dictionary<TKey, List<TValue>> Sort<TKey, TValue>(this IEnumerable<TValue> vals,
+    public static Dictionary<TKey, List<TValue>> SortInto<TKey, TValue>(this IEnumerable<TValue> vals,
         Func<TValue, TKey> getKey)
     {
         var dic = new Dictionary<TKey, List<TValue>>();
@@ -22,7 +22,7 @@ public static class SorterExt
         return dic;
     }
     
-    public static Dictionary<TKey, int> Sort<TKey, TSource>(this IEnumerable<TSource> sources,
+    public static Dictionary<TKey, int> SortInto<TKey, TSource>(this IEnumerable<TSource> sources,
         Func<TSource, TKey> getKey, Func<TSource, int> getValue)
     {
         var dic = new Dictionary<TKey, int>();

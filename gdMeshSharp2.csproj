@@ -32,7 +32,6 @@
     <EmbeddedResource Remove="Client\StartScene\**" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Session\Logic\Modules\Peeps" />
     <Folder Include="Session\Message\Procedure\Diplomatic" />
     <Folder Include="Session\Message\Procedure\Production" />
   </ItemGroup>

@@ -45,7 +45,6 @@ public class GameClient : Node, IClient
         else
         {
             Graphics = graphics;
-            Graphics.GetParent().RemoveChild(Graphics);
         }
         AddChild(Graphics);
         BuildUi(session.Data, Key.Session.Server);

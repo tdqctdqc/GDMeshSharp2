@@ -6,28 +6,28 @@ using Godot;
 
 public class Iron : NaturalResource
 {
-    protected override float _overflowSize { get; } = 100f;
-    protected override float _minDepositSize { get; } = 10f;
+    protected override int _overflowSize { get; } = 100;
+    protected override int _minDepositSize { get; } = 10;
     protected override OverFlowType _overflow { get; } = OverFlowType.None;
     
     
     public Iron() 
         : base(nameof(Iron), Colors.Black.Lightened(.3f),
-            new MineableAttribute())
+            new MineableAttribute(), new ExtractableAttribute())
     {
     }
     protected override IFunction<float, float> DepositChanceFunction { get; }  = new ArctanFunction(100f);
-    protected override float GetDepositScore(MapPolygon p)
+    protected override int GetDepositScore(MapPolygon p)
     {
-        var score = 15f;
-        score += p.Roughness * 50f;
-        if (p.IsWater()) score *= .1f;
-        if(p.IsLand && p.Moisture >= VegetationManager.Swamp.MinMoisture * .75f) score += 20f;
+        var score = 15;
+        score = Mathf.FloorToInt(score + p.Roughness * 50);
+        if (p.IsWater()) score /= 10;
+        if(p.IsLand && p.Moisture >= VegetationManager.Swamp.MinMoisture * .75f) score += 20;
         return score;
     }
 
-    protected override float GenerateDepositSize(MapPolygon p)
+    protected override int GenerateDepositSize(MapPolygon p)
     {
-        return 150f * Game.I.Random.RandfRange(.5f, 2f);
+        return Mathf.FloorToInt(500 * Game.I.Random.RandfRange(.5f, 2f));
     }
 }

@@ -3,42 +3,54 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class PolyIconGroups : Node2D
+public class IconGroups : Node2D
 {
     public float Height { get; private set; }
     private static float _charHeight => _defaultTheme.DefaultFont.GetHeight();
     private static Theme _defaultTheme = (Theme)GD.Load("res://Assets/Themes/DefaultTheme.tres");
     private Action _drawNums;
-    private List<List<Node2D>> _groups;
+    private List<IIconGroupController> _groups;
+    private List<List<Node2D>> _groupNodes;
+    private List<List<Label>> _groupLabelNodes;
+    
     private List<float> _zoomCutoffs;
-    public PolyIconGroups(List<List<Icon>> groups, 
-        List<List<string>> labels, 
-        List<float> zoomCutoffs)
+
+    public IconGroups(List<IIconGroupController> groups)
     {
-        _groups = new List<List<Node2D>>();
-        _zoomCutoffs = zoomCutoffs;
+        _groups = groups;
+        _groupNodes = new List<List<Node2D>>();
+        _groupLabelNodes = new List<List<Label>>();
+        _zoomCutoffs = groups.Select(g => g.ZoomCutoff).ToList();
+        var icons = groups.Select(g => g.GetIcons()).ToList();
         var yMargin = 10f;
-        Height = groups.Sum(g => g.Max(i => i.Dimension.y + yMargin));
+        var heights = icons.Select(ic => ic.Max(i => i.GetHeight())).ToList();
+        Height = heights.Sum();
         this.ClearChildren();
         var yOffset = Vector2.Zero;
         var yStart = Vector2.Up * Height / 4f;
         for (var i = 0; i < groups.Count; i++)
         {
-            var groupHeight = groups[i].Max(g => g.Dimension.y);
             var groupOffset = yStart + yOffset;
-            yOffset += Vector2.Down * groupHeight + yMargin * Vector2.Down;
-            HandleIconGroup(groups[i], labels[i], groupOffset);
+            yOffset += Vector2.Down * heights[i] + yMargin * Vector2.Down;
+            HandleIconGroup(groups[i], icons[i],groupOffset);
         }
     }
 
-    private void HandleIconGroup(List<Icon> icons, List<string> labels, Vector2 yOffset)
+    private IconGroups()
     {
+    }
+
+    private void HandleIconGroup(IIconGroupController group, List<Icon> icons, Vector2 yOffset)
+    {
+        var labels = group.GetLabels();
         var margin = 10f;
         var totalWidth = icons.Sum(i => i.Dimension.x);
         var shift = totalWidth * Vector2.Left / 2f;
         var xOffset = Vector2.Zero;
         var mis = new List<Node2D>();
-        _groups.Add(mis);
+        var labelNodes = new List<Label>();
+        _groupLabelNodes.Add(labelNodes);
+        _groupNodes.Add(mis);
         for (var i = 0; i < icons.Count; i++)
         {
             var icon = icons[i];
@@ -50,6 +62,7 @@ public class PolyIconGroups : Node2D
             mi.Position = iconPos;
             AddChild(mi);
             var labelNode = NodeExt.CreateLabel(label);
+            labelNodes.Add(labelNode);
             labelNode.Align = Label.AlignEnum.Center;
             labelNode.RectScale = new Vector2(1f, -1f);
             labelNode.Theme = _defaultTheme;
@@ -64,14 +77,18 @@ public class PolyIconGroups : Node2D
         Scale = new Vector2(1, -1) * zoom;
         for (var i = 0; i < _groups.Count; i++)
         {
+            _groups[i].UpdateLabels(_groupLabelNodes[i]);
+        }
+        for (var i = 0; i < _groupNodes.Count; i++)
+        {
             var cutoff = _zoomCutoffs[i];
             if (zoom > cutoff)
             {
-                _groups[i].ForEach(g => g.Visible = false);
+                _groupNodes[i].ForEach(g => g.Visible = false);
             }
             else 
             {
-                _groups[i].ForEach(g => g.Visible = true);
+                _groupNodes[i].ForEach(g => g.Visible = true);
             }
         }
     }

@@ -16,4 +16,15 @@ public static class Apportioner
 
         return res;
     }
+    public static List<int> ApportionLinear<T>(int toApportion, IEnumerable<T> cands, Func<T, int> getScore)
+    {
+        var res = cands.Select(getScore).ToList();
+        var totalScore = res.Sum();
+        for (var i = 0; i < res.Count; i++)
+        {
+            res[i] = toApportion * res[i] / totalScore;
+        }
+
+        return res;
+    }
 }

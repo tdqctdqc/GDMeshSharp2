@@ -94,7 +94,7 @@ public class LocationGenerator : Generator
         var tier = 1;
         while (settlementSizes.Count < numSettlements)
         {
-            tierSize = score / tier;
+            tierSize = score / (tier * tier);
 
             for (var i = 0; i < tier; i++)
             {
@@ -124,7 +124,7 @@ public class LocationGenerator : Generator
     private void SetUrbanTris(List<MapPolygon> settlementPolys, List<int> settlementSizes)
     {
         var numSettlements = Mathf.Min(settlementPolys.Count, settlementSizes.Count);
-        var sizeForFirstTri = 2f;
+        var sizeForFirstTri = 10f;
         
         for (var i = 0; i < numSettlements; i++)
         {

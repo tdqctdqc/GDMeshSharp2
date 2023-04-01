@@ -36,19 +36,20 @@ public class PeepGenerator : Generator
     private void GenerateForRegime(Regime r)
     {
         var foodSurplus = GenerateFarmersForRegime(r);
-        GenerateLaborersForRegime(r, Mathf.FloorToInt(foodSurplus * .25f));
+        if (foodSurplus <= 0) return;
+        GenerateOthersForRegime(r, Mathf.FloorToInt(foodSurplus));
     }
     private int GenerateFarmersForRegime(Regime r)
     {
         var farmModel = BuildingModelManager.Farm;
         var farmLaborReq = farmModel.PeepsLaborReq;
-        var foodConPerPeep = _data.BaseDomain.Rules.FoodConsumptionPerPeep;
+        var foodConPerPeep = _data.BaseDomain.Rules.FoodConsumptionPerPeepPoint;
         var totalFoodProd = 0f;
         var farmerJob = PeepJobManager.Farmer;
-        var regimeFarmers = 0;
+        var regimePeepSize = 0;
         foreach (var poly in r.Polygons)
         {
-            var polyFarmers = 0;
+            var polyFarmerSize = 0;
             var buildings = poly.GetBuildings(_data);
             if (buildings == null) continue;
             var farms = buildings.Where(b => b.Model.Model() == farmModel);
@@ -56,44 +57,44 @@ public class PeepGenerator : Generator
             if (farmCount == 0) continue;
             foreach (var farm in farms)
             {
-                var farmProdCap = farmModel.FullProduction * farm.Position.Tri(_data).GetFertility();
-                var prodPerPeep = farmProdCap / farmLaborReq;
-                if (prodPerPeep < foodConPerPeep) continue;
-                var surplusPerFarmer = prodPerPeep - foodConPerPeep;
-                var surplusRatio = surplusPerFarmer / prodPerPeep;
-                var triFarmers = Mathf.CeilToInt(Mathf.Sqrt(surplusRatio) * farmLaborReq);
-                triFarmers = Mathf.Clamp(triFarmers, farmCount, farmCount * farmLaborReq);
-                polyFarmers += triFarmers;
-                totalFoodProd += ((float)triFarmers / farmLaborReq) * farmProdCap;
+                var farmProdCap = farmModel.ProductionCap 
+                                  * farmModel.GetProductionRatio(farm, 1f, _data);
+                var prodPerLabor = farmProdCap / farmLaborReq;
+                if (prodPerLabor < foodConPerPeep) continue;
+                polyFarmerSize += farmLaborReq;
+                totalFoodProd += farmProdCap;
             }
-
-            if (polyFarmers == 0) continue;
-            
+            if (polyFarmerSize == 0)
+            {
+                continue;
+            }
             Peep.Create(
                 poly,
-                farmerJob,
-                polyFarmers,
+                polyFarmerSize,
                 _key);
-            regimeFarmers += polyFarmers;
+            regimePeepSize += polyFarmerSize;
         }
 
-        return Mathf.FloorToInt(totalFoodProd - regimeFarmers * foodConPerPeep);
+        return Mathf.FloorToInt(totalFoodProd - regimePeepSize * foodConPerPeep);
     }
 
-    private void GenerateLaborersForRegime(Regime r, int foodBudget)
+    private void GenerateOthersForRegime(Regime r, int foodBudget)
     {
-        var foodConPerPeep = _data.BaseDomain.Rules.FoodConsumptionPerPeep;
-        var laborerJob = PeepJobManager.Laborer;
-        var numLaborers = (foodBudget / foodConPerPeep);
+        if (foodBudget <= 0) return;
+        var foodConPerPeep = _data.BaseDomain.Rules.FoodConsumptionPerPeepPoint;
+        var numOthers = foodBudget / foodConPerPeep;
         var polys = r.Polygons.Entities().ToList();
-        var portions = Apportioner.ApportionLinear(numLaborers, polys, laborDesire);
+        var portions = Apportioner.ApportionLinear(numOthers, polys, laborDesire);
         for (var i = 0; i < polys.Count; i++)
         {
             var num = Mathf.FloorToInt(portions[i]);
+            if (num < 0)
+            {
+                throw new Exception();
+            } 
             if (num == 0) continue;
             Peep.Create(
                 polys[i],
-                laborerJob,
                 num,
                 _key
             );
@@ -107,15 +108,12 @@ public class PeepGenerator : Generator
             if (buildings != null)
             {
                 var laborBuildings = buildings.Select(b => b.Model.Model())
-                    .SelectWhereOfType<BuildingModel, ProductionBuilding>()
-                    .Where(b => b.JobTypes.Contains(laborerJob));
+                    .SelectWhereOfType<BuildingModel, WorkBuildingModel>();
                 if (laborBuildings.Count() > 0)
                 {
                     res += laborBuildings.Sum(b => b.PeepsLaborReq);
                 }
             }
-
-            res += p.Tris.Tris.Where(t => t.Landform == LandformManager.Urban).Count() * 5;
             return res;
         }
     }

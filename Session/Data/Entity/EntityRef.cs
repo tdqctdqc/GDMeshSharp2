@@ -3,9 +3,11 @@ using System;
 using System.Collections.Generic;
 using MessagePack;
 
-[RefAttribute] 
-[MessagePackObject(keyAsPropertyName: true)] 
-public class EntityRef<TRef> : IRef where TRef : Entity
+public interface IEntityRef : IRef
+{
+    int RefId { get; }
+}
+public class EntityRef<TRef> : IEntityRef where TRef : Entity
 {
     public int RefId { get; private set; }
     private TRef _ref;
@@ -13,7 +15,7 @@ public class EntityRef<TRef> : IRef where TRef : Entity
     public EntityRef(TRef entity, CreateWriteKey key)
     {
         RefId = entity.Id;
-        _ref = entity;
+        key.Data.RefFulfiller.Fulfill(this);
     }
     public EntityRef(int refId)
     {
@@ -46,9 +48,22 @@ public class EntityRef<TRef> : IRef where TRef : Entity
     }
     public void SyncRef(Data data)
     {
-        _ref = (TRef) data[RefId];
+        if (data.Entities.ContainsKey(RefId))
+        {
+            _ref = (TRef) data[RefId];
+        }
+        else
+        {
+            ClearRef();
+        }
     }
 
+    public void ClearRef()
+    {
+        RefId = -1;
+        _ref = null;
+    }
+    
     public override string ToString()
     {
         return Empty() ? "Empty" : Entity().ToString();

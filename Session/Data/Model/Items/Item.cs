@@ -6,7 +6,7 @@ public abstract class Item : IModel
 {
     public string Name { get; private set; }
     public Color Color { get; private set; }
-    public Icon ResIcon { get; } 
+    public Icon Icon { get; } 
     public AttributeHolder<ItemAttribute> Attributes { get; private set; }
     
     protected Item(string name, Color color, params ItemAttribute[] attributes)
@@ -18,6 +18,6 @@ public abstract class Item : IModel
         }
         Name = name;
         Color = color;
-        ResIcon = Icon.Create(Name, Icon.AspectRatio._1x1, 50f);
+        Icon = Icon.Create(Name, Icon.AspectRatio._1x1, 50f);
     }
 }

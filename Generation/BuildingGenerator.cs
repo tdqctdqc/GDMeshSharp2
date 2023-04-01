@@ -23,6 +23,10 @@ public class BuildingGenerator : Generator
         report.StartSection();
         GenerateMines();
         report.StopSection(nameof(GenerateMines));
+
+        report.StartSection();
+        GenerateFactories();
+        report.StopSection(nameof(GenerateFactories));
         return report;
     }
 
@@ -66,10 +70,7 @@ public class BuildingGenerator : Generator
         var minSizeToGetOneMine = 20f;
         var depositSizePerMine = 100f;
         var mineTris = new ConcurrentDictionary<PolyTriPosition, Item>();
-        
         var mineable = _data.Models.Items.Models.Values.Where(v => v.Attributes.Has<MineableAttribute>());
-        
-        
         
         Parallel.ForEach(_data.Planet.Polygons.Entities, p =>
         {
@@ -104,6 +105,33 @@ public class BuildingGenerator : Generator
         {
             var mine = BuildingModelManager.Mines[p.Value];
             Building.Create(p.Key, mine, _key);
+        }
+    }
+
+    private void GenerateFactories()
+    {
+        var settlementSizePerFactory = 20;
+        var settlementSizeToGetOneFactory = 10;
+        var tris = new ConcurrentBag<PolyTriPosition>();
+        var factory = BuildingModelManager.Factory;
+        var settlements = _data.Society.Settlements.Entities;
+
+        Parallel.ForEach(settlements, s =>
+        {
+            if (s.Size < settlementSizeToGetOneFactory) return;
+            var poly = s.Poly.Entity();
+            var availTris = poly.Tris.Tris.Where(t => factory.CanBuildInTri(t, _data)).ToList();
+            if (availTris.Count == 0) return;
+            var numFactories = Mathf.CeilToInt((float) s.Size / settlementSizePerFactory);
+            numFactories = Mathf.Min(numFactories, availTris.Count);
+            for (var i = 0; i < numFactories; i++)
+            {
+                tris.Add(new PolyTriPosition(poly.Id, availTris[i].Index));
+            }
+        });
+        foreach (var pos in tris)
+        {
+            Building.Create(pos, factory, _key);
         }
     }
 }

@@ -9,8 +9,8 @@ public class ChunkDecalGraphic : Node2D
     {
         var tris = chunk.Polys
             .SelectMany(p => p.Tris.Tris.Select(t => t.Transpose(chunk.RelTo.GetOffsetTo(p, data))));
-        var lfSort = tris.Sort(t => t.Landform);
-        var vegSort = tris.Sort(t => t.Vegetation);
+        var lfSort = tris.SortInto(t => t.Landform);
+        var vegSort = tris.SortInto(t => t.Vegetation);
         foreach (var kvp in lfSort)
         {
             if (kvp.Key is IDecaledTerrain d)

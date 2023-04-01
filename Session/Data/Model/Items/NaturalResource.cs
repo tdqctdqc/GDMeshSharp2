@@ -9,17 +9,17 @@ public abstract class NaturalResource : Item
         : base(name, color, attributes)
     {
     }
-    public Dictionary<MapPolygon, float> GenerateDeposits(Data data)
+    public Dictionary<MapPolygon, int> GenerateDeposits(Data data)
     {
         var polys = data.Planet.Polygons.Entities;
-        var deps = new Dictionary<MapPolygon, float>();
-        var scores = new Dictionary<MapPolygon, float>();
+        var deps = new Dictionary<MapPolygon, int>();
+        var scores = new Dictionary<MapPolygon, int>();
         foreach (var p in polys)
         {
             var score = scores.GetOrAdd(p, GetDepositScore);
             var chance = DepositChanceFunction.Calc(score);
             if (Game.I.Random.Randf() > chance) continue;
-            var size = GenerateDepositSize(p) + (deps.ContainsKey(p) ? deps[p] : 0f);
+            var size = GenerateDepositSize(p) + (deps.ContainsKey(p) ? deps[p] : 0);
             if (size < _minDepositSize) continue;
             deps.AddOrSum(p, size);
             if (deps[p] > _overflowSize) deps[p] = _overflowSize;
@@ -33,8 +33,8 @@ public abstract class NaturalResource : Item
         return deps;
     }
 
-    private void OverflowMult(MapPolygon p, Dictionary<MapPolygon, float> deps, 
-        Dictionary<MapPolygon, float> scores, float rem)
+    private void OverflowMult(MapPolygon p, Dictionary<MapPolygon, int> deps, 
+        Dictionary<MapPolygon, int> scores, int rem)
     {
         var neighbors = p.Neighbors.Entities();
         var portions = Apportioner.ApportionLinear(rem, neighbors, n => scores.GetOrAdd(n, GetDepositScore));
@@ -46,7 +46,7 @@ public abstract class NaturalResource : Item
             if (deps[n] < _minDepositSize) deps.Remove(n);
         }
     }
-    private void OverflowSingle(MapPolygon p, Dictionary<MapPolygon, float> deps, float rem)
+    private void OverflowSingle(MapPolygon p, Dictionary<MapPolygon, int> deps, int rem)
     {
         var overflowPoly = p.Neighbors.Entities()
             .OrderBy(GetDepositScore)
@@ -58,10 +58,10 @@ public abstract class NaturalResource : Item
         }
     }
     protected abstract IFunction<float, float> DepositChanceFunction { get; }
-    protected abstract float GetDepositScore(MapPolygon p);
-    protected abstract float GenerateDepositSize(MapPolygon p);
-    protected abstract float _overflowSize { get; }
-    protected abstract float _minDepositSize { get; }
+    protected abstract int GetDepositScore(MapPolygon p);
+    protected abstract int GenerateDepositSize(MapPolygon p);
+    protected abstract int _overflowSize { get; }
+    protected abstract int _minDepositSize { get; }
     protected abstract OverFlowType _overflow { get; }
 
     protected enum OverFlowType

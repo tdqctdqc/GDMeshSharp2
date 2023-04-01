@@ -3,18 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class Farm : ProductionBuilding
+public class Farm : ProductionBuildingModel
 {
     public Farm() 
-        : base(ItemManager.Food, nameof(Farm), false, 100f)
+        : base(ItemManager.Food, nameof(Farm), 100f)
     {
     }
     public override int PeepsLaborReq { get; } = 200;
-    public override int FullProduction { get; } = 1000;
-    public override HashSet<PeepJob> JobTypes { get; }
-        = new HashSet<PeepJob> { PeepJobManager.Farmer };
+    public override int ProductionCap { get; } = 1000;
+    public override PeepJob JobType { get; }
+        = PeepJobManager.Farmer;
 
-    public override bool CanBuildInTri(PolyTri t, Data data)
+    protected override bool CanBuildInTriSpec(PolyTri t, Data data)
     {
         return t.Landform.IsLand
                && t.Landform.MinRoughness < LandformManager.Mountain.MinRoughness;
@@ -23,7 +23,7 @@ public class Farm : ProductionBuilding
     {
         return p.IsLand;
     }
-    protected override float GetProductionRatio(Building p, float staffingRatio, Data data)
+    public override float GetProductionRatio(Building p, float staffingRatio, Data data)
     {
          var tri = p.Position.Tri(data);
          return tri.Landform.FertilityMod * tri.Vegetation.FertilityMod * staffingRatio; 

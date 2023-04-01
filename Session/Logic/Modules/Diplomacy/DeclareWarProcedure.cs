@@ -1,15 +1,15 @@
 
 using MessagePack;
 
-public class DeclareWarPRocedure : Procedure
+public class DeclareWarProcedure : Procedure
 {
     public EntityRef<Regime> Declarer { get; private set; }
     public EntityRef<Regime> Declaree { get; private set; }
-    public static DeclareWarPRocedure Create(Regime declarer, Regime declaree)
+    public static DeclareWarProcedure Create(Regime declarer, Regime declaree)
     {
-        return new DeclareWarPRocedure(declarer.MakeRef(), declaree.MakeRef());
+        return new DeclareWarProcedure(declarer.MakeRef(), declaree.MakeRef());
     }
-    [SerializationConstructor] private DeclareWarPRocedure(EntityRef<Regime> declarer, EntityRef<Regime> declaree)
+    [SerializationConstructor] private DeclareWarProcedure(EntityRef<Regime> declarer, EntityRef<Regime> declaree)
     {
         Declarer = declarer;
         Declaree = declaree;

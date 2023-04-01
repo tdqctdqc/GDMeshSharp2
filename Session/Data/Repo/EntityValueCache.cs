@@ -15,9 +15,9 @@ public class EntityValueCache<TEntity, TValue> : AuxData<TEntity>
         return new EntityValueCache<TEntity, TValue>(data, get);
     }
     public static EntityValueCache<TEntity, TValue> CreateTrigger(Data data, Func<TEntity, TValue> get, 
-        EntityRegister<TEntity> repo, params RefAction[] triggers)
+        RefAction[] recalcTriggers, RefAction<Tuple<TEntity, TValue>>[] updateTriggers)
     {
-        return new EntityValueCache<TEntity, TValue>(data, get, triggers);
+        return new EntityValueCache<TEntity, TValue>(data, get, recalcTriggers, updateTriggers);
     }
 
     private EntityValueCache(Data data, Func<TEntity, TValue> get) : base(data)
@@ -26,25 +26,31 @@ public class EntityValueCache<TEntity, TValue> : AuxData<TEntity>
         _get = get;
         Initialize(data);
     }
-    private EntityValueCache(Data data, Func<TEntity, TValue> get, params RefAction[] triggers) : base(data)
+    private EntityValueCache(Data data, Func<TEntity, TValue> get, RefAction[] recalcTriggers,
+        RefAction<Tuple<TEntity, TValue>>[] updateTriggers) : base(data)
     {
         _dic = new Dictionary<TEntity, TValue>();
         _get = get;
-        foreach (var trigger in triggers)
+        foreach (var trigger in recalcTriggers)
         {
             trigger.Subscribe(() =>
             {
                 Initialize(data);
             });
         }
-        
+        foreach (var trigger in updateTriggers)
+        {
+            trigger.Subscribe(v =>
+            {
+                UpdateEntry(v.Item1, v.Item2);
+            });
+        }
         Initialize(data);
     }
     private void Initialize(Data data)
     {
         var register = data.GetRegister<TEntity>();
         _dic.Clear();
-        //todo multithread?
         foreach (var e in register.Entities)
         {
             if (_dic.ContainsKey((TEntity) e))
@@ -59,6 +65,11 @@ public class EntityValueCache<TEntity, TValue> : AuxData<TEntity>
                 _dic.Add((TEntity)e, v);
             }
         }
+    }
+
+    private void UpdateEntry(TEntity e, TValue newVal)
+    {
+        _dic[e] = newVal;
     }
     public override void HandleAdded(TEntity added)
     {

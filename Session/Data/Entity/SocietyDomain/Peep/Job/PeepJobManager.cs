@@ -1,22 +1,27 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Godot;
 
 public class PeepJobManager : IModelManager<PeepJob>
 {
-    public static PeepJob Farmer = new PeepJob(nameof(Farmer));
-    public static PeepJob Laborer = new PeepJob(nameof(Laborer));
+    public static PeepJob Farmer { get; private set; } 
+            = new PeepJob(nameof(Farmer));
+    public static PeepJob Laborer { get; private set; } 
+        = new PeepJob(nameof(Laborer));
+    public static PeepJob Miner { get; private set; } 
+        = new PeepJob(nameof(Miner));
+    public static PeepJob Unemployed { get; private set; } 
+        = new PeepJob(nameof(Unemployed));
     public Dictionary<string, PeepJob> Models { get; set; }
 
     public PeepJobManager()
     {
         Models = new Dictionary<string, PeepJob>();
-        AddJobs(new PeepJob[]
-        {
-            Farmer,
-            Laborer
-        });
+        var jobs = typeof(PeepJobManager).GetProperties(BindingFlags.Static | BindingFlags.Public)
+            .Where(p => typeof(PeepJob).IsAssignableFrom(p.PropertyType));
+        AddJobs(jobs.Select(p => (PeepJob) p.GetValue(null)).ToArray());
     }
 
     private void AddJobs(params PeepJob[] jobs)

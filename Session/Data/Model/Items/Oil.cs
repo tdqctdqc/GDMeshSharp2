@@ -4,26 +4,26 @@ using Godot;
 
 public class Oil : NaturalResource
 {
-    protected override float _overflowSize { get; } = 100f;
-    protected override float _minDepositSize { get; } = 10f;
+    protected override int _overflowSize { get; } = 100;
+    protected override int _minDepositSize { get; } = 10;
     protected override OverFlowType _overflow { get; } = OverFlowType.Multiple;
 
     public Oil() 
-        : base(nameof(Oil), Colors.Black)
+        : base(nameof(Oil), Colors.Black, new ExtractableAttribute())
     {
     }
 
     protected override IFunction<float, float> DepositChanceFunction { get; }  = new ArctanFunction(100f);
-    protected override float GetDepositScore(MapPolygon p)
+    protected override int GetDepositScore(MapPolygon p)
     {
-        var score = 0f;
-        score += 5f * (1f - p.Roughness);
+        var score = 0;
+        score = Mathf.FloorToInt(score + 5 * (1f - p.Roughness));
         return score;
     }
 
-    protected override float GenerateDepositSize(MapPolygon p)
+    protected override int GenerateDepositSize(MapPolygon p)
     {
-        return 100f * Game.I.Random.RandfRange(.5f, 2f);
+        return Mathf.FloorToInt(100 * Game.I.Random.RandfRange(.5f, 2f));
     }
 
 }

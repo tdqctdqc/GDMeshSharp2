@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MessagePack;
 
-public partial class EntityRefCollection<TRef>
+public class EntityRefCollection<TRef>
     : IRefCollection, IReadOnlyHash<TRef> where TRef : Entity
 {
     public HashSet<int> RefIds { get; private set; }
@@ -55,6 +55,12 @@ public partial class EntityRefCollection<TRef>
             TRef refer = (TRef) data[id];
             _refs.Add(id, refer);
         }
+    }
+
+    public void ClearRef()
+    {
+        RefIds.Clear();
+        _refs.Clear();
     }
 
     public void AddByProcedure(List<int> ids, ProcedureWriteKey key)

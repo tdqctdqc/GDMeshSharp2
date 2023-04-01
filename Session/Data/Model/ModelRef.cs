@@ -4,8 +4,7 @@ using System.Linq;
 using Godot;
 using MessagePack;
 
-[RefAttribute] 
-public class ModelRef<T> : IRef where T : IModel
+public class ModelRef<T> : IRef where T : class, IModel
 {
     public string ModelName { get; private set; }
     private T _ref;
@@ -37,5 +36,11 @@ public class ModelRef<T> : IRef where T : IModel
     public void SyncRef(Data data)
     {
         _ref = data.Models.GetModel<T>(ModelName);
+    }
+
+    public void ClearRef()
+    {
+        _ref = null;
+        ModelName = "";
     }
 }

@@ -11,12 +11,6 @@ public class RoadModelManager : IModelManager<RoadModel>
 
     public RoadModelManager()
     {
-        Models = new Dictionary<string, RoadModel>
-        {
-            {nameof(PavedRoad), PavedRoad},
-            {nameof(DirtRoad), DirtRoad},
-            {nameof(Railroad), Railroad},
-        };
-        
+        Models = GetType().GetStaticPropertiesOfType<RoadModel>().ToDictionary(r => r.Name, r => r);
     }
 }
