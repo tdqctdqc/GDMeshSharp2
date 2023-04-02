@@ -17,16 +17,16 @@ public class PolyIconsChunkGraphicFactory : ChunkGraphicFactory
         var peeps = p.GetPeeps(d);
         if (peeps != null)
         {
-            var pCon = new IconGroupController<KeyValuePair<PeepJob, int>>(
-                peeps.SelectMany(peep => peep.Jobs)
-                    .Where(kvp => kvp.Value.Count > 0)
-                    .SortInto(ja => ja.Value.Job.Model(), 
-                        ja => ja.Value.Count).ToList(),
-                kvp => kvp.Value.ToString(),
-                kvp => kvp.Key.JobIcon,
-                1.5f
-            );
-            groups.Add(pCon);
+            // var pCon = new IconGroupController<KeyValuePair<PeepJob, int>>(
+            //     peeps.SelectMany(peep => peep.Jobs)
+            //         .Where(kvp => kvp.Value.Count > 0)
+            //         .SortInto(ja => ja.Value.Job.Model(), 
+            //             ja => ja.Value.Count).ToList(),
+            //     kvp => kvp.Value.ToString(),
+            //     kvp => kvp.Key.JobIcon,
+            //     1.5f
+            // );
+            // groups.Add(pCon);
         }
         
         

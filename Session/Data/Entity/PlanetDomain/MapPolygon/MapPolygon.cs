@@ -22,9 +22,11 @@ public partial class MapPolygon : Entity,
     public EntityRef<Regime> Regime { get; protected set; }
     public PolyTris Tris { get; protected set; }
     public bool IsLand { get; protected set; }
+    public EmploymentReport Employment { get; private set; }
     [SerializationConstructor] private MapPolygon(int id, Vector2 center, EntityRefCollection<MapPolygon> neighbors, 
         Dictionary<int, PolyBorderChain> neighborBorders, Color color, float altitude, float roughness, 
-        float moisture, EntityRef<Regime> regime, PolyTris tris, bool isLand) : base(id)
+        float moisture, EntityRef<Regime> regime, PolyTris tris, bool isLand,
+        EmploymentReport employment) : base(id)
     {
         Center = center;
         Neighbors = neighbors;
@@ -36,6 +38,7 @@ public partial class MapPolygon : Entity,
         Regime = regime;
         Tris = tris;
         IsLand = isLand;
+        Employment = employment;
     }
 
     public static MapPolygon Create(Vector2 center, float mapWidth, GenWriteKey key)
@@ -52,7 +55,8 @@ public partial class MapPolygon : Entity,
             0f,
             new EntityRef<Regime>(-1),
             PolyTris.Create(new List<PolyTri>(), null, key),
-            true
+            true,
+            EmploymentReport.Construct()
         );
         key.Create(p);
         return p;
@@ -87,8 +91,11 @@ public partial class MapPolygon : Entity,
     {
         IsLand = isLand;
     }
-    
-    
+
+    public void SetEmploymentReport(EmploymentReport employment, ProcedureWriteKey key)
+    {
+        Employment = employment;
+    }
     PolyBorderChain IReadOnlyGraphNode<MapPolygon, PolyBorderChain>.GetEdge(MapPolygon neighbor) =>
         this.GetBorder(neighbor.Id);
     

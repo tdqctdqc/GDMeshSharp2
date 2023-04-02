@@ -68,15 +68,11 @@ public class PeepGenerator : Generator
             {
                 continue;
             }
-            for (var i = 0; i < 10; i++)
-            {
-                Peep.Create(
-                    poly,
-                    polyFarmerSize,
-                    _key);
-                regimePeepSize += polyFarmerSize;
-            }
-            
+            Peep.Create(
+                poly,
+                polyFarmerSize,
+                _key);
+            regimePeepSize += polyFarmerSize;
         }
 
         return Mathf.FloorToInt(totalFoodProd - regimePeepSize * foodConPerPeep);
@@ -97,15 +93,11 @@ public class PeepGenerator : Generator
                 throw new Exception();
             } 
             if (num == 0) continue;
-            for (var i1 = 0; i1 < 10; i1++)
-            {
-                Peep.Create(
-                    polys[i],
-                    num,
-                    _key
-                );
-            }
-            
+            Peep.Create(
+                polys[i],
+                num,
+                _key
+            );
         }
         
         

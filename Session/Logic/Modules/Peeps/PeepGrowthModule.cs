@@ -11,8 +11,8 @@ public class PeepGrowthModule : LogicModule
         var growths = new Dictionary<int, int>();
         foreach (var regime in data.Society.Regimes.Entities)
         {
-            var foodDemanded = regime.DemandHistory.GetLatest(ItemManager.Food.Name);
-            var foodProd = regime.ProdHistory.GetLatest(ItemManager.Food.Name);
+            var foodDemanded = regime.History.DemandHistory.GetLatest(ItemManager.Food.Name);
+            var foodProd = regime.History.ProdHistory.GetLatest(ItemManager.Food.Name);
             var surplusRatio = (float) foodProd / foodDemanded - 1f;
             if (surplusRatio > 0f)
             {

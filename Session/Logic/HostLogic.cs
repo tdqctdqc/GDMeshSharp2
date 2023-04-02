@@ -30,7 +30,7 @@ public class HostLogic : ILogic
         {
             new LogicFrame(),
             new LogicFrame(),
-            new LogicFrame(new AssignJobModule()),
+            new LogicFrame(),
             new LogicFrame(new WorkProdConsumeModule()),
             new LogicFrame(new PeepGrowthModule()),
         };

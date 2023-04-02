@@ -10,24 +10,27 @@ public class WorkProdConsumeProcedure : Procedure
     public Dictionary<int, EntityWallet<ResourceDeposit>> Depletions { get; private set; }
     public Dictionary<int, ItemWallet> ConsumptionsByRegime { get; private set; }
     public Dictionary<int, ItemWallet> DemandsByRegime { get; private set; }
+    public Dictionary<int, EmploymentReport> EmploymentReports { get; private set; }
 
-    public static WorkProdConsumeProcedure Create(Dictionary<int, ItemWallet> resourceGains, 
-        Dictionary<int, EntityWallet<ResourceDeposit>> depletions, Dictionary<int, ItemWallet> consumptions,
-        Dictionary<int, ItemWallet> demands)
+    public static WorkProdConsumeProcedure Create()
     {
-        return new WorkProdConsumeProcedure(resourceGains, depletions,
-            consumptions, demands);
+        return new WorkProdConsumeProcedure(new Dictionary<int, ItemWallet>(), 
+            new Dictionary<int, EntityWallet<ResourceDeposit>>(), 
+            new Dictionary<int, ItemWallet>(), new Dictionary<int, ItemWallet>(),
+            new Dictionary<int, EmploymentReport>());
     }
     [SerializationConstructor] private WorkProdConsumeProcedure(
         Dictionary<int, ItemWallet> regimeResourceGains, 
         Dictionary<int, EntityWallet<ResourceDeposit>> depletions,
         Dictionary<int, ItemWallet> consumptionsByRegime,
-        Dictionary<int, ItemWallet> demandsByRegime)
+        Dictionary<int, ItemWallet> demandsByRegime,
+        Dictionary<int, EmploymentReport> employmentReports)
     {
         RegimeResourceGains = regimeResourceGains;
         Depletions = depletions;
         ConsumptionsByRegime = consumptionsByRegime;
         DemandsByRegime = demandsByRegime;
+        EmploymentReports = employmentReports;
     }
 
     public override bool Valid(Data data)
@@ -39,6 +42,11 @@ public class WorkProdConsumeProcedure : Procedure
     {
         EnactProduce(key);
         EnactConsume(key);
+        foreach (var kvp in EmploymentReports)
+        {
+            var poly = key.Data.Planet.Polygons[kvp.Key];
+            poly.SetEmploymentReport(kvp.Value, key);
+        }
     }
 
     private void EnactProduce(ProcedureWriteKey key)
@@ -54,7 +62,7 @@ public class WorkProdConsumeProcedure : Procedure
                 var item = key.Data.Models.Items.Models[kvp2.Key];
                 r.Items.Add(item, kvp2.Value);
             }
-            r.ProdHistory.AddSnapshot(tick, snapshot, key);
+            r.History.ProdHistory.AddSnapshot(tick, snapshot, key);
         }
 
         foreach (var kvp in Depletions)
@@ -83,14 +91,14 @@ public class WorkProdConsumeProcedure : Procedure
                 var model = key.Data.Models.Items.Models[kvp2.Key];
                 r.Items.Remove(model, kvp2.Value);
             }
-            r.ConsumptionHistory.AddSnapshot(tick, snapshot, key);
+            r.History.ConsumptionHistory.AddSnapshot(tick, snapshot, key);
         }
         foreach (var kvp in DemandsByRegime)
         {
             var r = (Regime)key.Data[kvp.Key];
             var demands = kvp.Value.Contents;
             var snapshot = kvp.Value.GetSnapshot();
-            r.DemandHistory.AddSnapshot(tick, snapshot, key);
+            r.History.DemandHistory.AddSnapshot(tick, snapshot, key);
 
         }
     }

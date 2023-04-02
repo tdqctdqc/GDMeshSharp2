@@ -11,6 +11,7 @@ public class MapPolygonAux : EntityAux<MapPolygon>
     public PolyGrid MapPolyGrid { get; private set; }
     public HashSet<MapChunk> Chunks { get; private set; }
     public LandSeaManager LandSea { get; private set; }
+    
 
     public MapPolygonAux(Domain domain, Data data) : base(domain, data)
     {
@@ -24,12 +25,16 @@ public class MapPolygonAux : EntityAux<MapPolygon>
             new RefAction[]{data.Notices.FinishedStateSync, data.Notices.PopulatedWorld},
             new RefAction<ValChangeNotice<EntityRef<MapPolygon>>>[]{}
         );
-        AuxDatas = EntityValueCache<MapPolygon, PolyAuxData>.CreateTrigger(
+        AuxDatas = EntityValueCache<MapPolygon, PolyAuxData>.ConstructTrigger(
             data,
             p => new PolyAuxData(p, data),
              new RefAction[] {data.Notices.SetPolyShapes, data.Notices.FinishedStateSync},
             new RefAction<Tuple<MapPolygon, PolyAuxData>>[]{}
         );
+        
+        
+        
+        
         data.Notices.SetPolyShapes.Subscribe(() => BuildPolyGrid(data));
         data.Notices.FinishedStateSync.Subscribe(() => BuildPolyGrid(data));
         

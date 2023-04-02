@@ -43,7 +43,7 @@ public class PeepGrowthAndDeclineProcedure : Procedure
         foreach (var r in key.Data.Society.Regimes.Entities)
         {
             var peepCount = r.GetPeeps(key.Data).Count();
-            r.PeepHistory.Update(tick, peepCount, key);
+            r.History.PeepHistory.Update(tick, peepCount, key);
         }
     }
 }

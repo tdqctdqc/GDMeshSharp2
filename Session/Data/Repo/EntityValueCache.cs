@@ -10,11 +10,11 @@ public class EntityValueCache<TEntity, TValue> : AuxData<TEntity>
     protected Dictionary<TEntity, TValue> _dic;
     protected Func<TEntity, TValue> _get;
     
-    public static EntityValueCache<TEntity, TValue> CreateConstant(Data data, Func<TEntity, TValue> get)
+    public static EntityValueCache<TEntity, TValue> ConstructConstant(Data data, Func<TEntity, TValue> get)
     {
         return new EntityValueCache<TEntity, TValue>(data, get);
     }
-    public static EntityValueCache<TEntity, TValue> CreateTrigger(Data data, Func<TEntity, TValue> get, 
+    public static EntityValueCache<TEntity, TValue> ConstructTrigger(Data data, Func<TEntity, TValue> get, 
         RefAction[] recalcTriggers, RefAction<Tuple<TEntity, TValue>>[] updateTriggers)
     {
         return new EntityValueCache<TEntity, TValue>(data, get, recalcTriggers, updateTriggers);

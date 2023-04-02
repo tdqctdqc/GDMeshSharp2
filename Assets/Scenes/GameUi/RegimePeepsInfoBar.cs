@@ -41,7 +41,7 @@ public class RegimePeepsInfoBar : HBoxContainer
         var r = data.BaseDomain.PlayerAux.LocalPlayer.Regime;
         if (r.Empty() == false)
         {
-            return r.Entity().PeepHistory.GetLatestDelta();
+            return r.Entity().History.PeepHistory.GetLatestDelta();
         }
 
         return 0;
