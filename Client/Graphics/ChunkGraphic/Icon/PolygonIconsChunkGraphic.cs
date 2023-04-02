@@ -13,7 +13,7 @@ public class PolygonIconsChunkGraphic : Node2D
     {}
 
     private HashSet<int> _updatePolyCache;
-    private RefAction<Tuple<Building, int>> _updatePoly;
+    private RefAction<MapPolygon> _updatePoly;
     private Data _data;
     public PolygonIconsChunkGraphic(MapChunk chunk, Data data, 
         Func<MapPolygon, IconGroups> getIconGroups)
@@ -33,10 +33,9 @@ public class PolygonIconsChunkGraphic : Node2D
             _groups.Add(p.Id, group);
         }
 
-        _updatePoly = new RefAction<Tuple<Building, int>>();
-        _updatePoly.Subscribe(a =>
+        _updatePoly = new RefAction<MapPolygon>();
+        _updatePoly.Subscribe(poly =>
         {
-            var poly = a.Item1.Position.Poly(data);
             if (_groups.ContainsKey(poly.Id))
             {
                 _updatePolyCache.Add(poly.Id);

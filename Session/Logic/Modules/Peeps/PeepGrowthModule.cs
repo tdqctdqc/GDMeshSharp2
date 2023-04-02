@@ -23,7 +23,7 @@ public class PeepGrowthModule : LogicModule
                 HandleDecline(regime, -surplusRatio, growths, data);
             }
         }
-        queueMessage(new PeepGrowthProcedure(growths));
+        queueMessage(new PeepGrowthAndDeclineProcedure(growths));
     }
 
     private void HandleGrowth(Regime regime, float surplusRatio, Dictionary<int, int> growths,

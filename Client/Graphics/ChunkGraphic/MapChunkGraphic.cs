@@ -60,7 +60,7 @@ public class MapChunkGraphic : Node2D
     public static ChunkGraphicFactory Borders { get; private set; }
         = new BordersChunkGraphicFactory(nameof(Borders), false);
     public static ChunkGraphicFactory PolyIcons { get; private set; }
-        = new PolyIconsChunkGraphicFactory(nameof(PolyIcons), true);
+        = new PolyIconsChunkGraphicFactory(nameof(PolyIcons), false);
     public static ChunkGraphicFactory ResourceDepositPolyFill { get; private set; }
         = new PolygonChunkGraphicFactory(nameof(ResourceDepositPolyFill), false, (p,d) =>
             {

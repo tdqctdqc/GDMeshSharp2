@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Godot;
 
@@ -8,82 +9,89 @@ public class AssignJobModule : LogicModule
     public override void Calculate(Data data, Action<Message> queueMessage, 
         Action<Func<HostWriteKey, Entity>> queueEntityCreation)
     {
-        var assignmentDeltas = new Dictionary<Vector2, int>();
-        var newAssignments = new List<JobAssignment>();
-
+        var proc = AssignJobProcedure.Construct();
         foreach (var poly in data.Planet.Polygons.Entities)
         {
-            var peeps = poly.GetPeeps(data);
-            if (peeps == null) continue;
-            var unemployedPeeps = peeps.Where(p => p.GetUnemployedCount() > 0);
-            
-            
-            var buildings = poly.GetBuildings(data);
-            if (buildings == null) continue;
-            var workersNeededBuildings = buildings
-                .Where(b => b.Model.Model() is WorkBuildingModel wb && wb.PeepsLaborReq - b.NumWorkers(data) > 0);
-            if (workersNeededBuildings.Count() == 0) continue;
-            var jobNeeds = workersNeededBuildings
-                .ToDictionary(
-                    b => b, 
-                    b => ((WorkBuildingModel) b.Model.Model()).PeepsLaborReq - b.NumWorkers(data));
-            
-            var unemployeds = unemployedPeeps
-                .SortInto(p => p, p => p.GetUnemployedCount());
+            HandlePoly(poly, data, data.Models.PeepJobs.Models.Values.ToList(), proc);
+        }
+        queueMessage(proc);
+    }
 
-            var relevantJas = unemployedPeeps
-                .SelectMany(p => p.Jobs.Values
-                    .Where(ja => ja.Unemployed() == false 
-                                 && jobNeeds.ContainsKey(ja.Building.Entity()))
-                );
-            foreach (var ja in relevantJas)
+    private void HandlePoly(MapPolygon poly, Data data, List<PeepJob> jobs, AssignJobProcedure proc)
+    {
+        var peeps = poly.GetPeeps(data);
+        if (peeps == null) return;
+        var unemployedPeeps = peeps.Where(p => p.GetUnemployedCount() > 0);
+        var buildings = poly.GetBuildings(data);
+        if (buildings == null) return;
+            
+        var workersNeededBuildings = buildings
+            .Where(b => b.Model.Model() is WorkBuildingModel wb)
+            .Select(b => (WorkBuildingModel)b.Model.Model());
+        if (workersNeededBuildings.Count() == 0) return;
+            
+        var jobNeeds = workersNeededBuildings
+            .SelectMany(b => b.JobLaborReqs)
+            .SortInto(b => b.Key, b => b.Value);
+
+        var unemployeds = unemployedPeeps.ToDictionary(p => p, p => p.GetUnemployedCount());
+        var sw = new Stopwatch();
+        // sw.Start();
+        GrowExistingAssignments();
+        // sw.Stop();
+        // GD.Print(nameof(GrowExistingAssignments) + " " + sw.Elapsed.TotalMilliseconds);
+        // sw.Reset();
+
+        // sw.Start();
+        MakeNewAssignments();
+        // sw.Stop();
+        // GD.Print(nameof(MakeNewAssignments) + " " + sw.Elapsed.TotalMilliseconds);
+        // sw.Reset();
+        
+        void GrowExistingAssignments()
+        {
+            for (var i = 0; i < jobs.Count; i++)
             {
-                var building = ja.Building.Entity();
-                var peep = ja.Peep.Entity();
-                
-                var unemployed = unemployeds[peep];
-                if (unemployed == 0) continue;
-
-                if (jobNeeds.ContainsKey(building) == false) continue;
-                var jobNeed = jobNeeds[building];
-                
-                var hire = Mathf.Min(jobNeed, unemployed);
-                unemployeds[peep] -= hire;
-                if (unemployeds[peep] < 0) continue;
-
-                jobNeeds[building] -= hire;
-                if (jobNeeds[building] == 0) jobNeeds.Remove(building);
-                assignmentDeltas.Add(new Vector2(peep.Id, ja.Marker), hire);
-            }
-            
-            foreach (var peep in unemployedPeeps)
-            {
-                var unemployed = unemployeds[peep];
-                while (unemployed > 0 && jobNeeds.Count > 0)
+                var job = jobs[i];
+                if (jobNeeds.ContainsKey(job) == false) continue;
+                while (jobNeeds[job] > 0)
                 {
-                    var kvp = jobNeeds.First();
-                    var building = kvp.Key;
-                    var job = ((WorkBuildingModel) building.Model.Model()).JobType;
-                    var need = kvp.Value;
-                    var hire = Mathf.Min(need, unemployed);
-                    if (hire < 0) throw new Exception();
-                    jobNeeds[building] -= hire;
-                    if (jobNeeds[building] == 0)
+                    var hasRelevant = unemployeds.Any(kvp2 => kvp2.Key.Jobs.ContainsKey(job));
+                    if (hasRelevant == false) break;
+                    var relevant = unemployeds.First(kvp2 => kvp2.Key.Jobs.ContainsKey(job));
+                    var hire = Mathf.Min(jobNeeds[job], relevant.Value);
+                    jobNeeds[job] -= hire;
+                    unemployeds[relevant.Key] -= hire;
+                    if (unemployeds[relevant.Key] == 0)
                     {
-                        jobNeeds.Remove(building);
+                        unemployeds.Remove(relevant.Key);
                     }
-                    unemployed -= hire;
-                    var ja = new JobAssignment(peep.MakeRef(), 
-                        255, 
-                        job.MakeRef(), 
-                        building.MakeRef(),
-                        hire, 100);
-                    newAssignments.Add(ja);
+                    proc.AssignmentDeltas.Add(
+                    new Tuple<int, string, int>
+                        (relevant.Key.Id, job.Name, hire)
+                    );
                 }
             }
         }
 
-        var assignLabor = new AssignJobProcedure(assignmentDeltas, newAssignments);
-        queueMessage(assignLabor);
+        void MakeNewAssignments()
+        {
+            for (var i = 0; i < jobs.Count; i++)
+            {
+                var job = jobs[i];
+                if (jobNeeds.ContainsKey(job) == false) continue;
+                while (jobNeeds[job] > 0 && unemployeds.Count > 0)
+                {
+                    var unemployed = unemployeds.First();
+                    var hire = Mathf.Min(jobNeeds[job], unemployed.Value);
+                    unemployeds[unemployed.Key] -= hire;
+                    if (unemployeds[unemployed.Key] == 0) unemployeds.Remove(unemployed.Key);
+                    jobNeeds[job] -= hire;
+                    var ja = new JobAssignment(unemployed.Key.MakeRef(),
+                        job.MakeRef(), hire, 100);
+                    proc.NewAssignments.Add(ja);
+                }
+            }
+        }
     }
 }

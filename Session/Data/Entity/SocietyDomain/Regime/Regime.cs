@@ -13,6 +13,7 @@ public class Regime : Entity
     public ItemHistory ProdHistory { get; protected set; }
     public ItemHistory ConsumptionHistory { get; protected set; }
     public ItemHistory DemandHistory { get; protected set; }
+    public PeepHistory PeepHistory { get; private set; }
     public string Name { get; protected set; }
     public EntityRefCollection<MapPolygon> Polygons { get; protected set; }
     public CurrentConstructionManager CurrentConstruction { get; private set; }
@@ -20,7 +21,8 @@ public class Regime : Entity
     [SerializationConstructor] private Regime(int id, string name, Color primaryColor, Color secondaryColor, 
         EntityRefCollection<MapPolygon> polygons, EntityRef<MapPolygon> capital,
         ItemWallet items, ItemHistory prodHistory, ItemHistory consumptionHistory,
-        ItemHistory demandHistory, CurrentConstructionManager currentConstruction) : base(id)
+        ItemHistory demandHistory, CurrentConstructionManager currentConstruction,
+        PeepHistory peepHistory) : base(id)
     {
         Items = items;
         PrimaryColor = primaryColor;
@@ -32,6 +34,7 @@ public class Regime : Entity
         ConsumptionHistory = consumptionHistory;
         DemandHistory = demandHistory;
         CurrentConstruction = currentConstruction;
+        PeepHistory = peepHistory;
     }
 
     public static Regime Create(string name, Color primaryColor, Color secondaryColor, 
@@ -41,7 +44,8 @@ public class Regime : Entity
         var polygons = EntityRefCollection<MapPolygon>.Construct(new HashSet<int>{seed.Id}, key.Data);
         var r = new Regime(id.GetID(), name, primaryColor, secondaryColor, polygons, new EntityRef<MapPolygon>(seed.Id),
             ItemWallet.Construct(), ItemHistory.Construct(), ItemHistory.Construct(),
-            ItemHistory.Construct(), CurrentConstructionManager.Construct());
+            ItemHistory.Construct(), CurrentConstructionManager.Construct(),
+            PeepHistory.Construct());
         key.Create(r);
         seed.SetRegime(r, key);
         

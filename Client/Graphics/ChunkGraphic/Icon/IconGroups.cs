@@ -23,15 +23,15 @@ public class IconGroups : Node2D
         _zoomCutoffs = groups.Select(g => g.ZoomCutoff).ToList();
         var icons = groups.Select(g => g.GetIcons()).ToList();
         var yMargin = 10f;
-        var heights = icons.Select(ic => ic.Max(i => i.GetHeight())).ToList();
+        var heights = icons.Select(ic => ic.Max(i => i.Dimension.y)).ToList();
         Height = heights.Sum();
         this.ClearChildren();
         var yOffset = Vector2.Zero;
         var yStart = Vector2.Up * Height / 4f;
         for (var i = 0; i < groups.Count; i++)
         {
-            var groupOffset = yStart + yOffset;
             yOffset += Vector2.Down * heights[i] + yMargin * Vector2.Down;
+            var groupOffset = yStart + yOffset;
             HandleIconGroup(groups[i], icons[i],groupOffset);
         }
     }

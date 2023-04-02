@@ -37,12 +37,12 @@ public class PeepGenerator : Generator
     {
         var foodSurplus = GenerateFarmersForRegime(r);
         if (foodSurplus <= 0) return;
-        GenerateOthersForRegime(r, Mathf.FloorToInt(foodSurplus));
+        GenerateOthersForRegime(r, Mathf.FloorToInt(foodSurplus * .75f));
     }
     private int GenerateFarmersForRegime(Regime r)
     {
         var farmModel = BuildingModelManager.Farm;
-        var farmLaborReq = farmModel.PeepsLaborReq;
+        var farmLaborReq = farmModel.JobLaborReqs.Values.Sum();
         var foodConPerPeep = _data.BaseDomain.Rules.FoodConsumptionPerPeepPoint;
         var totalFoodProd = 0f;
         var farmerJob = PeepJobManager.Farmer;
@@ -68,11 +68,15 @@ public class PeepGenerator : Generator
             {
                 continue;
             }
-            Peep.Create(
-                poly,
-                polyFarmerSize,
-                _key);
-            regimePeepSize += polyFarmerSize;
+            for (var i = 0; i < 10; i++)
+            {
+                Peep.Create(
+                    poly,
+                    polyFarmerSize,
+                    _key);
+                regimePeepSize += polyFarmerSize;
+            }
+            
         }
 
         return Mathf.FloorToInt(totalFoodProd - regimePeepSize * foodConPerPeep);
@@ -93,11 +97,15 @@ public class PeepGenerator : Generator
                 throw new Exception();
             } 
             if (num == 0) continue;
-            Peep.Create(
-                polys[i],
-                num,
-                _key
-            );
+            for (var i1 = 0; i1 < 10; i1++)
+            {
+                Peep.Create(
+                    polys[i],
+                    num,
+                    _key
+                );
+            }
+            
         }
         
         
@@ -111,7 +119,7 @@ public class PeepGenerator : Generator
                     .SelectWhereOfType<BuildingModel, WorkBuildingModel>();
                 if (laborBuildings.Count() > 0)
                 {
-                    res += laborBuildings.Sum(b => b.PeepsLaborReq);
+                    res += laborBuildings.Sum(b => b.JobLaborReqs.Values.Sum());
                 }
             }
             return res;

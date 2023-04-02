@@ -4,21 +4,21 @@ using System.Collections.Generic;
 using Godot;
 using MessagePack;
 
-public class ProdAndConsumeProcedure : Procedure
+public class WorkProdConsumeProcedure : Procedure
 {
     public Dictionary<int, ItemWallet> RegimeResourceGains { get; private set; }
     public Dictionary<int, EntityWallet<ResourceDeposit>> Depletions { get; private set; }
     public Dictionary<int, ItemWallet> ConsumptionsByRegime { get; private set; }
     public Dictionary<int, ItemWallet> DemandsByRegime { get; private set; }
 
-    public static ProdAndConsumeProcedure Create(Dictionary<int, ItemWallet> resourceGains, 
+    public static WorkProdConsumeProcedure Create(Dictionary<int, ItemWallet> resourceGains, 
         Dictionary<int, EntityWallet<ResourceDeposit>> depletions, Dictionary<int, ItemWallet> consumptions,
         Dictionary<int, ItemWallet> demands)
     {
-        return new ProdAndConsumeProcedure(resourceGains, depletions,
+        return new WorkProdConsumeProcedure(resourceGains, depletions,
             consumptions, demands);
     }
-    [SerializationConstructor] private ProdAndConsumeProcedure(
+    [SerializationConstructor] private WorkProdConsumeProcedure(
         Dictionary<int, ItemWallet> regimeResourceGains, 
         Dictionary<int, EntityWallet<ResourceDeposit>> depletions,
         Dictionary<int, ItemWallet> consumptionsByRegime,

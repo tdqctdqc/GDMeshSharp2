@@ -4,8 +4,11 @@ using System.Linq;
 
 public class Factory : ProductionBuildingModel
 {
-    public override int PeepsLaborReq { get; } = 500;
-    public override PeepJob JobType { get; } = PeepJobManager.Laborer;
+    public override Dictionary<PeepJob, int> JobLaborReqs { get; }
+        = new Dictionary<PeepJob, int>
+        {
+            {PeepJobManager.Laborer, 500}
+        };
     public override int ProductionCap { get; } = 100;
     public Factory() : base(ItemManager.IndustrialPoint, nameof(Factory),
         100f)

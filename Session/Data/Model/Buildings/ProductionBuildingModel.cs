@@ -14,14 +14,14 @@ public abstract class ProductionBuildingModel : WorkBuildingModel
         ProdItem = prodItem;
     }
 
-    public virtual void Produce(ItemWallet gains,
-        EntityWallet<ResourceDeposit> depletions, Building p, float staffingRatio, Data data)
+    public override void Produce(WorkProdConsumeProcedure proc, Building b, float staffingRatio, Data data)
     {
-        if (p.Model.Model() != this) throw new Exception();
+        if (b.Model.Model() != this) throw new Exception();
         staffingRatio = Mathf.Clamp(staffingRatio, 0f, 1f);
-        var ratio = GetProductionRatio(p, staffingRatio, data);
+        var ratio = GetProductionRatio(b, staffingRatio, data);
         var prod = Mathf.FloorToInt(ratio * ProductionCap);
-        gains.Add(ProdItem, prod);
+        var rId = b.Position.Poly(data).Regime.RefId;
+        proc.RegimeResourceGains[rId].Add(ProdItem, prod);
     }
 
     public abstract float GetProductionRatio(Building p, float staffingRatio, Data data);

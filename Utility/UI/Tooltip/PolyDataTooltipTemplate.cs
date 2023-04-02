@@ -27,6 +27,7 @@ public class PolyDataTooltipTemplate : DataTooltipTemplate<PolyTriPosition>
             GetResourceDeposits,
             GetFertility,
             GetAltitude,
+            
         };
 
     private static Control GetBuildings(PolyTriPosition t, Data d)
@@ -86,19 +87,27 @@ public class PolyDataTooltipTemplate : DataTooltipTemplate<PolyTriPosition>
     private static Control GetPeeps(PolyTriPosition t, Data d)
     {
         var peeps = t.Poly(d).GetPeeps(d);
-        var txt = "Num Peeps: " + (peeps != null ? 
-            peeps.Count().ToString() 
-            : "0");
-        return NodeExt.CreateLabel(txt);
+        if (peeps == null) return null;
+        var jobs = new VBoxContainer();
+        var peepJobCounts = peeps.SelectMany(p => p.Jobs.Values)
+            .Where(ja => ja.Count > 0)
+            .SortInto(ja => ja.Job.Model(), ja => ja.Count);
+        foreach (var peepJobCount in peepJobCounts)
+        {
+            var innerContainer = new HBoxContainer();
+            var tr = peepJobCount.Key.JobIcon.GetTextureRect(Vector2.One);
+            tr.RectMinSize = Vector2.One * 50f;
+            innerContainer.AddChild(tr);
+            innerContainer.AddChild(NodeExt.CreateLabel(peepJobCount.Value.ToString()));
+            jobs.AddChild(innerContainer);
+        }
+        return jobs;
     }
 
     private static Control GetId(PolyTriPosition t, Data d)
     {
         return NodeExt.CreateLabel("Poly Id: " + t.Poly(d).Id.ToString());
     }
-
-    
-
     private static Control GetResourceDeposits(PolyTriPosition t, Data d)
     {
     

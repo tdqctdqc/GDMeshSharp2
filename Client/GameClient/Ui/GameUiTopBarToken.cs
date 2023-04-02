@@ -25,8 +25,12 @@ public class GameUiTopBarToken : ButtonBarToken
         Container.AddChildWithVSeparator(TickDisplay.Create(data));
         Container.AddChildWithVSeparator(PlayerRegimeDisplay.Create(data));
 
-        var resourceBar = new ItemBar();
-        resourceBar.Setup(data);
-        Container.AddChildWithVSeparator(resourceBar);
+        var itemBar = new ItemBar();
+        itemBar.Setup(data);
+        Container.AddChildWithVSeparator(itemBar);
+
+        var peepsInfo = new RegimePeepsInfoBar();
+        peepsInfo.Setup(data);
+        Container.AddChildWithVSeparator(peepsInfo);
     }
 }

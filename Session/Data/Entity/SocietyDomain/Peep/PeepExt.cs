@@ -6,6 +6,6 @@ public static class PeepExt
 {
     public static int GetUnemployedCount(this Peep peep)
     {
-        return peep.Jobs[0].Count;
+        return peep.Jobs[PeepJobManager.Unemployed].Count;
     }
 }

@@ -5,14 +5,22 @@ using Godot;
 
 public class AssignJobProcedure : Procedure
 {
-    public Dictionary<Vector2, int> AssignmentDeltas { get; private set; }
+    public List<Tuple<int, string, int>> AssignmentDeltas { get; private set; }
     public List<JobAssignment> NewAssignments { get; private set; }
-    public AssignJobProcedure(Dictionary<Vector2, int> assignmentDeltas, List<JobAssignment> newAssignments)
+
+    public static AssignJobProcedure Construct()
+    {
+        var assignmentDeltas = new List<Tuple<int, string, int>>();
+        var newAssignments = new List<JobAssignment>();
+        return new AssignJobProcedure(assignmentDeltas, newAssignments);
+    }
+    public AssignJobProcedure(List<Tuple<int, string, int>> assignmentDeltas, 
+        List<JobAssignment> newAssignments)
     {
         AssignmentDeltas = assignmentDeltas;
         NewAssignments = newAssignments;
     }
-
+    
     public override bool Valid(Data data)
     {
         return true;
@@ -20,10 +28,12 @@ public class AssignJobProcedure : Procedure
 
     public override void Enact(ProcedureWriteKey key)
     {
-        foreach (var kvp in AssignmentDeltas)
+        foreach (var tuple in AssignmentDeltas)
         {
-            var peep = key.Data.Society.Peeps[(int)kvp.Key.x];
-            peep.ChangeJobAssignmentCount((byte)kvp.Key.y, kvp.Value, key);
+            var peep = key.Data.Society.Peeps[tuple.Item1];
+            var jobType = key.Data.Models.PeepJobs.Models[tuple.Item2];
+            
+            peep.ChangeJobAssignmentCount(jobType, tuple.Item3, key);
         }
         foreach (var ja in NewAssignments)
         {

@@ -1,4 +1,7 @@
 
+using System.Collections.Generic;
+using System.Linq;
+
 public static class RegimeExt
 {
     public static RegimeRelation RelationWith(this Regime r1, Regime r2, Data data)
@@ -17,5 +20,11 @@ public static class RegimeExt
     public static Player GetPlayer(this Regime r, Data data)
     {
         return data.BaseDomain.PlayerAux.ByRegime[r];
+    }
+
+    public static IEnumerable<Peep> GetPeeps(this Regime r, Data data)
+    {
+        return r.Polygons.SelectWhere(p => p.HasPeeps(data))
+            .SelectMany(p => p.GetPeeps(data));
     }
 }

@@ -9,11 +9,12 @@ public class Farm : ProductionBuildingModel
         : base(ItemManager.Food, nameof(Farm), 100f)
     {
     }
-    public override int PeepsLaborReq { get; } = 200;
     public override int ProductionCap { get; } = 1000;
-    public override PeepJob JobType { get; }
-        = PeepJobManager.Farmer;
-
+    public override Dictionary<PeepJob, int> JobLaborReqs { get; }
+        = new Dictionary<PeepJob, int>
+        {
+            {PeepJobManager.Farmer, 500}
+        };
     protected override bool CanBuildInTriSpec(PolyTri t, Data data)
     {
         return t.Landform.IsLand

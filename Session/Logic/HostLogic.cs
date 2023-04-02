@@ -28,11 +28,11 @@ public class HostLogic : ILogic
         CommandQueue = new ConcurrentQueue<Command>();
         _frames = new LogicFrame[]
         {
-            new LogicFrame(new TickModule()),
-            new LogicFrame(new TickModule()),
-            new LogicFrame(new TickModule(), new AssignJobModule()),
-            new LogicFrame(new TickModule(), new ProductionAndConsumptionModule()),
-            new LogicFrame(new TickModule(), new PeepGrowthModule()),
+            new LogicFrame(),
+            new LogicFrame(),
+            new LogicFrame(new AssignJobModule()),
+            new LogicFrame(new WorkProdConsumeModule()),
+            new LogicFrame(new PeepGrowthModule()),
         };
     }
 
@@ -57,6 +57,7 @@ public class HostLogic : ILogic
                 _sw.Start();
                 DoFrame();
                 _sw.Stop();
+                
                 if(_sw.Elapsed.TotalSeconds > _framePeriod) GD.Print("logic lagging");
                 GD.Print("frame time " + _sw.Elapsed.TotalMilliseconds);
                 DoCommands(); 
@@ -82,6 +83,7 @@ public class HostLogic : ILogic
 
     private void DoFrame()
     {
+        new TickProcedure().Enact(_pKey);
         var logicResult = _frames[_frameIter].Calculate(_data);
         _frameIter = (_frameIter + 1) % _frames.Length;
         

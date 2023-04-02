@@ -10,9 +10,12 @@ public class Mine : ExtractionBuildingModel
     {
         if (prodItem.Attributes.Has<MineableAttribute>() == false) throw new Exception();
     }
-    public override int PeepsLaborReq { get; } = 500;
-    public override PeepJob JobType { get; }
-        = PeepJobManager.Miner;
+
+    public override Dictionary<PeepJob, int> JobLaborReqs { get; }
+        = new Dictionary<PeepJob, int>
+        {
+            {PeepJobManager.Miner, 500}
+        };
 
     public override int ProductionCap { get; } = 10;
     public override float GetProductionRatio(Building p, float staffingRatio, Data data)

@@ -13,26 +13,24 @@ public class Peep : Entity
     public static EntityTypeTreeNode EntityTypeTreeNode { get; private set; }
     public EntityRef<MapPolygon> Home { get; protected set; }
     public int Size { get; private set; }
-    public Dictionary<byte, JobAssignment> Jobs { get; private set; }
+    public Dictionary<PeepJob, JobAssignment> Jobs { get; private set; }
     public static Peep Create(MapPolygon home, int size, CreateWriteKey key)
     {
         var id = key.IdDispenser.GetID();
         var unemployedAssignment = new JobAssignment(
             new EntityRef<Peep>(id),
-            0, 
             PeepJobManager.Unemployed.MakeRef(), 
-            new EntityRef<Building>(-1),
             size, 100);
-        var jobs = new Dictionary<byte, JobAssignment>
+        var jobs = new Dictionary<PeepJob, JobAssignment>
         {
-            {0, unemployedAssignment}
+            {PeepJobManager.Unemployed, unemployedAssignment}
         };
         var p = new Peep(id, home.MakeRef(), size, jobs);
         key.Create(p);
         return p;
     }
     [SerializationConstructor] private Peep(int id, EntityRef<MapPolygon> home,
-        int size, Dictionary<byte, JobAssignment> jobs) : base(id)
+        int size, Dictionary<PeepJob, JobAssignment> jobs) : base(id)
     {
         if (size <= 0) throw new Exception();
         Home = home;
@@ -42,50 +40,34 @@ public class Peep : Entity
 
     public void AddJobAssignment(JobAssignment ja, ProcedureWriteKey key)
     {
-        SetJobAssgnMarker(ja, key);
-        Jobs.Add(ja.Marker, ja);
+        Jobs.Add(ja.Job.Model(), ja);
         key.Data.Society.BuildingAux.LaborersDelta
-            .Invoke(new Tuple<Building, int>(ja.Building.Entity(), ja.Count));
-        Jobs[0].ChangeCount(-ja.Count, key);
+            .Invoke(Home.Entity());
+        Jobs[PeepJobManager.Unemployed].ChangeCount(-ja.Count, key);
     }
 
     public void GrowSize(int delta, ProcedureWriteKey key)
     {
         if (delta <= 0) throw new Exception();
         Size += delta;
-        Jobs[0].ChangeCount(delta, key);
+        Jobs[PeepJobManager.Unemployed].ChangeCount(delta, key);
     }
-    private void SetJobAssgnMarker(JobAssignment ja, ProcedureWriteKey key)
+    
+    private void RemoveJobAssignment(PeepJob job, ProcedureWriteKey key)
     {
-        if (ja.Marker != 255) throw new Exception();
-        for (byte i = 1; i <= byte.MaxValue; i++)
-        {
-            if (Jobs.ContainsKey(i) == false)
-            {
-                ja.SetMarker(i, key);
-                break;
-            }
-
-            if (i == byte.MaxValue) throw new Exception("too many job assignments");
-        }
+        Jobs.Remove(job);
     }
-    private void RemoveJobAssignment(byte marker, ProcedureWriteKey key)
+    public void ChangeJobAssignmentCount(PeepJob job, int delta, ProcedureWriteKey key)
     {
-        Jobs.Remove(marker);
-    }
-    public void ChangeJobAssignmentCount(byte marker, int delta, ProcedureWriteKey key)
-    {
-        if (marker == 0) throw new Exception();
-        var ja = Jobs[marker];
+        var ja = Jobs[job];
         ja.ChangeCount(delta, key);
-        Jobs[0].ChangeCount(-delta, key);
-
         if (ja.Count < 0) throw new Exception();
-        if (ja.Count == 0 && ja.Marker != 0)
+        Jobs[PeepJobManager.Unemployed].ChangeCount(-delta, key);
+        if (ja.Count == 0 && ja.Job.Model() != PeepJobManager.Unemployed)
         {
-            RemoveJobAssignment(marker, key);
+            RemoveJobAssignment(ja.Job.Model(), key);
         }
         key.Data.Society.BuildingAux.LaborersDelta
-            .Invoke(new Tuple<Building, int>(ja.Building.Entity(), -ja.Count));
+            .Invoke(Home.Entity());
     }
 }

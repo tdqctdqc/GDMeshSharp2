@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class ProductionAndConsumptionModule : LogicModule
+public class WorkProdConsumeModule : LogicModule
 {
     public override void Calculate(Data data, Action<Message> queueMessage,
         Action<Func<HostWriteKey, Entity>> queueEntityCreation)
@@ -13,6 +13,8 @@ public class ProductionAndConsumptionModule : LogicModule
         var demandsByRegime = new Dictionary<int, ItemWallet>();
         var depletionsByRegime = new Dictionary<int, EntityWallet<ResourceDeposit>>();
         var consumptionsByRegime = new Dictionary<int, ItemWallet>();
+        var proc = WorkProdConsumeProcedure.Create(gainsByRegime, 
+            depletionsByRegime, consumptionsByRegime, demandsByRegime);
         
         foreach (var regime in data.Society.Regimes.Entities)
         {
@@ -20,7 +22,7 @@ public class ProductionAndConsumptionModule : LogicModule
             var depletions = EntityWallet<ResourceDeposit>.Construct();
             gainsByRegime.Add(regime.Id, gains);
             depletionsByRegime.Add(regime.Id, depletions);
-            ProduceForRegime(regime, data, gains, depletions);
+            ProduceForRegime(regime, data, proc);
         }
         
         foreach (var regime in data.Society.Regimes.Entities)
@@ -32,13 +34,10 @@ public class ProductionAndConsumptionModule : LogicModule
             ConsumeForRegime(regime, data, consumptions, demands, gainsByRegime[regime.Id]);
         }
 
-        var proc = ProdAndConsumeProcedure.Create(gainsByRegime, 
-            depletionsByRegime, consumptionsByRegime, demandsByRegime);
         queueMessage(proc);
     }
 
-    private void ProduceForRegime(Regime regime, Data data, ItemWallet gains,
-        EntityWallet<ResourceDeposit> depletions)
+    private void ProduceForRegime(Regime regime, Data data, WorkProdConsumeProcedure proc)
     {
         var polys = regime.Polygons;
         foreach (var poly in polys)
@@ -47,18 +46,27 @@ public class ProductionAndConsumptionModule : LogicModule
             if (buildings == null) continue;
             var peeps = poly.GetPeeps(data);
             if (peeps == null) continue;
+            var jobNeedCounts = buildings.Where(b => b.Model.Model() is WorkBuildingModel)
+                .SelectMany(b => ((WorkBuildingModel)b.Model.Model()).JobLaborReqs)
+                .SortInto(kvp => kvp.Key, kvp => kvp.Value);
+            var jobFilledCounts = peeps.SelectMany(p => p.Jobs.Values)
+                .SortInto(ja => ja.Job.Model(), ja => ja.Count);
             
             foreach (var building in buildings)
             {
-                if (building.Model.Model() is ProductionBuildingModel rb)
+                if (building.Model.Model() is WorkBuildingModel wb)
                 {
-
-                    var laborPower = building.NumWorkers(data);
-                    if (laborPower == 0) continue;
-                    var num = Mathf.Min(rb.PeepsLaborReq, laborPower);
-                    if (num == 0) continue;
-                    var staffRatio = (float) num / rb.PeepsLaborReq;
-                    rb.Produce(gains, depletions, building, staffRatio, data);
+                    var staffRatio = 1f;
+                    foreach (var job in wb.JobLaborReqs.Keys)
+                    {
+                        if (jobFilledCounts.ContainsKey(job) == false)
+                        {
+                            staffRatio = 0f;
+                            break;
+                        }
+                        staffRatio = Mathf.Min(staffRatio, jobFilledCounts[job] / jobNeedCounts[job]);
+                    }
+                    wb.Produce(proc, building, staffRatio, data);
                 }
             }
         }

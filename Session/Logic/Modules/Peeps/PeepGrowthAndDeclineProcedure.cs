@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public class PeepGrowthProcedure : Procedure
+public class PeepGrowthAndDeclineProcedure : Procedure
 {
     public Dictionary<int, int> Growths { get; private set; }
-    public PeepGrowthProcedure(Dictionary<int, int> growths)
+    public PeepGrowthAndDeclineProcedure(Dictionary<int, int> growths)
     {
         Growths = growths;
     }
@@ -15,6 +15,12 @@ public class PeepGrowthProcedure : Procedure
     }
 
     public override void Enact(ProcedureWriteKey key)
+    {
+        DoGrowth(key);
+        DoHistory(key);
+    }
+
+    private void DoGrowth(ProcedureWriteKey key)
     {
         foreach (var kvp in Growths)
         {
@@ -29,6 +35,15 @@ public class PeepGrowthProcedure : Procedure
             {
                 peep.GrowSize(growth, key);
             }
+        }
+    }
+    private void DoHistory(ProcedureWriteKey key)
+    {
+        var tick = key.Data.BaseDomain.GameClock.Tick;
+        foreach (var r in key.Data.Society.Regimes.Entities)
+        {
+            var peepCount = r.GetPeeps(key.Data).Count();
+            r.PeepHistory.Update(tick, peepCount, key);
         }
     }
 }
