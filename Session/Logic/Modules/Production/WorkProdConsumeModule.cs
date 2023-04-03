@@ -69,6 +69,7 @@ public class WorkProdConsumeModule : LogicModule
         
         var workBuildings = mapBuildings.Where(b => b.Model.Model() is WorkBuildingModel)
                     .Select(b => (WorkBuildingModel)b.Model.Model());
+        
         IEnumerable<WorkBuildingModel> settlementBuildings = null;
         if (poly.HasSettlement(data))
         {
@@ -78,10 +79,6 @@ public class WorkProdConsumeModule : LogicModule
         }
         if (workBuildings.Count() == 0) return;
 
-        
-        
-        
-        
         var jobNeeds = workBuildings.SelectMany(b => b.JobLaborReqs);
         var jobNeedCount = jobNeeds.Sum(kvp => kvp.Value);
         if (jobNeedCount == 0) return;

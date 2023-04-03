@@ -20,6 +20,15 @@ public static class Apportioner
     {
         var res = cands.Select(getScore).ToList();
         var totalScore = res.Sum();
+        if (totalScore == 0)
+        {
+            for (var i = 0; i < res.Count; i++)
+            {
+                res[i] = toApportion / res.Count;
+            }
+
+            return res;
+        }
         for (var i = 0; i < res.Count; i++)
         {
             res[i] = toApportion * res[i] / totalScore;

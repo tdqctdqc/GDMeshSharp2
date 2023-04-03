@@ -14,9 +14,5 @@ public class PlanetSettings : Settings
         = new FloatSettingsOption("PreferredMinPolyEdgeLength", 50f, 10f, 100f, 1f, false);
     public PlanetSettings() : base("Planet")
     {
-        _options.AddRange(new ISettingsOption[]
-        {
-            Seed, MapWidth, MapHeight, PreferredMinPolyEdgeLength
-        });
     }
 }

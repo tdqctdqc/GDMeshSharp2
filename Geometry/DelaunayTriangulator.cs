@@ -47,6 +47,8 @@ public class DelaunayTriangulator
             tris.Add(tri);
             graph.AddNode(tri);
         }
+
+        int edgeIter = 0;
         for (var i = 0; i < tris.Count; i++)
         {
             var adj = d.TrianglesAdjacentToTriangle(i);
@@ -56,6 +58,7 @@ public class DelaunayTriangulator
                 graph.AddEdge(tri, tris[j], true);
             }
         }
+
         return tris;
     }
     public class DelaunatorPoint : IPoint

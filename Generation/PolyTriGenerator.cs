@@ -34,6 +34,12 @@ public class PolyTriGenerator : Generator
         report.StartSection();
         Parallel.ForEach(polys, p => BuildTris(p, key));
         report.StopSection("Building poly terrain tris");
+        
+        
+        report.StartSection();
+        Parallel.ForEach(_data.Planet.PolyEdges.Entities, p => MakeDiffPolyTriPaths(p, key));
+        report.StopSection("making poly tri paths");
+        
         return report;
     }
     
@@ -116,7 +122,7 @@ public class PolyTriGenerator : Generator
         var graph = new Graph<PolyTri, bool>();
         if (poly.IsWater())
         {
-            tris = DoSeaPoly(poly, key);
+            tris = DoSeaPoly(poly, graph, key);
         }
         // else if (poly.Neighbors.Entities().Any(n => _riverBorders.ContainsKey(poly.GetEdge(n, _data))))
         // {
@@ -124,74 +130,60 @@ public class PolyTriGenerator : Generator
         // }
         else
         {
-            tris = DoLandPolyNoRivers(poly, key);
+            tris = DoLandPolyNoRivers(poly, graph, key);
         }
             
-        var polyTerrainTris = PolyTris.Create(tris,  null, key);
+        var polyTerrainTris = PolyTris.Create(tris,  graph, key);
         poly.SetTerrainTris(polyTerrainTris, key);
     }
     
-    private List<PolyTri> DoSeaPoly(MapPolygon poly, GenWriteKey key)
+    private List<PolyTri> DoSeaPoly(MapPolygon poly, Graph<PolyTri, bool> graph, GenWriteKey key)
     {
         var borderSegsRel = poly.GetOrderedBoundarySegs(key.Data);
         var lf = _data.Models.Landforms;
         var v = _data.Models.Vegetation;
         var points = borderSegsRel.GetPoints().ToList();
-        
-            
-            
-            
         points.Add(Vector2.Zero);
         
-        var tris = DelaunayTriangulator.TriangulatePoints(points)
-            .Select(t =>
-            {
-                return PolyTri.Construct(t.A, t.B, t.C, 
-                    LandformManager.Sea.MakeRef(), 
-                    VegetationManager.Barren.MakeRef());
-            })
+        var tris = DelaunayTriangulator.TriangulatePointsAndGetTriAdjacencies<PolyTri>(
+                points, graph, (a, b, c) =>
+                {
+                    return PolyTri.Construct(a, b, c, LandformManager.Sea.MakeRef(),
+                        VegetationManager.Barren.MakeRef());
+                }
+            )
             .ToList();
         return tris;
     }
     
-    private List<PolyTri> DoLandPolyNoRivers(MapPolygon poly, GenWriteKey key)
+    private List<PolyTri> DoLandPolyNoRivers(MapPolygon poly, Graph<PolyTri, bool> graph, GenWriteKey key)
     {
         var borderSegs = poly.GetOrderedBoundarySegs(key.Data);
         var points = borderSegs.GetPoints().ToList();
-        var graph = new Graph<PolyTri, bool>();
 
         List<PolyTri> tris;
-        int iter = 0;
 
-        while (true)
+        var innerPoints = borderSegs.GenerateInteriorPoints(50f, 10f);
+        points.AddRange(innerPoints);
+        try
         {
-            var innerPoints = borderSegs.GenerateInteriorPoints(50f, 10f);
-            innerPoints.AddRange(points);
-            try
-            {
-                iter++;
-                tris = DelaunayTriangulator.TriangulatePointsAndGetTriAdjacencies<PolyTri>
-                (
-                    points,
-                    graph,
-                    (a, b, c) =>
-                    {
-                        var lf = key.Data.Models.Landforms.GetAtPoint(poly, (a + b + c) / 3f, key.Data);
-                        var v = key.Data.Models.Vegetation.GetAtPoint(poly, (a + b + c) / 3f, lf, key.Data);
-                        return PolyTri.Construct(a, b, c, lf.MakeRef(), v.MakeRef());
-                    }
-                );
-                break;
-            }
-            catch
-            {
-                if (iter > 100) throw;
-                GD.Print($"triangulation for poly {poly.Id} failed, trying");
-            }
+            tris = DelaunayTriangulator.TriangulatePointsAndGetTriAdjacencies<PolyTri>
+            (
+                points,
+                graph,
+                (a, b, c) =>
+                {
+                    var lf = key.Data.Models.Landforms.GetAtPoint(poly, (a + b + c) / 3f, key.Data);
+                    var v = key.Data.Models.Vegetation.GetAtPoint(poly, (a + b + c) / 3f, lf, key.Data);
+                    return PolyTri.Construct(a, b, c, lf.MakeRef(), v.MakeRef());
+                }
+            );
         }
-        
-        // points.AddRange(borderSegs.GenerateInteriorPoints(50f, 10f));
-        
+        catch
+        {
+            GD.Print($"triangulation for poly {poly.Id} failed, trying");
+            throw;
+        }
 
         return tris;
     }
@@ -221,11 +213,11 @@ public class PolyTriGenerator : Generator
         var rSeg = boundarySegs
             .FirstOrDefault(s => Mathf.Abs(s.Mid().Angle() 
                                   - rEdge.GetRiverSegment().Mid().Angle()) < .01f);
-        if (rSeg == null)
-        {
-            //todo fix this
-            return DoLandPolyNoRivers(poly, key);
-        }
+        // if (rSeg == null)
+        // {
+        //     //todo fix this
+        //     return DoLandPolyNoRivers(poly, key);
+        // }
         
         var rSegIndex = boundarySegs.IndexOf(rSeg);
         var between = Enumerable.Range(1, boundarySegs.Count - 1)
@@ -263,7 +255,7 @@ public class PolyTriGenerator : Generator
             {
                 GD.Print("river index " + r.RiverSegmentIndex);
                 //todo fix back
-                return DoLandPolyNoRivers(poly, key);
+                // return DoLandPolyNoRivers(poly, key);
                 // throw new Exception();
             }
         }
@@ -357,5 +349,29 @@ public class PolyTriGenerator : Generator
         }
         
         return res;
+    }
+
+    private void MakeDiffPolyTriPaths(MapPolygonEdge edge, GenWriteKey key)
+    {
+        var lo = edge.LowId.Entity();
+        var hi = edge.HighId.Entity();
+        
+        var loEdgeTris = lo.GetBorder(hi.Id).Segments
+            .Select(seg => lo.Tris.Tris.FirstOrDefault(t => t.HasPoint(seg.From) && t.HasPoint(seg.To)))
+            .Where(t => t != null)            
+            .ToList();
+        
+        var hiEdgeTris = hi.GetBorder(lo.Id).Segments
+            .Select(seg => hi.Tris.Tris.FirstOrDefault(t => t.HasPoint(seg.From) && t.HasPoint(seg.To)))
+            .Where(t => t != null)
+            .Reverse()
+            .ToList();
+            
+        if (loEdgeTris.Count != hiEdgeTris.Count) throw new Exception();
+        for (var i = 0; i < loEdgeTris.Count; i++)
+        {
+            edge.LoToHiTriPaths[loEdgeTris[i].Index] = hiEdgeTris[i].Index;
+            edge.HiToLoTriPaths[hiEdgeTris[i].Index] = loEdgeTris[i].Index;
+        }
     }
 }

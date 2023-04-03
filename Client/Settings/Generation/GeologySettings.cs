@@ -23,10 +23,5 @@ public class GeologySettings : Settings
 
     public GeologySettings() : base("Geology")
     {
-        _options.AddRange(new ISettingsOption[]
-        {
-            LandRatio, NumContinents, NumSeas, SeaLevel, FaultLineRange, FrictionAltEffect, 
-            FrictionRoughnessEffect, RoughnessErosionMult
-        });
     }
 }

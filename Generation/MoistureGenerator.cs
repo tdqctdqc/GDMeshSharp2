@@ -34,6 +34,7 @@ public class MoistureGenerator : Generator
     {
         var plateMoistures = new ConcurrentDictionary<GenPlate, float>();
         var equatorDistMultWeight = Data.GenMultiSettings.MoistureSettings.EquatorDistMoistureMultWeight.Value;
+        var roughnessCostMult = Data.GenMultiSettings.MoistureSettings.MoistureFlowRoughnessCostMult.Value;
         Parallel.ForEach(Data.GenAuxData.Plates, p =>
         {
             var distFromEquator = Mathf.Abs(Data.Planet.Height / 2f - p.Center.y);
@@ -53,8 +54,8 @@ public class MoistureGenerator : Generator
         {
             diffuse();
         }
+        var landPlateMoistureShaping = Data.GenMultiSettings.MoistureSettings.LandPlateMoistureShaping.Value;
         Parallel.ForEach(Data.GenAuxData.Plates, setPlateMoistures);
-
         void setPlateMoistures(GenPlate plate)
         {
             var polys = plate.Cells.SelectMany(c => c.PolyGeos).ToList();
@@ -66,6 +67,11 @@ public class MoistureGenerator : Generator
                     else
                     {
                         var moisture = plateMoistures[plate] + Game.I.Random.RandfRange(-.1f, .1f);
+                        var newMoisture = Mathf.Pow(moisture, 1f / landPlateMoistureShaping);
+                        if (float.IsNaN(newMoisture) == false)
+                        {
+                            moisture = newMoisture;
+                        }
                         poly.Set<float>(nameof(poly.Moisture), Mathf.Clamp(moisture, 0f, 1f), _key);
                     }
                 }
@@ -84,7 +90,7 @@ public class MoistureGenerator : Generator
                     var mult = 1f;
                     if (Data.GenAuxData.FaultLines.TryGetFault(p, n, out var fault))
                     {
-                        mult = 1f - fault.Friction * .5f;
+                        mult = 1f - fault.Friction * roughnessCostMult;
                         maxFriction = Mathf.Max(maxFriction, fault.Friction);
                         averageFriction += fault.Friction;
                         iter++;

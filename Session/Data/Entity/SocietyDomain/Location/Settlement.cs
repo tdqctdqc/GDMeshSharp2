@@ -35,7 +35,10 @@ public class Settlement : Location
         Size = size;
         Buildings = buildings;
     }
-
+    public void AddBuilding(BuildingModel b, GenWriteKey key)
+    {
+        Buildings.AddByProcedure(b.Name, null); //todo bad
+    }
     public void AddBuilding(BuildingModel b, ProcedureWriteKey key)
     {
         Buildings.AddByProcedure(b.Name, key);

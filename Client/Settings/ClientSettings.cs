@@ -13,9 +13,8 @@ public class ClientSettings : Settings
 
     private ClientSettings() : base("Client")
     {
-        _options.Add(PolyHighlightMode);
     }
     
-    public EnumSettingsOption<PolyHighlighter.Modes> PolyHighlightMode =
-        new EnumSettingsOption<PolyHighlighter.Modes>("Poly Highlight Mode", PolyHighlighter.Modes.Simple);
+    public EnumSettingsOption<PolyHighlighter.Modes> PolyHighlightMode { get; private set; } 
+        = new EnumSettingsOption<PolyHighlighter.Modes>("Poly Highlight Mode", PolyHighlighter.Modes.Simple);
 }

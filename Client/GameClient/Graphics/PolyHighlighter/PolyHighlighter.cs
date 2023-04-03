@@ -52,6 +52,7 @@ public class PolyHighlighter : Node2D
     {
         DrawBoundarySegments(poly, mb, data);
         DrawPolyTriBorders(poly, mb, data);
+        DrawPolyTriNetwork(poly, mb, data);
     }
     private static void DrawBordersSimple(MapPolygon poly, MeshBuilder mb, Data data)
     {
@@ -83,16 +84,35 @@ public class PolyHighlighter : Node2D
             mb.AddArrow(inscribed.C, inscribed.A, 1f, col);
         }
     }
-    private static void DrawPolyTriNetwork(MeshBuilder mb, MapPolygon poly, Data data)
+    private static void DrawPolyTriNetwork(MapPolygon poly, MeshBuilder mb, Data data)
     {
         var pts = poly.Tris.Tris;
         foreach (var polyTri in pts)
         {
-            // var ns = poly.GetTerrainTris(data).NeighborsInside[polyTri];
-            // foreach (var n in ns)
-            // {
-            //     mb.AddArrow(polyTri.GetCentroid(), n.GetCentroid(), 1f, Colors.White);
-            // }
+            for (var i = 0; i < polyTri.NeighborCount; i++)
+            {
+                var n = poly.Tris.TriNativeNeighbors[i + polyTri.NeighborStartIndex];
+                var nTri = pts[n];
+                mb.AddArrow(polyTri.GetCentroid(), nTri.GetCentroid(), 1f, Colors.White);
+            }
+        }
+        
+        foreach (var n in poly.Neighbors)
+        {
+            var offset = poly.GetOffsetTo(n, data);
+            var edge = poly.GetEdge(n, data);
+            var polyHi = edge.HighId.Entity() == poly;
+            var pairs = polyHi
+                ? edge.HiToLoTriPaths
+                : edge.LoToHiTriPaths;
+            foreach (var kvp in pairs)
+            {
+                var nativeTri = poly.Tris.Tris[kvp.Key];
+                var foreignTri = n.Tris.Tris[kvp.Value];
+                mb.AddArrow(nativeTri.GetCentroid(), foreignTri.GetCentroid() + offset,
+                    1f, Colors.White);
+
+            }
         }
     }
     private void TakeFromMeshBuilder(MeshBuilder mb)

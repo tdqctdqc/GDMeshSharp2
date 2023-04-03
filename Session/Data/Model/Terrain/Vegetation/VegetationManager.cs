@@ -12,6 +12,7 @@ public class VegetationManager : TerrainAspectManager<Vegetation>
     public static Vegetation Grassland = new Grassland();
 
     public static Vegetation Arid = new Arid();
+    public static Vegetation Steppe = new Steppe();
     
     public static Vegetation Desert = new Vegetation(
         new HashSet<Landform>{LandformManager.Hill, LandformManager.Plain}, 
@@ -24,7 +25,7 @@ public class VegetationManager : TerrainAspectManager<Vegetation>
 
     public VegetationManager() 
         : base(Barren, Barren, 
-            new List<Vegetation>{Swamp, Forest, Grassland, Arid, Desert, Barren})
+            new List<Vegetation>{Swamp, Forest, Grassland, Steppe, Arid, Desert, Barren})
     {
         
     }

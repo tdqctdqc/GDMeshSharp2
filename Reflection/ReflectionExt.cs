@@ -6,13 +6,20 @@ using Godot;
 
 public static class ReflectionExt 
 {
-    public static List<T> GetStaticPropertiesOfType<T>(this Type type)
-    {
-        return type.GetProperties(BindingFlags.Static | BindingFlags.Public)
-            .Where(p => typeof(T).IsAssignableFrom(p.PropertyType))
-            .Select(p => (T)p.GetValue(null))
-            .ToList();
-    }
+     public static List<T> GetStaticPropertiesOfType<T>(this Type type)
+     {
+         return type.GetProperties(BindingFlags.Static | BindingFlags.Public)
+             .Where(p => typeof(T).IsAssignableFrom(p.PropertyType))
+             .Select(p => (T)p.GetValue(null))
+             .ToList();
+     }
+     public static List<T> GetPropertiesOfType<T>(this Type type, object instance)
+     {
+         return type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
+             .Where(p => typeof(T).IsAssignableFrom(p.PropertyType))
+             .Select(p => (T)p.GetValue(instance))
+             .ToList();
+     }
     public static List<Type> GetConcreteTypesOfType<TAbstract>(this Assembly assembly)
     {
         return assembly.GetTypes()

@@ -144,7 +144,8 @@ public class BuildingGenerator : Generator
         {
             var p = s.Poly.Entity();
             var tri = p.Tris.Tris.First(t => t.Landform == LandformManager.Urban);
-            MapBuilding.Create(new PolyTriPosition(p.Id, tri.Index), townHall, _key);
+            s.Buildings.AddGen(townHall.Name, _key);
+            // MapBuilding.Create(new PolyTriPosition(p.Id, tri.Index), townHall, _key);
         }
     }
 }

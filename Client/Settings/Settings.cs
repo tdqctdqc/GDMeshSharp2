@@ -11,6 +11,6 @@ public class Settings : ISettings
     protected Settings(string name)
     {
         Name = name;
-        _options = new List<ISettingsOption>();
+        _options = GetType().GetPropertiesOfType<ISettingsOption>(this);
     }
 }

@@ -44,6 +44,11 @@ public class ModelRefCollection<TModel> : IRefCollection<string>
         _refs = null;
     }
 
+    public void AddGen(string name, GenWriteKey key)
+    {
+        ModelNames.Add(name);
+        _refs.Add(key.Data.Models.GetManager<TModel>().Models[name]);
+    }
     public void AddByProcedure(List<string> names, ProcedureWriteKey key)
     {
         for (var i = 0; i < names.Count; i++)

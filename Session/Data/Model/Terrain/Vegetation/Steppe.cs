@@ -1,13 +1,13 @@
-
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 
-public class Grassland : Vegetation
+public class Steppe : Vegetation
 {
-    public Grassland() 
+    public Steppe() 
         : base(new HashSet<Landform>{LandformManager.Hill, LandformManager.Plain}, 
-            .2f, 1f, Colors.MediumSeaGreen, "Grassland", true)
+            .1f, .6f, Colors.PaleGreen, "Steppe", true)
     {
     }
-
 }

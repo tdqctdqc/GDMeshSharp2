@@ -114,6 +114,18 @@ public class PeepGenerator : Generator
                     res += laborBuildings.Sum(b => b.JobLaborReqs.Values.Sum());
                 }
             }
+
+            if (p.HasSettlement(_data))
+            {
+                var s = p.GetSettlement(_data);
+                foreach (var bm in s.Buildings.Models())
+                {
+                    if (bm is WorkBuildingModel wm)
+                    {
+                        res += wm.JobLaborReqs.Values.Sum();
+                    }
+                }
+            }
             return res;
         }
     }

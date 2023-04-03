@@ -12,9 +12,5 @@ public class SocietySettings : Settings
         = new FloatSettingsOption("FertilityToGetOneFarm", 7f, 2f, 25f, 1f, false);
     public SocietySettings() : base("Society")
     {
-        _options.AddRange(new ISettingsOption[]
-        {
-            RoadBuildDist, FertilityPerFarm, FertilityToGetOneFarm
-        });
     }
 }

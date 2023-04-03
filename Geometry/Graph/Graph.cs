@@ -82,9 +82,9 @@ public class Graph<TNode, TEdge> : IGraph<TNode, TEdge>
     }
     public IGraphNode<TNode, TEdge> AddNode(TNode element)
     {
-        Elements.Add(element);
         var node = new GraphNode<TNode, TEdge>(element);
         _nodeDic.Add(node.Element, node);
+        Elements.Add(element);
         Nodes.Add(node);
         return node;
     }

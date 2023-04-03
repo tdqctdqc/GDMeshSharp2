@@ -31,7 +31,8 @@ public class LocationGenerator : Generator
     private void GenerateCities()
     {
         var landPolys = Data.Planet.Polygons.Entities.Where(p => p.IsLand);
-        var unions = UnionFind.Find(landPolys.ToList(), (p, q) => p.Regime.Entity() == q.Regime.Entity(),
+        var unions = UnionFind.Find(landPolys.ToList(), 
+            (p, q) => p.Regime.Entity() == q.Regime.Entity(),
             p => p.Neighbors.Entities());
 
         var dic = new ConcurrentDictionary<List<MapPolygon>, List<int>>();
@@ -48,6 +49,10 @@ public class LocationGenerator : Generator
         Parallel.ForEach(dic, kvp =>
         {
             SetUrbanTris(kvp.Key, kvp.Value);
+        });
+        Parallel.ForEach(unions, u =>
+        {
+            Deforest(u);
         });
     }
     
@@ -149,7 +154,35 @@ public class LocationGenerator : Generator
             return Mathf.Max(1, Mathf.CeilToInt(Mathf.Sqrt(size / sizeForFirstTri)));
         }
     }
-    
+    private void Deforest(List<MapPolygon> polys)
+    {
+        foreach (var poly in polys)
+        {
+            var forestTris = poly.Tris.Tris.Where(t => t.Vegetation == VegetationManager.Forest);
+            if (forestTris.Count() == 0)
+            {
+                continue;
+            }
+            float deforestStr = 0f;
+            if (poly.HasSettlement(Data))
+            {
+                deforestStr = .5f;
+            }
+            else if (poly.Neighbors.Any(n => n.HasSettlement(Data)))
+            {
+                deforestStr = .1f;
+            }
+            else continue;
+            foreach (var tri in forestTris)
+            {
+                if (Game.I.Random.Randf() < deforestStr)
+                {
+                    tri.SetVegetation(VegetationManager.Grassland, _key);
+                }
+            }
+        }
+        
+    }
     
     private float PopScore(MapPolygon poly)
     {

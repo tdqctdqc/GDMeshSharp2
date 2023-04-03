@@ -16,28 +16,19 @@ public class MapPolygonEdge : Entity
     public PolyBorderChain HighSegsRel() => HighId.Entity().NeighborBorders[LowId.RefId];
     public EntityRef<MapPolygon> LowId { get; protected set; }
     public EntityRef<MapPolygon> HighId { get; protected set; }
-    [SerializationConstructor] private MapPolygonEdge(int id, float moistureFlow, EntityRef<MapPolygon> lowId, 
-        EntityRef<MapPolygon> highId) : base(id)
+    public Dictionary<byte, byte> HiToLoTriPaths { get; private set; }
+    public Dictionary<byte, byte> LoToHiTriPaths { get; private set; }
+    [SerializationConstructor] private MapPolygonEdge(int id, float moistureFlow, 
+        EntityRef<MapPolygon> lowId, EntityRef<MapPolygon> highId, Dictionary<byte, byte> hiToLoTriPaths,
+        Dictionary<byte, byte> loToHiTriPaths) 
+        : base(id)
     {
+        HiToLoTriPaths = hiToLoTriPaths;
+        LoToHiTriPaths = loToHiTriPaths;
         MoistureFlow = moistureFlow;
         LowId = lowId;
         HighId = highId;
     }
-    // public static IEnumerable<MapPolygonEdge> CreateMany(
-    //     List<KeyValuePair<PolyBorderChain, PolyBorderChain>> pairs, GenWriteKey key)
-    // {
-    //     var es = new List<MapPolygonEdge>(pairs.Count);
-    //     for (var i = 0; i < pairs.Count; i++)
-    //     {
-    //         var p = pairs[i];
-    //         var chain1 = p.Key;
-    //         var chain2 = p.Value;
-    //         var b = CreateInner(chain1, chain2, key);
-    //         es.Add(b);
-    //     }
-    //     key.Create(es);
-    //     return es;
-    // }
     public static MapPolygonEdge Create(PolyBorderChain chain1, PolyBorderChain chain2, GenWriteKey key)
     {
         var b = CreateInner(chain1, chain2, key);
@@ -67,7 +58,8 @@ public class MapPolygonEdge : Entity
         lowId.Entity().AddNeighbor(highId.Entity(), lowChain, key);
         highId.Entity().AddNeighbor(lowId.Entity(), hiChain, key);
         var b = new MapPolygonEdge(
-            key.IdDispenser.GetID(), 0f, lowId, highId);
+            key.IdDispenser.GetID(), 0f, lowId, highId,
+            new Dictionary<byte, byte>(), new Dictionary<byte, byte>());
         return b;
     }
     
