@@ -28,7 +28,7 @@ public class ConstructionModule : LogicModule
         {
             Func<HostWriteKey, Entity> create = k =>
             {
-                return Building.Create(f.Pos, f.Model.Model(), k);
+                return MapBuilding.Create(f.Pos, f.Model.Model(), k);
             };
             queueEntityCreation(create);
         }

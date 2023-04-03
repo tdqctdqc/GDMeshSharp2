@@ -1,18 +1,16 @@
-
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using MessagePack;
 
-public class RemoveFromRefColProcedure : Procedure
+public abstract class RemoveFromRefColProcedure<TKey> : Procedure
 {
     public EntityRef<Entity> Entity { get; private set; }
     public string CollectionName { get; private set; }
-    public List<int> ToRemove { get; private set; }
+    public List<TKey> ToRemove { get; private set; }
 
-    public static RemoveFromRefColProcedure Create(Entity e, string colName, List<int> toAdd)
-    {
-        return new RemoveFromRefColProcedure(e.MakeRef(), colName, toAdd);
-    }
-    [SerializationConstructor] private RemoveFromRefColProcedure(EntityRef<Entity> entity, string collectionName, List<int> toRemove)
+    [SerializationConstructor] protected RemoveFromRefColProcedure(EntityRef<Entity> entity, string collectionName, 
+        List<TKey> toRemove)
     {
         Entity = entity;
         CollectionName = collectionName;
@@ -27,7 +25,7 @@ public class RemoveFromRefColProcedure : Procedure
     {
         var e = Entity.Entity();
         var meta = e.GetMeta();
-        var col = meta.GetRefCollection(CollectionName, e, key);
+        var col = meta.GetRefCollection<TKey>(CollectionName, e, key);
         col.RemoveByProcedure(ToRemove, key);
     }
 }

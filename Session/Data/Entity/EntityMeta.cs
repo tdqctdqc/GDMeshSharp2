@@ -75,9 +75,9 @@ public class EntityMeta<T> : IEntityMeta where T : Entity
         }
         return args;
     }
-    public IRefCollection GetRefCollection(string fieldName, Entity t, ProcedureWriteKey key)
+    public IRefCollection<TKey> GetRefCollection<TKey>(string fieldName, Entity t, ProcedureWriteKey key)
     {
-        return (IRefCollection)_vars[fieldName].GetForSerialize((T)t);
+        return (IRefCollection<TKey>)_vars[fieldName].GetForSerialize((T)t);
     }
     public void UpdateEntityVar<TProperty>(string fieldName, Entity t, StrongWriteKey key, TProperty newValue)
     {

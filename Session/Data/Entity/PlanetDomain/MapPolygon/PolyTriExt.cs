@@ -10,7 +10,7 @@ public static class PolyTriExt
     {
         return data.Society.BuildingAux.ByTri[t] != null;
     }
-    public static Building GetBuilding(this PolyTri t, Data data)
+    public static MapBuilding GetBuilding(this PolyTri t, Data data)
     {
         return data.Society.BuildingAux.ByTri[t];
     }

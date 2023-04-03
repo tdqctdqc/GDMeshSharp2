@@ -1,18 +1,16 @@
-
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using MessagePack;
 
-public class AddToRefColProcedure : Procedure
+public abstract class AddToRefColProcedure<TKey> : Procedure
 {
     public EntityRef<Entity> Entity { get; private set; }
     public string CollectionName { get; private set; }
-    public List<int> ToAdd { get; private set; }
+    public List<TKey> ToAdd { get; private set; }
 
-    public static AddToRefColProcedure Create(Entity e, string colName, List<int> toAdd)
-    {
-        return new AddToRefColProcedure(e.MakeRef(), colName, toAdd);
-    }
-    [SerializationConstructor] private AddToRefColProcedure(EntityRef<Entity> entity, string collectionName, List<int> toAdd)
+    [SerializationConstructor] protected AddToRefColProcedure(EntityRef<Entity> entity, 
+        string collectionName, List<TKey> toAdd)
     {
         Entity = entity;
         CollectionName = collectionName;
@@ -27,7 +25,7 @@ public class AddToRefColProcedure : Procedure
     {
         var e = Entity.Entity();
         var meta = e.GetMeta();
-        var col = meta.GetRefCollection(CollectionName, e, key);
+        var col = meta.GetRefCollection<TKey>(CollectionName, e, key);
         col.AddByProcedure(ToAdd, key);
     }
 }

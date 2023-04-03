@@ -24,9 +24,9 @@ public class Farm : ProductionBuildingModel
     {
         return p.IsLand;
     }
-    public override float GetProductionRatio(Building p, float staffingRatio, Data data)
+    public override float GetProductionRatio(PolyTriPosition pos, float staffingRatio, Data data)
     {
-         var tri = p.Position.Tri(data);
+         var tri = pos.Tri(data);
          return tri.Landform.FertilityMod * tri.Vegetation.FertilityMod * staffingRatio; 
     }
 }

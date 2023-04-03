@@ -6,7 +6,7 @@ using System.Linq;
 using MessagePack;
 
 public class EntityRefCollection<TRef>
-    : IRefCollection, IReadOnlyHash<TRef> where TRef : Entity
+    : IRefCollection<int>, IReadOnlyHash<TRef> where TRef : Entity
 {
     public HashSet<int> RefIds { get; private set; }
     private Dictionary<int, TRef> _refs;
@@ -66,11 +66,28 @@ public class EntityRefCollection<TRef>
     public void AddByProcedure(List<int> ids, ProcedureWriteKey key)
     {
         RefIds.AddRange(ids);
+        _refs.AddRange(ids.Select(id => new KeyValuePair<int, TRef>(id, (TRef)key.Data[id])));
+    }
+
+    public void AddByProcedure(int id, ProcedureWriteKey key)
+    {
+        RefIds.Add(id);
+        _refs.Add(id, (TRef)key.Data[id]);
     }
 
     public void RemoveByProcedure(List<int> ids, ProcedureWriteKey key)
     {
-        ids.ForEach(id => RefIds.Remove(id));
+        ids.ForEach(id =>
+        {
+            RefIds.Remove(id);
+            _refs.Remove(id);
+        });
+    }
+
+    public void RemoveByProcedure(int id, ProcedureWriteKey key)
+    {
+        RefIds.Remove(id);
+        _refs.Remove(id);
     }
 
     public IEnumerator<TRef> GetEnumerator()

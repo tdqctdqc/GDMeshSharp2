@@ -12,6 +12,6 @@ public interface IEntityMeta
     IReadOnlyDictionary<string, IEntityVarMeta> Vars { get; }
     object[] GetPropertyValues(Entity entity);
     void UpdateEntityVar<TProperty>(string fieldName, Entity t, StrongWriteKey key, TProperty newValue);
-    IRefCollection GetRefCollection(string fieldName, Entity t, ProcedureWriteKey key);
+    IRefCollection<TKey> GetRefCollection<TKey>(string fieldName, Entity t, ProcedureWriteKey key);
     bool TestSerialization(Entity e);
 }

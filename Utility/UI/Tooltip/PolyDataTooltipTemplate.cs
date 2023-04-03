@@ -32,7 +32,7 @@ public class PolyDataTooltipTemplate : DataTooltipTemplate<PolyTriPosition>
 
     private static Control GetBuildings(PolyTriPosition t, Data d)
     {
-            var bs = t.Poly(d).GetBuildings(d);
+            var bs = t.Poly(d).GetMapBuildings(d);
             if (bs != null)
             {
                 var label = new Label();

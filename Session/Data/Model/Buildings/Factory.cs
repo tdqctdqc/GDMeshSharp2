@@ -14,7 +14,7 @@ public class Factory : ProductionBuildingModel
         100f)
     {
     }
-    public override float GetProductionRatio(Building p, float staffingRatio, Data data)
+    public override float GetProductionRatio(PolyTriPosition pos, float staffingRatio, Data data)
     {
         return staffingRatio;
     }

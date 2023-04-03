@@ -10,10 +10,12 @@ public interface IRef
 }
 
 
-public interface IRefCollection : IRef
+public interface IRefCollection<TKey> : IRef
 {
-    void AddByProcedure(List<int> ids, ProcedureWriteKey key);
-    void RemoveByProcedure(List<int> ids, ProcedureWriteKey key);
+    void AddByProcedure(List<TKey> ids, ProcedureWriteKey key);
+    void AddByProcedure(TKey id, ProcedureWriteKey key);
+    void RemoveByProcedure(List<TKey> ids, ProcedureWriteKey key);
+    void RemoveByProcedure(TKey id, ProcedureWriteKey key);
 }
 
 

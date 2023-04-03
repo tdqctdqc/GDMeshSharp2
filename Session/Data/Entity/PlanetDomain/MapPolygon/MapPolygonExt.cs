@@ -85,7 +85,7 @@ public static class MapPolygonExt
             : 0f;
     }
 
-    public static List<Building> GetBuildings(this MapPolygon poly, Data data)
+    public static List<MapBuilding> GetMapBuildings(this MapPolygon poly, Data data)
     {
         return data.Society.BuildingAux.ByPoly[poly];
     }

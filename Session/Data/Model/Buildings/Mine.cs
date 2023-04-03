@@ -18,7 +18,7 @@ public class Mine : ExtractionBuildingModel
         };
 
     public override int ProductionCap { get; } = 10;
-    public override float GetProductionRatio(Building p, float staffingRatio, Data data)
+    public override float GetProductionRatio(PolyTriPosition pos, float staffingRatio, Data data)
     {
         return staffingRatio;
     }

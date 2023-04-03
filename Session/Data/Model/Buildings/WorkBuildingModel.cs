@@ -8,5 +8,5 @@ public abstract class WorkBuildingModel : BuildingModel
     protected WorkBuildingModel(string name, float buildCost) : base(name, buildCost)
     {
     }
-    public abstract void Produce(WorkProdConsumeProcedure proc, Building b, float staffingRatio, Data data);
+    public abstract void Produce(WorkProdConsumeProcedure proc, PolyTriPosition pos, float staffingRatio, Data data);
 }

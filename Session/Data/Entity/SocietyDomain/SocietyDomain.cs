@@ -9,7 +9,7 @@ public class SocietyDomain : Domain
     public EntityRegister<RoadSegment> RoadSegments => GetRegister<RoadSegment>();
     public EntityRegister<Regime> Regimes => GetRegister<Regime>();
     public EntityRegister<Peep> Peeps => GetRegister<Peep>();
-    public EntityRegister<Building> Buildings => GetRegister<Building>();
+    public EntityRegister<MapBuilding> Buildings => GetRegister<MapBuilding>();
     public EntityRegister<RegimeRelation> RegimeRelations => GetRegister<RegimeRelation>();
     public SettlementAux SettlementAux { get; private set; }
     public RoadAux RoadAux { get; private set; }

@@ -50,7 +50,7 @@ public class PeepGenerator : Generator
         foreach (var poly in r.Polygons)
         {
             var polyFarmerSize = 0;
-            var buildings = poly.GetBuildings(_data);
+            var buildings = poly.GetMapBuildings(_data);
             if (buildings == null) continue;
             var farms = buildings.Where(b => b.Model.Model() == farmModel);
             var farmCount = farms.Count();
@@ -58,7 +58,7 @@ public class PeepGenerator : Generator
             foreach (var farm in farms)
             {
                 var farmProdCap = farmModel.ProductionCap 
-                                  * farmModel.GetProductionRatio(farm, 1f, _data);
+                                  * farmModel.GetProductionRatio(farm.Position, 1f, _data);
                 var prodPerLabor = farmProdCap / farmLaborReq;
                 if (prodPerLabor < foodConPerPeep) continue;
                 polyFarmerSize += farmLaborReq;
@@ -104,7 +104,7 @@ public class PeepGenerator : Generator
         float laborDesire(MapPolygon p)
         {
             var res = 0f;
-            var buildings = p.GetBuildings(_data);
+            var buildings = p.GetMapBuildings(_data);
             if (buildings != null)
             {
                 var laborBuildings = buildings.Select(b => b.Model.Model())

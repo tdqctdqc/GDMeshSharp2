@@ -61,14 +61,26 @@ public class WorkProdConsumeModule : LogicModule
 
     private void ProduceForPoly(MapPolygon poly, WorkProdConsumeProcedure proc, Data data)
     {
-        var buildings = poly.GetBuildings(data);
-        if (buildings == null || buildings.Count == 0) return;
         var peeps = poly.GetPeeps(data);
         if (peeps == null) return;
         
-        var workBuildings = buildings.Where(b => b.Model.Model() is WorkBuildingModel)
-            .Select(b => (WorkBuildingModel)b.Model.Model());
+        var mapBuildings = poly.GetMapBuildings(data);
+        if (mapBuildings == null || mapBuildings.Count == 0) return;
+        
+        var workBuildings = mapBuildings.Where(b => b.Model.Model() is WorkBuildingModel)
+                    .Select(b => (WorkBuildingModel)b.Model.Model());
+        IEnumerable<WorkBuildingModel> settlementBuildings = null;
+        if (poly.HasSettlement(data))
+        {
+            settlementBuildings = poly.GetSettlement(data)
+                .Buildings.Models().SelectWhereOfType<BuildingModel, WorkBuildingModel>();
+            workBuildings = workBuildings.Union(settlementBuildings);
+        }
         if (workBuildings.Count() == 0) return;
+
+        
+        
+        
         
         var jobNeeds = workBuildings.SelectMany(b => b.JobLaborReqs);
         var jobNeedCount = jobNeeds.Sum(kvp => kvp.Value);
@@ -77,7 +89,6 @@ public class WorkProdConsumeModule : LogicModule
         var ratio = (float) peepsCount / (float) jobNeedCount;
         ratio = Mathf.Clamp(ratio, 0f, 1f);
         
-
         var employment = _polyEmployReps.GetOrAdd(poly.Id, p => EmploymentReport.Construct());
         var unemployed = peepsCount;
         foreach (var kvp in jobNeeds)
@@ -94,11 +105,21 @@ public class WorkProdConsumeModule : LogicModule
         employment.Counts[PeepJobManager.Unemployed.Name] = unemployed;
         proc.EmploymentReports.TryAdd(poly.Id, employment);
         
-        foreach (var building in buildings)
+        foreach (var building in mapBuildings)
         {
             if (building.Model.Model() is WorkBuildingModel wb)
             {
-                wb.Produce(proc, building, ratio, data);
+                wb.Produce(proc, building.Position, ratio, data);
+            }
+        }
+
+        if (settlementBuildings != null)
+        {
+            var tri = poly.Tris.Tris.First(t => t.Landform == LandformManager.Urban);
+            var pos = new PolyTriPosition(poly.Id, tri.Index);
+            foreach (var wb in settlementBuildings)
+            {
+                wb.Produce(proc, pos, ratio, data);
             }
         }
     }

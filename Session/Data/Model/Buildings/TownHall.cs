@@ -23,7 +23,7 @@ public class TownHall : WorkBuildingModel
         {
             {PeepJobAttribute.BureaucratAttribute, 100}
         };
-    public override void Produce(WorkProdConsumeProcedure proc, Building b, float staffingRatio, Data data)
+    public override void Produce(WorkProdConsumeProcedure proc, PolyTriPosition pos, float staffingRatio, Data data)
     {
         
     }

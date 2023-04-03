@@ -63,7 +63,7 @@ public class BuildingGenerator : Generator
         
         foreach (var p in farmTris)
         {
-            Building.Create(p, BuildingModelManager.Farm, _key);
+            MapBuilding.Create(p, BuildingModelManager.Farm, _key);
         }
     }
 
@@ -106,7 +106,7 @@ public class BuildingGenerator : Generator
         foreach (var p in mineTris)
         {
             var mine = BuildingModelManager.Mines[p.Value];
-            Building.Create(p.Key, mine, _key);
+            MapBuilding.Create(p.Key, mine, _key);
         }
     }
 
@@ -133,7 +133,7 @@ public class BuildingGenerator : Generator
         });
         foreach (var pos in tris)
         {
-            Building.Create(pos, factory, _key);
+            MapBuilding.Create(pos, factory, _key);
         }
     }
 
@@ -144,7 +144,7 @@ public class BuildingGenerator : Generator
         {
             var p = s.Poly.Entity();
             var tri = p.Tris.Tris.First(t => t.Landform == LandformManager.Urban);
-            Building.Create(new PolyTriPosition(p.Id, tri.Index), townHall, _key);
+            MapBuilding.Create(new PolyTriPosition(p.Id, tri.Index), townHall, _key);
         }
     }
 }
