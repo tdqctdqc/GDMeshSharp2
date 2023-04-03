@@ -27,6 +27,8 @@ public class BuildingGenerator : Generator
         report.StartSection();
         GenerateFactories();
         report.StopSection(nameof(GenerateFactories));
+        
+        GenerateTownHalls();
         return report;
     }
 
@@ -132,6 +134,17 @@ public class BuildingGenerator : Generator
         foreach (var pos in tris)
         {
             Building.Create(pos, factory, _key);
+        }
+    }
+
+    private void GenerateTownHalls()
+    {
+        var townHall = BuildingModelManager.TownHall;
+        foreach (var s in _data.Society.Settlements.Entities)
+        {
+            var p = s.Poly.Entity();
+            var tri = p.Tris.Tris.First(t => t.Landform == LandformManager.Urban);
+            Building.Create(new PolyTriPosition(p.Id, tri.Index), townHall, _key);
         }
     }
 }

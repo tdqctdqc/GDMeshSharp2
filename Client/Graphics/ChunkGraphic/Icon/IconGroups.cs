@@ -17,22 +17,23 @@ public class IconGroups : Node2D
 
     public IconGroups(List<IIconGroupController> groups)
     {
-        _groups = groups;
+        _groups = groups.Where(g => g.GetIcons().Count > 0).ToList();
         _groupNodes = new List<List<Node2D>>();
         _groupLabelNodes = new List<List<Label>>();
-        _zoomCutoffs = groups.Select(g => g.ZoomCutoff).ToList();
-        var icons = groups.Select(g => g.GetIcons()).ToList();
+        _zoomCutoffs = _groups.Select(g => g.ZoomCutoff).ToList();
+        var icons = _groups.Select(g => g.GetIcons()).ToList();
+        if (icons.Count == 0) return;
         var yMargin = 10f;
         var heights = icons.Select(ic => ic.Max(i => i.Dimension.y)).ToList();
         Height = heights.Sum();
         this.ClearChildren();
         var yOffset = Vector2.Zero;
         var yStart = Vector2.Up * Height / 4f;
-        for (var i = 0; i < groups.Count; i++)
+        for (var i = 0; i < _groups.Count; i++)
         {
             yOffset += Vector2.Down * heights[i] + yMargin * Vector2.Down;
             var groupOffset = yStart + yOffset;
-            HandleIconGroup(groups[i], icons[i],groupOffset);
+            HandleIconGroup(_groups[i], icons[i],groupOffset);
         }
     }
 

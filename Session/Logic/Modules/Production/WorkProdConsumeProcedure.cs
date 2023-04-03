@@ -1,4 +1,5 @@
 
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Collections.Generic;
 using Godot;
@@ -6,25 +7,25 @@ using MessagePack;
 
 public class WorkProdConsumeProcedure : Procedure
 {
-    public Dictionary<int, ItemWallet> RegimeResourceGains { get; private set; }
-    public Dictionary<int, EntityWallet<ResourceDeposit>> Depletions { get; private set; }
-    public Dictionary<int, ItemWallet> ConsumptionsByRegime { get; private set; }
-    public Dictionary<int, ItemWallet> DemandsByRegime { get; private set; }
-    public Dictionary<int, EmploymentReport> EmploymentReports { get; private set; }
+    public ConcurrentDictionary<int, ItemWallet> RegimeResourceGains { get; private set; }
+    public ConcurrentDictionary<int, EntityWallet<ResourceDeposit>> Depletions { get; private set; }
+    public ConcurrentDictionary<int, ItemWallet> ConsumptionsByRegime { get; private set; }
+    public ConcurrentDictionary<int, ItemWallet> DemandsByRegime { get; private set; }
+    public ConcurrentDictionary<int, EmploymentReport> EmploymentReports { get; private set; }
 
     public static WorkProdConsumeProcedure Create()
     {
-        return new WorkProdConsumeProcedure(new Dictionary<int, ItemWallet>(), 
-            new Dictionary<int, EntityWallet<ResourceDeposit>>(), 
-            new Dictionary<int, ItemWallet>(), new Dictionary<int, ItemWallet>(),
-            new Dictionary<int, EmploymentReport>());
+        return new WorkProdConsumeProcedure(new ConcurrentDictionary<int, ItemWallet>(), 
+            new ConcurrentDictionary<int, EntityWallet<ResourceDeposit>>(), 
+            new ConcurrentDictionary<int, ItemWallet>(), new ConcurrentDictionary<int, ItemWallet>(),
+            new ConcurrentDictionary<int, EmploymentReport>());
     }
     [SerializationConstructor] private WorkProdConsumeProcedure(
-        Dictionary<int, ItemWallet> regimeResourceGains, 
-        Dictionary<int, EntityWallet<ResourceDeposit>> depletions,
-        Dictionary<int, ItemWallet> consumptionsByRegime,
-        Dictionary<int, ItemWallet> demandsByRegime,
-        Dictionary<int, EmploymentReport> employmentReports)
+        ConcurrentDictionary<int, ItemWallet> regimeResourceGains, 
+        ConcurrentDictionary<int, EntityWallet<ResourceDeposit>> depletions,
+        ConcurrentDictionary<int, ItemWallet> consumptionsByRegime,
+        ConcurrentDictionary<int, ItemWallet> demandsByRegime,
+        ConcurrentDictionary<int, EmploymentReport> employmentReports)
     {
         RegimeResourceGains = regimeResourceGains;
         Depletions = depletions;
@@ -99,7 +100,6 @@ public class WorkProdConsumeProcedure : Procedure
             var demands = kvp.Value.Contents;
             var snapshot = kvp.Value.GetSnapshot();
             r.History.DemandHistory.AddSnapshot(tick, snapshot, key);
-
         }
     }
 }

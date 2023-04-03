@@ -22,7 +22,7 @@ public class RuleVars : Entity
     {
         var v = new RuleVars(
             1,
-            .1f,
+            .01f,
             1f,
             .02f,
             .1f,

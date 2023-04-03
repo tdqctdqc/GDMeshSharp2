@@ -4,10 +4,10 @@ using System.Linq;
 
 public class Factory : ProductionBuildingModel
 {
-    public override Dictionary<PeepJob, int> JobLaborReqs { get; }
-        = new Dictionary<PeepJob, int>
+    public override Dictionary<PeepJobAttribute, int> JobLaborReqs { get; }
+        = new Dictionary<PeepJobAttribute, int>
         {
-            {PeepJobManager.Laborer, 500}
+            {PeepJobAttribute.LaborerAttribute, 500}
         };
     public override int ProductionCap { get; } = 100;
     public Factory() : base(ItemManager.IndustrialPoint, nameof(Factory),

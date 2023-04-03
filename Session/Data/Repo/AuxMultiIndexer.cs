@@ -6,8 +6,8 @@ using System.Reflection.Emit;
 public class AuxMultiIndexer<TSingle, TMult> : AuxData<TMult>
     where TMult : Entity
 {
-    public HashSet<TMult> this[TSingle s] => _dic.ContainsKey(s) 
-        ? _dic[s].ToHashSet() 
+    public List<TMult> this[TSingle s] => _dic.ContainsKey(s) 
+        ? _dic[s].ToList() 
         : null;
     protected Dictionary<TSingle, HashSet<TMult>> _dic;
     private Func<TMult, TSingle> _getSingle;

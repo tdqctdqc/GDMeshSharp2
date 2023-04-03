@@ -27,10 +27,7 @@ public static class MapPolygonExt
         if (off2.Length() < off1.Length() && off2.Length() < off3.Length()) return off2;
         return off3;
     }
-    public static IEnumerable<Peep> GetPeeps(this MapPolygon poly, Data data)
-    {
-        return data.Planet.PolygonAux.PeepsInPoly[poly];
-    }
+    
     public static IReadOnlyList<Triangle> GetWheelTris(this MapPolygon poly, Data data)
     {
         return data.Planet.PolygonAux.AuxDatas[poly].WheelTris;
@@ -78,7 +75,7 @@ public static class MapPolygonExt
     public static ReadOnlyHash<ResourceDeposit> GetResourceDeposits(this MapPolygon p, Data data)
     {
         var rd = data.Planet.ResourceDepositAux.ByPoly[p];
-        return rd == null ? null : rd.ReadOnly();
+        return rd == null ? null : new ReadOnlyHash<ResourceDeposit>(rd.ToHashSet());
     }
 
     public static float GetFertility(this MapPolygon poly)
@@ -88,7 +85,7 @@ public static class MapPolygonExt
             : 0f;
     }
 
-    public static IEnumerable<Building> GetBuildings(this MapPolygon poly, Data data)
+    public static List<Building> GetBuildings(this MapPolygon poly, Data data)
     {
         return data.Society.BuildingAux.ByPoly[poly];
     }
@@ -106,7 +103,10 @@ public static class MapPolygonExt
     {
         return data.Society.SettlementAux.ByPoly.ContainsKey(p) ? data.Society.SettlementAux.ByPoly[p] : null;
     }
-
+    public static List<Peep> GetPeeps(this MapPolygon poly, Data data)
+    {
+        return data.Planet.PolygonAux.PeepsInPoly[poly];
+    }
     public static bool HasPeeps(this MapPolygon poly, Data data)
     {
         return data.Planet.PolygonAux.PeepsInPoly[poly] != null;

@@ -18,12 +18,10 @@ public class SandboxClient : Node, IClient
     private Control _debugHook;
     public ClientSettings Settings { get; private set; }
     public ClientRequests Requests { get; } = new ClientRequests();
-    public TooltipManager TooltipManager { get; }
 
     public SandboxClient()
     {
         Settings = ClientSettings.Load();
-        // TooltipManager = new TooltipManager(null); //todo fix
     }
 
     public override void _Ready()
@@ -69,12 +67,6 @@ public class SandboxClient : Node, IClient
 
     public void DrawTri(Triangle tri)
     {
-
-        // if (_triGraphics.TryGetValue(-1, out var node))
-        // {
-        //     node.Free();
-        //     _triGraphics.Remove(-1);
-        // }
         var mb = new MeshBuilder();
         mb.AddTri(tri, ColorsExt.GetRandomColor());
         var mi = mb.GetMeshInstance();

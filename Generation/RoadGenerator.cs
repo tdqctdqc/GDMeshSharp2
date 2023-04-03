@@ -90,33 +90,7 @@ public class RoadGenerator : Generator
         }
         return segs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
     }
-    private void TryBuildNewPath(MapPolygon s1, MapPolygon s2, bool international, float minImprovementRatio,
-         RoadModel road, Dictionary<Vector2, RoadModel> segs, HashSet<Vector2> covered, 
-         Func<MapPolygon, MapPolygon, float> travelEdgeCost = null, Func<MapPolygon, MapPolygon, float> buildEdgeCost = null)
-    {
-        var oldPath = PathFinder.FindTravelPath(s1, s2, _data, travelEdgeCost);
-        var oldCost = PathFinder.GetTravelPathCost(oldPath, _data, travelEdgeCost);
-                
-        var buildPath = PathFinder.FindRoadBuildPath(s1, s2, road, _data, 
-            international, buildEdgeCost);
-        var newCost = PathFinder.GetBuildPathCost(oldPath, road, _data, 
-            international, buildEdgeCost);
-
-        if (newCost > minImprovementRatio * oldCost)
-        {
-            //todo in this case 'hook into' old path
-            return;
-        }
-
-        for (var i = 0; i < buildPath.Count - 1; i++)
-        {
-            var pathEdge = buildPath[i].GetV2EdgeKey(buildPath[i + 1]); 
-            buildPath[i].GetEdge(buildPath[i + 1], _data);
-            covered.Add(pathEdge);
-            if(segs.ContainsKey(pathEdge)) continue;
-            segs.Add(pathEdge, road);
-        }
-    }
+    
     private void BuildRoadNetworkLocal(RoadModel road, float roadBuildDist,
         IReadOnlyGraph<MapPolygon, Vector2> graph, HashSet<Vector2> covered,
         Dictionary<Vector2, RoadModel> segs, bool international)

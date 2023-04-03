@@ -28,7 +28,7 @@ public class PeepGrowthAndDeclineProcedure : Procedure
             var growth = kvp.Value;
             if (growth < 0)
             {
-                
+                peep.ShrinkSize(-growth, key);
             }
 
             if (growth > 0)
@@ -42,7 +42,7 @@ public class PeepGrowthAndDeclineProcedure : Procedure
         var tick = key.Data.BaseDomain.GameClock.Tick;
         foreach (var r in key.Data.Society.Regimes.Entities)
         {
-            var peepCount = r.GetPeeps(key.Data).Count();
+            var peepCount = r.GetPeeps(key.Data).Sum(p => p.Size);
             r.History.PeepHistory.Update(tick, peepCount, key);
         }
     }

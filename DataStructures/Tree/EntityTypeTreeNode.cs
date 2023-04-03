@@ -41,7 +41,7 @@ public class EntityTypeTreeNode
         
         Parent?.BubbleUp(n);
         
-        Created.InvokeLog(n);
+        Created.Invoke(n);
         
         PushDown(n);
         

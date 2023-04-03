@@ -89,18 +89,19 @@ public class PolyDataTooltipTemplate : DataTooltipTemplate<PolyTriPosition>
         var peeps = t.Poly(d).GetPeeps(d);
         if (peeps == null) return null;
         var jobs = new VBoxContainer();
-        // var peepJobCounts = peeps.SelectMany(p => p.Jobs.Values)
-        //     .Where(ja => ja.Count > 0)
-        //     .SortInto(ja => ja.Job.Model(), ja => ja.Count);
-        // foreach (var peepJobCount in peepJobCounts)
-        // {
-        //     var innerContainer = new HBoxContainer();
-        //     var tr = peepJobCount.Key.JobIcon.GetTextureRect(Vector2.One);
-        //     tr.RectMinSize = Vector2.One * 50f;
-        //     innerContainer.AddChild(tr);
-        //     innerContainer.AddChild(NodeExt.CreateLabel(peepJobCount.Value.ToString()));
-        //     jobs.AddChild(innerContainer);
-        // }
+        var peepJobCounts = t.Poly(d).Employment.Counts
+            // .Where(kvp => kvp.Value > 0)
+            .Select(kvp => new KeyValuePair<PeepJob, int>(d.Models.PeepJobs.Models[kvp.Key], kvp.Value))
+            .ToList();
+        foreach (var peepJobCount in peepJobCounts)
+        {
+            var innerContainer = new HBoxContainer();
+            var tr = peepJobCount.Key.JobIcon.GetTextureRect(Vector2.One);
+            tr.RectMinSize = Vector2.One * 50f;
+            innerContainer.AddChild(tr);
+            innerContainer.AddChild(NodeExt.CreateLabel(peepJobCount.Value.ToString()));
+            jobs.AddChild(innerContainer);
+        }
         return jobs;
     }
 

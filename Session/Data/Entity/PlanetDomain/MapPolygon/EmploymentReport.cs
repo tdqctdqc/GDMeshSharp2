@@ -14,4 +14,15 @@ public class EmploymentReport
     {
         Counts = new Dictionary<string, int>();
     }
+
+    public void Copy(EmploymentReport toCopy, ProcedureWriteKey key)
+    {
+        Counts.Clear();
+        Counts.AddRange(toCopy.Counts);
+    }
+
+    public void Clear()
+    {
+        
+    }
 }

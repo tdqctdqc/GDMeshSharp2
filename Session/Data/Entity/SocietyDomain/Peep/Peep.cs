@@ -32,4 +32,10 @@ public class Peep : Entity
         if (delta <= 0) throw new Exception();
         Size += delta;
     }
+
+    public void ShrinkSize(int delta, ProcedureWriteKey key)
+    {
+        if (delta <= 0) throw new Exception();
+        Size -= delta;
+    }
 }

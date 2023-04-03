@@ -21,7 +21,10 @@ public class AttributeHolder<TAttr> where TAttr : GameAttribute
     {
         return Attributes.ContainsKey(typeof(T));
     }
-
+    public bool Has(GameAttribute att)
+    {
+        return Attributes.ContainsKey(att.GetType());
+    }
     public T Get<T>() where T : TAttr
     {
         return (T) Attributes[typeof(T)];

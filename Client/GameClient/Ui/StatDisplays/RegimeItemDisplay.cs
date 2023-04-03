@@ -27,7 +27,6 @@ public class RegimeItemDisplay : HBoxContainer
         AddChild(amount);
         icon.RectScale = new Vector2(1f, -1f);
         
-        //todo make so updates when player switches regime
         SubscribedStatLabel.Construct<int>(
             "", 
             amount,

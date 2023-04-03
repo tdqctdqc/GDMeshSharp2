@@ -158,19 +158,40 @@ public class PolyTriGenerator : Generator
     {
         var borderSegs = poly.GetOrderedBoundarySegs(key.Data);
         var points = borderSegs.GetPoints().ToList();
-        points.AddRange(borderSegs.GenerateInteriorPoints(50f, 10f));
         var graph = new Graph<PolyTri, bool>();
-        var tris = DelaunayTriangulator.TriangulatePointsAndGetTriAdjacencies<PolyTri>
-        (
-            points, 
-            graph,
-            (a, b, c) =>
+
+        List<PolyTri> tris;
+        int iter = 0;
+
+        while (true)
+        {
+            var innerPoints = borderSegs.GenerateInteriorPoints(50f, 10f);
+            innerPoints.AddRange(points);
+            try
             {
-                var lf = key.Data.Models.Landforms.GetAtPoint(poly, (a + b + c) / 3f, key.Data);
-                var v = key.Data.Models.Vegetation.GetAtPoint(poly, (a + b + c) / 3f, lf, key.Data);
-                return PolyTri.Construct(a,b,c,lf.MakeRef(), v.MakeRef());
+                iter++;
+                tris = DelaunayTriangulator.TriangulatePointsAndGetTriAdjacencies<PolyTri>
+                (
+                    points,
+                    graph,
+                    (a, b, c) =>
+                    {
+                        var lf = key.Data.Models.Landforms.GetAtPoint(poly, (a + b + c) / 3f, key.Data);
+                        var v = key.Data.Models.Vegetation.GetAtPoint(poly, (a + b + c) / 3f, lf, key.Data);
+                        return PolyTri.Construct(a, b, c, lf.MakeRef(), v.MakeRef());
+                    }
+                );
+                break;
             }
-        );
+            catch
+            {
+                if (iter > 100) throw;
+                GD.Print($"triangulation for poly {poly.Id} failed, trying");
+            }
+        }
+        
+        // points.AddRange(borderSegs.GenerateInteriorPoints(50f, 10f));
+        
 
         return tris;
     }

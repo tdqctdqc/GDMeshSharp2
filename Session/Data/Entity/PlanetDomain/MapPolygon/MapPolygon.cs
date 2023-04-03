@@ -94,7 +94,7 @@ public partial class MapPolygon : Entity,
 
     public void SetEmploymentReport(EmploymentReport employment, ProcedureWriteKey key)
     {
-        Employment = employment;
+        Employment.Copy(employment, key);
     }
     PolyBorderChain IReadOnlyGraphNode<MapPolygon, PolyBorderChain>.GetEdge(MapPolygon neighbor) =>
         this.GetBorder(neighbor.Id);

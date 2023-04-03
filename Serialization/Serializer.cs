@@ -45,7 +45,6 @@ public class Serializer
 
     public bool Test(Data data)
     {
-        //todo need to get all types not just repotypes
         var res = true;
         foreach (var keyValuePair in data.Domains)
         {

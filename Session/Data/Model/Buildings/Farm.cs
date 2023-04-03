@@ -10,10 +10,10 @@ public class Farm : ProductionBuildingModel
     {
     }
     public override int ProductionCap { get; } = 1000;
-    public override Dictionary<PeepJob, int> JobLaborReqs { get; }
-        = new Dictionary<PeepJob, int>
+    public override Dictionary<PeepJobAttribute, int> JobLaborReqs { get; }
+        = new Dictionary<PeepJobAttribute, int>
         {
-            {PeepJobManager.Farmer, 500}
+            {PeepJobAttribute.FarmerAttribute, 500}
         };
     protected override bool CanBuildInTriSpec(PolyTri t, Data data)
     {
