@@ -5,7 +5,6 @@ using System.Linq;
 
 public abstract class Decision : Message
 {
-    private IPrompt _promptImplementation;
     public EntityRef<Regime> Decider { get; private set; }
     public bool Decided { get; private set; }
     protected Decision(EntityRef<Regime> decider, bool decided)

@@ -62,6 +62,7 @@ public class Icon : MeshTexture
         rect.Expand = true;
         rect.StretchMode = TextureRect.StretchModeEnum.KeepAspect;
         rect.RectSize = dim;
+        rect.RectMinSize = dim;
         rect.Texture = BaseTexture;
         rect.RectScale = new Vector2(1f, -1f);
         return rect;

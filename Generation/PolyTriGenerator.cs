@@ -367,7 +367,11 @@ public class PolyTriGenerator : Generator
             .Reverse()
             .ToList();
             
-        if (loEdgeTris.Count != hiEdgeTris.Count) throw new Exception();
+        if (loEdgeTris.Count != hiEdgeTris.Count)
+        {
+            return;
+            // throw new Exception();
+        }
         for (var i = 0; i < loEdgeTris.Count; i++)
         {
             edge.LoToHiTriPaths[loEdgeTris[i].Index] = hiEdgeTris[i].Index;

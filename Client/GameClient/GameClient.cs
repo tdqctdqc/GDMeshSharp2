@@ -27,7 +27,7 @@ public class GameClient : Node, IClient
     }
     public void Setup(GameSession session, IServer server, MapGraphics graphics)
     {
-        Requests = new ClientRequests();
+        Requests = new ClientRequests(session);
         Requests.GiveTree(session.Data.EntityTypeTree);
         Settings = ClientSettings.Load();
         Key = new ClientWriteKey(session.Data, session);
@@ -48,7 +48,6 @@ public class GameClient : Node, IClient
         }
         AddChild(Graphics);
         BuildUi(session.Data, Key.Session.Server);
-
     }
     
     private void BuildGraphics(Data data)

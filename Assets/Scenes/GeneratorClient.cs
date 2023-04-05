@@ -23,7 +23,7 @@ public class GeneratorClient : Node, IClient
 
     public void Setup(GeneratorSession session)
     {
-        Requests = new ClientRequests();
+        Requests = new ClientRequests(session);
         Requests.GiveTree(session.Data.EntityTypeTree);
         Key = new ClientWriteKey(session.Data, session);
         Settings = ClientSettings.Load();

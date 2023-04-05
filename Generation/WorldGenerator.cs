@@ -37,19 +37,14 @@ public class WorldGenerator
         GameClock.Create(_key);
         PlanetInfo.Create(Data.GenMultiSettings.Dimensions, _key);
         RuleVars.CreateDefault(_key);
+        CurrentConstruction.Create(_key);
         _sw.Start();
-        
-        
-        
         
         var points = PointsGenerator
             .GenerateConstrainedSemiRegularPoints
                 (Data.GenMultiSettings.Dimensions - edgePointMargin, polySize, polySize * .75f, false, true)
             .Select(v => v + edgePointMargin / 2f).ToList();
 
-        
-        
-        
         RunGenerator(new PolygonGenerator(points, Data.GenMultiSettings.Dimensions, true, polySize));
         
         RunGenerator(new GeologyGenerator());

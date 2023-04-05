@@ -1,6 +1,6 @@
 public class DummyServer : IServer 
 {
-    public void QueueCommandLocal(Command c, WriteKey key)
+    public void QueueCommandLocal(Command c)
     {
         return;
     }

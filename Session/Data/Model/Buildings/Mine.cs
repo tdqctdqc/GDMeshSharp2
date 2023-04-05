@@ -6,7 +6,7 @@ using Godot;
 public class Mine : ExtractionBuildingModel
 {
     public Mine(string name, Item prodItem) 
-        : base(prodItem, name, true, 100f)
+        : base(prodItem, name, true, 150, 300)
     {
         if (prodItem.Attributes.Has<MineableAttribute>() == false) throw new Exception();
     }
@@ -32,5 +32,10 @@ public class Mine : ExtractionBuildingModel
     {
         var ds = p.GetResourceDeposits(data);
         return ds != null && ds.Any(d => d.Item.Model() == ProdItem);
+    }
+
+    public override float GetPolyEfficiencyScore(MapPolygon poly, Data data)
+    {
+        return poly.Roughness;
     }
 }

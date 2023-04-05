@@ -7,26 +7,35 @@ using MessagePack;
 
 public class WorkProdConsumeProcedure : Procedure
 {
+    public int TicksSinceLast { get; private set; }
     public ConcurrentDictionary<int, ItemWallet> RegimeResourceGains { get; private set; }
     public ConcurrentDictionary<int, EntityWallet<ResourceDeposit>> Depletions { get; private set; }
     public ConcurrentDictionary<int, ItemWallet> ConsumptionsByRegime { get; private set; }
     public ConcurrentDictionary<int, ItemWallet> DemandsByRegime { get; private set; }
     public ConcurrentDictionary<int, EmploymentReport> EmploymentReports { get; private set; }
+    public ConcurrentDictionary<PolyTriPosition, float> ConstructionProgresses { get; private set; }
+    
 
-    public static WorkProdConsumeProcedure Create()
+    public static WorkProdConsumeProcedure Create(int ticksSinceLast)
     {
-        return new WorkProdConsumeProcedure(new ConcurrentDictionary<int, ItemWallet>(), 
+        return new WorkProdConsumeProcedure(ticksSinceLast, 
+            new ConcurrentDictionary<int, ItemWallet>(), 
             new ConcurrentDictionary<int, EntityWallet<ResourceDeposit>>(), 
             new ConcurrentDictionary<int, ItemWallet>(), new ConcurrentDictionary<int, ItemWallet>(),
-            new ConcurrentDictionary<int, EmploymentReport>());
+            new ConcurrentDictionary<int, EmploymentReport>(),
+            new ConcurrentDictionary<PolyTriPosition, float>());
     }
     [SerializationConstructor] private WorkProdConsumeProcedure(
+        int ticksSinceLast,
         ConcurrentDictionary<int, ItemWallet> regimeResourceGains, 
         ConcurrentDictionary<int, EntityWallet<ResourceDeposit>> depletions,
         ConcurrentDictionary<int, ItemWallet> consumptionsByRegime,
         ConcurrentDictionary<int, ItemWallet> demandsByRegime,
-        ConcurrentDictionary<int, EmploymentReport> employmentReports)
+        ConcurrentDictionary<int, EmploymentReport> employmentReports,
+        ConcurrentDictionary<PolyTriPosition, float> constructionProgresses)
     {
+        TicksSinceLast = ticksSinceLast;
+        ConstructionProgresses = constructionProgresses;
         RegimeResourceGains = regimeResourceGains;
         Depletions = depletions;
         ConsumptionsByRegime = consumptionsByRegime;
@@ -43,6 +52,7 @@ public class WorkProdConsumeProcedure : Procedure
     {
         EnactProduce(key);
         EnactConsume(key);
+        EnactConstruct(key);
         foreach (var kvp in EmploymentReports)
         {
             var poly = key.Data.Planet.Polygons[kvp.Key];
@@ -100,6 +110,17 @@ public class WorkProdConsumeProcedure : Procedure
             var demands = kvp.Value.Contents;
             var snapshot = kvp.Value.GetSnapshot();
             r.History.DemandHistory.AddSnapshot(tick, snapshot, key);
+        }
+    }
+
+    private void EnactConstruct(ProcedureWriteKey key)
+    {
+        foreach (var kvp in ConstructionProgresses)
+        {
+            var pos = kvp.Key;
+            var r = pos.Poly(key.Data).Regime.Entity();
+            var construction = key.Data.Society.CurrentConstruction.ByTri[pos];
+            construction.ProgressConstruction(kvp.Value, TicksSinceLast, key);
         }
     }
 }

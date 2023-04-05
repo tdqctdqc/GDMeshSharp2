@@ -96,8 +96,9 @@ public class HostServer : Node, IServer
     {
         _peers.ForEach(p => p.PushPackets(key));
     }
-    public void QueueCommandLocal(Command c, WriteKey key)
+    public void QueueCommandLocal(Command c)
     {
+        GD.Print("queueing command in server");
         c.SetGuid(Game.I.PlayerGuid);
         _logic.CommandQueue.Enqueue(c);
     }

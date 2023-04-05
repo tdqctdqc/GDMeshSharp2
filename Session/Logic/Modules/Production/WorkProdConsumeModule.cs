@@ -9,6 +9,8 @@ using Godot;
 
 public class WorkProdConsumeModule : LogicModule
 {
+    private int _lastRunTick;
+    private int _ticksSinceLast;
     private ConcurrentDictionary<int, EntityWallet<ResourceDeposit>> 
         _regimeDepletionWallets = new ConcurrentDictionary<int, EntityWallet<ResourceDeposit>>();
     private ConcurrentDictionary<int, ItemWallet> 
@@ -31,7 +33,10 @@ public class WorkProdConsumeModule : LogicModule
         Action<Func<HostWriteKey, Entity>> queueEntityCreation)
     {
         Clear();
-        var proc = WorkProdConsumeProcedure.Create();
+        var tick = data.BaseDomain.GameClock.Tick;
+        _ticksSinceLast = tick - _lastRunTick;
+        _lastRunTick = tick;
+        var proc = WorkProdConsumeProcedure.Create(_ticksSinceLast);
 
         Parallel.ForEach(data.Society.Regimes.Entities, 
             regime => ProduceForRegime(regime, data, proc));
@@ -77,9 +82,21 @@ public class WorkProdConsumeModule : LogicModule
                 .Buildings.Models().SelectWhereOfType<BuildingModel, WorkBuildingModel>();
             workBuildings = workBuildings.Union(settlementBuildings);
         }
-        if (workBuildings.Count() == 0) return;
 
         var jobNeeds = workBuildings.SelectMany(b => b.JobLaborReqs);
+        IEnumerable<Construction> constructions = null;
+        if (poly.Regime.Empty() == false)
+        {        
+            var r = poly.Regime.Entity();
+            if (data.Society.CurrentConstruction.GetPolyConstructions(poly) is List<Construction> cs)
+            {
+                constructions = cs;
+                var constructionNeed = cs.Select(c => c.Model.Model().LaborPerTickToBuild).Sum();
+                jobNeeds = jobNeeds.Append(
+                    new KeyValuePair<PeepJobAttribute, int>(PeepJobAttribute.ConstructionAttribute, constructionNeed));
+            }
+        }
+        
         var jobNeedCount = jobNeeds.Sum(kvp => kvp.Value);
         if (jobNeedCount == 0) return;
         var peepsCount = peeps.Sum(p => p.Size);
@@ -106,7 +123,7 @@ public class WorkProdConsumeModule : LogicModule
         {
             if (building.Model.Model() is WorkBuildingModel wb)
             {
-                wb.Produce(proc, building.Position, ratio, data);
+                wb.Produce(proc, building.Position, ratio, _ticksSinceLast, data);
             }
         }
 
@@ -116,7 +133,15 @@ public class WorkProdConsumeModule : LogicModule
             var pos = new PolyTriPosition(poly.Id, tri.Index);
             foreach (var wb in settlementBuildings)
             {
-                wb.Produce(proc, pos, ratio, data);
+                wb.Produce(proc, pos, ratio, _ticksSinceLast, data);
+            }
+        }
+
+        if (constructions != null)
+        {
+            foreach (var construction in constructions)
+            {
+                proc.ConstructionProgresses.TryAdd(construction.Pos, ratio);
             }
         }
     }
@@ -134,7 +159,7 @@ public class WorkProdConsumeModule : LogicModule
         var numPeeps = regime.Polygons
             .Where(p => p.GetPeeps(data) != null)
             .SelectMany(p => p.GetPeeps(data)).Sum(p => p.Size);
-        var foodDesired = numPeeps * data.BaseDomain.Rules.FoodConsumptionPerPeepPoint;
+        var foodDesired = numPeeps * data.BaseDomain.Rules.FoodConsumptionPerPeepPoint * _ticksSinceLast;
         demands.Add(ItemManager.Food, foodDesired);
         var foodStock = regime.Items[ItemManager.Food] + proc.RegimeResourceGains[regime.Id][ItemManager.Food];
         var foodConsumption = Mathf.Min(foodDesired, foodStock);

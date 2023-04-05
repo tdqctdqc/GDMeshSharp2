@@ -21,7 +21,7 @@ public class SandboxSession : Node, ISession
 
     public void Setup()
     {
-        Client.Setup(Vector2.Zero);
+        Client.Setup(Vector2.Zero, this);
     }
     public override void _Process(float delta)
     {

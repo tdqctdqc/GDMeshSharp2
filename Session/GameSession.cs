@@ -27,7 +27,7 @@ public class GameSession : Node, ISession
         Data = data;
         var hServer = new HostServer();
         Server = hServer;
-        var logic = new HostLogic();
+        var logic = new HostLogic(Data);
         _logic = logic;
         var hKey = new HostWriteKey(hServer, logic, data, this);
         _key = hKey;

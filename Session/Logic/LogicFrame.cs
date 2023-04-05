@@ -21,6 +21,7 @@ public class LogicFrame
         Parallel.ForEach(_modules, m =>
         {
             m.Calculate(data, results.Add, entityCreateFuncs.Add);
+            // GD.Print("finished module " + m.GetType().Name);
         });
         
         return new LogicResults(results, entityCreateFuncs);

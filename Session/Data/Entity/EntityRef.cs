@@ -37,6 +37,11 @@ public class EntityRef<TRef> : IEntityRef where TRef : Entity
         return RefId == -1;
     }
 
+    public bool Fulfilled()
+    {
+        return RefId != -1;
+    }
+
     public bool CheckExists(Data data)
     {
         if (data.Entities.TryGetValue(RefId, out var e))

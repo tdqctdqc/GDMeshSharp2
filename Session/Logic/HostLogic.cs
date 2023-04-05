@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 public class HostLogic : ILogic
 {
-    public ConcurrentQueue<Command> CommandQueue { get; private set; }
-    public Dictionary<Regime, RegimeAI> AIs { get; private set; }
+    public ConcurrentQueue<Command> CommandQueue { get; }
+    public EntityValueCache<Regime, RegimeAI> AIs { get; }
     private HostServer _server;
     private HostWriteKey _hKey;
     private ProcedureWriteKey _pKey;
@@ -21,18 +21,18 @@ public class HostLogic : ILogic
     private Task _calculating;
     
     private Stopwatch _sw;
-    public HostLogic()
+    public HostLogic(Data data)
     {
         _sw = new Stopwatch();
-        AIs = new Dictionary<Regime, RegimeAI>();
+        AIs = EntityValueCache<Regime, RegimeAI>.ConstructConstant(data, r => new RegimeAI(r, data));
         CommandQueue = new ConcurrentQueue<Command>();
         _frames = new LogicFrame[]
         {
-            new LogicFrame(),
-            new LogicFrame(),
-            new LogicFrame(),
             new LogicFrame(new WorkProdConsumeModule()),
+            new LogicFrame(new ConstructBuildingsModule()),
             new LogicFrame(new PeepGrowthModule()),
+            new LogicFrame(),
+            new LogicFrame(new AIDecidesConstructionModule(AIs)),
         };
     }
 
@@ -53,6 +53,8 @@ public class HostLogic : ILogic
         {
             _frameTimer = 0f;
             _calculating = Task.Run(() => {
+                DoCommands(); 
+                
                 _sw.Reset();
                 _sw.Start();
                 DoFrame();
@@ -60,7 +62,6 @@ public class HostLogic : ILogic
                 
                 if(_sw.Elapsed.TotalSeconds > _framePeriod) GD.Print("logic lagging");
                 GD.Print("frame time " + _sw.Elapsed.TotalMilliseconds);
-                DoCommands(); 
                 _calculating = null;
             });
         }
@@ -120,13 +121,21 @@ public class HostLogic : ILogic
 
     private void DoCommands()
     {
+        var queuedProcs = new List<Procedure>();
+        var logicResult = new LogicResults(new List<Message>(), new List<Func<HostWriteKey, Entity>>());
         var commandCount = CommandQueue.Count;
         for (var i = 0; i < commandCount; i++)
         {
             if (CommandQueue.TryDequeue(out var command))
             {
-                if(command.Valid(_data)) command.Enact(_hKey);
+                if(command.Valid(_data)) command.Enact(_hKey, logicResult.Procedures.Add);
             }
         }
+        for (var i = 0; i < logicResult.Procedures.Count; i++)
+        {
+            logicResult.Procedures[i].Enact(_pKey);
+        }
+        _server.ReceiveLogicResult(logicResult, _hKey);
+        _server.PushPackets(_hKey);
     }
 }

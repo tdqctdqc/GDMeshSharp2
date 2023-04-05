@@ -17,7 +17,8 @@ public class SocietyDomain : Domain
     public PeepAux PeepAux { get; private set; }
     public RegimeRelationAux RelationAux { get; private set; }
     public BuildingAux BuildingAux { get; private set; }
-    
+    public CurrentConstruction CurrentConstruction => _construction.Value;
+    private SingletonAux<CurrentConstruction> _construction;
     public SocietyDomain(Data data) : base(typeof(SocietyDomain), data)
     {
         
@@ -30,5 +31,6 @@ public class SocietyDomain : Domain
         PeepAux = new PeepAux(this, Data);
         RelationAux = new RegimeRelationAux(this, Data);
         BuildingAux = new BuildingAux(this, Data);
+        _construction = new SingletonAux<CurrentConstruction>(this, Data);
     }
 }

@@ -12,6 +12,7 @@ public class GeneratorUi : Ui
     private Label _progress;
     private MapDisplayOptionsUi _mapOptions;
     private MapGraphics _graphics;
+
     // public GeneratorSettingsWindow GenSettingsWindow { get; private set; }
     public static GeneratorUi Construct(IClient client, GeneratorSession session, MapGraphics graphics)
     {
@@ -41,7 +42,7 @@ public class GeneratorUi : Ui
 
         
         var genSettingsWindow = GeneratorSettingsWindow.Get(_session.GenMultiSettings);
-        AddWindow(genSettingsWindow, GenSettings);
+        AddWindow(genSettingsWindow);
         
         var sideBar = ButtonBarToken.Create<VBoxContainer>();
         AddChild(sideBar.Container);

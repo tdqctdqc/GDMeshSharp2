@@ -4,7 +4,14 @@ using System.Linq;
 
 public class TownHall : WorkBuildingModel
 {
-    public TownHall() : base(nameof(TownHall), 100f)
+    public override int Capacity { get; } = 100;
+
+    public override Dictionary<PeepJobAttribute, int> JobLaborReqs { get; }
+        = new Dictionary<PeepJobAttribute, int>
+        {
+            {PeepJobAttribute.BureaucratAttribute, 100}
+        };
+    public TownHall() : base(nameof(TownHall), 50, 100)
     {
     }
 
@@ -18,13 +25,21 @@ public class TownHall : WorkBuildingModel
         return p.IsLand;
     }
 
-    public override Dictionary<PeepJobAttribute, int> JobLaborReqs { get; }
-        = new Dictionary<PeepJobAttribute, int>
-        {
-            {PeepJobAttribute.BureaucratAttribute, 100}
-        };
-    public override void Produce(WorkProdConsumeProcedure proc, PolyTriPosition pos, float staffingRatio, Data data)
+    public override float GetPolyEfficiencyScore(MapPolygon poly, Data data)
+    {
+        return 1f;
+    }
+
+    public override float GetTriEfficiencyScore(PolyTriPosition pos, Data data)
+    {
+        return 1f;
+    }
+
+    
+    public override void Produce(WorkProdConsumeProcedure proc, PolyTriPosition pos, float staffingRatio,
+        int ticksSinceLast, Data data)
     {
         
     }
+    
 }

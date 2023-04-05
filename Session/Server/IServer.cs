@@ -3,5 +3,5 @@ using System;
 
 public interface IServer
 {
-    void QueueCommandLocal(Command c, WriteKey key);
+    void QueueCommandLocal(Command c);
 }

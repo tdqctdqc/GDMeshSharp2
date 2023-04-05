@@ -11,7 +11,7 @@ public class Factory : ProductionBuildingModel
         };
     public override int ProductionCap { get; } = 100;
     public Factory() : base(ItemManager.IndustrialPoint, nameof(Factory),
-        100f)
+        100, 200)
     {
     }
     public override float GetProductionRatio(PolyTriPosition pos, float staffingRatio, Data data)
@@ -27,5 +27,10 @@ public class Factory : ProductionBuildingModel
     public override bool CanBuildInPoly(MapPolygon p, Data data)
     {
         return p.IsLand && p.HasSettlement(data);
+    }
+
+    public override float GetPolyEfficiencyScore(MapPolygon poly, Data data)
+    {
+        return 1f;
     }
 }

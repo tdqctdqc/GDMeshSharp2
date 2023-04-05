@@ -21,6 +21,10 @@ public class EmploymentReport
         Counts.AddRange(toCopy.Counts);
     }
 
+    public int NumUnemployed()
+    {
+        return Counts[PeepJobManager.Unemployed.Name];
+    }
     public void Clear()
     {
         

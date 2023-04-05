@@ -17,7 +17,7 @@ public class CreatePlayerCommand : Command
         Name = name;
     }
 
-    public override void Enact(HostWriteKey key)
+    public override void Enact(HostWriteKey key, Action<Procedure> queueProc)
     {
         Player.Create(Guid, Name, key);
     }

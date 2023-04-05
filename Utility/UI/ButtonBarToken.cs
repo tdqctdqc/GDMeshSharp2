@@ -30,7 +30,7 @@ public class ButtonBarToken : Node
     public void AddWindowButton<T>(string name) where T : WindowDialog
     {
         var settingsWindowBtn 
-            = ButtonToken.CreateButton(name, () => Game.I.Client.Requests.OpenWindow<T>(name));
+            = ButtonToken.CreateButton(name, () => Game.I.Client.Requests.OpenWindow<T>());
         Container.AddChild(settingsWindowBtn);
     }
 

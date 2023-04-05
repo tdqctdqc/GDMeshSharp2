@@ -5,11 +5,13 @@ using Godot;
 
 public abstract class ExtractionBuildingModel : ProductionBuildingModel
 {
-    public ExtractionBuildingModel(Item prodItem, string name, bool fromDeposit, float buildCost) : base(prodItem, name, buildCost)
+    public ExtractionBuildingModel(Item prodItem, string name, bool fromDeposit, int numTicksToBuild, int laborPerTickToBuild) 
+        : base(prodItem, name, numTicksToBuild, laborPerTickToBuild)
     {
         if (prodItem.Attributes.Has<ExtractableAttribute>() == false) throw new Exception();
     }
-    public override void Produce(WorkProdConsumeProcedure proc, PolyTriPosition pos, float staffingRatio, Data data)
+    public override void Produce(WorkProdConsumeProcedure proc, PolyTriPosition pos, float staffingRatio, 
+        int ticksSinceLast, Data data)
     {
         staffingRatio = Mathf.Clamp(staffingRatio, 0f, 1f);
         var poly = pos.Poly(data);
@@ -19,6 +21,7 @@ public abstract class ExtractionBuildingModel : ProductionBuildingModel
         var ratio = GetProductionRatio(pos, staffingRatio, data);
         var prod = Mathf.FloorToInt(ratio * ProductionCap);
         prod = Mathf.Min(Mathf.FloorToInt(depSize), prod);
+        prod *= ticksSinceLast;
         var rId = poly.Regime.RefId;
         var depletion = ProdItem.Attributes.Get<ExtractableAttribute>()
             .GetDepletionFromProduction(deposit.Size, prod);

@@ -10,7 +10,7 @@ public class ChooseRegimeCommand : Command
         Regime = regime;
     }
 
-    public override void Enact(HostWriteKey key)
+    public override void Enact(HostWriteKey key, Action<Procedure> queueProcedure)
     {
         var player = key.Data.BaseDomain.PlayerAux.ByGuid[CommandingPlayerGuid];
         player.Set<EntityRef<Regime>>(nameof(player.Regime), Regime, key);

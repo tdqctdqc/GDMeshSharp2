@@ -17,7 +17,7 @@ public class SandboxClient : Node, IClient
     private RegionDebugGraphic _regionTest;
     private Control _debugHook;
     public ClientSettings Settings { get; private set; }
-    public ClientRequests Requests { get; } = new ClientRequests();
+    public ClientRequests Requests { get; private set; }
 
     public SandboxClient()
     {
@@ -39,8 +39,10 @@ public class SandboxClient : Node, IClient
         _regionTest.QueueFree();
         AddChild(e.GetGraphic());
     }
-    public void Setup(Vector2 home)
+    public void Setup(Vector2 home, SandboxSession session)
     {
+        Requests = new ClientRequests(session);
+
         Key = new ClientWriteKey(null, null);
         this.AssignChildNode(ref _canvas, "Canvas");
         var cam = CameraController.Construct(null); //todo make dummy

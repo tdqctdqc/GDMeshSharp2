@@ -24,6 +24,7 @@ public class PolyDataTooltipTemplate : DataTooltipTemplate<PolyTriPosition>
             GetSettlementSize, 
             GetPeeps,
             GetBuildings,
+            GetConstructions,
             GetResourceDeposits,
             GetFertility,
             GetAltitude,
@@ -104,7 +105,37 @@ public class PolyDataTooltipTemplate : DataTooltipTemplate<PolyTriPosition>
         }
         return jobs;
     }
+    private static Control GetConstructions(PolyTriPosition t, Data d)
+    {
+        var entries = new VBoxContainer();
+        if (d.Society.CurrentConstruction.ByPoly.ContainsKey(t.PolyId) == false)
+            return entries;
+        var constructions = d.Society.CurrentConstruction.ByPoly[t.PolyId];
+        if(constructions.Count == 0) 
+            return entries;
 
+        var kvps = constructions.Select(
+            c => new KeyValuePair<BuildingModel, Vector2>
+            (
+                c.Model.Model(),
+                new Vector2((c.Model.Model().NumTicksToBuild - c.TicksLeft), c.Model.Model().NumTicksToBuild)
+            )
+        );
+        
+        foreach (var kvp in kvps)
+        {
+            var innerContainer = new HBoxContainer();
+            var building = kvp.Key;
+            var progress = kvp.Value;
+            var bIcon = building.BuildingIcon.GetTextureRect(Vector2.One);
+            bIcon.RectMinSize = Vector2.One * 50f;
+            innerContainer.AddChild(bIcon);
+            innerContainer.AddChild(NodeExt.CreateLabel($"{(int)progress.x} / {(int)progress.y}"));
+            entries.AddChild(innerContainer);
+        }
+
+        return entries;
+    }
     private static Control GetId(PolyTriPosition t, Data d)
     {
         return NodeExt.CreateLabel("Poly Id: " + t.Poly(d).Id.ToString());

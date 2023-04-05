@@ -6,24 +6,29 @@ using Godot;
 public class ClientRequests
 {
     private EntityTypeTree _tree;
-    public RefAction<string> OpenWindowRequest { get; private set; }
+    public RefFunc<Type, WindowDialog> OpenWindowRequest { get; private set; }
     public RefAction<PolyTriPosition> MouseOver { get; private set; }
     public RefAction<ITooltipInstance> PromptTooltip { get; private set; }
     public RefAction<ITooltipInstance> HideTooltip { get; private set; }
-    public ClientRequests()
+    public RefAction<Command> QueueCommand { get; private set; }
+    public ClientRequests(ISession session)
     {
-        OpenWindowRequest = new RefAction<string>();
+        OpenWindowRequest = new RefFunc<Type, WindowDialog>();
         MouseOver = new RefAction<PolyTriPosition>();
         PromptTooltip = new RefAction<ITooltipInstance>();
         HideTooltip = new RefAction<ITooltipInstance>();
+        QueueCommand = new RefAction<Command>();
+        QueueCommand.Subscribe(c => GD.Print("command queued"));
+        QueueCommand.Subscribe(session.Server.QueueCommandLocal);
     }
     public void GiveTree(EntityTypeTree tree)
     {
         _tree = tree;
     }
 
-    public void OpenWindow<T>(string name) where T : WindowDialog
+    public TWindow OpenWindow<TWindow>() where TWindow : WindowDialog
     {
-        OpenWindowRequest?.Invoke(name);
+        var w = OpenWindowRequest?.Invoke(typeof(TWindow));
+        return (TWindow) w;
     }
 }

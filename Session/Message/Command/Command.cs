@@ -9,7 +9,7 @@ public abstract class Command : Message
     {
         
     }
-    public abstract void Enact(HostWriteKey key);
+    public abstract void Enact(HostWriteKey key, Action<Procedure> queueProcedure);
     public abstract bool Valid(Data data);
 
     public void SetGuid(Guid guid)

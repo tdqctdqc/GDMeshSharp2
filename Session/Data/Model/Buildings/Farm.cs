@@ -6,7 +6,10 @@ using Godot;
 public class Farm : ProductionBuildingModel
 {
     public Farm() 
-        : base(ItemManager.Food, nameof(Farm), 100f)
+        : base(ItemManager.Food, nameof(Farm), 
+            50, 
+            200
+            )
     {
     }
     public override int ProductionCap { get; } = 1000;
@@ -24,6 +27,12 @@ public class Farm : ProductionBuildingModel
     {
         return p.IsLand;
     }
+
+    public override float GetPolyEfficiencyScore(MapPolygon poly, Data data)
+    {
+        return poly.Moisture - poly.Roughness;
+    }
+
     public override float GetProductionRatio(PolyTriPosition pos, float staffingRatio, Data data)
     {
          var tri = pos.Tri(data);

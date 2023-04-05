@@ -20,7 +20,7 @@ public class ChooseRegimePrompt : IPrompt
             var com = new ChooseRegimeCommand(r.MakeRef());
             Action a = () =>
             {
-                key.Session.Server.QueueCommandLocal(com, key);
+                key.Session.Server.QueueCommandLocal(com);
             };
             return a;
         }).ToList();

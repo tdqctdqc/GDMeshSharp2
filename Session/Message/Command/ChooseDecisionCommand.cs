@@ -12,7 +12,7 @@ public class ChooseDecisionCommand : Command
         Choice = choice;
     }
 
-    public override void Enact(HostWriteKey key)
+    public override void Enact(HostWriteKey key, Action<Procedure> queueProc)
     {
         Decision.PlayerEnact(Choice, key);
     }
