@@ -87,7 +87,7 @@ public class PeepGenerator : Generator
         var foodConPerPeep = _data.BaseDomain.Rules.FoodConsumptionPerPeepPoint;
         foreach (var kvp in farmPolys)
         {
-            var size = farm.JobLaborReqs.Sum(k => k.Value) * kvp.Value;
+            var size = farm.TotalLaborReq() * kvp.Value;
             foodSurplus -= foodConPerPeep * size;
             var peep = Peep.Create(kvp.Key, size, _key);
         }
@@ -157,9 +157,10 @@ public class PeepGenerator : Generator
         var portions = Apportioner.ApportionLinear(popBudget, polys,
             p =>
             {
-                var ps = p.GetPeeps(_data);
-                if (ps == null) return 0f;
-                return p.GetPeeps(_data).Sum(x => x.Size);
+                return Mathf.Max(0f, p.Moisture - p.Roughness);
+                // var ps = p.GetPeeps(_data);
+                // if (ps == null) return 0f;
+                // return p.GetPeeps(_data).Sum(x => x.Size);
             }
         );
         var factory = BuildingModelManager.Factory;
@@ -169,7 +170,7 @@ public class PeepGenerator : Generator
         {
             var p = polys[i];
             var pop = portions[i];
-            var numFactories = Mathf.FloorToInt(pop / factoryLaborReq);
+            var numFactories = Mathf.Round(pop / factoryLaborReq);
             var tris = p.Tris.Tris;
             var avail = tris.Select((t,ind) => ind)
                 .Where(ind => tris[ind].HasBuilding(_data) == false);
@@ -191,7 +192,7 @@ public class PeepGenerator : Generator
         if (popSurplus <= 0) return;
         var polys = r.Polygons.Entities().ToList();
         var portions = Apportioner.ApportionLinear(popSurplus, polys, 
-            p => laborDesire(p) + (p.Moisture - p.Roughness) * 100f);
+            p => Mathf.Max(0f, laborDesire(p) + (p.Moisture - p.Roughness) * 100f));
         for (var i = 0; i < polys.Count; i++)
         {
             var num = Mathf.FloorToInt(portions[i]);

@@ -148,7 +148,6 @@ public class Data
     }
     protected void AddDomain(Domain dom)
     {
-        
         dom.Setup();
         _domains.Add(dom.GetType(), dom);
     }
