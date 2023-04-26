@@ -10,10 +10,10 @@ public class RegimeHistory
     public ItemHistory DemandHistory { get; protected set; }
     public PeepHistory PeepHistory { get; private set; }
 
-    public static RegimeHistory Construct()
+    public static RegimeHistory Construct(Data data)
     {
-        return new RegimeHistory(ItemHistory.Construct(), ItemHistory.Construct(),
-            ItemHistory.Construct(), PeepHistory.Construct());
+        return new RegimeHistory(ItemHistory.Construct(data), ItemHistory.Construct(data),
+            ItemHistory.Construct(data), PeepHistory.Construct());
     }
 
     [SerializationConstructor] private RegimeHistory(ItemHistory prodHistory,

@@ -1,21 +1,30 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using Godot;
 
-public class RoadChunkGraphic : Node2D
+public class RoadChunkGraphic : MapChunkGraphicLayer
 {
     private RoadChunkGraphic()
     {
         
     }
 
-    public RoadChunkGraphic(MapChunk chunk, Data data)
+    public RoadChunkGraphic(MapChunk chunk, Data data, MapGraphics mg) 
+        : base(chunk, mg.ChunkChangedCache.RoadsChanged)
     {
+        Draw(data);
+    }
+
+
+    protected override void Draw(Data data)
+    {
+        this.ClearChildren();
         var froms = new List<Vector2>();
         var tos = new List<Vector2>();
         var mb = new MeshBuilder();
-        foreach (var p in chunk.Polys)
+        foreach (var p in Chunk.Polys)
         {
             foreach (var n in p.Neighbors.Entities())
             {
@@ -25,8 +34,8 @@ public class RoadChunkGraphic : Node2D
                     if (data.Society.RoadAux.ByEdgeId.ContainsKey(border.Id))
                     {
                         var seg = data.Society.RoadAux.ByEdgeId[border.Id];
-                        seg.Road.Model().Draw(mb, chunk.RelTo.GetOffsetTo(p.Center, data), 
-                            chunk.RelTo.GetOffsetTo(n.Center, data), 10f);
+                        seg.Road.Model().Draw(mb, Chunk.RelTo.GetOffsetTo(p.Center, data), 
+                            Chunk.RelTo.GetOffsetTo(n.Center, data), 10f);
                     }
                 }
             }

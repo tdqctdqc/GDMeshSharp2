@@ -10,7 +10,8 @@ public class TickProcedure : Procedure
     public override void Enact(ProcedureWriteKey key)
     {
         var gc = key.Data.BaseDomain.GameClock;
-        gc.Set<int>(nameof(GameClock.Tick), gc.Tick + 1, key);
+        var tick = gc.Tick + 1;
+        gc.Set<int>(nameof(GameClock.Tick), tick, key);
         key.Data.Notices.Ticked.Invoke(gc.Tick);
     }
 }

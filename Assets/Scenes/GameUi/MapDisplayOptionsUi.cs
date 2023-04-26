@@ -24,7 +24,7 @@ public class MapDisplayOptionsUi : VBoxContainer
         _data = data;
         _mousePos = new Label();
         AddChild(_mousePos);
-        var chunkFactories = typeof(MapChunkGraphic)
+        var chunkFactories = typeof(MapChunkGraphicHolder)
             .GetProperties(BindingFlags.Static | BindingFlags.Public)
             .Where(p => p.PropertyType == typeof(ChunkGraphicFactory))
             .Select(p => (ChunkGraphicFactory)p.GetMethod.Invoke(null, null));
@@ -48,7 +48,7 @@ public class MapDisplayOptionsUi : VBoxContainer
             AddChild(btn);
         }
     }
-    private void Toggle(MapChunkGraphic mc, Node2D n,  Button btn, string name)
+    private void Toggle(MapChunkGraphicHolder mc, Node2D n,  Button btn, string name)
     {
         bool vis = n.Toggle();
         btn.Text = vis

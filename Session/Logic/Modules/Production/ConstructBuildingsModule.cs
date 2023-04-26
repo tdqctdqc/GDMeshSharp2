@@ -38,7 +38,6 @@ public class ConstructBuildingsModule : LogicModule
                 };
                 queueEntityCreation(create);
             }
-            
         }
 
         queueMessage(clear);

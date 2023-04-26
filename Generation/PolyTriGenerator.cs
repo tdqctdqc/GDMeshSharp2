@@ -39,7 +39,7 @@ public class PolyTriGenerator : Generator
         report.StartSection();
         Parallel.ForEach(_data.Planet.PolyEdges.Entities, p => MakeDiffPolyTriPaths(p, key));
         report.StopSection("making poly tri paths");
-        
+        _data.Notices.SetPolyShapes.Invoke();
         return report;
     }
     

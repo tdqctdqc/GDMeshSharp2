@@ -5,78 +5,64 @@ using System.Linq;
 using Godot;
 using Google.OrTools.LinearSolver;
 
-public class TriIconChunkGraphic : Node2D
+public class TriIconChunkGraphic : MapChunkGraphicLayer
 {
-    private List<MultiMeshInstance2D> _mmis;
-    private float _zoomCutoff;
-
-    public static TriIconChunkGraphic Create<T>(MapChunk chunk, Data data,
-        Func<MapPolygon, IEnumerable<T>> getEls, Func<T, PolyTri> getTri, Func<T, Icon> getIcon,
-        float zoomCutoff)
+    public TriIconChunkGraphic(MapChunk chunk, Data data, MapGraphics mg) 
+        : base(chunk, mg.ChunkChangedCache.BuildingsChanged)
     {
-        var g = new TriIconChunkGraphic();
-        g.Construct<T>(chunk, data, getEls, getTri, getIcon, zoomCutoff);
-        return g;
+        Draw(data);
     }
 
-    private void Construct<T>(MapChunk chunk, Data data, 
-        Func<MapPolygon, IEnumerable<T>> getEls, Func<T, PolyTri> getTri, Func<T, Icon> getIcon,
-        float zoomCutoff)
-    {
-        _zoomCutoff = zoomCutoff;
-        var iconDic = new Dictionary<Icon, List<Vector2>>();
-        _mmis = new List<MultiMeshInstance2D>();
-        foreach (var p in chunk.Polys)
-        {
-            var offset = chunk.RelTo.GetOffsetTo(p, data);
-            var els = getEls(p);
-            if (els == null) continue;
-            foreach (var e in els)
-            {
-                var icon = getIcon(e);
-                var t = getTri(e);
-                iconDic.AddOrUpdate(icon, offset + t.GetCentroid());
-            }
-        }
-        foreach (var kvp in iconDic)
-        {
-            var icon = kvp.Key;
-            var poses = kvp.Value;
-            var mmi = new MultiMeshInstance2D();
-            _mmis.Add(mmi);
-            var mm = new MultiMesh();
-            mm.Mesh = icon.Mesh;
-            mm.InstanceCount = poses.Count;
-            for (var i = 0; i < poses.Count; i++)
-            {
-                var transform = new Transform2D(Vector2.Right, Vector2.Up, poses[i]);
-                mm.SetInstanceTransform2d(i, transform);
-            }
-            mmi.Texture = icon.BaseTexture;
-            mmi.Multimesh = mm;
-            AddChild(mmi);
-        }
-    }
 
-    public override void _Process(float delta)
+    protected override void Draw(Data data)
     {
+        this.ClearChildren();
         var zoom = Game.I.Client.Cam.ZoomOut;
-        if (zoom > _zoomCutoff)
+        var scaled = Game.I.Client.Cam.ScaledZoomOut;
+        var mod = 1f;
+        
+        var iconDic = new Dictionary<Icon, List<Vector2>>();
+        foreach (var p in Chunk.Polys)
         {
-            Visible = false;
-        }
-        else
-        {
-            Visible = true;
-            zoom = Mathf.Max(1f, zoom);
-            foreach (var mmi in _mmis)
+            var offset = Chunk.RelTo.GetOffsetTo(p, data);
+            var deposits = p.GetResourceDeposits(data);
+            if (deposits != null)
             {
-                var mm = mmi.Multimesh;
-                for (var i = 0; i < mm.InstanceCount; i++)
+                var controller = new IconGroupController<ResourceDeposit>(deposits.ToList(),
+                    r => "", r => r.Item.Model().Icon, 100000f);
+                var group = new IconGroups(new List<IIconGroupController> {controller});
+                group.Position = offset;
+                group.Scale *= Mathf.Min(10f, zoom / 10f);
+                AddChild(group);
+            }
+
+
+            var buildings = p.GetMapBuildings(data);
+            if (buildings != null)
+            {
+                foreach (var b in buildings)
                 {
-                    var pos = mm.GetInstanceTransform2d(i).origin;
-                    mm.SetInstanceTransform2d(i, 
-                        new Transform2D(Vector2.Right * zoom, Vector2.Up * zoom, pos));
+                    var icon = b.Model.Model().BuildingIcon;
+                    var mesh = icon.GetMeshInstance();
+                    var pos = offset + b.Position.Tri(data).GetCentroid();
+                    mesh.Position = pos;
+                    mesh.Scale *= mod;
+                    AddChild(mesh);
+                }
+            }
+
+            var settlement = p.GetSettlement(data);
+            if (settlement != null)
+            {
+                var tier = settlement.Tier.Model();
+                foreach (var urban in p.Tris.Tris.Where(t => t.Landform == LandformManager.Urban))
+                {
+                    var icon = tier.Icon;
+                    var mesh = icon.GetMeshInstance();
+                    var pos = offset + urban.GetCentroid();
+                    mesh.Position = pos;
+                    mesh.Scale *= mod;
+                    AddChild(mesh);
                 }
             }
         }

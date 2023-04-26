@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class GeneratorSession : Node, ISession
+public class GeneratorSession : Node, IDataSession
 {
     RefFulfiller ISession.RefFulfiller => Data.RefFulfiller;
+    Data IDataSession.Data => Data;
     public GenData Data { get; private set; }
     IClient ISession.Client => Client;
     public GeneratorClient Client { get; private set; }
@@ -27,6 +28,8 @@ public class GeneratorSession : Node, ISession
         Server = new DummyServer();
         GenMultiSettings = new GenerationMultiSettings();
         Data = new GenData(GenMultiSettings);
+        WorldGen = new WorldGenerator(this, Data);
+
         Client = new GeneratorClient();
         Client.Setup(this);
         AddChild(Client);
@@ -36,7 +39,6 @@ public class GeneratorSession : Node, ISession
     {
         Succeeded = false;
         Generating = true;
-        WorldGen = new WorldGenerator(this, Data);
         WorldGen.GenerationFailed += GenerationFailed;
         WorldGen.GenerationFeedback += GenerationFeedback;
 

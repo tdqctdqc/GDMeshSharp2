@@ -24,7 +24,8 @@ public class LandformManager : TerrainAspectManager<Landform>
         var close = poly.Neighbors.Entities().OrderBy(n => (poly.GetOffsetTo(n, data) - pRel).Length());
         var first = close.ElementAt(0);
         var second = close.ElementAt(1);
-        var score = poly.GetScore(first, second, pRel, data, p => p.Roughness);
+        var score = poly.GetScore(first, second, pRel, data, 
+            p => p.Roughness);
         return ByPriority.First(lf => lf.MinRoughness <= score);
     }
 }

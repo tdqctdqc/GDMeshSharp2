@@ -22,8 +22,8 @@ public class RegimeProductionOverview : ScrollContainer
         
         foreach (var itemName in itemNames)
         {
-            var lastProd = regime.History.ProdHistory.Snapshots.GetLatest(itemName);
-            var lastDemand = regime.History.DemandHistory.Snapshots.GetLatest(itemName);
+            var lastProd = regime.History.ProdHistory[itemName].GetLatest();
+            var lastDemand = regime.History.DemandHistory[itemName].GetLatest();
             if (lastDemand == 0 && lastProd == 0) continue;
             
             var hbox = new HBoxContainer();

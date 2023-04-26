@@ -3,7 +3,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 
-public class GameSession : Node, ISession
+public class GameSession : Node, IDataSession
 {
     RefFulfiller ISession.RefFulfiller => Data.RefFulfiller;
     public Data Data { get; private set; }

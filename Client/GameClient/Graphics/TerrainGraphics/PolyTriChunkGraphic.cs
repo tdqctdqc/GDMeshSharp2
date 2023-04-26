@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class PolyTriChunkGraphic : Node2D
+public class PolyTriChunkGraphic : MapChunkGraphicModule
 {
+    
     public void Setup(MapChunk chunk, Data data, 
         Func<PolyTri, Color> getColor) 
     {

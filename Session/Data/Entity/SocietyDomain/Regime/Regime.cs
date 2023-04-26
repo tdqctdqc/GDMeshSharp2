@@ -33,7 +33,7 @@ public class Regime : Entity
         var id = key.IdDispenser;
         var polygons = EntityRefCollection<MapPolygon>.Construct(new HashSet<int>{seed.Id}, key.Data);
         var r = new Regime(id.GetID(), name, primaryColor, secondaryColor, polygons, new EntityRef<MapPolygon>(seed.Id),
-            ItemWallet.Construct(), RegimeHistory.Construct());
+            ItemWallet.Construct(), RegimeHistory.Construct(key.Data));
         key.Create(r);
         seed.SetRegime(r, key);
         

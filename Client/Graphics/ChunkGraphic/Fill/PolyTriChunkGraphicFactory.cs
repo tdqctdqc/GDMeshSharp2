@@ -11,7 +11,7 @@ public class PolyTriChunkGraphicFactory : ChunkGraphicFactory
         _getColor = getColor;
     }
 
-    public override Node2D GetNode(MapChunk c, Data d)
+    public override MapChunkGraphicModule GetModule(MapChunk c, Data d, MapGraphics mg)
     {
         var t = new PolyTriChunkGraphic();
         t.Setup(c, d, _getColor);

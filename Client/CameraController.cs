@@ -34,7 +34,18 @@ public class CameraController : Camera2D, ICameraController
         
         _data = data;
     }
-    
+
+
+    private Vector2 GetOffset(Vector2 mapPos)
+    {
+        var off1 = mapPos - Position;
+        var off2 = (off1 + Vector2.Right * _data.Planet.Width);
+        var off3 = (off1 + Vector2.Left * _data.Planet.Width);
+        if (off1.Length() < off2.Length() && off1.Length() < off3.Length()) return off1;
+        if (off2.Length() < off1.Length() && off2.Length() < off3.Length()) return off2;
+        return off3;
+    }
+
     public Vector2 GetMousePosInMapSpace()
     {
         if(_data.Planet == null) return Vector2.Inf;

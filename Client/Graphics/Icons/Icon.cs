@@ -51,6 +51,7 @@ public class Icon : MeshTexture
     public MeshInstance2D GetMeshInstance()
     {
         var mi = new MeshInstance2D();
+        mi.Scale = new Vector2(1f, -1f);
         mi.Mesh = Mesh;
         mi.Texture = BaseTexture;
         return mi;

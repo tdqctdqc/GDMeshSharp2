@@ -10,8 +10,9 @@ public class MapPolygonAux : EntityAux<MapPolygon>
     public EntityValueCache<MapPolygon, PolyAuxData> AuxDatas { get; private set; }
     public PolyGrid MapPolyGrid { get; private set; }
     public HashSet<MapChunk> Chunks { get; private set; }
+    public Dictionary<MapPolygon, MapChunk> ChunksByPoly { get; private set; }
     public LandSeaManager LandSea { get; private set; }
-    
+    public RefAction<ValChangeNotice<EntityRef<Regime>>> ChangedRegime { get; private set; }
 
     public MapPolygonAux(Domain domain, Data data) : base(domain, data)
     {
@@ -31,15 +32,10 @@ public class MapPolygonAux : EntityAux<MapPolygon>
              new RefAction[] {data.Notices.SetPolyShapes, data.Notices.FinishedStateSync},
             new RefAction<Tuple<MapPolygon, PolyAuxData>>[]{}
         );
-        
-        
-        
-        
-        data.Notices.SetPolyShapes.Subscribe(() => BuildPolyGrid(data));
-        data.Notices.FinishedStateSync.Subscribe(() => BuildPolyGrid(data));
-        
-        data.Notices.SetPolyShapes.Subscribe(() => BuildChunks(data));
-        data.Notices.FinishedStateSync.Subscribe(() => BuildChunks(data));
+        ChangedRegime = new RefAction<ValChangeNotice<EntityRef<Regime>>>();
+        Game.I.Serializer.GetEntityMeta<MapPolygon>()
+            .GetEntityVarMeta<EntityRef<Regime>>(nameof(MapPolygon.Regime))
+            .ValChanged().Subscribe(ChangedRegime);
         
         data.Notices.SetLandAndSea.Subscribe(() =>
         {
@@ -51,6 +47,24 @@ public class MapPolygonAux : EntityAux<MapPolygon>
             LandSea = new LandSeaManager();
             LandSea.SetMasses(data);
         });
+        
+        data.Notices.FinishedStateSync.Subscribe(() =>
+        {
+            SetupPolyGrid(data);
+        });
+        data.Notices.SetPolyShapes.Subscribe(() =>
+        {
+            SetupPolyGrid(data);
+        });
+    }
+
+    private void SetupPolyGrid(Data data)
+    {
+        data.Notices.SetPolyShapes.Subscribe(() => BuildPolyGrid(data));
+        data.Notices.FinishedStateSync.Subscribe(() => BuildPolyGrid(data));
+        
+        data.Notices.SetPolyShapes.Subscribe(() => BuildChunks(data));
+        data.Notices.FinishedStateSync.Subscribe(() => BuildChunks(data));
     }
     private void BuildPolyGrid(Data data)
     {
@@ -75,7 +89,13 @@ public class MapPolygonAux : EntityAux<MapPolygon>
             regularGrid.AddElement(p);
         }
         regularGrid.Update();
-        Chunks = regularGrid.Cells.Select(c => c.Value)
-            .Select(c => new MapChunk(c)).ToHashSet();
+        ChunksByPoly = new Dictionary<MapPolygon, MapChunk>();
+        Chunks = new HashSet<MapChunk>();
+        foreach (var c in regularGrid.Cells)
+        {
+            var chunk = new MapChunk(c.Value, c.Key);
+            Chunks.Add(chunk);
+            c.Value.ForEach(p => ChunksByPoly.Add(p, chunk));
+        }
     }
 }

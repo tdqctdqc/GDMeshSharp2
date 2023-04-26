@@ -4,31 +4,32 @@ using System.Linq;
 
 public class PeepHistory
 {
-    public Dictionary<int, int> PeepCountsByTick { get; private set; }
-    private List<KeyValuePair<int, int>> _list;
+    public CountHistory PeepCount { get; private set; }
+    public CountHistory PeepSize { get; private set; }
+    public CountHistory Unemployed { get; private set; }
+
     public static PeepHistory Construct()
     {
-        return new PeepHistory(new Dictionary<int, int>());
+        return new PeepHistory(
+            CountHistory.Construct(),
+            CountHistory.Construct(),
+            CountHistory.Construct()
+            );
     }
-
-    private PeepHistory(Dictionary<int, int> peepCountsByTick)
+    private PeepHistory(CountHistory peepCount,
+        CountHistory peepSize,
+        CountHistory unemployed)
     {
-        PeepCountsByTick = peepCountsByTick;
-        _list = PeepCountsByTick.ToList();
+        PeepSize = peepSize;
+        PeepCount = peepCount;
+        Unemployed = unemployed;
     }
-    public void Update(int tick, int count, ProcedureWriteKey key)
+    public void Update(int tick, Regime regime, ProcedureWriteKey key)
     {
-        PeepCountsByTick.Add(tick, count);
-        _list.Add(new KeyValuePair<int, int>(tick, count));
-    }
-
-    public int GetLatestDelta()
-    {
-        if (_list.Count > 1)
-        {
-            return _list[_list.Count - 1].Value - _list[_list.Count - 2].Value;
-        }
-
-        return 0;
+        var peeps = regime.GetPeeps(key.Data);
+        var polys = regime.Polygons.Entities();
+        PeepCount.Add(peeps.Count(), tick);
+        PeepSize.Add(peeps.Sum(p => p.Size), tick);
+        Unemployed.Add(polys.Select(p => p.Employment.NumUnemployed()).Sum(), tick);
     }
 }

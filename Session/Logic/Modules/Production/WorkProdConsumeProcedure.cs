@@ -67,13 +67,12 @@ public class WorkProdConsumeProcedure : Procedure
         {
             var r = (Regime)key.Data[kvp.Key];
             var gains = kvp.Value;
-            var snapshot = gains.GetSnapshot();
             foreach (var kvp2 in gains.Contents)
             {
                 var item = key.Data.Models.Items.Models[kvp2.Key];
                 r.Items.Add(item, kvp2.Value);
             }
-            r.History.ProdHistory.AddSnapshot(tick, snapshot, key);
+            r.History.ProdHistory.TakeSnapshot(tick, gains);
         }
 
         foreach (var kvp in Depletions)
@@ -94,22 +93,25 @@ public class WorkProdConsumeProcedure : Procedure
         foreach (var kvp in ConsumptionsByRegime)
         {
             var r = (Regime)key.Data[kvp.Key];
-            var gains = kvp.Value.Contents;
+            var consumptions = kvp.Value;
             var snapshot = kvp.Value.GetSnapshot();
 
-            foreach (var kvp2 in gains)
+            foreach (var kvp2 in consumptions.Contents)
             {
-                var model = key.Data.Models.Items.Models[kvp2.Key];
-                r.Items.Remove(model, kvp2.Value);
+                var item = key.Data.Models.Items.Models[kvp2.Key];
+                r.Items.Remove(item, kvp2.Value);
             }
-            r.History.ConsumptionHistory.AddSnapshot(tick, snapshot, key);
+            r.History.ConsumptionHistory.TakeSnapshot(tick, consumptions);
         }
         foreach (var kvp in DemandsByRegime)
         {
             var r = (Regime)key.Data[kvp.Key];
-            var demands = kvp.Value.Contents;
-            var snapshot = kvp.Value.GetSnapshot();
-            r.History.DemandHistory.AddSnapshot(tick, snapshot, key);
+            var demands = kvp.Value;
+            foreach (var kvp2 in demands.Contents)
+            {
+                var item = key.Data.Models.Items.Models[kvp2.Key];
+            }            
+            r.History.DemandHistory.TakeSnapshot(tick, demands);
         }
     }
 

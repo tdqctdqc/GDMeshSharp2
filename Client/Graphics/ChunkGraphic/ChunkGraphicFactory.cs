@@ -13,5 +13,5 @@ public abstract class ChunkGraphicFactory
         Active = active;
     }
 
-    public abstract Node2D GetNode(MapChunk c, Data d);
+    public abstract MapChunkGraphicModule GetModule(MapChunk c, Data d, MapGraphics mg);
 }

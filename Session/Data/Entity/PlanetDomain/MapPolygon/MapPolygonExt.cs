@@ -18,6 +18,11 @@ public static class MapPolygonExt
         if (off2.Length() < off1.Length() && off2.Length() < off3.Length()) return off2;
         return off3;
     }
+
+    public static MapChunk GetChunk(this MapPolygon poly, Data data)
+    {
+        return data.Planet.PolygonAux.ChunksByPoly[poly];
+    }
     public static Vector2 GetOffsetTo(this MapPolygon poly, Vector2 p, Data data)
     {
         var off1 = p - poly.Center;

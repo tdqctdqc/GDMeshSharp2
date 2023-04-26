@@ -1,7 +1,8 @@
 using Godot;
 
-public interface ICameraController 
+public interface ICameraController
 {
+    Vector2 Position { get; }
     Vector2 GetMousePosInMapSpace();
     Vector2 GetMapPosInGlobalSpace(Vector2 mapPos);
     Vector2 GetGlobalMousePosition();

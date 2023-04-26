@@ -17,7 +17,11 @@ public class PeepGrowthAndDeclineProcedure : Procedure
     public override void Enact(ProcedureWriteKey key)
     {
         DoGrowth(key);
-        DoHistory(key);
+        var tick = key.Data.Tick;
+        foreach (var r in key.Data.Society.Regimes.Entities)
+        {
+            r.History.PeepHistory.Update(tick, r, key);
+        }
     }
 
     private void DoGrowth(ProcedureWriteKey key)
@@ -35,15 +39,6 @@ public class PeepGrowthAndDeclineProcedure : Procedure
             {
                 peep.GrowSize(growth, key);
             }
-        }
-    }
-    private void DoHistory(ProcedureWriteKey key)
-    {
-        var tick = key.Data.BaseDomain.GameClock.Tick;
-        foreach (var r in key.Data.Society.Regimes.Entities)
-        {
-            var peepCount = r.GetPeeps(key.Data).Sum(p => p.Size);
-            r.History.PeepHistory.Update(tick, peepCount, key);
         }
     }
 }

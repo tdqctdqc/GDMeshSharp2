@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Godot;
 using Google.OrTools.ConstraintSolver;
 
@@ -35,56 +37,161 @@ public class PeepGenerator : Generator
 
     private void GenerateForRegime(Regime r)
     {
-        var foodSurplus = GenerateFarmersForRegime(r);
-        if (foodSurplus <= 0) return;
-        GenerateOthersForRegime(r, Mathf.FloorToInt(foodSurplus * .75f));
+        var popSurplus = GenerateFarmsAndFarmers(r);
+        if (popSurplus <= 0) return;
+        var extractionLabor = GenerateExtractionBuildings(r);
+        var adminLabor = GenerateTownHalls(r);
+        var forFactories = (popSurplus - (extractionLabor + adminLabor)) * .75f;
+        GenerateFactories(r, forFactories);
+        GenerateLaborers(r, popSurplus);
     }
-    private int GenerateFarmersForRegime(Regime r)
+
+    private float GenerateFarmsAndFarmers(Regime r)
     {
-        var farmModel = BuildingModelManager.Farm;
-        var farmLaborReq = farmModel.JobLaborReqs.Values.Sum();
-        var foodConPerPeep = _data.BaseDomain.Rules.FoodConsumptionPerPeepPoint;
-        var totalFoodProd = 0f;
-        var farmerJob = PeepJobManager.Farmer;
-        var regimePeepSize = 0;
-        foreach (var poly in r.Polygons)
+        var fertilityPerFarm = _data.GenMultiSettings.SocietySettings.FertilityPerFarm.Value;
+        var minFertToGetOneFarm = _data.GenMultiSettings.SocietySettings.FertilityToGetOneFarm.Value;
+        var farmTris = new ConcurrentBag<PolyTriPosition>();
+        var farmPolys = new ConcurrentDictionary<MapPolygon, int>();
+        var farm = BuildingModelManager.Farm;
+        var buildingTris = _data.Society.BuildingAux.ByTri;
+        var territory = r.Polygons.Entities();
+        
+        Parallel.ForEach(territory, p =>
         {
-            var polyFarmerSize = 0;
-            var buildings = poly.GetMapBuildings(_data);
-            if (buildings == null) continue;
-            var farms = buildings.Where(b => b.Model.Model() == farmModel);
-            var farmCount = farms.Count();
-            if (farmCount == 0) continue;
-            foreach (var farm in farms)
+            if (farm.CanBuildInPoly(p, _data) == false) return;
+            var tris = p.Tris.Tris;
+            var totalFert = p.GetFertility();
+            var numFarms = Mathf.FloorToInt(totalFert / fertilityPerFarm);
+            if (numFarms == 0 && totalFert > minFertToGetOneFarm) numFarms = 1;
+            if (numFarms == 0) return;
+            var allowedTris = Enumerable.Range(0, tris.Length)
+                .Where(i => tris[i].HasBuilding(_data) == false)
+                .Where(i => farm.CanBuildInTri(tris[i], _data));
+            if (allowedTris.Count() == 0) return;
+            var min = Math.Min(numFarms, allowedTris.Count());
+            farmPolys.GetOrAdd(p, min);
+            var thisFarmTris = allowedTris
+                .OrderByDescending(i => tris[i].GetFertility()).ToList();
+            for (var i = 0; i < min; i++)
             {
-                var farmProdCap = farmModel.ProductionCap 
-                                  * farmModel.GetProductionRatio(farm.Position, 1f, _data);
-                var prodPerLabor = farmProdCap / farmLaborReq;
-                if (prodPerLabor < foodConPerPeep) continue;
-                polyFarmerSize += farmLaborReq;
-                totalFoodProd += farmProdCap;
+                var tri = tris[thisFarmTris[i]];
+                farmTris.Add(new PolyTriPosition(p.Id, tri.Index));
             }
-            if (polyFarmerSize == 0)
+        });
+        float foodSurplus = 0f;
+        foreach (var p in farmTris)
+        {
+            MapBuilding.Create(p, BuildingModelManager.Farm, _key);
+            foodSurplus += farm.ProductionCap * farm.GetTriEfficiencyScore(p, _data);
+        }
+        var foodConPerPeep = _data.BaseDomain.Rules.FoodConsumptionPerPeepPoint;
+        foreach (var kvp in farmPolys)
+        {
+            var size = farm.JobLaborReqs.Sum(k => k.Value) * kvp.Value;
+            foodSurplus -= foodConPerPeep * size;
+            var peep = Peep.Create(kvp.Key, size, _key);
+        }
+
+        return foodSurplus / foodConPerPeep;
+    }
+    
+    private float GenerateExtractionBuildings(Regime r)
+    {
+        var extractBuildings = _data.Models.Buildings.Models
+            .Values.SelectWhereOfType<BuildingModel, ExtractionBuildingModel>()
+            .ToDictionary(m => m.ProdItem, m => m);
+        
+        var triPoses = new List<PolyTriPosition>();
+        var buildings = new List<ExtractionBuildingModel>();
+        
+        foreach (var p in r.Polygons)
+        {
+            if (p.GetResourceDeposits(_data) is IEnumerable<ResourceDeposit> rds == false)
             {
                 continue;
             }
-            Peep.Create(
-                poly,
-                polyFarmerSize,
-                _key);
-            regimePeepSize += polyFarmerSize;
+            var tris = p.Tris.Tris;
+            var avail = tris.Select((t,i) => i)
+                .Where(i => tris[i].HasBuilding(_data) == false);
+            var ll = new LinkedList<int>(avail);
+            foreach (var rd in rds)
+            {
+                if (extractBuildings.ContainsKey(rd.Item.Model()) == false) continue;
+                var b = extractBuildings[rd.Item.Model()];
+                var triIndex = ll.First(i => b.CanBuildInTri(tris[i], _data));
+                ll.Remove(triIndex);
+                triPoses.Add(new PolyTriPosition(p.Id, (byte)triIndex));
+                buildings.Add(b);
+            }
         }
 
-        return Mathf.FloorToInt(totalFoodProd - regimePeepSize * foodConPerPeep);
-    }
+        var laborDemand = 0f;
+        for (var i = 0; i < triPoses.Count; i++)
+        {
+            var pos = triPoses[i];
+            var b = buildings[i];
+            laborDemand += b.JobLaborReqs.Sum(kvp => kvp.Value);
+            MapBuilding.Create(pos, b, _key);
+        }
 
-    private void GenerateOthersForRegime(Regime r, int foodBudget)
+        return laborDemand;
+    }
+    private float GenerateTownHalls(Regime r)
     {
-        if (foodBudget <= 0) return;
-        var foodConPerPeep = _data.BaseDomain.Rules.FoodConsumptionPerPeepPoint;
-        var numOthers = foodBudget / foodConPerPeep;
+        var townHall = BuildingModelManager.TownHall;
+        var settlements = r.Polygons.Where(p => p.HasSettlement(_data))
+            .Select(p => p.GetSettlement(_data));
+        foreach (var s in settlements)
+        {
+            var p = s.Poly.Entity();
+            var tri = p.Tris.Tris.First(t => t.Landform == LandformManager.Urban);
+            s.Buildings.AddGen(townHall.Name, _key);
+        }
+
+        return townHall.TotalLaborReq() * settlements.Count();
+    }
+    private void GenerateFactories(Regime r, float popBudget)
+    {
+        if (popBudget <= 0) return;
         var polys = r.Polygons.Entities().ToList();
-        var portions = Apportioner.ApportionLinear(numOthers, polys, laborDesire);
+        var portions = Apportioner.ApportionLinear(popBudget, polys,
+            p =>
+            {
+                var ps = p.GetPeeps(_data);
+                if (ps == null) return 0f;
+                return p.GetPeeps(_data).Sum(x => x.Size);
+            }
+        );
+        var factory = BuildingModelManager.Factory;
+        var factoryLaborReq = factory.TotalLaborReq();
+        var factoryTris = new List<PolyTriPosition>();
+        for (var i = 0; i < polys.Count; i++)
+        {
+            var p = polys[i];
+            var pop = portions[i];
+            var numFactories = Mathf.FloorToInt(pop / factoryLaborReq);
+            var tris = p.Tris.Tris;
+            var avail = tris.Select((t,ind) => ind)
+                .Where(ind => tris[ind].HasBuilding(_data) == false);
+            if (avail.Count() < numFactories) numFactories = avail.Count();
+            
+            for (var j = 0; j < numFactories; j++)
+            {
+                var triIndex = avail.ElementAt(j);
+                factoryTris.Add( new PolyTriPosition(p.Id, (byte)triIndex));
+            }
+        }
+        foreach (var pt in factoryTris)
+        {
+            MapBuilding.Create(pt, factory, _key);
+        }
+    }
+    private void GenerateLaborers(Regime r, float popSurplus)
+    {
+        if (popSurplus <= 0) return;
+        var polys = r.Polygons.Entities().ToList();
+        var portions = Apportioner.ApportionLinear(popSurplus, polys, 
+            p => laborDesire(p) + (p.Moisture - p.Roughness) * 100f);
         for (var i = 0; i < polys.Count; i++)
         {
             var num = Mathf.FloorToInt(portions[i]);
@@ -111,7 +218,7 @@ public class PeepGenerator : Generator
                     .SelectWhereOfType<BuildingModel, WorkBuildingModel>();
                 if (laborBuildings.Count() > 0)
                 {
-                    res += laborBuildings.Sum(b => b.JobLaborReqs.Values.Sum());
+                    res += laborBuildings.Sum(b => b.TotalLaborReq());
                 }
             }
 
@@ -122,7 +229,7 @@ public class PeepGenerator : Generator
                 {
                     if (bm is WorkBuildingModel wm)
                     {
-                        res += wm.JobLaborReqs.Values.Sum();
+                        res += wm.TotalLaborReq();
                     }
                 }
             }

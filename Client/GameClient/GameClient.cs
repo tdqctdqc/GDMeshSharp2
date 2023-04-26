@@ -36,7 +36,6 @@ public class GameClient : Node, IClient
         AddChild(cam);
         cam.Current = true;
         Cam = cam;
-        
 
         if (graphics == null)
         {

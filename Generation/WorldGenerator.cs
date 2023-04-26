@@ -53,22 +53,10 @@ public class WorldGenerator
         
         RunGenerator(new MoistureGenerator());
         
-        var sw1 = new Stopwatch();
-        sw1.Start();
         EdgeDisturber.SplitEdges(Data.Planet.Polygons.Entities, _key, 
             Data.GenMultiSettings.PlanetSettings.PreferredMinPolyEdgeLength.Value);
-        sw1.Stop();
-        GD.Print("split edge time " + sw1.Elapsed.TotalMilliseconds);
-
-        GenerationFeedback?.Invoke("Edge split", "");
         
         RunGenerator(new PolyTriGenerator());
-
-        var sw2 = new Stopwatch();
-        sw2.Start();
-        Data.Notices.SetPolyShapes.Invoke();
-        sw2.Stop();
-        GD.Print("set poly shape time " + sw2.Elapsed.TotalMilliseconds);
         
         RunGenerator(new RegimeGenerator());
         

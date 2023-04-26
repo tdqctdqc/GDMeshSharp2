@@ -115,7 +115,7 @@ public class WorkProdConsumeModule : LogicModule
             employment.Counts.AddOrSum(job.Name, hire);
             if (unemployed == 0) break;
         }
-
+        
         employment.Counts[PeepJobManager.Unemployed.Name] = unemployed;
         proc.EmploymentReports.TryAdd(poly.Id, employment);
         

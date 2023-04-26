@@ -23,6 +23,7 @@ public class EmploymentReport
 
     public int NumUnemployed()
     {
+        if (Counts.ContainsKey(PeepJobManager.Unemployed.Name) == false) return 0;
         return Counts[PeepJobManager.Unemployed.Name];
     }
     public void Clear()

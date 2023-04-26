@@ -11,7 +11,7 @@ public class MapBuilding : Entity
     public PolyTriPosition Position { get; protected set; }
     public ModelRef<BuildingModel> Model { get; protected set; }
     public float Efficiency { get; private set; } // out of 100
-
+    
     public static MapBuilding Create(PolyTriPosition position, BuildingModel model, CreateWriteKey key)
     {
         var b = new MapBuilding(key.IdDispenser.GetID(), position, model.MakeRef(), 1f);

@@ -26,6 +26,7 @@ public class Data
     public Data()
     {
         _idDispenser = new IdDispenser();
+        EntityTypeTree = new EntityTypeTree(Game.I.Serializer.ConcreteEntityTypes);
     }
 
     public void Setup()
@@ -40,9 +41,6 @@ public class Data
         Entities = new Dictionary<int, Entity>();
         _domains = new Dictionary<Type, Domain>();
         _entityTypeDomainIndex = new Dictionary<Type, Domain>();
-
-        EntityTypeTree = new EntityTypeTree(Game.I.Serializer.ConcreteEntityTypes);
-        
         BaseDomain = new BaseDomain(this);
         Planet = new PlanetDomain(this);
         Society = new SocietyDomain(this);

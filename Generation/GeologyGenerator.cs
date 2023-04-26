@@ -218,7 +218,7 @@ public class GeologyGenerator : Generator
             var inRange = getPolysInRangeOfFault(f);
             foreach (var mapPolygon in inRange)
             {
-                DoFaultLineEffect(mapPolygon, f);
+                doFaultLineEffect(mapPolygon, f);
             }
             f.PolyFootprint.AddRange(inRange);   
         });
@@ -276,7 +276,7 @@ public class GeologyGenerator : Generator
             return polysInRange;
         }
         
-        void DoFaultLineEffect(MapPolygon poly, FaultLine fault)
+        void doFaultLineEffect(MapPolygon poly, FaultLine fault)
         {
             var close = fault.GetClosestSeg(poly, Data);
             var dist = close.DistanceTo(fault.Origin.GetOffsetTo(poly, Data));

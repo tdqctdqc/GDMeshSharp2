@@ -3,14 +3,29 @@ using System.Collections.Generic;
 using System.Linq;
 using MessagePack;
 
-public class ItemHistory : History<string, int>
+public class ItemHistory : MultiCountHistory<string>
 {
-    public static ItemHistory Construct()
+    public static ItemHistory Construct(Data data)
     {
-        return new ItemHistory(SnapshotHolder<string, int>.Construct());
+        var dic = new Dictionary<string, CountHistory>();
+        foreach (var v in data.Models.Items.Models.Values)
+        {
+            dic.Add(v.Name, CountHistory.Construct());
+        }
+        return new ItemHistory(dic);
     }
-    [SerializationConstructor] private ItemHistory(SnapshotHolder<string, int> snapshots) 
-        : base(snapshots)
+    [SerializationConstructor] private ItemHistory(Dictionary<string, CountHistory> dic) 
+        : base(dic)
     {
+        
+    }
+    public void TakeSnapshot(int tick, ItemWallet wallet)
+    {
+        foreach (var kvp in wallet.Contents)
+        {
+            var item = kvp.Key;
+            var amt = kvp.Value;
+            Counts[item].Add(amt, tick);
+        }
     }
 }
