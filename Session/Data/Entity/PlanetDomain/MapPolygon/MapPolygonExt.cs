@@ -108,12 +108,12 @@ public static class MapPolygonExt
     {
         return data.Society.SettlementAux.ByPoly.ContainsKey(p) ? data.Society.SettlementAux.ByPoly[p] : null;
     }
-    public static List<Peep> GetPeeps(this MapPolygon poly, Data data)
+    public static PolyPeep GetPeep(this MapPolygon poly, Data data)
     {
-        return data.Planet.PolygonAux.PeepsInPoly[poly];
+        return data.Society.PolyPeepAux.ByPoly[poly];
     }
-    public static bool HasPeeps(this MapPolygon poly, Data data)
+    public static bool HasPeep(this MapPolygon poly, Data data)
     {
-        return data.Planet.PolygonAux.PeepsInPoly[poly] != null;
+        return data.Society.PolyPeepAux.ByPoly[poly] != null;
     }
 }

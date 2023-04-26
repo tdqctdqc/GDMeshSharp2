@@ -19,9 +19,9 @@ public class RegimePeepsOverview : ScrollContainer
     {
         _container.ClearChildren();
         var populatedPolys = regime.Polygons.Entities()
-            .Where(p => p.HasPeeps(data));
+            .Where(p => p.HasPeep(data));
         var peeps = populatedPolys
-            .SelectMany(p => p.GetPeeps(data));
+            .Select(p => p.GetPeep(data));
         var peepCount = peeps.Count();
         var peepSize = peeps.Sum(p => p.Size);
         var jobs = populatedPolys

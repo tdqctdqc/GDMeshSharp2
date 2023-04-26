@@ -13,8 +13,7 @@ public class RuleVars : Entity
     public float MinSurplusRatioToGetGrowth { get; private set; }
     public float MaxEffectiveSurplusRatio { get; private set; }
     public float GrowthRateCeiling { get; private set; }
-    
-    
+    public int GathererFoodCeiling { get; private set; }
     public float MinDeficitRatioToGetDecline { get; private set; }
     public float MaxEffectiveDeficitRatio { get; private set; }
     public float DeclineRateCeiling { get; private set; }
@@ -28,6 +27,7 @@ public class RuleVars : Entity
             .1f,
             1f,
             .2f,
+            500f,
             key.IdDispenser.GetID());
         key.Create(v);
         return v;
@@ -40,6 +40,7 @@ public class RuleVars : Entity
         float minDeficitRatioToGetDecline,
         float maxEffectiveDeficitRatio,
         float declineRateCeiling,
+        float gathererFoodCeiling,
         int id) : base(id)
     {
         FoodConsumptionPerPeepPoint = foodConsumptionPerPeepPoint;

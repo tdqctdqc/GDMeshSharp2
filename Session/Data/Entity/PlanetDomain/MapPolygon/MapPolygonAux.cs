@@ -5,7 +5,6 @@ using Godot;
 
 public class MapPolygonAux : EntityAux<MapPolygon>
 {
-    public EntityMultiIndexer<MapPolygon, Peep> PeepsInPoly { get; private set; }
     public IReadOnlyGraph<MapPolygon, PolyBorderChain> BorderGraph { get; private set; }
     public EntityValueCache<MapPolygon, PolyAuxData> AuxDatas { get; private set; }
     public PolyGrid MapPolyGrid { get; private set; }
@@ -19,12 +18,6 @@ public class MapPolygonAux : EntityAux<MapPolygon>
         BorderGraph = ImplicitGraph.Get<MapPolygon, PolyBorderChain>(
             () => Register.Entities, 
             () => Register.Entities.SelectMany(e => e.GetPolyBorders()).ToHashSet()
-        );
-        PeepsInPoly = new EntityMultiIndexer<MapPolygon, Peep>(
-            data,
-            p => p.Home,
-            new RefAction[]{data.Notices.FinishedStateSync, data.Notices.PopulatedWorld},
-            new RefAction<ValChangeNotice<EntityRef<MapPolygon>>>[]{}
         );
         AuxDatas = EntityValueCache<MapPolygon, PolyAuxData>.ConstructTrigger(
             data,

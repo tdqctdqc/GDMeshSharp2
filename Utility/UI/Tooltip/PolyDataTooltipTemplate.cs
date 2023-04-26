@@ -87,7 +87,7 @@ public class PolyDataTooltipTemplate : DataTooltipTemplate<PolyTriPosition>
 
     private static Control GetPeeps(PolyTriPosition t, Data d)
     {
-        var peeps = t.Poly(d).GetPeeps(d);
+        var peeps = t.Poly(d).GetPeep(d);
         if (peeps == null) return null;
         var jobs = new VBoxContainer();
         var peepJobCounts = t.Poly(d).Employment.Counts

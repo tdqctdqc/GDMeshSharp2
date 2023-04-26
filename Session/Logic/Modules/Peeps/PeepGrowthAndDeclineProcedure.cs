@@ -28,7 +28,7 @@ public class PeepGrowthAndDeclineProcedure : Procedure
     {
         foreach (var kvp in Growths)
         {
-            var peep = key.Data.Society.Peeps[kvp.Key];
+            var peep = key.Data.Society.PolyPeeps[kvp.Key];
             var growth = kvp.Value;
             if (growth < 0)
             {

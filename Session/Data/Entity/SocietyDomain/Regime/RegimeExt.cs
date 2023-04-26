@@ -22,9 +22,9 @@ public static class RegimeExt
         return data.BaseDomain.PlayerAux.ByRegime[r];
     }
 
-    public static IEnumerable<Peep> GetPeeps(this Regime r, Data data)
+    public static IEnumerable<PolyPeep> GetPeeps(this Regime r, Data data)
     {
-        return r.Polygons.SelectWhere(p => p.HasPeeps(data))
-            .SelectMany(p => p.GetPeeps(data));
+        return r.Polygons.SelectWhere(p => p.HasPeep(data))
+            .Select(p => p.GetPeep(data));
     }
 }

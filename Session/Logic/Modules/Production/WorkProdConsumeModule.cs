@@ -66,8 +66,8 @@ public class WorkProdConsumeModule : LogicModule
 
     private void ProduceForPoly(MapPolygon poly, WorkProdConsumeProcedure proc, Data data)
     {
-        var peeps = poly.GetPeeps(data);
-        if (peeps == null) return;
+        var peep = poly.GetPeep(data);
+        if (peep == null) return;
         
         var mapBuildings = poly.GetMapBuildings(data);
         if (mapBuildings == null || mapBuildings.Count == 0) return;
@@ -99,7 +99,7 @@ public class WorkProdConsumeModule : LogicModule
         
         var jobNeedCount = jobNeeds.Sum(kvp => kvp.Value);
         if (jobNeedCount == 0) return;
-        var peepsCount = peeps.Sum(p => p.Size);
+        var peepsCount = peep.Size;
         var ratio = (float) peepsCount / (float) jobNeedCount;
         ratio = Mathf.Clamp(ratio, 0f, 1f);
         
@@ -157,8 +157,8 @@ public class WorkProdConsumeModule : LogicModule
         proc.DemandsByRegime.TryAdd(regime.Id, demands);
         
         var numPeeps = regime.Polygons
-            .Where(p => p.GetPeeps(data) != null)
-            .SelectMany(p => p.GetPeeps(data)).Sum(p => p.Size);
+            .Where(p => p.HasPeep(data))
+            .Sum(p => p.GetPeep(data).Size);
         var foodDesired = numPeeps * data.BaseDomain.Rules.FoodConsumptionPerPeepPoint * _ticksSinceLast;
         demands.Add(ItemManager.Food, foodDesired);
         var foodStock = regime.Items[ItemManager.Food] + proc.RegimeResourceGains[regime.Id][ItemManager.Food];

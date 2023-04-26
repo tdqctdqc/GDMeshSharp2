@@ -24,6 +24,12 @@ public class PeepGenerator : Generator
         var report = new GenReport(GetType().Name);
         
         report.StartSection();
+        
+        foreach (var p in _data.Planet.Polygons.Entities)
+        {
+            if(p.IsLand) PolyPeep.Create(p, 0, key);
+        }
+        
         foreach (var r in _data.Society.Regimes.Entities)
         {
             GenerateForRegime(r);
@@ -89,7 +95,8 @@ public class PeepGenerator : Generator
         {
             var size = farm.TotalLaborReq() * kvp.Value;
             foodSurplus -= foodConPerPeep * size;
-            var peep = Peep.Create(kvp.Key, size, _key);
+            
+            kvp.Key.GetPeep(_data).GrowSize(size, _key);
         }
 
         return foodSurplus / foodConPerPeep;
@@ -201,11 +208,7 @@ public class PeepGenerator : Generator
                 throw new Exception();
             } 
             if (num == 0) continue;
-            Peep.Create(
-                polys[i],
-                num,
-                _key
-            );
+            polys[i].GetPeep(_data).GrowSize(num, _key);
         }
         
         
@@ -235,6 +238,19 @@ public class PeepGenerator : Generator
                 }
             }
             return res;
+        }
+    }
+
+    private void GenerateGatherers()
+    {
+        var gathererFoodCeiling = _data.BaseDomain.Rules.GathererFoodCeiling;
+        var foodConsPerPeep = _data.BaseDomain.Rules.FoodConsumptionPerPeepPoint;
+        foreach (var p in _data.Planet.Polygons.Entities)
+        {
+            if (p.HasPeep(_data) == false) continue;
+            var foodCapacity = Mathf.Max(0f, p.Moisture - p.Roughness) * gathererFoodCeiling;
+            var peepCapacity = foodCapacity / foodConsPerPeep;
+            
         }
     }
 }
