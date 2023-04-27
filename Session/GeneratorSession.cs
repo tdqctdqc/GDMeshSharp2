@@ -11,25 +11,21 @@ public class GeneratorSession : Node, IDataSession
     IClient ISession.Client => Client;
     public GeneratorClient Client { get; private set; }
     public WorldGenerator WorldGen { get; private set; }
-    public Action<DisplayableException> GenerationFailed { get; set; }
-    public Action<string, string> GenerationFeedback { get; set; }
-    public bool Generating { get; private set; }
-    public bool Succeeded { get; private set; }
+    public bool Generated { get; private set; } = false;
+    private bool _generating = false;
     public IServer Server { get; private set; }
     public GenerationMultiSettings GenMultiSettings { get; private set; }
 
     public GeneratorSession()
     {
-        
+        GenMultiSettings = new GenerationMultiSettings();
     }
 
     public void Setup()
     {
         Server = new DummyServer();
-        GenMultiSettings = new GenerationMultiSettings();
         Data = new GenData(GenMultiSettings);
         WorldGen = new WorldGenerator(this, Data);
-
         Client = new GeneratorClient();
         Client.Setup(this);
         AddChild(Client);
@@ -37,19 +33,28 @@ public class GeneratorSession : Node, IDataSession
     
     public void Generate()
     {
-        Succeeded = false;
-        Generating = true;
-        WorldGen.GenerationFailed += GenerationFailed;
-        WorldGen.GenerationFeedback += GenerationFeedback;
-
-        WorldGen.Generate();
-        
-        Succeeded = WorldGen.Failed == false;
+        _generating = true;
+        if (Generated)
+        {
+            this.ClearChildren();
+            Client = null;
+            Game.I.SetSerializer();
+            Server = new DummyServer();
+            Data = new GenData(GenMultiSettings);
+            WorldGen = new WorldGenerator(this, Data);
+            Client = new GeneratorClient();
+            Client.Setup(this);
+            AddChild(Client);
+        }
         Game.I.Random.Seed = (ulong) GenMultiSettings.PlanetSettings.Seed.Value;
-        Generating = false;
+        WorldGen.Generate();
+        Generated = true;
+        _generating = false;
+        Client.Graphics.Setup(Data);
+
     }
     public override void _Process(float delta)
     {
-        Client.Process(delta);
+        if(_generating == false) Client?.Process(delta);
     }
 }

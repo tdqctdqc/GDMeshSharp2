@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Godot;
 
 public class DataNotices
@@ -14,6 +15,11 @@ public class DataNotices
     public RefAction SetPolyShapes { get; private set; }
     public RefAction SetLandAndSea { get; private set; }
     public DataNotices()
+    {
+        Clear();
+    }
+
+    public void Clear()
     {
         PopulatedWorld = new RefAction();
         GeneratedRegimes = new RefAction();

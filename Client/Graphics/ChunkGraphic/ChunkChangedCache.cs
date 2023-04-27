@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Godot;
 
 public class ChunkChangedCache
 {
@@ -17,17 +18,17 @@ public class ChunkChangedCache
     }
     public ChunkChangedCache(Data d)
     {
-            BuildingsChanged = ChunkChangeListener.ConstructConstant<MapBuilding>(d,
-                mb => mb.Position.Poly(d));
-            RoadsChanged = ChunkChangeListener.ConstructConstantMultiple<RoadSegment>(d,
-                mb =>
-                {
-                    var e = mb.Edge.Entity();
-                    return new[] {e.HighId.Entity(), e.LowId.Entity()};
-                });
-            var px = d.Planet.PolygonAux;
-            var cr = d.Planet.PolygonAux.ChangedRegime;
-            PolyRegimeChanged = ChunkChangeListener.ConstructDynamic<MapPolygon, EntityRef<Regime>>
-                (d, cr, mp => mp);
+        BuildingsChanged = ChunkChangeListener.ConstructConstant<MapBuilding>(d,
+            mb => mb.Position.Poly(d));
+        RoadsChanged = ChunkChangeListener.ConstructConstantMultiple<RoadSegment>(d,
+            mb =>
+            {
+                var e = mb.Edge.Entity();
+                return new[] {e.HighId.Entity(), e.LowId.Entity()};
+            });
+        var px = d.Planet.PolygonAux;
+        var cr = d.Planet.PolygonAux.ChangedRegime;
+        PolyRegimeChanged = ChunkChangeListener.ConstructDynamic<MapPolygon, EntityRef<Regime>>
+            (d, cr, mp => mp);
     }
 }

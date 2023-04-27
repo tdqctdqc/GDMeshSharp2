@@ -34,7 +34,7 @@ public class PeepGenerator : Generator
         {
             GenerateForRegime(r);
         }
-        
+        GenerateGatherers();
         _data.Notices.PopulatedWorld.Invoke();
         report.StopSection("All");
 
@@ -244,13 +244,20 @@ public class PeepGenerator : Generator
     private void GenerateGatherers()
     {
         var gathererFoodCeiling = _data.BaseDomain.Rules.GathererFoodCeiling;
+        var gathererFoodFloor = _data.BaseDomain.Rules.GathererFoodFloor;
         var foodConsPerPeep = _data.BaseDomain.Rules.FoodConsumptionPerPeepPoint;
         foreach (var p in _data.Planet.Polygons.Entities)
         {
             if (p.HasPeep(_data) == false) continue;
-            var foodCapacity = Mathf.Max(0f, p.Moisture - p.Roughness) * gathererFoodCeiling;
-            var peepCapacity = foodCapacity / foodConsPerPeep;
-            
+            var peep = p.GetPeep(_data);
+            var peepSize = peep.Size;
+            var foodCapacity = Mathf.Max(0f, p.Moisture - p.Roughness * .5f) * gathererFoodCeiling;
+            var peepCapacity = Mathf.Max(gathererFoodFloor / foodConsPerPeep, foodCapacity / foodConsPerPeep);
+            if (peepCapacity > peepSize)
+            {
+                var gatherers = peepCapacity - peepSize;
+                peep.GrowGatherers(Mathf.FloorToInt(gatherers), _key);
+            }
         }
     }
 }

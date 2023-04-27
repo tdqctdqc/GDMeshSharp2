@@ -16,7 +16,7 @@ public class MapDisplayOptionsUi : VBoxContainer
 
     public override void _Process(float delta)
     {
-        _mousePos.Text = Game.I.Client.Cam?.GetMousePosInMapSpace().ToString();
+        _mousePos.Text = Game.I.Client?.Cam?.GetMousePosInMapSpace().ToString();
     }
 
     public void Setup(MapGraphics graphics, Data data)

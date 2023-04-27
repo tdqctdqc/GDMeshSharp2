@@ -25,16 +25,16 @@ public class TriIconChunkGraphic : MapChunkGraphicLayer
         foreach (var p in Chunk.Polys)
         {
             var offset = Chunk.RelTo.GetOffsetTo(p, data);
-            var deposits = p.GetResourceDeposits(data);
-            if (deposits != null)
-            {
-                var controller = new IconGroupController<ResourceDeposit>(deposits.ToList(),
-                    r => "", r => r.Item.Model().Icon, 100000f);
-                var group = new IconGroups(new List<IIconGroupController> {controller});
-                group.Position = offset;
-                group.Scale *= Mathf.Min(10f, zoom / 10f);
-                AddChild(group);
-            }
+            // var deposits = p.GetResourceDeposits(data);
+            // if (deposits != null)
+            // {
+            //     var controller = new IconGroupController<ResourceDeposit>(deposits.ToList(),
+            //         r => "", r => r.Item.Model().Icon, 100000f);
+            //     var group = new IconGroups(new List<IIconGroupController> {controller});
+            //     group.Position = offset;
+            //     group.Scale *= Mathf.Min(10f, zoom / 10f);
+            //     AddChild(group);
+            // }
 
 
             var buildings = p.GetMapBuildings(data);

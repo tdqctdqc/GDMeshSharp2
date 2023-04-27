@@ -7,14 +7,16 @@ public class PolyPeep : Entity
 {
     public EntityRef<MapPolygon> Poly { get; private set; }
     public int Size { get; private set; }
+    public int NumGatherers { get; private set; }
 
     public static PolyPeep Create(MapPolygon poly, int size, CreateWriteKey key)
     {
-        var p = new PolyPeep(poly.MakeRef(), size, key.IdDispenser.GetID());
+        var p = new PolyPeep(poly.MakeRef(), size, 0, key.IdDispenser.GetID());
         key.Create(p);
         return p;
     }
-    [SerializationConstructor] private PolyPeep(EntityRef<MapPolygon> poly, int size, int id) : base(id)
+    [SerializationConstructor] private PolyPeep(EntityRef<MapPolygon> poly, int size, 
+        int numGatherers, int id) : base(id)
     {
         Size = size;
         Poly = poly;
@@ -35,6 +37,13 @@ public class PolyPeep : Entity
     {
         if (delta <= 0) throw new Exception();
         Size -= delta;
+    }
+
+    public void GrowGatherers(int delta, GenWriteKey key)
+    {
+        if (delta <= 0) throw new Exception();
+        GrowSize(delta, key);
+        NumGatherers += delta;
     }
     public override Type GetDomainType() => DomainType();
     private static Type DomainType() => typeof(SocietyDomain);

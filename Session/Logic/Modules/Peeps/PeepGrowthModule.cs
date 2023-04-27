@@ -34,11 +34,12 @@ public class PeepGrowthModule : LogicModule
         
         var range = rules.MaxEffectiveSurplusRatio - rules.MinSurplusRatioToGetGrowth;
         if (range < 0) throw new Exception();
-
+        
         var effectiveRatio = Mathf.Min(surplusRatio / range, rules.MaxEffectiveSurplusRatio);
         if (range < 0) throw new Exception();
         
-        var peeps = regime.Polygons.Where(p => p.HasPeep(data)).Select(p => p.GetPeep(data));
+        var peeps = regime.Polygons.Where(p => p.HasPeep(data))
+            .Select(p => p.GetPeep(data));
         var numPeeps = peeps.Count();
         if (numPeeps == 0) return;
         

@@ -13,6 +13,11 @@ public class RefAction
         _action?.Invoke();
     }
 
+    public void Clear()
+    {
+        _action = () => { };
+        EndSubscriptions();
+    }
     public void Subscribe(Action a)
     {
         _action += a;
@@ -56,6 +61,11 @@ public class RefAction<TArg>
     {
         if (Subscribers > 0) _action?.Invoke(t);
         Blank.Invoke();
+    }
+    public void Clear()
+    {
+        _action = t => { };
+        EndSubscriptions();
     }
     public void Subscribe(RefAction a)
     {

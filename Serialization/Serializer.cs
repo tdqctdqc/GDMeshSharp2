@@ -43,6 +43,10 @@ public class Serializer
         }
     }
 
+    public void ClearMetas()
+    {
+        
+    }
     public bool Test(Data data)
     {
         var res = true;

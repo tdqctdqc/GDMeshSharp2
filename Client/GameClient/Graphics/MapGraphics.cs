@@ -33,15 +33,12 @@ public class MapGraphics : Node2D
             return graphic;
         }).ToList();
         
-        
-        
         polySegmenter.Setup(mapChunkGraphics, 10, n => n.Position, _data);
 
         Highlighter = new PolyHighlighter(_data);
         Highlighter.ZIndex = 99;
         Highlighter.ZAsRelative = false;
         AddChild(Highlighter);
-
         
         AddChild(polySegmenter);
         var inputCatcher = new MapInputCatcher(_data, this);
@@ -61,7 +58,7 @@ public class MapGraphics : Node2D
             _segmenters?.ForEach(s => s.Update(Game.I.Client.Cam.XScrollRatio));
         }
 
-        _updateChunks.Process(delta);
+        _updateChunks?.Process(delta);
     }
     
     public override void _Input(InputEvent e)

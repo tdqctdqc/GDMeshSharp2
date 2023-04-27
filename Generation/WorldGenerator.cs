@@ -23,6 +23,7 @@ public class WorldGenerator
     }
     public GenReport Generate()
     {
+        Game.I.Random.Seed = (ulong)_session.GenMultiSettings.PlanetSettings.Seed.Value;
         var report = new GenReport(GetType().Name);
         Failed = ! ExceptionCatcher.Try(() => GenerateInner(report), GenerationFailed);
         return report;

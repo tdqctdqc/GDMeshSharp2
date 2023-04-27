@@ -69,6 +69,15 @@ public class WorkProdConsumeModule : LogicModule
         var peep = poly.GetPeep(data);
         if (peep == null) return;
         
+        var employment = _polyEmployReps.GetOrAdd(poly.Id, p => EmploymentReport.Construct());
+        proc.EmploymentReports.TryAdd(poly.Id, employment);
+
+        if (peep.NumGatherers > 0)
+        {
+            var gatherer = PeepJobManager.Gatherer;
+            employment.Counts.AddOrSum(gatherer.Name, peep.NumGatherers);
+        }
+        
         var mapBuildings = poly.GetMapBuildings(data);
         if (mapBuildings == null || mapBuildings.Count == 0) return;
         
@@ -99,12 +108,11 @@ public class WorkProdConsumeModule : LogicModule
         
         var jobNeedCount = jobNeeds.Sum(kvp => kvp.Value);
         if (jobNeedCount == 0) return;
-        var peepsCount = peep.Size;
-        var ratio = (float) peepsCount / (float) jobNeedCount;
+        var workersCount = peep.Size - peep.NumGatherers;
+        var ratio = (float) workersCount / (float) jobNeedCount;
         ratio = Mathf.Clamp(ratio, 0f, 1f);
         
-        var employment = _polyEmployReps.GetOrAdd(poly.Id, p => EmploymentReport.Construct());
-        var unemployed = peepsCount;
+        var unemployed = workersCount;
         foreach (var kvp in jobNeeds)
         {
             var att = kvp.Key;
@@ -117,7 +125,6 @@ public class WorkProdConsumeModule : LogicModule
         }
         
         employment.Counts[PeepJobManager.Unemployed.Name] = unemployed;
-        proc.EmploymentReports.TryAdd(poly.Id, employment);
         
         foreach (var building in mapBuildings)
         {
@@ -156,10 +163,11 @@ public class WorkProdConsumeModule : LogicModule
             id => ItemWallet.Construct());
         proc.DemandsByRegime.TryAdd(regime.Id, demands);
         
-        var numPeeps = regime.Polygons
+        var numHungryPeeps = regime.Polygons
             .Where(p => p.HasPeep(data))
-            .Sum(p => p.GetPeep(data).Size);
-        var foodDesired = numPeeps * data.BaseDomain.Rules.FoodConsumptionPerPeepPoint * _ticksSinceLast;
+            .Select(p => p.GetPeep(data))
+            .Sum(p => p.Size - p.NumGatherers);
+        var foodDesired = numHungryPeeps * data.BaseDomain.Rules.FoodConsumptionPerPeepPoint * _ticksSinceLast;
         demands.Add(ItemManager.Food, foodDesired);
         var foodStock = regime.Items[ItemManager.Food] + proc.RegimeResourceGains[regime.Id][ItemManager.Food];
         var foodConsumption = Mathf.Min(foodDesired, foodStock);

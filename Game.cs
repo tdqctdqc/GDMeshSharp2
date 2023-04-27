@@ -25,10 +25,14 @@ public class Game : Node
         I = this;
         Logger = new Logger();
         AssetManager.Setup();
-        Serializer = new Serializer();
+        SetSerializer();
         StartMainMenuSession();
     }
 
+    public void SetSerializer()
+    {
+        Serializer = new Serializer();
+    }
     public void StartMainMenuSession()
     {
         SetSession(new MainMenuSession());

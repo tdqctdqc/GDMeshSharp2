@@ -28,7 +28,7 @@ public class IconGroups : Node2D
         Height = heights.Sum();
         this.ClearChildren();
         var yOffset = Vector2.Zero;
-        var yStart = Vector2.Up * Height / 4f;
+        var yStart = Vector2.Up * Height;
         for (var i = 0; i < _groups.Count; i++)
         {
             yOffset += Vector2.Down * heights[i] + yMargin * Vector2.Down;

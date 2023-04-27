@@ -8,10 +8,8 @@ public class GeneratorUi : Ui
 {
     private GeneratorSession _session;
     private bool _generating;
-    private bool _generated;
     private Label _progress;
     private MapDisplayOptionsUi _mapOptions;
-    private MapGraphics _graphics;
 
     // public GeneratorSettingsWindow GenSettingsWindow { get; private set; }
     public static GeneratorUi Construct(IClient client, GeneratorSession session, MapGraphics graphics)
@@ -31,7 +29,6 @@ public class GeneratorUi : Ui
     public void Setup(MapGraphics graphics, GeneratorSession session)
     {
         _session = session;
-        _graphics = graphics;
         var topBar = ButtonBarToken.Create<HBoxContainer>();
         topBar.AddButton("Generate", PressedGenerate);
         topBar.AddButton("Done", GoToGameSession);
@@ -50,17 +47,17 @@ public class GeneratorUi : Ui
         _progress.Text = "Progress";
         sideBar.Container.AddChild(_progress);
         _mapOptions = new MapDisplayOptionsUi();
-        _mapOptions.Setup(_graphics, _session.Data);
+        _mapOptions.Setup(graphics, _session.Data);
         sideBar.Container.RectPosition = Vector2.Down * 50f;
         sideBar.Container.AddChild(_mapOptions);
+        AddWindow(new RegimeOverviewWindow());
     }
     public void Process(float delta)
     {
-        if(_generating == false && _session.Succeeded) _graphics?.Process(delta);
     }
     public void GoToGameSession()
     {
-        if (_generated)
+        if (_session.Generated)
         {
             Game.I.StartHostSession(_session.Data);
             QueueFree();
@@ -72,7 +69,6 @@ public class GeneratorUi : Ui
         _generating = true;
         await Task.Run(() => Generate()); 
         _generating = false;
-        _generated = true;
     }
     private void MonitorGeneration(string tag, string report)
     {
@@ -85,12 +81,12 @@ public class GeneratorUi : Ui
     }
     private void Generate()
     {
-        _session.GenerationFeedback += MonitorGeneration;
-        _session.GenerationFailed += DisplayException;
+        _session.WorldGen.GenerationFeedback += MonitorGeneration;
+        _session.WorldGen.GenerationFailed += DisplayException;
         _session.Generate();
-        if (_session.Succeeded)
-        {
-            _graphics.Setup(_session.Data);
-        }
+        // if (_session.WorldGen.Failed == false)
+        // {
+        //     _graphics.Setup(_session.Data);
+        // }
     }
 }

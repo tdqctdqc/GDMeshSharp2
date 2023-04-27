@@ -6,6 +6,8 @@ using Godot;
 
 public class PeepJobManager : IModelManager<PeepJob>
 {
+    public static PeepJob Gatherer { get; private set; }
+        = new PeepJob(nameof(Gatherer), new GathererAttribute());
     public static PeepJob Farmer { get; private set; } 
             = new PeepJob(nameof(Farmer), new FarmerAttribute());
     public static PeepJob Laborer { get; private set; } 
