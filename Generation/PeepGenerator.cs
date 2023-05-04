@@ -27,14 +27,14 @@ public class PeepGenerator : Generator
         
         foreach (var p in _data.Planet.Polygons.Entities)
         {
-            if(p.IsLand) PolyPeep.Create(p, 0, key);
+            if(p.IsLand) PolyPeep.Create(p, key);
         }
         
         foreach (var r in _data.Society.Regimes.Entities)
         {
             GenerateForRegime(r);
         }
-        GenerateGatherers();
+        GenerateIndigenous();
         _data.Notices.PopulatedWorld.Invoke();
         report.StopSection("All");
 
@@ -44,29 +44,38 @@ public class PeepGenerator : Generator
     private void GenerateForRegime(Regime r)
     {
         var popSurplus = GenerateFarmsAndFarmers(r);
+        var unemployedRatio = .2f;
+        var margin = 0f;
+        var employed = popSurplus * (1f - (unemployedRatio + margin));
         if (popSurplus <= 0) return;
         var extractionLabor = GenerateExtractionBuildings(r);
         var adminLabor = GenerateTownHalls(r);
-        var forFactories = (popSurplus - (extractionLabor + adminLabor)) * .75f;
+        var forFactories = (employed - (extractionLabor + adminLabor));
         GenerateFactories(r, forFactories);
-        GenerateLaborers(r, popSurplus);
+        GenerateLaborers(r, employed);
+        GenerateUnemployed(r, Mathf.FloorToInt(popSurplus * unemployedRatio));
     }
 
     private float GenerateFarmsAndFarmers(Regime r)
     {
         var fertilityPerFarm = _data.GenMultiSettings.SocietySettings.FertilityPerFarm.Value;
         var minFertToGetOneFarm = _data.GenMultiSettings.SocietySettings.FertilityToGetOneFarm.Value;
+        var foodConsPerPeep = _data.BaseDomain.Rules.FoodConsumptionPerPeepPoint;
         var farmTris = new ConcurrentBag<PolyTriPosition>();
         var farmPolys = new ConcurrentDictionary<MapPolygon, int>();
         var farm = BuildingModelManager.Farm;
-        var buildingTris = _data.Society.BuildingAux.ByTri;
+        var laborerClass = PeepClassManager.Laborer;
         var territory = r.Polygons.Entities();
         
         Parallel.ForEach(territory, p =>
         {
             if (farm.CanBuildInPoly(p, _data) == false) return;
             var tris = p.Tris.Tris;
-            var totalFert = p.GetFertility();
+            var totalFert = p.Tris.Tris.Count() > 0 
+                ? p.Tris.Tris.Select(i => i.GetFertility()).Sum()
+                : 0f;
+
+            if (p.GetFertility() * farm.ProductionCap < farm.TotalLaborReq() * foodConsPerPeep) return;
             var numFarms = Mathf.FloorToInt(totalFert / fertilityPerFarm);
             if (numFarms == 0 && totalFert > minFertToGetOneFarm) numFarms = 1;
             if (numFarms == 0) return;
@@ -85,18 +94,18 @@ public class PeepGenerator : Generator
             }
         });
         float foodSurplus = 0f;
+        
         foreach (var p in farmTris)
         {
             MapBuilding.Create(p, BuildingModelManager.Farm, _key);
-            foodSurplus += farm.ProductionCap * farm.GetTriEfficiencyScore(p, _data);
+            foodSurplus += farm.ProductionCap * farm.GetPolyEfficiencyScore(p.Poly(_data), _data);
         }
         var foodConPerPeep = _data.BaseDomain.Rules.FoodConsumptionPerPeepPoint;
         foreach (var kvp in farmPolys)
         {
             var size = farm.TotalLaborReq() * kvp.Value;
             foodSurplus -= foodConPerPeep * size;
-            
-            kvp.Key.GetPeep(_data).GrowSize(size, _key);
+            kvp.Key.GetPeep(_data).GrowSize(size, laborerClass, _key);
         }
 
         return foodSurplus / foodConPerPeep;
@@ -152,7 +161,7 @@ public class PeepGenerator : Generator
         {
             var p = s.Poly.Entity();
             var tri = p.Tris.Tris.First(t => t.Landform == LandformManager.Urban);
-            s.Buildings.AddGen(townHall.Name, _key);
+            MapBuilding.Create(new PolyTriPosition(p.Id, tri.Index), townHall, _key);
         }
 
         return townHall.TotalLaborReq() * settlements.Count();
@@ -180,7 +189,8 @@ public class PeepGenerator : Generator
             var numFactories = Mathf.Round(pop / factoryLaborReq);
             var tris = p.Tris.Tris;
             var avail = tris.Select((t,ind) => ind)
-                .Where(ind => tris[ind].HasBuilding(_data) == false);
+                .Where(ind => tris[ind].HasBuilding(_data) == false)
+                .OrderBy(ind => tris[ind].GetFertility());
             if (avail.Count() < numFactories) numFactories = avail.Count();
             
             for (var j = 0; j < numFactories; j++)
@@ -198,65 +208,79 @@ public class PeepGenerator : Generator
     {
         if (popSurplus <= 0) return;
         var polys = r.Polygons.Entities().ToList();
-        var portions = Apportioner.ApportionLinear(popSurplus, polys, 
-            p => Mathf.Max(0f, laborDesire(p) + (p.Moisture - p.Roughness) * 100f));
-        for (var i = 0; i < polys.Count; i++)
+        var laborDesire = 0;
+        foreach (var p in r.Polygons)
         {
-            var num = Mathf.FloorToInt(portions[i]);
-            if (num < 0)
-            {
-                throw new Exception();
-            } 
-            if (num == 0) continue;
-            polys[i].GetPeep(_data).GrowSize(num, _key);
-        }
-        
-        
-        float laborDesire(MapPolygon p)
-        {
-            var res = 0f;
             var buildings = p.GetMapBuildings(_data);
-            if (buildings != null)
+            if (buildings == null) continue;
+            
+            var laborBuildings = buildings
+                .Where(b => b.Model.Model() != BuildingModelManager.Farm)
+                .Select(b => b.Model.Model())
+                .SelectWhereOfType<BuildingModel, WorkBuildingModel>();
+            if (laborBuildings.Count() > 0)
             {
-                var laborBuildings = buildings.Select(b => b.Model.Model())
-                    .SelectWhereOfType<BuildingModel, WorkBuildingModel>();
-                if (laborBuildings.Count() > 0)
+                laborDesire += laborBuildings.Sum(lb => lb.TotalLaborReq());
+            }
+        }
+        var laborRatio = Mathf.Min(1f, popSurplus / laborDesire);
+        if (laborRatio == 0) return;
+        foreach (var p in r.Polygons)
+        {
+            var buildings = p.GetMapBuildings(_data);
+            if (buildings == null) continue;
+            var workBuildings = buildings
+                .Where(b => b.Model.Model() != BuildingModelManager.Farm)
+                .Select(b => b.Model.Model())
+                .SelectWhereOfType<BuildingModel, WorkBuildingModel>();
+            var peep = p.GetPeep(_data);
+            foreach (var wb in workBuildings)
+            {
+                foreach (var laborReq in wb.JobLaborReqs)
                 {
-                    res += laborBuildings.Sum(b => b.TotalLaborReq());
+                    var peepClass = laborReq.Key.PeepClass;
+                    var num = Mathf.FloorToInt(laborReq.Value * laborRatio);
+                    peep.GrowSize(num, peepClass, _key);
                 }
             }
-
-            if (p.HasSettlement(_data))
-            {
-                var s = p.GetSettlement(_data);
-                foreach (var bm in s.Buildings.Models())
-                {
-                    if (bm is WorkBuildingModel wm)
-                    {
-                        res += wm.TotalLaborReq();
-                    }
-                }
-            }
-            return res;
         }
     }
 
-    private void GenerateGatherers()
+    private void GenerateUnemployed(Regime r, int pop)
     {
-        var gathererFoodCeiling = _data.BaseDomain.Rules.GathererFoodCeiling;
-        var gathererFoodFloor = _data.BaseDomain.Rules.GathererFoodFloor;
+        var settlementPolys = r.Polygons.Entities()
+            .Where(p => p.HasSettlement(_data))
+            .ToList();
+        var portions = Apportioner.ApportionLinear(pop, settlementPolys, 
+            p => 1);
+        for (var i = 0; i < settlementPolys.Count; i++)
+        {
+            var poly = settlementPolys[i];
+            var peep = poly.GetPeep(_data);
+            var polyUnemployed = portions[i];
+            peep.GrowSize(polyUnemployed, PeepClassManager.Laborer, _key);
+        }
+    }
+    private void GenerateIndigenous()
+    {
+        var gathererFoodCeiling = _data.BaseDomain.Rules.GathererCeiling;
+        var gathererFoodFloor = _data.BaseDomain.Rules.GathererFloor;
+        var gathererNeeded = _data.BaseDomain.Rules.GatherLaborCap;
         var foodConsPerPeep = _data.BaseDomain.Rules.FoodConsumptionPerPeepPoint;
+        var indigenous = PeepClassManager.Indigenous;
+        
         foreach (var p in _data.Planet.Polygons.Entities)
         {
             if (p.HasPeep(_data) == false) continue;
             var peep = p.GetPeep(_data);
-            var peepSize = peep.Size;
-            var foodCapacity = Mathf.Max(0f, p.Moisture - p.Roughness * .5f) * gathererFoodCeiling;
-            var peepCapacity = Mathf.Max(gathererFoodFloor / foodConsPerPeep, foodCapacity / foodConsPerPeep);
+            var peepSize = peep.Size();
+            var foodCapacity = Mathf.Max(0f, p.Moisture - p.Roughness * .25f) * gathererFoodCeiling;
+            var peepCapacity = foodCapacity / foodConsPerPeep;
+
             if (peepCapacity > peepSize)
             {
-                var gatherers = peepCapacity - peepSize;
-                peep.GrowGatherers(Mathf.FloorToInt(gatherers), _key);
+                var gatherers = Mathf.Min(gathererNeeded, peepCapacity - peepSize);
+                peep.GrowSize(Mathf.CeilToInt(gatherers), indigenous, _key);
             }
         }
     }

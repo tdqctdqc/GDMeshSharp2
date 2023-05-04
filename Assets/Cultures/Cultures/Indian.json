@@ -1,0 +1,31 @@
+{
+  "Name": "Indian",
+  "SettlementNames": [
+  ],
+  "RegimeTemplates": [
+    {
+      "Name": "Indic Congress",
+      "Adjective": "Indic Congressional",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    },
+    {
+      "Name": "Naxalbari Front",
+      "Adjective": "Naxalite",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    },
+    {
+      "Name": "Chandran Raj",
+      "Adjective": "Chandran",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    },
+    {
+      "Name": "State of Karnatak",
+      "Adjective": "Karnatan",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    }
+  ]
+}

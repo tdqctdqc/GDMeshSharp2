@@ -12,7 +12,12 @@ public class Farm : ProductionBuildingModel
             )
     {
     }
-    public override int ProductionCap { get; } = 1000;
+    public override int ProductionCap { get; } = 2000;
+    public override Dictionary<Item, int> BuildCosts { get; protected set; }
+        = new Dictionary<Item, int>
+        {
+            {ItemManager.Food, 1}
+        };
     public override Dictionary<PeepJobAttribute, int> JobLaborReqs { get; }
         = new Dictionary<PeepJobAttribute, int>
         {
@@ -27,15 +32,12 @@ public class Farm : ProductionBuildingModel
     {
         return p.IsLand;
     }
-
     public override float GetPolyEfficiencyScore(MapPolygon poly, Data data)
     {
-        return poly.Moisture - poly.Roughness;
+        return poly.GetFertility();
     }
-
-    public override float GetProductionRatio(PolyTriPosition pos, float staffingRatio, Data data)
+    public override float GetProductionRatio(MapPolygon poly, float staffingRatio, Data data)
     {
-         var tri = pos.Tri(data);
-         return tri.Landform.FertilityMod * tri.Vegetation.FertilityMod * staffingRatio; 
+        return GetPolyEfficiencyScore(poly, data) * staffingRatio; 
     }
 }

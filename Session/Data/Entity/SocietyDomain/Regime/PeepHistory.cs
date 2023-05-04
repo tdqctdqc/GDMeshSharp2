@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Godot;
 
 public class PeepHistory
 {
@@ -29,7 +30,8 @@ public class PeepHistory
         var peeps = regime.GetPeeps(key.Data);
         var polys = regime.Polygons.Entities();
         PeepCount.Add(peeps.Count(), tick);
-        PeepSize.Add(peeps.Sum(p => p.Size), tick);
-        Unemployed.Add(polys.Select(p => p.Employment.NumUnemployed()).Sum(), tick);
+        PeepSize.Add(peeps.Sum(p => p.Size()), tick);
+        var numUnemployed = polys.Sum(p => p.Employment.NumUnemployed());
+        Unemployed.Add(numUnemployed, tick);
     }
 }

@@ -1,0 +1,31 @@
+{
+  "Name": "English",
+  "SettlementNames": [
+  ],
+  "RegimeTemplates": [
+    {
+      "Name": "Kingdom of Albion",
+      "Adjective": "Albion",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    },
+    {
+      "Name": "Umbrian Order",
+      "Adjective": "Umbrian",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    },
+    {
+      "Name": "Leveller Commonwealth",
+      "Adjective": "Leveller",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    },
+    {
+      "Name": "Lord Protectorate of Plymouth",
+      "Adjective": "Plymouthian",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    }
+  ]
+}

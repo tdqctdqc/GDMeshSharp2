@@ -24,20 +24,11 @@ public class ConstructBuildingsModule : LogicModule
         foreach (var f in finished)
         {
             clear.Positions.Add(f.Pos);
-            if (f.Pos.Tri(data).Landform == LandformManager.Urban)
+            Func<HostWriteKey, Entity> create = k =>
             {
-                var s = f.Pos.Poly(data).GetSettlement(data);
-                var proc = new CreateSettlementBuildingProcedure(s.Id, f.Model);
-                queueMessage(proc);
-            }
-            else
-            {
-                Func<HostWriteKey, Entity> create = k =>
-                {
-                    return MapBuilding.Create(f.Pos, f.Model.Model(), k);
-                };
-                queueEntityCreation(create);
-            }
+                return MapBuilding.Create(f.Pos, f.Model.Model(), k);
+            };
+            queueEntityCreation(create);
         }
 
         queueMessage(clear);

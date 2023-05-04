@@ -9,6 +9,7 @@ public class RegimeOverviewWindow : WindowDialog
     private RegimeConstructionOverview _construction;
     private RegimePeepsOverview _peeps;
     private RegimeProductionOverview _prod;
+    private RegimeWalletOverview _wallet;
     public RegimeOverviewWindow()
     {
         RectSize = new Vector2(500f, 500f);
@@ -23,6 +24,9 @@ public class RegimeOverviewWindow : WindowDialog
 
         _prod = new RegimeProductionOverview();
         _container.AddChild(_prod);
+
+        _wallet = new RegimeWalletOverview();
+        _container.AddChild(_wallet);
         AddChild(_container);
     }
     public void Setup(Regime regime, Data data)
@@ -30,5 +34,6 @@ public class RegimeOverviewWindow : WindowDialog
         _construction.Setup(regime, data);
         _peeps.Setup(regime, data);
         _prod.Setup(regime, data);
+        _wallet.Setup(regime, data);
     }
 }

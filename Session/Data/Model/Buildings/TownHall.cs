@@ -11,6 +11,11 @@ public class TownHall : WorkBuildingModel
         {
             {PeepJobAttribute.BureaucratAttribute, 100}
         };
+    public override Dictionary<Item, int> BuildCosts { get; protected set; }
+        = new Dictionary<Item, int>
+        {
+            {ItemManager.Iron, 200}
+        };
     public TownHall() : base(nameof(TownHall), 50, 100)
     {
     }
@@ -30,13 +35,8 @@ public class TownHall : WorkBuildingModel
         return 1f;
     }
 
-    public override float GetTriEfficiencyScore(PolyTriPosition pos, Data data)
-    {
-        return 1f;
-    }
-
     
-    public override void Produce(WorkProdConsumeProcedure proc, PolyTriPosition pos, float staffingRatio,
+    public override void Produce(WorkProdConsumeProcedure proc, MapPolygon poly, float staffingRatio,
         int ticksSinceLast, Data data)
     {
         

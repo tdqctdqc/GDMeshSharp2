@@ -43,7 +43,7 @@ public class PeepGrowthModule : LogicModule
         var numPeeps = peeps.Count();
         if (numPeeps == 0) return;
         
-        var effect = rules.GrowthRateCeiling * effectiveRatio * peeps.Sum(p => p.Size);
+        var effect = rules.GrowthRateCeiling * effectiveRatio * peeps.Sum(p => p.Size());
         if (effect < 0) throw new Exception();
 
         var numPeepsToAffect = Mathf.CeilToInt(numPeeps / 10f);

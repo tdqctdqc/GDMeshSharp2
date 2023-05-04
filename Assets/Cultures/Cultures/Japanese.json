@@ -1,0 +1,31 @@
+{
+  "Name": "Japanese",
+  "SettlementNames": [
+  ],
+  "RegimeTemplates": [
+    {
+      "Name": "Shogunate",
+      "Adjective": "Shogunate",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    },
+    {
+      "Name": "Liberal Democratic Republic of Nihon",
+      "Adjective": "Nihonese",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    },
+    {
+      "Name": "Kyoto Commune",
+      "Adjective": "Kyotan",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    },
+    {
+      "Name": "Kikuchi Empire",
+      "Adjective": "Kikuchi",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    },
+  ]
+}

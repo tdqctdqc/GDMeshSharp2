@@ -1,0 +1,32 @@
+{
+  "Name": "Yankee",
+  "SettlementNames": [
+    
+  ],
+  "RegimeTemplates": [
+    {
+      "Name": "Free State of Buck",
+      "Adjective": "Buck",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    },
+    {
+      "Name": "Bay Commonwealth",
+      "Adjective": "Baysian",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    },
+    {
+      "Name": "Big Smokey Syndicate",
+      "Adjective": "Big Smokey",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    },
+    {
+      "Name": "Columbiad Confederacy",
+      "Adjective": "Columbiad",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    }
+  ]
+}

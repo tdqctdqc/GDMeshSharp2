@@ -13,6 +13,7 @@ public class Models
     public LandformManager Landforms { get; private set; }
     public VegetationManager Vegetation { get; private set; }
     public PeepJobManager PeepJobs { get; private set; }
+    public PeepClassManager PeepClasses { get; private set; }
     public ItemManager Items { get; private set; }
     public SettlementTierManager SettlementTiers { get; private set; }
     public BuildingModelManager Buildings { get; private set; }
@@ -35,6 +36,8 @@ public class Models
         AddManager(Roads);
         SettlementTiers = new SettlementTierManager();
         AddManager(SettlementTiers);
+        PeepClasses = new PeepClassManager();
+        AddManager(PeepClasses);
     }
 
     public T GetModel<T>(string name)

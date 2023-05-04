@@ -1,0 +1,32 @@
+{
+  "Name": "Greek",
+  "SettlementNames": [
+
+  ],
+  "RegimeTemplates": [
+    {
+      "Name": Platonic Republic",
+      "Adjective": "Platonic",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    },
+    {
+      "Name": "Royal Epiros",
+      "Adjective": "Epirosan",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    },
+    {
+      "Name": "Demotika",
+      "Adjective": "Demotik",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    },
+    {
+      "Name": "Khrysodont",
+      "Adjective": "Khrysodontian",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    }
+  ]
+}

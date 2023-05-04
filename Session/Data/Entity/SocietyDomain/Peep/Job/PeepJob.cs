@@ -8,9 +8,11 @@ public class PeepJob : IModel
     public string Name { get; private set; }
     public Icon JobIcon { get; } 
     public AttributeHolder<PeepJobAttribute> Attributes { get; private set; }
-    public PeepJob(string name, params PeepJobAttribute[] attributes)
+    public PeepClass PeepClass { get; private set; }
+    public PeepJob(string name, PeepClass peepClass, params PeepJobAttribute[] attributes)
     {
         Name = name;
+        PeepClass = peepClass;
         JobIcon = Icon.Create(Name, Icon.AspectRatio._1x2, 50f);
         Attributes = new AttributeHolder<PeepJobAttribute>();
         foreach (var att in attributes)

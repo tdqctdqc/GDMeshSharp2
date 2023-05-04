@@ -1,0 +1,32 @@
+{
+  "Name": "Persian",
+  "SettlementNames": [
+  ],
+  "RegimeTemplates": [
+    {
+      "Name": "Sassania",
+      "Adjective": "Sassanian",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    }
+    {
+      "Name": "Panavestan",
+      "Adjective": "Panavestani",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    },
+    {
+      "Name": "Tudeh Republic",
+      "Adjective": "Tudeh",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    },
+    {
+      "Name": "United Medic States",
+      "Adjective": "Medic",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    }
+
+  ]
+}

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 public class HostLogic : ILogic
 {
     public ConcurrentQueue<Command> CommandQueue { get; }
-    public EntityValueCache<Regime, RegimeAI> AIs { get; }
+    public EntityValueCache<Regime, RegimeAi> AIs { get; }
     private HostServer _server;
     private HostWriteKey _hKey;
     private ProcedureWriteKey _pKey;
@@ -24,7 +24,8 @@ public class HostLogic : ILogic
     public HostLogic(Data data)
     {
         _sw = new Stopwatch();
-        AIs = EntityValueCache<Regime, RegimeAI>.ConstructConstant(data, r => new RegimeAI(r, data));
+        AIs = EntityValueCache<Regime, RegimeAi>
+            .ConstructConstant(data, r => new RegimeAi(r, data));
         CommandQueue = new ConcurrentQueue<Command>();
         _frames = new LogicFrame[]
         {
@@ -32,7 +33,7 @@ public class HostLogic : ILogic
             new LogicFrame(new ConstructBuildingsModule()),
             new LogicFrame(new PeepGrowthModule()),
             new LogicFrame(),
-            new LogicFrame(new AIDecidesConstructionModule(AIs)),
+            new LogicFrame(new AiProdConstructModule(AIs, data)),
         };
     }
 

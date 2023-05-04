@@ -16,9 +16,14 @@ public class Mine : ExtractionBuildingModel
         {
             {PeepJobAttribute.MinerAttribute, 500}
         };
+    public override Dictionary<Item, int> BuildCosts { get; protected set; }
+        = new Dictionary<Item, int>
+        {
+            {ItemManager.Iron, 1000}
+        };
 
     public override int ProductionCap { get; } = 10;
-    public override float GetProductionRatio(PolyTriPosition pos, float staffingRatio, Data data)
+    public override float GetProductionRatio(MapPolygon poly, float staffingRatio, Data data)
     {
         return staffingRatio;
     }

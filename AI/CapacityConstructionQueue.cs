@@ -6,7 +6,6 @@ public class CapacityConstructionQueue
 {
     public float CapacityInConstruction { get; private set; }
     public HashSet<Construction> Constructions { get; private set; }
-
     public CapacityConstructionQueue()
     {
         Constructions = new HashSet<Construction>();
@@ -19,7 +18,7 @@ public class CapacityConstructionQueue
     private float GetCapacity(Construction c, Data data)
     {
         var b = c.Model.Model();
-        return c.Model.Model().Capacity * b.GetTriEfficiencyScore(c.Pos, data);
+        return c.Model.Model().Capacity * b.GetPolyEfficiencyScore(c.Pos.Poly(data), data);
     }
     public void CheckForFinished(Data data)
     {

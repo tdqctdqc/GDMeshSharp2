@@ -1,0 +1,31 @@
+{
+  "Name": "Arab",
+  "SettlementNames": [
+  ],
+  "RegimeTemplates": [
+    {
+      "Name": "United Arab Republic",
+      "Adjective": "United Arab",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    },
+    {
+      "Name": "Hashemite Kingdom",
+      "Adjective": "Hashemite",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    },
+    {
+      "Name": "The Khedivate",
+      "Adjective": "Khedivite",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    },
+    {
+      "Name": "Punic Oligarchy",
+      "Adjective": "Punic",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    }
+  ]
+}

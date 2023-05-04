@@ -15,16 +15,15 @@ public abstract class ProductionBuildingModel : WorkBuildingModel
         ProdItem = prodItem;
     }
 
-    public override void Produce(WorkProdConsumeProcedure proc, PolyTriPosition pos, float staffingRatio, 
+    public override void Produce(WorkProdConsumeProcedure proc, MapPolygon poly, float staffingRatio, 
         int ticksSinceLast, Data data)
     {
         staffingRatio = Mathf.Clamp(staffingRatio, 0f, 1f);
-        var ratio = GetProductionRatio(pos, staffingRatio, data);
+        var ratio = GetProductionRatio(poly, staffingRatio, data);
         var prod = Mathf.FloorToInt(ratio * ProductionCap * ticksSinceLast);
-        var rId = pos.Poly(data).Regime.RefId;
+        var rId = poly.Regime.RefId;
         proc.RegimeResourceGains[rId].Add(ProdItem, prod);
     }
 
-    public abstract float GetProductionRatio(PolyTriPosition pos, float staffingRatio, Data data);
-    public override float GetTriEfficiencyScore(PolyTriPosition pos, Data data) => GetProductionRatio(pos, 1f, data);
+    public abstract float GetProductionRatio(MapPolygon poly, float staffingRatio, Data data);
 }

@@ -21,6 +21,10 @@ public class WorkProdConsumeModule : LogicModule
         _regimeDemandWallets = new ConcurrentDictionary<int, ItemWallet>();
     private ConcurrentDictionary<int, EmploymentReport> 
         _polyEmployReps = new ConcurrentDictionary<int, EmploymentReport>();
+
+    private ConcurrentDictionary<int, PolyEmploymentScratch>
+        _polyScratches = new ConcurrentDictionary<int, PolyEmploymentScratch>();
+
     private void Clear()
     {
         foreach (var kvp in _regimeDepletionWallets) { kvp.Value.Clear(); }
@@ -52,105 +56,124 @@ public class WorkProdConsumeModule : LogicModule
         var gains = _regimeProdWallets.GetOrAdd(regime.Id,
             id => ItemWallet.Construct());
         proc.RegimeResourceGains.TryAdd(regime.Id, gains);
-
+        var laborerClass = PeepClassManager.Laborer;
+        var unemployedJob = PeepJobManager.Unemployed;
+        var gatherersNeeded = data.BaseDomain.Rules.GatherLaborCap;
         var depletions = _regimeDepletionWallets.GetOrAdd(regime.Id, 
             id => EntityWallet<ResourceDeposit>.Construct());
         proc.Depletions.TryAdd(regime.Id, depletions);
         var polys = regime.Polygons;
+        var totalLaborerUnemployed = 0f;
+        var labClass = PeepClassManager.Laborer;
+        var builderJob = PeepJobManager.Builder;
         
         foreach (var poly in polys)
         {
-            ProduceForPoly(poly, proc, data);
+            var scratch = _polyScratches.GetOrAdd(poly.Id,
+                p => new PolyEmploymentScratch((MapPolygon) data[p], data));
+            scratch.Init(poly, data);
+            ProduceForPoly(poly, proc, scratch, data);
+            if(scratch.ByClass.TryGetValue(laborerClass, out var sub))
+            {
+                totalLaborerUnemployed += sub.Available;
+            }
+        }
+
+        var construction = data.Society.CurrentConstruction.ByPoly;
+
+        var constructionLaborNeeded = regime.Polygons
+            .Where(p => construction.ContainsKey(p.Id))
+            .Select(p => construction[p.Id].Sum(c => c.Model.Model().LaborPerTickToBuild))
+            .Sum();
+        
+        var constructLaborRatio = Mathf.Clamp(totalLaborerUnemployed  / constructionLaborNeeded, 0f, 1f);
+        if (constructionLaborNeeded == 0) constructLaborRatio = 0f; 
+        foreach (var poly in polys)
+        {
+            var scratch = _polyScratches[poly.Id];
+            scratch.HandleJobNeed(builderJob, constructLaborRatio,data);
+            ConstructForPoly(poly, scratch, constructLaborRatio, proc, data);
+        }
+        foreach (var poly in polys)
+        {
+            var scratch = _polyScratches[poly.Id];
+            GatherForPoly(regime, poly, scratch, proc, data);
+            var numUnemployed = scratch.ByClass.Sum(kvp => kvp.Value.Available);
+            var employment = _polyEmployReps.GetOrAdd(poly.Id, p => EmploymentReport.Construct());
+            employment.Clear();
+            employment.Counts.AddOrSum(unemployedJob.Name, numUnemployed);
+            proc.EmploymentReports[poly.Id] = employment;
+            foreach (var kvp in scratch.ByJob)
+            {
+                // if(kvp.Value.Total > 0) GD.Print(poly.Id + " Writing " + kvp.Value.Total);
+                employment.Counts[kvp.Key.Name] = kvp.Value;
+            }
         }
     }
 
-    private void ProduceForPoly(MapPolygon poly, WorkProdConsumeProcedure proc, Data data)
+    private void ProduceForPoly(MapPolygon poly, WorkProdConsumeProcedure proc, PolyEmploymentScratch scratch, Data data)
     {
         var peep = poly.GetPeep(data);
         if (peep == null) return;
+        IEnumerable<MapBuilding> mapBuildings = poly.GetMapBuildings(data);
+            if(mapBuildings == null) return;
+            
+        mapBuildings = mapBuildings.Where(b => b.Model.Model() is WorkBuildingModel);
+        if (mapBuildings.Count() == 0) return;
         
-        var employment = _polyEmployReps.GetOrAdd(poly.Id, p => EmploymentReport.Construct());
-        proc.EmploymentReports.TryAdd(poly.Id, employment);
-
-        if (peep.NumGatherers > 0)
+        IEnumerable<WorkBuildingModel> workBuildings = poly.GetMapBuildings(data)
+            .Where(b => b.Model.Model() is WorkBuildingModel)
+            .Select(b => (WorkBuildingModel)b.Model.Model());
+        if (workBuildings.Count() == 0) return;
+        
+        foreach (var wb in workBuildings)
         {
-            var gatherer = PeepJobManager.Gatherer;
-            employment.Counts.AddOrSum(gatherer.Name, peep.NumGatherers);
+            scratch.HandleClasses(wb, data);
         }
-        
-        var mapBuildings = poly.GetMapBuildings(data);
-        if (mapBuildings == null || mapBuildings.Count == 0) return;
-        
-        var workBuildings = mapBuildings.Where(b => b.Model.Model() is WorkBuildingModel)
-                    .Select(b => (WorkBuildingModel)b.Model.Model());
-        
-        IEnumerable<WorkBuildingModel> settlementBuildings = null;
-        if (poly.HasSettlement(data))
+        foreach (var wb in workBuildings)
         {
-            settlementBuildings = poly.GetSettlement(data)
-                .Buildings.Models().SelectWhereOfType<BuildingModel, WorkBuildingModel>();
-            workBuildings = workBuildings.Union(settlementBuildings);
+            scratch.HandleBuildingJobs(wb, data);
         }
-
-        var jobNeeds = workBuildings.SelectMany(b => b.JobLaborReqs);
-        IEnumerable<Construction> constructions = null;
-        if (poly.Regime.Empty() == false)
-        {        
-            var r = poly.Regime.Entity();
-            if (data.Society.CurrentConstruction.GetPolyConstructions(poly) is List<Construction> cs)
+        foreach (var wb in workBuildings)
+        {
+            var effectiveRatio = 1f;
+            foreach (var jobReq in wb.JobLaborReqs)
             {
-                constructions = cs;
-                var constructionNeed = cs.Select(c => c.Model.Model().LaborPerTickToBuild).Sum();
-                jobNeeds = jobNeeds.Append(
-                    new KeyValuePair<PeepJobAttribute, int>(PeepJobAttribute.ConstructionAttribute, constructionNeed));
+                var jobClass = jobReq.Key.PeepClass;
+                var ratio = scratch.ByClass[jobClass].EffectiveRatio();
+                effectiveRatio = Mathf.Min(effectiveRatio, ratio);
             }
+            wb.Produce(proc, poly, effectiveRatio, _ticksSinceLast, data);
         }
-        
-        var jobNeedCount = jobNeeds.Sum(kvp => kvp.Value);
-        if (jobNeedCount == 0) return;
-        var workersCount = peep.Size - peep.NumGatherers;
-        var ratio = (float) workersCount / (float) jobNeedCount;
-        ratio = Mathf.Clamp(ratio, 0f, 1f);
-        
-        var unemployed = workersCount;
-        foreach (var kvp in jobNeeds)
-        {
-            var att = kvp.Key;
-            var needed = kvp.Value;
-            var job = data.Models.PeepJobs.Models.First(kvp2 => kvp2.Value.Attributes.Has(att)).Value;
-            var hire = Mathf.Min(Mathf.CeilToInt(needed * ratio), unemployed);
-            unemployed -= hire;
-            employment.Counts.AddOrSum(job.Name, hire);
-            if (unemployed == 0) break;
-        }
-        
-        employment.Counts[PeepJobManager.Unemployed.Name] = unemployed;
-        
-        foreach (var building in mapBuildings)
-        {
-            if (building.Model.Model() is WorkBuildingModel wb)
-            {
-                wb.Produce(proc, building.Position, ratio, _ticksSinceLast, data);
-            }
-        }
+    }
 
-        if (settlementBuildings != null)
+    private void ConstructForPoly(MapPolygon poly, PolyEmploymentScratch laborScratch, 
+        float ratio, WorkProdConsumeProcedure proc, Data data)
+    {
+        IEnumerable<Construction> constructions = data.Society.CurrentConstruction.GetPolyConstructions(poly);
+        if (constructions == null || constructions.Count() == 0) return;
+        foreach (var construction in constructions)
         {
-            var tri = poly.Tris.Tris.First(t => t.Landform == LandformManager.Urban);
-            var pos = new PolyTriPosition(poly.Id, tri.Index);
-            foreach (var wb in settlementBuildings)
-            {
-                wb.Produce(proc, pos, ratio, _ticksSinceLast, data);
-            }
+            proc.ConstructionProgresses.TryAdd(construction.Pos, ratio);
         }
-
-        if (constructions != null)
-        {
-            foreach (var construction in constructions)
-            {
-                proc.ConstructionProgresses.TryAdd(construction.Pos, ratio);
-            }
-        }
+    }
+    private void GatherForPoly(Regime r, MapPolygon poly, PolyEmploymentScratch scratch,
+        WorkProdConsumeProcedure proc, Data data)
+    {
+        var indig = poly.GetPeep(data).GetNumOfClass(PeepClassManager.Indigenous);
+        if (indig == 0) return;
+        var gathererJob = PeepJobManager.Gatherer;
+        var gatherersNeeded = data.BaseDomain.Rules.GatherLaborCap;
+        var foodCap = data.BaseDomain.Rules.GathererCeiling;
+        var foodFloor = data.BaseDomain.Rules.GathererFloor;
+        var foodGathered = poly.GetGatheredFoodRatio() * foodCap;
+        foodGathered = Math.Max(foodFloor, foodGathered);
+        
+        var ratio = Mathf.Min(1f, (float)indig / gatherersNeeded);
+        foodGathered *= ratio;
+        scratch.HandleJobNeed(gathererJob, 1f, data);
+        // GD.Print(poly.Id + " indig " + indig + " gatherer labor " + labor);
+        proc.RegimeResourceGains[r.Id].Add(ItemManager.Food, Mathf.CeilToInt(foodGathered));
     }
 
     private void ConsumeForRegime(WorkProdConsumeProcedure proc, Regime regime, Data data)
@@ -166,7 +189,7 @@ public class WorkProdConsumeModule : LogicModule
         var numHungryPeeps = regime.Polygons
             .Where(p => p.HasPeep(data))
             .Select(p => p.GetPeep(data))
-            .Sum(p => p.Size - p.NumGatherers);
+            .Sum(p => p.Size());
         var foodDesired = numHungryPeeps * data.BaseDomain.Rules.FoodConsumptionPerPeepPoint * _ticksSinceLast;
         demands.Add(ItemManager.Food, foodDesired);
         var foodStock = regime.Items[ItemManager.Food] + proc.RegimeResourceGains[regime.Id][ItemManager.Food];

@@ -1,0 +1,32 @@
+{
+  "Name": "Kongo",
+  "SettlementNames": [
+  ],
+  "RegimeTemplates": [
+    {
+      "Name": "Kingdom of Lwagu",
+      "Adjective": "Lwaguan",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    }
+    {
+      "Name": "Despotate of Katanga",
+      "Adjective": "Katangan",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    },
+    {
+      "Name": "Riverine Republic",
+      "Adjective": "Riverine",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    },
+    {
+      "Name": "Badondan Revolutionary Republic",
+      "Adjective": "Badondan",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    }
+
+  ]
+}

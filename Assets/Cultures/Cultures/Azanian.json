@@ -1,0 +1,31 @@
+{
+  "Name": "Azanian",
+  "SettlementNames": [
+  ],
+  "RegimeTemplates": [
+    {
+      "Name": "Rainbow Republic",
+      "Adjective": "Rainbowian",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    },
+    {
+      "Name": "Great Zimbabwe",
+      "Adjective": "Zimbabwean",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    },
+    {
+      "Name": "Azanian People's Republic",
+      "Adjective": "Azanian People's",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    },
+    {
+      "Name": "Ngunia",
+      "Adjective": "Ngunian",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    }
+  ]
+}

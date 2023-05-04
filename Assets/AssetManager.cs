@@ -9,5 +9,6 @@ public class AssetManager
     {
         TextureManager.Setup();
         SceneManager.Setup();
+        CultureManager.Setup();
     }
 }

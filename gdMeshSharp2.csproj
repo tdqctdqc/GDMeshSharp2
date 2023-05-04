@@ -12,6 +12,7 @@
     <PackageReference Include="OptimizedPriorityQueue" Version="5.1.0" />
     <PackageReference Include="Poly2Tri" Version="1.0.1" />
     <PackageReference Include="RandomFriendlyNameGenerator" Version="1.0.7" />
+    <PackageReference Include="System.Text.Json" Version="7.0.2" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Data\Entity\MapPoly\**" />
@@ -21,6 +22,7 @@
     <Compile Remove="Client\GeneratorClient\**" />
     <Compile Remove="Client\MapDisplayOptionsUi\**" />
     <Compile Remove="Client\StartScene\**" />
+    <Compile Remove="Assets\Cultures\Unfinished\**" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Remove="Data\Entity\MapPoly\**" />
@@ -30,9 +32,28 @@
     <EmbeddedResource Remove="Client\GeneratorClient\**" />
     <EmbeddedResource Remove="Client\MapDisplayOptionsUi\**" />
     <EmbeddedResource Remove="Client\StartScene\**" />
+    <EmbeddedResource Remove="Assets\Cultures\Unfinished\**" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Session\Message\Procedure\Diplomatic" />
     <Folder Include="Session\Message\Procedure\Production" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Assets\Cultures\Cultures\Arab.json" />
+    <Content Include="Assets\Cultures\Cultures\Azanian.json" />
+    <Content Include="Assets\Cultures\Cultures\Bolivarian.json" />
+    <Content Include="Assets\Cultures\Cultures\Celtic.json" />
+    <Content Include="Assets\Cultures\Cultures\Chinese.json" />
+    <Content Include="Assets\Cultures\Cultures\English.json" />
+    <Content Include="Assets\Cultures\Cultures\French.json" />
+    <Content Include="Assets\Cultures\Cultures\German.json" />
+    <Content Include="Assets\Cultures\Cultures\Greek.json" />
+    <Content Include="Assets\Cultures\Cultures\Indian.json" />
+    <Content Include="Assets\Cultures\Cultures\Japanese.json" />
+    <Content Include="Assets\Cultures\Cultures\Kongo.json" />
+    <Content Include="Assets\Cultures\Cultures\Persian.json" />
+    <Content Include="Assets\Cultures\Cultures\Russian.json" />
+    <Content Include="Assets\Cultures\Cultures\Turkic.json" />
+    <Content Include="Assets\Cultures\Cultures\Yankee.json" />
   </ItemGroup>
 </Project>

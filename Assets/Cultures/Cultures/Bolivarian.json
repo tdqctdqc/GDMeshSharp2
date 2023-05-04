@@ -1,0 +1,31 @@
+{
+  "Name": "Bolivarian",
+  "SettlementNames": [
+  ],
+  "RegimeTemplates": [
+    {
+      "Name": "Republic of Gran Bolivaria",
+      "Adjective": "Gran Bolivarian",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    },
+    {
+      "Name": "Duchy of Vespuxio",
+      "Adjective": "Vespuxian",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    },
+    {
+      "Name": "Popular Amazonia",
+      "Adjective": "Amazonian",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    },
+    {
+      "Name": "Colonia Dignidad",
+      "Adjective": "Dignidadan",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    }
+  ]
+}

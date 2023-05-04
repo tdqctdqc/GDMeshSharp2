@@ -1,0 +1,32 @@
+{
+  "Name": "Turkic",
+  "SettlementNames": [
+  ],
+  "RegimeTemplates": [
+    {
+      "Name": "Ogluz Khaganate",
+      "Adjective": "Ogluz",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    }
+    {
+      "Name": "Turan",
+      "Adjective": "Turanian",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    },
+    {
+      "Name": "Kemalcuk Republic",
+      "Adjective": "Kemalcuk",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    },
+    {
+      "Name": "Sublime Porte",
+      "Adjective": "Portean",
+      "PrimaryColor": "#0",
+      "SecondaryColor": "#0"
+    }
+
+  ]
+}

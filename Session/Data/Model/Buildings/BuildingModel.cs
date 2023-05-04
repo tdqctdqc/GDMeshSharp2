@@ -1,4 +1,5 @@
 
+using System.Collections.Generic;
 using Godot;
 
 public abstract class BuildingModel : IModel
@@ -7,6 +8,8 @@ public abstract class BuildingModel : IModel
     public int NumTicksToBuild { get; private set; }
     public int LaborPerTickToBuild { get; private set; }
     public Icon BuildingIcon { get; }
+    public abstract Dictionary<Item, int> BuildCosts { get; protected set; }
+
     public BuildingModel(string name, int numTicksToBuild, int laborPerTickToBuild)
     {
         Name = name;
@@ -25,5 +28,4 @@ public abstract class BuildingModel : IModel
 
     public abstract int Capacity { get; }
     public abstract float GetPolyEfficiencyScore(MapPolygon poly, Data data);
-    public abstract float GetTriEfficiencyScore(PolyTriPosition pos, Data data);
 }

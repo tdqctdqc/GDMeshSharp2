@@ -80,6 +80,10 @@
             "RandomFriendlyNameGenerator": {
               "target": "Package",
               "version": "[1.0.7, )"
+            },
+            "System.Text.Json": {
+              "target": "Package",
+              "version": "[7.0.2, )"
             }
           },
           "imports": [

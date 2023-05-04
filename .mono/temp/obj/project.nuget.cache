@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "RAjzdrW8TSMr2Lvtm8BSr8qR0AXOPEIW32Ltb587OX3bjOYTpYV7wiGOBjyj047ZvwEfVl1+iDGyU33BGI+y2A==",
+  "dgSpecHash": "Q+ewVv3zjxd+vZ2Z7Jp9e6UPsvCL0qqhtzSn3L35uDqG+3rmDN8m7AWGenOyUbG+rz65kvB0+V0EWiDVieLhqA==",
   "success": true,
   "projectFilePath": "C:\\Users\\Tynan Dion\\Desktop\\games\\gdMeshSharp2\\gdMeshSharp2.csproj",
   "expectedPackageFiles": [
@@ -11,7 +11,7 @@
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\markovnextgen\\1.2.6\\markovnextgen.1.2.6.nupkg.sha512",
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\messagepack\\2.4.59\\messagepack.2.4.59.nupkg.sha512",
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\messagepack.annotations\\2.4.59\\messagepack.annotations.2.4.59.nupkg.sha512",
-    "C:\\Users\\Tynan Dion\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\6.0.0\\microsoft.bcl.asyncinterfaces.6.0.0.nupkg.sha512",
+    "C:\\Users\\Tynan Dion\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\7.0.0\\microsoft.bcl.asyncinterfaces.7.0.0.nupkg.sha512",
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\microsoft.extensions.objectpool\\7.0.4\\microsoft.extensions.objectpool.7.0.4.nupkg.sha512",
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\microsoft.net.stringtools\\17.4.0\\microsoft.net.stringtools.17.4.0.nupkg.sha512",
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\microsoft.netcore.platforms\\1.1.0\\microsoft.netcore.platforms.1.1.0.nupkg.sha512",
@@ -23,11 +23,13 @@
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\system.buffers\\4.5.1\\system.buffers.4.5.1.nupkg.sha512",
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\system.collections.immutable\\1.7.1\\system.collections.immutable.1.7.1.nupkg.sha512",
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\system.memory\\4.5.5\\system.memory.4.5.5.nupkg.sha512",
-    "C:\\Users\\Tynan Dion\\.nuget\\packages\\system.numerics.vectors\\4.4.0\\system.numerics.vectors.4.4.0.nupkg.sha512",
+    "C:\\Users\\Tynan Dion\\.nuget\\packages\\system.numerics.vectors\\4.5.0\\system.numerics.vectors.4.5.0.nupkg.sha512",
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\system.reflection.emit\\4.7.0\\system.reflection.emit.4.7.0.nupkg.sha512",
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\system.reflection.emit.ilgeneration\\4.7.0\\system.reflection.emit.ilgeneration.4.7.0.nupkg.sha512",
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\system.reflection.emit.lightweight\\4.7.0\\system.reflection.emit.lightweight.4.7.0.nupkg.sha512",
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\6.0.0\\system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512",
+    "C:\\Users\\Tynan Dion\\.nuget\\packages\\system.text.encodings.web\\7.0.0\\system.text.encodings.web.7.0.0.nupkg.sha512",
+    "C:\\Users\\Tynan Dion\\.nuget\\packages\\system.text.json\\7.0.2\\system.text.json.7.0.2.nupkg.sha512",
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\system.threading.tasks.extensions\\4.5.4\\system.threading.tasks.extensions.4.5.4.nupkg.sha512"
   ],
   "logs": [
