@@ -6,26 +6,30 @@
     {
       "Name": "Indic Congress",
       "Adjective": "Indic Congressional",
-      "PrimaryColor": "#0",
-      "SecondaryColor": "#0"
+      "PrimaryColor": "#f4c430",
+      "SecondaryColor": "#128807",
+      "FlagPath": "indiccongress"
     },
     {
       "Name": "Naxalbari Front",
       "Adjective": "Naxalite",
-      "PrimaryColor": "#0",
-      "SecondaryColor": "#0"
+      "PrimaryColor": "#ff3737",
+      "SecondaryColor": "#010080",
+      "FlagPath": "naxalbari"
     },
     {
       "Name": "Chandran Raj",
       "Adjective": "Chandran",
-      "PrimaryColor": "#0",
-      "SecondaryColor": "#0"
+      "PrimaryColor": "#973c00",
+      "SecondaryColor": "#d4aa00",
+      "FlagPath": "chandran"
     },
     {
       "Name": "State of Karnatak",
       "Adjective": "Karnatan",
-      "PrimaryColor": "#0",
-      "SecondaryColor": "#0"
+      "PrimaryColor": "#ffff00",
+      "SecondaryColor": "#ff2a2a",
+      "FlagPath": "karnatak"
     }
   ]
 }

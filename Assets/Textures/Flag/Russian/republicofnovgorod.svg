@@ -25,8 +25,8 @@
      inkscape:document-units="mm"
      showgrid="false"
      inkscape:zoom="0.26362494"
-     inkscape:cx="-373.63687"
-     inkscape:cy="963.49001"
+     inkscape:cx="605.02622"
+     inkscape:cy="830.72565"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
      inkscape:window-x="-8"
@@ -40,6 +40,13 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(-10.645162,-60.677647)">
+    <rect
+       style="fill:#ffffff;stroke-width:4.99999"
+       id="rect2106"
+       width="150"
+       height="100"
+       x="10.645162"
+       y="60.677647" />
     <rect
        style="fill:#35d1ff;fill-opacity:1;stroke-width:3;stroke-linecap:round;paint-order:fill markers stroke"
        id="rect1306"

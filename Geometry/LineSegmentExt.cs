@@ -43,7 +43,7 @@ public static class LineSegmentExt
     {
         var newSegsAbs = new List<LineSegment>();
         var segs = edge.GetSegsAbs();
-        var offset = edge.HighId.Entity().GetOffsetTo(edge.LowId.Entity(), key.Data);
+        var offset = edge.HighPoly.Entity().GetOffsetTo(edge.LowPoly.Entity(), key.Data);
         for (var i = 0; i < segs.Count; i++)
         {
             var seg = segs[i];
@@ -69,7 +69,7 @@ public static class LineSegmentExt
                 newSegsAbs.Add(seg);
             }
         }
-        edge.ReplacePoints(newSegsAbs, -1, key);
+        edge.ReplacePoints(newSegsAbs, key);
     }
     public static bool IsConvexAround(this List<LineSegment> segs, Vector2 center)
     {
@@ -103,6 +103,7 @@ public static class LineSegmentExt
     
     public static List<PolyTri> PolyTriangulate(this IReadOnlyList<LineSegment> boundarySegs, GenData data, 
         MapPolygon poly, IdDispenser id,
+        Graph<PolyTri, bool> graph,
         HashSet<Vector2> interiorPoints = null)
     {
         return boundarySegs.Triangulate(data, poly,

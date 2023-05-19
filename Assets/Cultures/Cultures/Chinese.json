@@ -187,25 +187,29 @@
       "Name": "Celestial Kingdom",
       "Adjective": "Celestial",
       "PrimaryColor": "#44c644",
-      "SecondaryColor": "#00ffff"
+      "SecondaryColor": "#00ffff",
+      "FlagPath": "celestial"
     },
     {
       "Name": "Guomin Republic",
       "Adjective": "Guomin",
       "PrimaryColor": "#00ffff",
-      "SecondaryColor": "#0000ff"
+      "SecondaryColor": "#0000ff",
+      "FlagPath": "guomin"
     },
     {
       "Name": "Formosa Clique",
       "Adjective": "Formosan",
       "PrimaryColor": "#000080",
-      "SecondaryColor": "#AA8800"
+      "SecondaryColor": "#aa8800",
+      "FlagPath": "formosan"
     },
     {
       "Name": "Hunan Toilers",
       "Adjective": "Hunan",
       "PrimaryColor": "#800000",
-      "SecondaryColor": "#1b581b"
+      "SecondaryColor": "#1b581b",
+      "FlagPath": "hunan"
     }
   ]
 }

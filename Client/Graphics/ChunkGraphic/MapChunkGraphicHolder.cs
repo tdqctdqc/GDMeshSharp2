@@ -16,14 +16,13 @@ public class MapChunkGraphicHolder : Node2D
         Modules = new Dictionary<string, MapChunkGraphicModule>();
         Order(
             chunk, data, mg,
-            Tris, 
-            Landform,
-            Vegetation,
+            AllTris,
             RegimeFill,
             Roads,
             ResourceDepositPolyFill,
             RegimeBorders,
-            Icons
+            Icons,
+            RiversTemp
         );
     }
 
@@ -48,20 +47,16 @@ public class MapChunkGraphicHolder : Node2D
     public static ChunkGraphicFactory RegimeBorders { get; private set; }
         = new ChunkGraphicFactoryBasic(nameof(RegimeBorders), true,
             (c, d, mg) => BorderChunkGraphic.ConstructRegimeBorder(c, mg, 20f, d));
-    public static ChunkGraphicFactory Landform { get; private set; }
-        = new PolyTriChunkGraphicFactory(nameof(Landform), true, t => t.Landform.Color);
-    public static ChunkGraphicFactory Vegetation { get; private set; }
-        = new PolyTriChunkGraphicFactory(nameof(Vegetation),true, 
-            pt => pt.Vegetation.Color.Darkened(pt.Landform.DarkenFactor));
-    public static ChunkGraphicFactory Tris { get; private set; }
-        = new PolyTriChunkGraphicFactory(nameof(Tris), 
-            false, t => ColorsExt.GetRandomColor());
+
+    public static ChunkGraphicFactory AllTris { get; private set; }
+        = new ChunkGraphicFactoryBasic(nameof(AllTris), true,
+            (c, d, mg) => new PolyTriChunkGraphic(c,d,mg));
     public static ChunkGraphicFactory Roads { get; private set; }
         = new ChunkGraphicFactoryBasic(nameof(Roads), true,
-            (c, d, mg) => new RoadChunkGraphicModule(c, d, mg));
+            (c, d, mg) => new RoadChunkGraphic(c, d, mg));
     public static ChunkGraphicFactory Icons { get; private set; }
         = new ChunkGraphicFactoryBasic(nameof(Icons), true,
-            (c, d, mg) => new IconsMapChunkGraphicModule(c, d, mg));
+            (c, d, mg) => new IconsChunkGraphic(c, d, mg));
     public static ChunkGraphicFactory ResourceDepositPolyFill { get; private set; }
         = new PolygonFillChunkGraphicFactory(nameof(ResourceDepositPolyFill), false, (p,d) =>
             {
@@ -76,5 +71,9 @@ public class MapChunkGraphicHolder : Node2D
                 if (p.Regime.Fulfilled()) return p.Regime.Entity().PrimaryColor;
                 return Colors.Transparent;
             }
+        );
+    public static ChunkGraphicFactory RiversTemp { get; private set; }
+        = new ChunkGraphicFactoryBasic(nameof(RiversTemp), true, 
+            (c,d,g) => new RiversTempChunkGraphic(c,d)
         );
 }

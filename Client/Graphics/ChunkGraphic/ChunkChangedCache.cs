@@ -24,7 +24,7 @@ public class ChunkChangedCache
             mb =>
             {
                 var e = mb.Edge.Entity();
-                return new[] {e.HighId.Entity(), e.LowId.Entity()};
+                return new[] {e.HighPoly.Entity(), e.LowPoly.Entity()};
             });
         var px = d.Planet.PolygonAux;
         var cr = d.Planet.PolygonAux.ChangedRegime;

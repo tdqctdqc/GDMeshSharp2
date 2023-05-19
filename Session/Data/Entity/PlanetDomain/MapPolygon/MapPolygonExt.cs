@@ -125,4 +125,9 @@ public static class MapPolygonExt
     {
         return data.Society.PolyPeepAux.ByPoly[poly] != null;
     }
+
+    public static IEnumerable<MapPolygonEdge> GetEdges(this MapPolygon p, Data data)
+    {
+        return p.Neighbors.Select(n => p.GetEdge(n, data));
+    }
 }

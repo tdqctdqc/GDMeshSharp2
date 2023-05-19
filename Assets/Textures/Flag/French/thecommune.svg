@@ -25,8 +25,8 @@
      inkscape:document-units="mm"
      showgrid="false"
      inkscape:zoom="0.74564394"
-     inkscape:cx="-118.68936"
-     inkscape:cy="315.16383"
+     inkscape:cx="-246.09601"
+     inkscape:cy="316.50495"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
      inkscape:window-x="-8"
@@ -47,6 +47,13 @@
        height="100"
        x="10.645162"
        y="60.677647" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;paint-order:markers fill stroke"
+       id="rect9998-7"
+       width="75"
+       height="100"
+       x="85.645164"
+       y="60.677639" />
     <path
        sodipodi:type="star"
        style="fill:#ff2b2b;fill-opacity:1;stroke:#ffff34;stroke-width:24.5006;stroke-linecap:round;stroke-linejoin:miter;stroke-dasharray:none;paint-order:fill markers stroke;stroke-opacity:1"

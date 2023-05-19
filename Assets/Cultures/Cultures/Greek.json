@@ -5,28 +5,32 @@
   ],
   "RegimeTemplates": [
     {
-      "Name": Platonic Republic",
+      "Name": "Platonic Republic",
       "Adjective": "Platonic",
-      "PrimaryColor": "#0",
-      "SecondaryColor": "#0"
+      "PrimaryColor": "#ffffff",
+      "SecondaryColor": "#00ffff",
+      "FlagPath": "platonic"
     },
     {
       "Name": "Royal Epiros",
       "Adjective": "Epirosan",
-      "PrimaryColor": "#0",
-      "SecondaryColor": "#0"
+      "PrimaryColor": "#ffffff",
+      "SecondaryColor": "#800080",
+      "FlagPath": "epiros"
     },
     {
       "Name": "Demotika",
       "Adjective": "Demotik",
-      "PrimaryColor": "#0",
-      "SecondaryColor": "#0"
+      "PrimaryColor": "#0000ff",
+      "SecondaryColor": "#ff0000",
+      "FlagPath": "demotika"
     },
     {
       "Name": "Khrysodont",
       "Adjective": "Khrysodontian",
-      "PrimaryColor": "#0",
-      "SecondaryColor": "#0"
+      "PrimaryColor": "#000000",
+      "SecondaryColor": "#d4aa00",
+      "FlagPath": "khrysodont"
     }
   ]
 }

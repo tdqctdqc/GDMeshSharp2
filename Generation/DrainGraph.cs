@@ -1,5 +1,3 @@
-
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -82,10 +80,6 @@ public class DrainGraph<T>
 
     private void DoUnion(List<T> union)
     {
-        // var sinks = union.Intersect(_sinks);
-        // var sources = union.Intersect(_sources);
-
-
         var queue = new SimplePriorityQueue<T, float>();
         var frontiers = new Dictionary<T, List<T>>();
 
@@ -94,7 +88,7 @@ public class DrainGraph<T>
             return _getNeighbors(el)
                 .Where(n => _sources.Contains(n))
                 .Where(n => _nodes[n].DrainsTo == null 
-                            // || TotalDrainCost(n) > _getCost(el, n) + TotalDrainCost(el)
+                            || TotalDrainCost(n) > _getCost(el, n) + TotalDrainCost(el)
                 );
         }
         
@@ -157,16 +151,17 @@ public class DrainGraph<T>
 
         return res;
     }
-    private class DrainGraphNode<T>
-    {
-        public T Element { get; set; }
-        public T DrainsTo { get; set; }
-        public float DrainCost { get; set; }
+    
+}
+public class DrainGraphNode<T>
+{
+    public T Element { get; set; }
+    public T DrainsTo { get; set; }
+    public float DrainCost { get; set; }
 
-        public DrainGraphNode(T element)
-        {
-            Element = element;
-            DrainCost = 0f;
-        }
+    public DrainGraphNode(T element)
+    {
+        Element = element;
+        DrainCost = 0f;
     }
 }

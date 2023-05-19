@@ -18,11 +18,12 @@ public class MapChunkGraphicModule : Node2D
     }
     public void Update(Data data)
     {
-        var zoom = Game.I.Client.Cam.ZoomOut;
+        // var zoom = Game.I.Client.Cam.ZoomOut;
+        var scaledZoom = Game.I.Client.Cam.ScaledZoomOut;
         foreach (var kvp in _layers)
         {
             var range = kvp.Value;
-            if (zoom >= range.x && zoom <= range.y)
+            if (scaledZoom >= range.x && scaledZoom <= range.y)
             {
                 kvp.Key.Visible = true;
                 kvp.Key.Update(data);

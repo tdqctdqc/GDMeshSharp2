@@ -6,26 +6,30 @@
     {
       "Name": "Kingdom of Lwagu",
       "Adjective": "Lwaguan",
-      "PrimaryColor": "#0",
-      "SecondaryColor": "#0"
-    }
+      "PrimaryColor": "#ffeeaa",
+      "SecondaryColor": "#3a6bb8",
+      "FlagPath": "lwagu"
+    },
     {
       "Name": "Despotate of Katanga",
       "Adjective": "Katangan",
-      "PrimaryColor": "#0",
-      "SecondaryColor": "#0"
+      "PrimaryColor": "#ff6600",
+      "SecondaryColor": "#14b53a",
+      "FlagPath": "katanga"
     },
     {
       "Name": "Riverine Republic",
       "Adjective": "Riverine",
-      "PrimaryColor": "#0",
-      "SecondaryColor": "#0"
+      "PrimaryColor": "#000b73",
+      "SecondaryColor": "#004b4a",
+      "FlagPath": "riverine"
     },
     {
       "Name": "Badondan Revolutionary Republic",
       "Adjective": "Badondan",
-      "PrimaryColor": "#0",
-      "SecondaryColor": "#0"
+      "PrimaryColor": "#000000",
+      "SecondaryColor": "#cc092f",
+      "FlagPath": "badondo"
     }
 
   ]

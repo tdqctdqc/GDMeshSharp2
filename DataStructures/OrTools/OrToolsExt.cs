@@ -63,7 +63,7 @@ public class OrToolsExt
             minCostFlow.SetNodeSupply(i, supplies[i]);
         }
         var status = minCostFlow.Solve();
-       
+        GD.Print(_results[status]);
         
         var graph = new Graph<T, int>();
         nodes.ForEach(n => graph.AddNode(n));

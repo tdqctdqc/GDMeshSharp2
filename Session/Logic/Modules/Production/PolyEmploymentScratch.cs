@@ -21,27 +21,6 @@ public class PolyEmploymentScratch
         var peep = poly.GetPeep(data);
         if (peep == null) throw new Exception();
         
-        // foreach (var kvp in peep.ClassFragments)
-        // {
-        //     var peepClass = (PeepClass)data.Models[kvp.Key];
-        //     if (ByClass.ContainsKey(peepClass) == false)
-        //     {
-        //         ByClass.Add(peepClass, new Sub());
-        //     }
-        // }
-        // foreach (var kvp in ByClass)
-        // {
-        //     var sub = kvp.Value;
-        //     var peepClass = kvp.Key;
-        //     if (peep.ClassFragments.ContainsKey(peepClass.Name))
-        //     {
-        //         sub.Init(peep, kvp.Key);
-        //     }
-        //     else
-        //     {
-        //         sub.Clear();
-        //     }
-        // }
         ByClass = peep.ClassFragments.ToDictionary(kvp => (PeepClass) data.Models[kvp.Key],
             kvp =>
             {
@@ -56,6 +35,7 @@ public class PolyEmploymentScratch
         foreach (var kvp in work.JobLaborReqs)
         {
             var peepClass = kvp.Key.PeepClass;
+            if (ByClass.ContainsKey(peepClass) == false) continue;
             var classSub = ByClass[peepClass];
             classSub.Desired += kvp.Value;
         }
@@ -68,6 +48,8 @@ public class PolyEmploymentScratch
             var size = jobReq.Value;
             var job = data.Models.PeepJobs.Models.First(kvp2 => kvp2.Value.Attributes.Has(attr)).Value;
             var jobClass = job.PeepClass;
+            if (ByClass.ContainsKey(jobClass) == false) continue;
+
             var classSub = ByClass[jobClass];
             var ratio = classSub.EffectiveRatio();
             var num = Mathf.CeilToInt(ratio * size);

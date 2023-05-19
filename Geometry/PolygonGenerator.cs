@@ -47,8 +47,6 @@ public class PolygonGenerator : Generator
         var graph = GraphGenerator.GenerateMapPolyVoronoiGraph(info, _id, key);
         report.StopSection("Generating poly graph");
 
-        
-        // throw new PreGraphFailure(graph);
         if (_leftRightWrap)
         {
             report.StartSection();
@@ -105,14 +103,61 @@ public class PolygonGenerator : Generator
         sw.Start();
         Parallel.ForEach(partitions, buildBordersForChunk);
         sw.Stop();
-        GD.Print($"parallel time {sw.Elapsed.TotalMilliseconds}");
         sw.Reset();
         
         sw.Start();
+        
+        var mapWidth = key.GenData.GenMultiSettings.Dimensions.x;
+
+        var nexuses = new Dictionary<Vector2, List<MapPolygonEdge>>();
+        
         foreach (var b in borderChains)
         {
-            MapPolygonEdge.Create(b.Key, b.Value, key);
+            var chain1 = b.Key;
+            var chain2 = b.Value;
+            var edge = MapPolygonEdge.Create(b.Key, b.Value, key);
+
+            var start = chain1.Segments.First().From + b.Key.Native.Entity().Center;
+            var end = chain1.Segments.Last().To + b.Key.Native.Entity().Center;
+            if (start.x < 0) start.x += mapWidth;
+            if (end.x < 0) end.x += mapWidth;
+            
+            if(nexuses.ContainsKey(start) == false) nexuses.Add(start, new List<MapPolygonEdge>());
+            if(nexuses.ContainsKey(end) == false) nexuses.Add(end, new List<MapPolygonEdge>());
+            
+            nexuses[start].Add(edge);
+            nexuses[end].Add(edge);
         }
+
+        var edgeNexi = new Dictionary<MapPolygonEdge, Vector2>();
+        
+        foreach (var kvp in nexuses)
+        {
+            var point = kvp.Key;
+            var edges = kvp.Value;
+            var polys = edges.Select(e => e.HighPoly.Entity())
+                .Union(edges.Select(e => e.LowPoly.Entity()))
+                .Distinct().ToList();
+            var nexus = MapPolyNexus.Construct(point, edges, polys, key);
+            foreach (var e in edges)
+            {
+                if (edgeNexi.ContainsKey(e) == false) edgeNexi.Add(e, Vector2.Zero);
+                if (edgeNexi[e].x == 0) edgeNexi[e] = new Vector2(nexus.Id, 0);
+                else
+                {
+                    edgeNexi[e] = new Vector2(edgeNexi[e].x, nexus.Id);
+                }
+            }
+        }
+        foreach (var kvp in edgeNexi)
+        {
+            var edge = kvp.Key;
+            var n1 = key.Data.Planet.PolyNexi[(int)kvp.Value.x];
+            var n2 = key.Data.Planet.PolyNexi[(int)kvp.Value.y];
+            edge.SetNexi(n1, n2, key);
+        }
+        
+        
         sw.Stop();
         GD.Print($"create time {sw.Elapsed.TotalMilliseconds}");
         sw.Reset();
@@ -136,7 +181,8 @@ public class PolygonGenerator : Generator
                 throw new Exception();
             }
             var neighbors = graph.GetNeighbors(mp).Where(n => rHash.Contains(n) == false).ToList();
-            if (neighbors.Count == 0) throw new Exception(); 
+            if (neighbors.Count == 0) throw new Exception();
+
             neighbors.ForEach(nMp =>
             {
                 if (nMp.Id > mp.Id) return;
@@ -153,6 +199,8 @@ public class PolygonGenerator : Generator
 
                 var chain1 = MapPolygonEdge.ConstructBorderChain(mp, nMp,
                     new List<LineSegment> {edge}, key.Data);
+                
+                
                 var chain2 = MapPolygonEdge.ConstructBorderChain(nMp, mp,
                     new List<LineSegment> {edge}, key.Data);
                 borderChains.TryAdd(chain1, chain2);

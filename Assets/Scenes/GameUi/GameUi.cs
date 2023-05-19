@@ -29,6 +29,7 @@ public class GameUi : Ui
     public void Setup(bool host, Data data, MapGraphics graphics)
     {
         AddWindow(LoggerWindow.Get());
+        AddWindow(ClientSettingsWindow.Get());
         AddWindow(EntityOverviewWindow.Get(data));
         AddWindow(SettingsWindow.Get(Game.I.Client.Settings));
         AddWindow(new RegimeOverviewWindow());

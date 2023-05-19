@@ -77,7 +77,24 @@ public class WorldGenerator
 
     private void RunGenerator(Generator gen)
     {
-        var r = gen.Generate(_key);
-        GenerationFeedback?.Invoke(gen.GetType().Name, r.GetTimes());
+        try
+        {
+            var r = gen.Generate(_key);
+            GenerationFeedback?.Invoke(gen.GetType().Name, r.GetTimes());
+        }
+        catch (Exception e)
+        {
+            if (e is DisplayableException d)
+            {
+                GenerationFailed.Invoke(d);
+                return;
+            }
+            else
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+        
     }
 }

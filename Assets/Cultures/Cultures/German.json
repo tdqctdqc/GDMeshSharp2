@@ -158,25 +158,29 @@
       "Name": "Heiliges Reich",
       "Adjective": "Heiliger",
       "PrimaryColor": "#0033ff",
-      "SecondaryColor": "#000000"
+      "SecondaryColor": "#000000",
+      "FlagPath": "heiliges"
     },
     {
       "Name": "Bundesrepublik",
       "Adjective": "Bundner",
       "PrimaryColor": "#a05a2c",
-      "SecondaryColor": "#000000"
+      "SecondaryColor": "#000000",
+      "FlagPath": "bundesrepublik"
     },
     {
       "Name": "Volksrepublik",
       "Adjective": "Volkischer",
       "PrimaryColor": "#ff5555",
-      "SecondaryColor": "#000000"
+      "SecondaryColor": "#000000",
+      "FlagPath": "volksrepublik"
     },
     {
       "Name": "The New Order",
       "Adjective": "New Order",
       "PrimaryColor": "#c4a141",
-      "SecondaryColor": "#000000"
+      "SecondaryColor": "#000000",
+      "FlagPath": "neworder"
     }
   ]
 }

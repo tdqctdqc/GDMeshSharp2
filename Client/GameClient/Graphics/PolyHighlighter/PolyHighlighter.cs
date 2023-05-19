@@ -43,9 +43,10 @@ public class PolyHighlighter : Node2D
         TakeFromMeshBuilder(mb);
     }
 
-    private static void DrawSimple(Data data, MapPolygon poly, PolyTri pt, MeshBuilder mb)
+    private void DrawSimple(Data data, MapPolygon poly, PolyTri pt, MeshBuilder mb)
     {
         DrawBordersSimple(poly, mb, data);
+        DrawnNeighborBordersSimple(poly, mb, data);
     }
 
     private static void DrawComplex(Data data, MapPolygon poly, PolyTri pt, MeshBuilder mb)
@@ -54,10 +55,41 @@ public class PolyHighlighter : Node2D
         DrawPolyTriBorders(poly, mb, data);
         DrawPolyTriNetwork(poly, mb, data);
     }
+
+    private static void DrawIncidentEdges(MapPolygon poly, MeshBuilder mb, Data data)
+    {
+        var incident = new HashSet<MapPolygonEdge>();
+        var edges = poly.Neighbors.Select(n => poly.GetEdge(n, data));
+        foreach (var e in edges)
+        {
+            var n1 = e.HiNexus.Entity().IncidentEdges.Entities();
+            var n2 = e.LoNexus.Entity().IncidentEdges.Entities();
+            incident.AddRange(n1);
+            incident.AddRange(n2);
+        }
+        foreach (var e in incident)
+        {
+            var start = e.HiNexus.Entity().Point;
+            var end = e.LoNexus.Entity().Point;
+            mb.AddLine(poly.GetOffsetTo(start, data), 
+                poly.GetOffsetTo(end, data), Colors.Red, 10f);
+        }
+    }
     private static void DrawBordersSimple(MapPolygon poly, MeshBuilder mb, Data data)
     {
         var edgeBorders = poly.GetOrderedNeighborSegments(data).Segments;
         mb.AddLines(edgeBorders, 10f, Colors.Black);
+    }
+    private static void DrawnNeighborBordersSimple(MapPolygon poly, MeshBuilder mb, Data data)
+    {
+        foreach (var n in poly.Neighbors)
+        {
+            var offset = poly.GetOffsetTo(n, data);
+            var nEdgeBorders = n.GetOrderedNeighborSegments(data).Segments
+                .Select(s => s.Translate(offset)).ToList();
+            mb.AddLines(nEdgeBorders, 10f, Colors.Black);
+            mb.AddLine(Vector2.Zero, offset, Colors.White, 10f);
+        }
     }
     private static void DrawNeighborBorders(MapPolygon poly, MeshBuilder mb, Data data)
     {
@@ -101,7 +133,7 @@ public class PolyHighlighter : Node2D
         {
             var offset = poly.GetOffsetTo(n, data);
             var edge = poly.GetEdge(n, data);
-            var polyHi = edge.HighId.Entity() == poly;
+            var polyHi = edge.HighPoly.Entity() == poly;
             var pairs = polyHi
                 ? edge.HiToLoTriPaths
                 : edge.LoToHiTriPaths;

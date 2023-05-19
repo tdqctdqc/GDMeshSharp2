@@ -1,46 +1,54 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using Godot;
 
-public class RoadChunkGraphic : MapChunkGraphicLayer
+public class RoadChunkGraphic : MapChunkGraphicModule
 {
-    private RoadChunkGraphic()
+    public RoadChunkGraphic(MapChunk chunk, Data data, MapGraphics mg)
     {
-        
+        var r = new RoadChunkGraphicLayer(chunk, data, mg);
+        AddLayer(new Vector2(0f, 1f), r);
     }
-
-    public RoadChunkGraphic(MapChunk chunk, Data data, MapGraphics mg) 
-        : base(chunk, mg.ChunkChangedCache.RoadsChanged)
+    
+    private class RoadChunkGraphicLayer : MapChunkGraphicLayer
     {
-        Draw(data);
-    }
-
-
-    protected override void Draw(Data data)
-    {
-        this.ClearChildren();
-        var froms = new List<Vector2>();
-        var tos = new List<Vector2>();
-        var mb = new MeshBuilder();
-        foreach (var p in Chunk.Polys)
+        private RoadChunkGraphicLayer()
         {
-            foreach (var n in p.Neighbors.Entities())
+        
+        }
+
+        public RoadChunkGraphicLayer(MapChunk chunk, Data data, MapGraphics mg) 
+            : base(chunk, mg.ChunkChangedCache.RoadsChanged)
+        {
+            Draw(data);
+        }
+
+
+        public override void Draw(Data data)
+        {
+            this.ClearChildren();
+            var froms = new List<Vector2>();
+            var tos = new List<Vector2>();
+            var mb = new MeshBuilder();
+            foreach (var p in Chunk.Polys)
             {
-                if (p.Id > n.Id)
+                foreach (var n in p.Neighbors.Entities())
                 {
-                    var border = p.GetEdge(n, data);
-                    if (data.Society.RoadAux.ByEdgeId.ContainsKey(border.Id))
+                    if (p.Id > n.Id)
                     {
-                        var seg = data.Society.RoadAux.ByEdgeId[border.Id];
-                        seg.Road.Model().Draw(mb, Chunk.RelTo.GetOffsetTo(p.Center, data), 
-                            Chunk.RelTo.GetOffsetTo(n.Center, data), 10f);
+                        var border = p.GetEdge(n, data);
+                        if (data.Society.RoadAux.ByEdgeId.ContainsKey(border.Id))
+                        {
+                            var seg = data.Society.RoadAux.ByEdgeId[border.Id];
+                            seg.Road.Model().Draw(mb, Chunk.RelTo.GetOffsetTo(p.Center, data), 
+                                Chunk.RelTo.GetOffsetTo(n.Center, data), 10f);
+                        }
                     }
                 }
             }
+            if (mb.Tris.Count == 0) return;
+            AddChild(mb.GetMeshInstance());
         }
-        if (mb.Tris.Count == 0) return;
-        AddChild(mb.GetMeshInstance());
     }
 }

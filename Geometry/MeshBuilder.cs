@@ -272,6 +272,7 @@ public class MeshBuilder
     }
     public MeshInstance2D GetMeshInstance()
     {
+        if (Tris.Count == 0) throw new Exception("Cannot make mesh with no tris");
         var mesh = MeshGenerator.GetArrayMesh(Tris.GetTriPoints().ToArray(), Colors.ToArray());
         var meshInstance = new MeshInstance2D();
         meshInstance.Mesh = mesh;

@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/Bundesrepublik.svg-af102c7dc03d6f6d6884e976d9b6648c.stex"
+path="res://.import/bundesrepublik.svg-e35fe5692d6ae42c3416f134a41f188c.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Textures/Flag/German/Bundesrepublik.svg"
-dest_files=[ "res://.import/Bundesrepublik.svg-af102c7dc03d6f6d6884e976d9b6648c.stex" ]
+source_file="res://Assets/Textures/Flag/German/bundesrepublik.svg"
+dest_files=[ "res://.import/bundesrepublik.svg-e35fe5692d6ae42c3416f134a41f188c.stex" ]
 
 [params]
 

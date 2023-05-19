@@ -45,6 +45,7 @@ public class Graph<TNode, TEdge> : IGraph<TNode, TEdge>
     }
     public void AddEdge(TNode t1, TNode t2, TEdge edge)
     {
+        if (t1 == null || t2 == null) return;
         if(_nodeDic.ContainsKey(t1) == false) AddNode(t1);
         if(_nodeDic.ContainsKey(t2) == false) AddNode(t2);
         AddUndirectedEdge(t1, t2, edge);

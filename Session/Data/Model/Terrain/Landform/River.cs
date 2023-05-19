@@ -5,12 +5,18 @@ using Godot;
 
 public class River : Landform
 {
-    public static readonly float WidthFloor = 5f, 
+    public static readonly float WidthFloor = 10f, 
         WidthCeil = 30f,
         FlowFloor = 1f,
         FlowCeil = 200f;
     public River()
-        : base("River", Mathf.Inf, 0f, Colors.Blue, true)
+        : base("River", Mathf.Inf, 0f, Colors.Red, true)
     {
+    }
+
+    public static float GetWidthFromFlow(float flow)
+    {
+        var logBase = Mathf.Pow(River.FlowCeil, 1f / (River.WidthCeil - River.WidthFloor));
+        return (float)Math.Log(flow, logBase);
     }
 }

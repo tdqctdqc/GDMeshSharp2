@@ -15,7 +15,7 @@ public class PolyFillLayer : MapChunkGraphicLayer
         Draw(data);
     }
 
-    protected override void Draw(Data data)
+    public override void Draw(Data data)
     {
         var mb = new MeshBuilder();
         mb.AddPolysRelative(Chunk.RelTo, Chunk.Polys, _getColor, data);

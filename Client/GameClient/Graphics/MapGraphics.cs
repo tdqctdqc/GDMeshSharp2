@@ -49,6 +49,8 @@ public class MapGraphics : Node2D
                 ChunkChangedCache.Clear();
             }
         );
+
+        
     }
 
     public void Process(float delta)

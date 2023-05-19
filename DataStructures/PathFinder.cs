@@ -139,7 +139,8 @@ public static class PathFinder<T>
 
         return null; 
     }
-    public static List<T> FindPathMultipleEnds(T start, Func<T, bool> isEnd, Func<T, IReadOnlyCollection<T>> getNeighbors, 
+    public static List<T> FindPathMultipleEnds(T start, Func<T, bool> isEnd, 
+        Func<T, IEnumerable<T>> getNeighbors, 
         Func<T,T,float> getEdgeCost)
     {
         int maxIters = 100_000;

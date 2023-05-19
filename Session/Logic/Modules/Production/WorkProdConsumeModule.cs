@@ -140,7 +140,16 @@ public class WorkProdConsumeModule : LogicModule
             foreach (var jobReq in wb.JobLaborReqs)
             {
                 var jobClass = jobReq.Key.PeepClass;
-                var ratio = scratch.ByClass[jobClass].EffectiveRatio();
+                float ratio;
+                if (scratch.ByClass.ContainsKey(jobClass) == false)
+                {
+                    // GD.Print($"class {jobClass.Name} not found in {poly.Id}");
+                    ratio = 0f; 
+                }
+                else
+                {
+                    ratio = scratch.ByClass[jobClass].EffectiveRatio();
+                }
                 effectiveRatio = Mathf.Min(effectiveRatio, ratio);
             }
             wb.Produce(proc, poly, effectiveRatio, _ticksSinceLast, data);

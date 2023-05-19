@@ -23,5 +23,5 @@ public abstract class MapChunkGraphicLayer : Node2D
         if (_listener == null || _listener.Changed.Contains(Chunk) == false) return;
         Draw(data);
     }
-    protected abstract void Draw(Data data);
+    public abstract void Draw(Data data);
 }

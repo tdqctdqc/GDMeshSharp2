@@ -24,7 +24,7 @@ public class Game : Node
         }
         I = this;
         Logger = new Logger();
-        AssetManager.Setup();
+        Assets.Setup();
         SetSerializer();
         StartMainMenuSession();
     }

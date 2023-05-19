@@ -13,7 +13,7 @@ public class PolyEdgeAux : EntityAux<MapPolygonEdge>
     }
     private Vector2 MakeEdge(MapPolygonEdge e)
     {
-        return e.HighId.Entity().GetV2EdgeKey(e.LowId.Entity());
+        return e.HighPoly.Entity().GetV2EdgeKey(e.LowPoly.Entity());
     }
     public MapPolygonEdge GetEdge(MapPolygon p1, MapPolygon p2)
     {

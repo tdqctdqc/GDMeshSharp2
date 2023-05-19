@@ -34,12 +34,16 @@ public class GeneratorUi : Ui
         topBar.AddButton("Done", GoToGameSession);
         topBar.AddWindowButton<GeneratorSettingsWindow>(Ui.GenSettings);
         topBar.AddButton("Test Serialization", () => Game.I.Serializer.Test(session.Data));
-
+        
+        
+        
         AddChild(topBar.Container); 
 
         
         var genSettingsWindow = GeneratorSettingsWindow.Get(_session.GenMultiSettings);
         AddWindow(genSettingsWindow);
+        
+        
         
         var sideBar = ButtonBarToken.Create<VBoxContainer>();
         AddChild(sideBar.Container);

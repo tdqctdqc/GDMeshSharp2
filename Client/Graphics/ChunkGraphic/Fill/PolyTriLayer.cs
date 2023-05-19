@@ -14,11 +14,8 @@ public class PolyTriLayer : MapChunkGraphicLayer
         _getColor = getColor;
         Draw(data);
     }
-    private PolyTriLayer()
-    {
-    }
 
-    protected override void Draw(Data data)
+    public override void Draw(Data data)
     {
         var first = Chunk.RelTo;
         var mb = new MeshBuilder();

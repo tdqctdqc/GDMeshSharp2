@@ -107,25 +107,29 @@
       "Name": "Kingdom of Elysee",
       "Adjective": "Elysien",
       "PrimaryColor": "#000000",
-      "SecondaryColor": "#2b55ff"
+      "SecondaryColor": "#2b55ff",
+      "FlagPath": "kingdomofelysee"
     },
     {
       "Name": "The Commune",
       "Adjective": "Communard",
       "PrimaryColor": "#000080",
-      "SecondaryColor": "#800000"
+      "SecondaryColor": "#800000",
+      "FlagPath": "thecommune"
     },
     {
       "Name": "La Republique",
       "Adjective": "Republicain",
       "PrimaryColor": "#0000ff",
-      "SecondaryColor": "#00ff00"
+      "SecondaryColor": "#00ff00",
+      "FlagPath": "larepublique"
     },
     {
       "Name": "Gallic Empire",
       "Adjective": "Gallic",
       "PrimaryColor": "#0000ff",
-      "SecondaryColor": "#ffff00"
+      "SecondaryColor": "#ffff00",
+      "FlagPath": "gallicempire"
     }
-  ],
+  ]
 }

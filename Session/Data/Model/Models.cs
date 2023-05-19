@@ -18,6 +18,8 @@ public class Models
     public SettlementTierManager SettlementTiers { get; private set; }
     public BuildingModelManager Buildings { get; private set; }
     public RoadModelManager Roads { get; private set; }
+    public CultureManager Cultures { get; private set; }
+    public RegimeTemplateManager RegimeTemplates { get; private set; }
     public Models()
     {
         _managers = new Dictionary<Type, IModelManager>();
@@ -38,6 +40,10 @@ public class Models
         AddManager(SettlementTiers);
         PeepClasses = new PeepClassManager();
         AddManager(PeepClasses);
+        Cultures = new CultureManager();
+        AddManager(Cultures);
+        RegimeTemplates = new RegimeTemplateManager(Cultures);
+        AddManager(RegimeTemplates);
     }
 
     public T GetModel<T>(string name)

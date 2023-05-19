@@ -172,7 +172,16 @@ public static class EnumerableExt
 
     public static T Modulo<T>(this IReadOnlyList<T> list, int i)
     {
-        return list[i % list.Count];
+        while (i < 0) i += list.Count;
+        try
+        {
+            return list[i % list.Count];
+        }
+        catch (Exception e)
+        {
+            GD.Print($"getting {i % list.Count} of {list.Count}");
+            throw;
+        }
     }
 
     public static void AddRange<T>(this ICollection<T> hash, IEnumerable<T> en)

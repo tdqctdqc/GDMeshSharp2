@@ -12,12 +12,12 @@ public class PolyAuxData
     public List<PolyBorderChain> OrderedNeighborBorders { get; private set; }
     public PolyAuxData(MapPolygon p, Data data)
     {
-        var nbs = p.GetPolyBorders();
-        
+        var nbs = p.NeighborBorders.Values.ToList();
         if (nbs.Count() > 0)
         {
             OrderedNeighborBorders = nbs.Ordered<PolyBorderChain, Vector2>().ToList();
             OrderedBoundarySegs = BuildBoundarySegments(data);
+            
             GraphicalCenter = OrderedBoundarySegs.Average();
             SetWheelTris(p, data);
         }
@@ -34,7 +34,15 @@ public class PolyAuxData
 
         if (neighborSegs.IsCircuit() == false || neighborSegs.IsContinuous() == false)
         {
+            var last = neighborSegs[neighborSegs.Count - 1];
+            var pen = neighborSegs[neighborSegs.Count - 2];
+            if (last.From == pen.To && last.To == pen.From)
+            {
+                neighborSegs.RemoveAt(neighborSegs.Count - 2);
+                return neighborSegs;
+            }
             GD.Print("still not circuit");
+            neighborSegs.ForEach(s => GD.Print(s.ToString()));
             throw new Exception();
             // throw new SegmentsNotConnectedException(before, neighborSegs);
         }

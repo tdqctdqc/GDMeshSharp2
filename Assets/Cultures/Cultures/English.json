@@ -6,26 +6,30 @@
     {
       "Name": "Kingdom of Albion",
       "Adjective": "Albion",
-      "PrimaryColor": "#0",
-      "SecondaryColor": "#0"
+      "PrimaryColor": "#aa0000",
+      "SecondaryColor": "#000080",
+      "FlagPath": "albion"
     },
     {
       "Name": "Umbrian Order",
       "Adjective": "Umbrian",
-      "PrimaryColor": "#0",
-      "SecondaryColor": "#0"
+      "PrimaryColor": "#000000",
+      "SecondaryColor": "#000080",
+      "FlagPath": "umbrian"
     },
     {
       "Name": "Leveller Commonwealth",
       "Adjective": "Leveller",
-      "PrimaryColor": "#0",
-      "SecondaryColor": "#0"
+      "PrimaryColor": "#149c88",
+      "SecondaryColor": "#ffffff",
+      "FlagPath": "leveller"
     },
     {
       "Name": "Lord Protectorate of Plymouth",
       "Adjective": "Plymouthian",
-      "PrimaryColor": "#0",
-      "SecondaryColor": "#0"
+      "PrimaryColor": "#000000",
+      "SecondaryColor": "#aa0000",
+      "FlagPath": "plymouth"
     }
   ]
 }

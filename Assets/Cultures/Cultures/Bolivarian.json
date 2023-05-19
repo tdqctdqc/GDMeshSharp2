@@ -6,26 +6,30 @@
     {
       "Name": "Republic of Gran Bolivaria",
       "Adjective": "Gran Bolivarian",
-      "PrimaryColor": "#0",
-      "SecondaryColor": "#0"
+      "PrimaryColor": "#ffff28",
+      "SecondaryColor": "#2929ff",
+      "FlagPath": "granbolivaria"
     },
     {
       "Name": "Duchy of Vespuxio",
       "Adjective": "Vespuxian",
-      "PrimaryColor": "#0",
-      "SecondaryColor": "#0"
+      "PrimaryColor": "#4dff4d",
+      "SecondaryColor": "#ff8080",
+      "FlagPath": "vespuxio"
     },
     {
       "Name": "Popular Amazonia",
       "Adjective": "Amazonian",
-      "PrimaryColor": "#0",
-      "SecondaryColor": "#0"
+      "PrimaryColor": "#00c100",
+      "SecondaryColor": "#1a1aff",
+      "FlagPath": "amazonia"
     },
     {
       "Name": "Colonia Dignidad",
       "Adjective": "Dignidadan",
-      "PrimaryColor": "#0",
-      "SecondaryColor": "#0"
+      "PrimaryColor": "#000000",
+      "SecondaryColor": "#eeeeee",
+      "FlagPath": "dignidad"
     }
   ]
 }

@@ -290,25 +290,29 @@
       "Name": "Tsardom of Perm",
       "Adjective": "Permian",
       "PrimaryColor": "#7fd07f",
-      "SecondaryColor": "#980098"
+      "SecondaryColor": "#980098",
+      "FlagPath": "tsardomofperm"
     },
     {
       "Name": "Chernosotnya",
       "Adjective": "Chernosotnian",
       "PrimaryColor": "#000000",
-      "SecondaryColor": "#008000"
+      "SecondaryColor": "#008000",
+      "FlagPath": "chernosotnya"
     },
     {
       "Name": "Republic of Novgorod",
       "Adjective": "Novgorodian",
       "PrimaryColor": "#ca2ee0",
-      "SecondaryColor": "#ffffff"
+      "SecondaryColor": "#ffffff",
+      "FlagPath": "republicofnovgorod"
     },
     {
       "Name": "The Great Soviet",
       "Adjective": "Soviet",
       "PrimaryColor": "d40000",
-      "SecondaryColor": "#ffff00"
+      "SecondaryColor": "#ffff00",
+      "FlagPath": "thegreatsoviet"
     }
   ]
 }

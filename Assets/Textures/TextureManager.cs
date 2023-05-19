@@ -8,15 +8,12 @@ public class TextureManager
     public static void Setup()
     {
         Textures = new Dictionary<string, Texture>();
-        var scenePaths = GodotFileExt.GetAllFilesOfTypes("res://Assets/Textures/", 
+        var scenePaths = GodotFileExt.GetAllFilePathsOfTypes("res://Assets/Textures/", 
             new List<string>{ ".png", ".svg" });
-        scenePaths.ForEach(s =>
+        scenePaths.ForEach(path =>
         {
-            var text = (Texture) GD.Load(s);
-            var lastSlash = s.LastIndexOf("/");
-            var period = s.LastIndexOf(".");
-            var length = period - lastSlash - 1;
-            var textureName = s.Substring(lastSlash + 1, length);
+            var text = (Texture) GD.Load(path);
+            var textureName = GodotFileExt.GetFileName(path);
             Textures.Add(textureName, text);
         });
     }

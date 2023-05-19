@@ -26,7 +26,7 @@ public class MoistureGenerator : Generator
         report.StopSection("SetPolyMoistures");
         
         report.StartSection();
-        BuildRiversDrainGraph();
+        MoistureFlow();
         report.StopSection("BuildRiversDrainGraph");
         return report;
     }
@@ -106,7 +106,7 @@ public class MoistureGenerator : Generator
         }
     }
 
-    private void BuildRiversDrainGraph()
+    private void MoistureFlow()
     {
         var riverFlowPerMoisture = Data.GenMultiSettings.MoistureSettings.RiverFlowPerMoisture.Value;
         var baseRiverFlowCost = Data.GenMultiSettings.MoistureSettings.BaseRiverFlowCost.Value;
@@ -115,40 +115,59 @@ public class MoistureGenerator : Generator
         
         void doLandmass(HashSet<MapPolygon> lm)
         {
-            var sw = new Stopwatch();
+            var edges = lm
+                .SelectMany(p => p.Neighbors.Select(n => p.GetEdge(n, Data)))
+                .Distinct()
+                .Where(e => e.HighPoly.Entity().IsLand && e.LowPoly.Entity().IsLand);
+            var coastEdges = edges.Where(e => e.IsLandToSeaEdge());
+            var covered = coastEdges.ToHashSet();
+            var curr = coastEdges.ToHashSet();
+            var nodes = curr.ToDictionary(e => e, e => new DrainGraphNode<MapPolygonEdge>(e));
             
-            var landPolys = lm.Where(p => p.IsLand);
-            var coastPolys = landPolys.Where(p => p.IsCoast());
-            var innerPolys = landPolys.Except(coastPolys);
-            
-            sw.Start();
-            var graph = DrainGraph<MapPolygon>.GetDrainGraph(
-                innerPolys, 
-                coastPolys,
-                t => t.Moisture * riverFlowPerMoisture,
-                (p, q) => (p.Roughness + q.Roughness) * roughnessMult
-                            * p.GetOffsetTo(q, _key.Data).Length() + baseRiverFlowCost,
-                Mathf.Inf, p => p.Neighbors.Entities());
-            
-            graph.Elements.ForEach(e =>
+            while (curr.Count > 0)
             {
-                var ns = graph.GetNeighbors(e);
-                foreach (var n in ns)
+                var adjs = curr.SelectMany(c => c.GetIncidentEdges())
+                    .Distinct()
+                    .Where(e => covered.Contains(e) == false 
+                                && e.HighPoly.Entity().IsLand && e.LowPoly.Entity().IsLand);
+                curr = adjs.ToHashSet();
+                if (adjs.Count() == 0) break;
+                foreach (var adj in adjs)
                 {
-                    if (e.Id < n.Id) continue;
-                    var edge = e.GetEdge(n, Data);
-                    var flow = graph.GetEdge(e, n);
-                    edge.SetFlow(graph.GetEdge(e, n), _key);
+                    var coveredNeighborEdges = adj.GetIncidentEdges().Where(covered.Contains);
+                    if (coveredNeighborEdges.Count() == 0) continue;
+                    var drainTo = coveredNeighborEdges.OrderBy(getCost).First();
+                    var node = new DrainGraphNode<MapPolygonEdge>(adj);
+                    node.DrainsTo = drainTo;
+                    nodes.Add(adj, node);
                 }
-            });
-            
-            foreach (var coast in coastPolys)
-            {
-                var flowIn = coast.Neighbors.Entities().Sum(n => coast.GetEdge(n, Data).MoistureFlow);
-                var sea = coast.Neighbors.Entities().Where(n => n.IsWater())
-                    .First();
-                coast.GetEdge(sea, Data).SetFlow(flowIn, _key);
+                covered.AddRange(adjs);
             }
+            
+            foreach (var kvp in nodes)
+            {
+                var node = kvp.Value;
+                var m = node.Element.GetAvgMoisture() * riverFlowPerMoisture;
+                while (node != null)
+                {
+                    node.Element.IncrementFlow(m, _key);
+                    if (node.DrainsTo != null)
+                    {
+                        node = nodes[node.DrainsTo];
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+        
+
+        float getCost(MapPolygonEdge edge)
+        {
+            return edge.GetAvgRoughness() * roughnessMult
+                   + baseRiverFlowCost;
         }
     }
 }

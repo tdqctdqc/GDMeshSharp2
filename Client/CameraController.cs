@@ -5,6 +5,7 @@ using System.Collections.Generic;
 public class CameraController : Camera2D, ICameraController
 {
     public float ScaledZoomOut => _zoomLevel / _maxZoomLevel;
+    public float SmoothedZoomOut => ShapingFunctions.EaseInCubic(_zoomLevel, _maxZoom, _minZoom);
     public float ZoomOut => Zoom.x;
     public float MaxZoomOut => _maxZoom;
 

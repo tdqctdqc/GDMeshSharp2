@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Godot;
 
 public class GodotFileExt
 {
-    public static List<string> GetAllFilesOfType(string path, string type)
+    public static List<string> GetAllFilePathsOfType(string path, string type)
     {
         var filePaths = new List<string>();
         var dir = new Directory();
@@ -17,7 +18,7 @@ public class GodotFileExt
         {
             if (dir.CurrentIsDir() && filename.BeginsWith(".") == false)
             {
-                filePaths.AddRange(GetAllFilesOfType(path.PlusFile(filename), type));
+                filePaths.AddRange(GetAllFilePathsOfType(path.PlusFile(filename), type));
             }
             else if(filename.EndsWith(type))
             {
@@ -31,7 +32,7 @@ public class GodotFileExt
     }
     
     
-    public static List<string> GetAllFilesOfTypes(string path, List<string> types)
+    public static List<string> GetAllFilePathsOfTypes(string path, List<string> types)
     {
         var filePaths = new List<string>();
         var dir = new Directory();
@@ -43,7 +44,7 @@ public class GodotFileExt
         {
             if (dir.CurrentIsDir() && filename.BeginsWith(".") == false)
             {
-                filePaths.AddRange(GetAllFilesOfTypes(path.PlusFile(filename), types));
+                filePaths.AddRange(GetAllFilePathsOfTypes(path.PlusFile(filename), types));
             }
             else if(types.Any(t => filename.EndsWith(t)))
             {
@@ -54,5 +55,25 @@ public class GodotFileExt
         }
 
         return filePaths;
+    }
+
+    public static string ReadFileAsString(string path)
+    {
+        var f = new File();
+        f.Open(path, File.ModeFlags.Read);
+        var sb = new StringBuilder();
+        while (f.EofReached() == false)
+        {
+            sb.Append(f.GetLine());
+        }
+        return sb.ToString();
+    }
+
+    public static string GetFileName(string path)
+    {
+        var lastSlash = path.LastIndexOf("/");
+        var period = path.LastIndexOf(".");
+        var length = period - lastSlash - 1;
+        return path.Substring(lastSlash + 1, length);
     }
 }

@@ -10,7 +10,7 @@ public class PolyFillChunkGraphic : MapChunkGraphicModule
         float transparency = 1f)
     {
         var polyLayer = new PolyFillLayer(chunk, data, getPolyColor, transparency);
-        AddLayer(new Vector2(0, 100), polyLayer);
+        AddLayer(new Vector2(0f, 1f), polyLayer);
     }
 
     private PolyFillChunkGraphic()

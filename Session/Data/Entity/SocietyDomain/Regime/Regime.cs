@@ -7,6 +7,8 @@ using MessagePack;
 public class Regime : Entity
 {
     public EntityRef<MapPolygon> Capital { get; protected set; }
+    public ModelRef<Culture> Culture { get; private set; }
+    public ModelRef<RegimeTemplate> Template { get; private set; }
     public Color PrimaryColor { get; protected set; }
     public Color SecondaryColor { get; protected set; }
     public ItemWallet Items { get; protected set; }
@@ -16,7 +18,8 @@ public class Regime : Entity
 
     [SerializationConstructor] private Regime(int id, string name, Color primaryColor, Color secondaryColor, 
         EntityRefCollection<MapPolygon> polygons, EntityRef<MapPolygon> capital,
-        ItemWallet items, RegimeHistory history) : base(id)
+        ItemWallet items, RegimeHistory history, ModelRef<Culture> culture,
+        ModelRef<RegimeTemplate> template) : base(id)
     {
         Items = items;
         PrimaryColor = primaryColor;
@@ -25,15 +28,22 @@ public class Regime : Entity
         Name = name;
         Capital = capital;
         History = history;
+        Culture = culture;
+        Template = template;
     }
 
-    public static Regime Create(string name, Color primaryColor, Color secondaryColor, 
-        MapPolygon seed, CreateWriteKey key)
+    public static Regime Create(MapPolygon seed, RegimeTemplate regimeTemplate, CreateWriteKey key)
     {
         var id = key.IdDispenser;
         var polygons = EntityRefCollection<MapPolygon>.Construct(new HashSet<int>{seed.Id}, key.Data);
-        var r = new Regime(id.GetID(), name, primaryColor, secondaryColor, polygons, new EntityRef<MapPolygon>(seed.Id),
-            ItemWallet.Construct(), RegimeHistory.Construct(key.Data));
+        var r = new Regime(id.GetID(), regimeTemplate.Name, 
+            new Color(regimeTemplate.PrimaryColor), 
+            new Color(regimeTemplate.SecondaryColor), 
+            polygons, new EntityRef<MapPolygon>(seed.Id),
+            ItemWallet.Construct(), RegimeHistory.Construct(key.Data), 
+            regimeTemplate.Culture.MakeRef(),
+            regimeTemplate.MakeRef()
+        );
         key.Create(r);
         seed.SetRegime(r, key);
         

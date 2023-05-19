@@ -6,26 +6,30 @@
     {
       "Name": "United Arab Republic",
       "Adjective": "United Arab",
-      "PrimaryColor": "#0",
-      "SecondaryColor": "#0"
+      "PrimaryColor": "#000000",
+      "SecondaryColor": "#ff0000",
+      "FlagPath": "unitedarabrepublic"
     },
     {
       "Name": "Hashemite Kingdom",
       "Adjective": "Hashemite",
-      "PrimaryColor": "#0",
-      "SecondaryColor": "#0"
+      "PrimaryColor": "#aa0000",
+      "SecondaryColor": "#000000",
+      "FlagPath": "hashemite"
     },
     {
       "Name": "The Khedivate",
       "Adjective": "Khedivite",
-      "PrimaryColor": "#0",
-      "SecondaryColor": "#0"
+      "PrimaryColor": "#ffcc00",
+      "SecondaryColor": "#000000",
+      "FlagPath": "khedivate"
     },
     {
       "Name": "Punic Oligarchy",
       "Adjective": "Punic",
-      "PrimaryColor": "#0",
-      "SecondaryColor": "#0"
+      "PrimaryColor": "#81dddd",
+      "SecondaryColor": "#983798",
+      "FlagPath": "punic"
     }
   ]
 }
