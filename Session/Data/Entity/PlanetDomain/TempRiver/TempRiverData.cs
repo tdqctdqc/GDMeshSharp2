@@ -46,7 +46,6 @@ public class MapPolyRiverTriInfo
     public Dictionary<MapPolygonEdge, List<LineSegment>> BankSegs { get; private set; }
     public List<Triangle> LandTris { get; private set; }
     public List<LineSegment> InnerBoundary { get; private set; }
-
     public MapPolyRiverTriInfo(MapPolygon poly, TempRiverData rData, Data data)
     {
         Poly = poly;
@@ -71,7 +70,6 @@ public class MapPolyRiverTriInfo
     private void MakePivotTris(Data data, TempRiverData rData, HashSet<MapPolyNexus> nexi,
         IEnumerable<MapPolygonEdge> edges)
     {
-        
         foreach (var nexus in nexi)
         {
             if (nexus.IsRiverNexus() == false) continue;
@@ -122,14 +120,14 @@ public class MapPolyRiverTriInfo
                 var hiEnd = new EdgeEndKey(hiNexus, edge);
                 var hiCorner = new PolyCornerKey(hiNexus, Poly);
                 var hiInner = rData.Inners[hiCorner];
-                var hiPivot = rData.HiPivots[hiEnd];
+                var hiPivot = GetPivot(hiEnd, rData, data);
                 
                 var loNexus = edge.LoNexus.Entity();
                 var loNexusPoint = Poly.GetOffsetTo(loNexus.Point, data);
                 var loEnd = new EdgeEndKey(loNexus, edge);
                 var loCorner = new PolyCornerKey(loNexus, Poly);
                 var loInner = rData.Inners[loCorner];
-                var loPivot = rData.HiPivots[loEnd];
+                var loPivot = GetPivot(loEnd, rData, data);
                 
                 List<Vector2> edgePoints;
                 var bankTris = new List<PolyTri>();
@@ -140,12 +138,6 @@ public class MapPolyRiverTriInfo
                 else
                 {
                     edgePoints = edge.LowSegsRel().Segments.GetPoints().ToList();
-                }
-                
-                if (Poly != edge.HighPoly.Entity())
-                {
-                    hiPivot += Poly.GetOffsetTo(edge.HighPoly.Entity(), data);
-                    loPivot += Poly.GetOffsetTo(edge.HighPoly.Entity(), data);
                 }
                 
                 hiPivot = edgePoints.OrderBy(ep => ep.DistanceTo(hiPivot)).First();
@@ -229,81 +221,117 @@ public class MapPolyRiverTriInfo
     private void MakeLandTris(Data data, TempRiverData rData, HashSet<MapPolyNexus> nexi,
         IEnumerable<MapPolygonEdge> edges)
     {
-        var innerBoundarySegs = edges.SelectMany(e => e.GetSegsRel(Poly).Segments)
-            .Select(ls => new LineSegmentStruct(ls))
-            .ToHashSet();
-        foreach (var kvp in InnerTris)
-        {
-            var tri = kvp.Value;
-            checkTri(tri);
-        }
-        foreach (var kvp1 in BankTris)
-        {
-            kvp1.Value.ForEach(pt => checkTri(pt));
-        }
-        
-        void checkTri(Triangle tri)
-        {
-            var ab = new LineSegmentStruct(tri.A, tri.B);
-            checkSeg(ab);
-            
-            var bc = new LineSegmentStruct(tri.C, tri.B);
-            checkSeg(bc);
+        InnerBoundary = new List<LineSegment>();
 
-            var ca = new LineSegmentStruct(tri.A, tri.C);
-            checkSeg(ca);
-        }
-
-        void checkSeg(LineSegmentStruct ls)
+        foreach (var edge in edges)
         {
-            var epsilon = .01f;
-
-            var haveClose = innerBoundarySegs.Any(s =>
+            if (edge.IsRiver())
             {
-                if (s.From.DistanceTo(ls.From) <= epsilon && s.To.DistanceTo(ls.To) <= epsilon)
-                {
-                    return true;
-                }
-
-                if (s.To.DistanceTo(ls.From) <= epsilon && s.From.DistanceTo(ls.To) <= epsilon)
-                {
-                    return true;
-                }
-
-                return false;
-            });
-            
-            if(haveClose)
+                InnerBoundary.AddRange(BankSegs[edge]);
+                continue;
+            }
+            if (edge.HiNexus.Entity().IsRiverNexus() == false && edge.LoNexus.Entity().IsRiverNexus() == false)
             {
-                var close = innerBoundarySegs.First(s =>
-                {
-                    if (s.From.DistanceTo(ls.From) <= epsilon && s.To.DistanceTo(ls.To) <= epsilon)
-                    {
-                        return true;
-                    }
+                InnerBoundary.AddRange(edge.GetSegsRel(Poly).Segments);
+                continue;
+            }
 
-                    if (s.To.DistanceTo(ls.From) <= epsilon && s.From.DistanceTo(ls.To) <= epsilon)
-                    {
-                        return true;
-                    }
+            var hiNexusP = Poly.GetOffsetTo(edge.HiNexus.Entity().Point, data);
+            var loNexusP = Poly.GetOffsetTo(edge.LoNexus.Entity().Point, data);
+            
+            
+            var edgeSegs = edge.GetSegsRel(Poly).Segments;
 
-                    return false;
-                });
-                innerBoundarySegs.Remove(close);
-                innerBoundarySegs.Remove(close.Reverse());
+            MapPolyNexus fromNexus;
+            MapPolyNexus toNexus;
+
+            var first = edgeSegs.First();
+            if (edgeSegs.Count > 1 && first.From == edgeSegs[1].From)
+            {
+                GD.Print("short fix");
+                var badFrom = first.From;
+                first.From = first.To;
+                first.To = badFrom;
+            }
+            
+            var from = edgeSegs.First().From;
+            var to = edgeSegs.Last().To;
+            var epsilon = .1f;
+            if (hiNexusP.DistanceTo(from) <= epsilon 
+                && loNexusP.DistanceTo(to) <= epsilon)
+            {
+                fromNexus = edge.HiNexus.Entity();
+                toNexus = edge.LoNexus.Entity();
+            }
+            else if (hiNexusP.DistanceTo(to) <= epsilon 
+                     && loNexusP.DistanceTo(from) <= epsilon)
+            {
+                toNexus = edge.HiNexus.Entity();
+                fromNexus = edge.LoNexus.Entity();
             }
             else
             {
-                innerBoundarySegs.Add(ls);
+                
+                
+                
+                
+                GD.Print("loNexus rel " + loNexusP);
+                GD.Print("hiNexus rel " + hiNexusP);
+                GD.Print("hi to to " + hiNexusP.DistanceTo(to));
+                GD.Print("hi to from " + hiNexusP.DistanceTo(from));
+                GD.Print("lo to to " + loNexusP.DistanceTo(to));
+                GD.Print("lo to from " + loNexusP.DistanceTo(from));
+                for (int i = 0; i < edge.GetSegsRel(Poly).Segments.Count; i++)
+                {
+                    GD.Print(edge.GetSegsRel(Poly).Segments[i]);
+                }
+                throw new Exception();
             }
-        }
 
-        var ibs = innerBoundarySegs.Select(s => new LineSegment(s.From, s.To)).ToList();
-        ibs.CorrectSegmentsToClockwise(Vector2.Zero);
-        ibs.OrderByClockwise(Vector2.Zero, ls => ls.From);
-        InnerBoundary = ibs;
+            Vector2 continueFrom = from;
+            Vector2 continueTo = to;
+            if (fromNexus.IsRiverNexus())
+            {
+                var fromInner = rData.Inners[new PolyCornerKey(fromNexus, Poly)];
+                var fromPivot = GetPivot(new EdgeEndKey(fromNexus, edge), rData, data);
+                var fromPivotSeg = edgeSegs.OrderBy(ep => ep.From.DistanceTo(fromPivot)).First();
+                fromPivot = fromPivotSeg.From;
+                InnerBoundary.Add(new LineSegment(fromInner, fromPivot));
+                continueFrom = fromPivot;
+            }
+            
+            if (toNexus.IsRiverNexus())
+            {
+                var toInner = rData.Inners[new PolyCornerKey(toNexus, Poly)];
+                var toPivot = GetPivot(new EdgeEndKey(toNexus, edge), rData, data);
+                var toPivotSeg = edgeSegs.OrderBy(ep => ep.To.DistanceTo(toPivot)).First();
+                toPivot = toPivotSeg.To;
+                InnerBoundary.Add(new LineSegment(toPivot, toInner));
+                continueTo = toPivot;
+            }
+
+            bool add = false;
+            for (var i = 0; i < edgeSegs.Count; i++)
+            {
+                var seg = edgeSegs[i];
+                if (seg.From == continueFrom) add = true;
+                if(add) InnerBoundary.Add(seg);
+                if (seg.To == continueTo) break;
+            }
+            
+        }
     }
 
+    private Vector2 GetPivot(EdgeEndKey key, TempRiverData rData, Data data)
+    {
+        var pivot = rData.HiPivots[key];
+        if (Poly != key.Edge.HighPoly.Entity())
+        {
+            pivot += Poly.GetOffsetTo(key.Edge.HighPoly.Entity(), data);
+        }
+
+        return pivot;
+    }
     private struct LineSegmentStruct
     {
         public Vector2 From { get; private set; }

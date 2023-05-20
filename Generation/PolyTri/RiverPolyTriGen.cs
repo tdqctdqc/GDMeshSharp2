@@ -10,6 +10,7 @@ public class RiverPolyTriGen
         var rd = TempRiverData.Construct(key);
 
         key.Data.Planet.PolygonAux.LandSea.Landmasses.ForEach(lm => DoLandmass(lm, key));
+        key.Data.Notices.SetPolyShapes?.Invoke();
         rd.GenerateInfos(key);
         key.Data.Notices.SetPolyShapes?.Invoke();
     }
@@ -62,12 +63,12 @@ public class RiverPolyTriGen
                 
                 rd.HiPivots.Add(new EdgeEndKey(nexus, edge), pivot);
 
-                var hiSegs = edge.HighSegsRel().Segments;
-                var first = hiSegs.First().From;
+                var oldHiSegs = edge.HighSegsRel().Segments.Select(s => new LineSegment(s.From, s.To)).ToList();
+                var first = oldHiSegs.First().From;
                 var newHiSegs = new List<LineSegment>();
-                for (var i = 0; i < hiSegs.Count; i++)
+                for (var i = 0; i < oldHiSegs.Count; i++)
                 {
-                    var seg = hiSegs[i];
+                    var seg = oldHiSegs[i];
                     var fromAngle = first.GetClockwiseAngleTo(seg.From);
                     var pivotAngle = first.GetClockwiseAngleTo(pivot);
                     var toAngle = first.GetClockwiseAngleTo(seg.To);
@@ -85,13 +86,81 @@ public class RiverPolyTriGen
                         newHiSegs.Add(new LineSegment(seg.From, seg.To));
                     }
                 }
-
+                // newHiSegs.CorrectSegmentsToClockwise(Vector2.Zero);
+                // newHiSegs.OrderByClockwise(Vector2.Zero, ls => ls.From);
                 var newAbsSegs = newHiSegs.Select(s => s.Translate(edge.HighPoly.Entity().Center)).ToList();
-                // newAbsSegs.CorrectSegmentsToClockwise(Vector2.Zero);
-                // newAbsSegs.OrderByClockwise(Vector2.Zero, ls => ls.From);
                 edge.ReplacePoints(newAbsSegs, key);
+                newHiSegs = edge.HighSegsRel().Segments;
+
+                var hiNexusP = edge.HiNexus.Entity().Point;
+                var hiNexusRel = edge.HighPoly.Entity().GetOffsetTo(hiNexusP, key.GenData);
+                var loNexusP = edge.LoNexus.Entity().Point;
+                var loNexusRel = edge.HighPoly.Entity().GetOffsetTo(loNexusP, key.GenData);
+
+                float epsilon = .1f;
+                var hiFromDist = hiNexusRel.DistanceTo(newHiSegs.First().From);
+                var hiToDist = hiNexusRel.DistanceTo(newHiSegs.Last().To);
+                if (hiFromDist > epsilon
+                    && hiToDist > epsilon)
+                {
+                    GD.Print("hi nexus rel to From " + hiFromDist);
+                    GD.Print("hi nexus rel to To " + hiToDist);
+                    GD.Print("pivot " + pivot);
+                    GD.Print("OLD");
+                    for (var i = 0; i < oldHiSegs.Count; i++)
+                    {
+                        GD.Print(oldHiSegs[i].ToString());
+                    }
+                    GD.Print("NEW");
+                    for (var i = 0; i < newHiSegs.Count; i++)
+                    {
+                        GD.Print(newHiSegs[i].ToString());
+                    }
+                    throw new Exception();
+                }
+                
+                var loFromDist = loNexusRel.DistanceTo(newHiSegs.First().From);
+                var loToDist = loNexusRel.DistanceTo(newHiSegs.Last().To);
+                if (loFromDist > epsilon
+                    && loToDist > epsilon)
+                {
+                    GD.Print("lo nexus rel to From " + loFromDist);
+                    GD.Print("lo nexus rel to To " + loToDist);
+                    GD.Print("pivot " + pivot);
+
+                    GD.Print("OLD");
+                    for (var i = 0; i < oldHiSegs.Count; i++)
+                    {
+                        GD.Print(oldHiSegs[i].ToString());
+                    }
+                    GD.Print("NEW");
+                    for (var i = 0; i < newHiSegs.Count; i++)
+                    {
+                        GD.Print(newHiSegs[i].ToString());
+                    }
+                    throw new Exception();
+                }
+
+                if (newHiSegs.IsContinuous() == false)
+                {
+                    GD.Print("not continuous");
+                    GD.Print("pivot " + pivot);
+                    GD.Print("OLD");
+                    for (var i = 0; i < oldHiSegs.Count; i++)
+                    {
+                        GD.Print(oldHiSegs[i].ToString());
+                    }
+                    GD.Print("NEW");
+                    for (var i = 0; i < newHiSegs.Count; i++)
+                    {
+                        GD.Print(newHiSegs[i].ToString());
+                    }
+
+                    throw new Exception();
+                }
+
+                
             }
         }
     }
-
 }

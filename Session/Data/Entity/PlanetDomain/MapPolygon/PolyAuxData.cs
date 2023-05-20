@@ -34,13 +34,36 @@ public class PolyAuxData
 
         if (neighborSegs.IsCircuit() == false || neighborSegs.IsContinuous() == false)
         {
-            var last = neighborSegs[neighborSegs.Count - 1];
-            var pen = neighborSegs[neighborSegs.Count - 2];
-            if (last.From == pen.To && last.To == pen.From)
+            if (neighborSegs.Last().To == neighborSegs.First().From
+                && neighborSegs.First().From == neighborSegs[1].From)
             {
-                neighborSegs.RemoveAt(neighborSegs.Count - 2);
-                return neighborSegs;
+                GD.Print("trying first fix");
+                var first = neighborSegs[0];
+                neighborSegs.RemoveAt(0);
+                if (neighborSegs.IsCircuit() && neighborSegs.IsContinuous())
+                {
+                    GD.Print("fixed");
+                    return neighborSegs;
+                }
+                else
+                {
+                    neighborSegs.Insert(0, first);
+                }
             }
+
+            if (neighborSegs.Last().From == neighborSegs[neighborSegs.Count - 2].To
+                && neighborSegs.Last().To == neighborSegs[neighborSegs.Count - 2].From
+                && neighborSegs.Last().To == neighborSegs.First().From)
+            {
+                GD.Print("trying 2nd fix");
+                neighborSegs.RemoveAt(neighborSegs.Count - 2);
+                if (neighborSegs.IsCircuit() && neighborSegs.IsContinuous())
+                {
+                    GD.Print("fixed");
+                    return neighborSegs;
+                }
+            }
+            
             GD.Print("still not circuit");
             neighborSegs.ForEach(s => GD.Print(s.ToString()));
             throw new Exception();
