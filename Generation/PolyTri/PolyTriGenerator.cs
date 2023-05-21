@@ -142,14 +142,7 @@ public class PolyTriGenerator : Generator
         return tris;
     }
 
-    public static List<PolyTri> TriangulateArbitrary(MapPolygon poly, IReadOnlyList<LineSegment> outline, 
-        GenWriteKey key, Graph<PolyTri, bool> graph, bool generateInterior)
-    {
-        HashSet<Vector2> interior = generateInterior 
-            ? outline.GenerateInteriorPoints(30f, 10f).ToHashSet()
-            : null;
-        return outline.PolyTriangulate(key.GenData, poly, key.IdDispenser, graph, interior);
-    }
+    
 
     private List<LineSegment> GetOutline(MapPolygon poly, Vector2 fanPoint, List<LineSegment> between)
     {

@@ -1658,11 +1658,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Tynan Dion\\desktop\\games\\gdMeshSharp2\\gdMeshSharp2.csproj",
+      "projectUniqueName": "C:\\Users\\Tynan Dion\\Desktop\\games\\gdMeshSharp2\\gdMeshSharp2.csproj",
       "projectName": "gdMeshSharp2",
-      "projectPath": "C:\\Users\\Tynan Dion\\desktop\\games\\gdMeshSharp2\\gdMeshSharp2.csproj",
+      "projectPath": "C:\\Users\\Tynan Dion\\Desktop\\games\\gdMeshSharp2\\gdMeshSharp2.csproj",
       "packagesPath": "C:\\Users\\Tynan Dion\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Tynan Dion\\desktop\\games\\gdMeshSharp2\\.mono\\temp\\obj\\",
+      "outputPath": "C:\\Users\\Tynan Dion\\Desktop\\games\\gdMeshSharp2\\.mono\\temp\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"

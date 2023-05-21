@@ -26,7 +26,7 @@ public class TempRiverData : Entity
     {
         foreach (var poly in key.Data.Planet.Polygons.Entities)
         {
-            var info = new MapPolyRiverTriInfo(poly, this, key.Data);
+            var info = new MapPolyRiverTriInfo(poly, this, key);
             Infos.Add(poly, info);
         }
     }
@@ -43,17 +43,19 @@ public class MapPolyRiverTriInfo
     public MapPolygon Poly { get; private set; }
     public Dictionary<EdgeEndKey, PolyTri> InnerTris { get; private set; }
     public Dictionary<MapPolygonEdge, List<PolyTri>> BankTris { get; private set; }
+    public List<PolyTri> LandTris { get; private set; }
+
     public Dictionary<MapPolygonEdge, List<LineSegment>> BankSegs { get; private set; }
-    public List<Triangle> LandTris { get; private set; }
     public List<LineSegment> InnerBoundary { get; private set; }
-    public MapPolyRiverTriInfo(MapPolygon poly, TempRiverData rData, Data data)
+    public MapPolyRiverTriInfo(MapPolygon poly, TempRiverData rData, GenWriteKey key)
     {
         Poly = poly;
         InnerTris = new Dictionary<EdgeEndKey, PolyTri>();
         BankTris = new Dictionary<MapPolygonEdge, List<PolyTri>>();
         BankSegs = new Dictionary<MapPolygonEdge, List<LineSegment>>();
         InnerBoundary = new List<LineSegment>();
-        var edges = poly.GetEdges(data);
+        LandTris = new List<PolyTri>();
+        var edges = poly.GetEdges(key.Data);
         if (edges.Any(e => e.IsRiver()) == false) return;
         var nexi = edges.Select(e => e.HiNexus.Entity())
             .Union(edges.Select(e2 => e2.LoNexus.Entity()))
@@ -61,9 +63,10 @@ public class MapPolyRiverTriInfo
             .Where(n => n.IncidentPolys.Contains(poly))
             .ToHashSet();
         
-        MakePivotTris(data, rData, nexi, edges);
-        MakeBankTris(data, rData, edges);
-        MakeLandTris(data, rData, nexi, edges);
+        MakePivotTris(key.Data, rData, nexi, edges);
+        MakeBankTris(key.Data, rData, edges);
+        MakeInnerBoundary(key.Data, rData, nexi, edges);
+        MakeLandTris(rData, key);
     }
 
 
@@ -218,7 +221,7 @@ public class MapPolyRiverTriInfo
         }
     }
 
-    private void MakeLandTris(Data data, TempRiverData rData, HashSet<MapPolyNexus> nexi,
+    private void MakeInnerBoundary(Data data, TempRiverData rData, HashSet<MapPolyNexus> nexi,
         IEnumerable<MapPolygonEdge> edges)
     {
         InnerBoundary = new List<LineSegment>();
@@ -249,14 +252,14 @@ public class MapPolyRiverTriInfo
             if (edgeSegs.Count > 1 && first.From == edgeSegs[1].From)
             {
                 GD.Print("short fix");
-                var badFrom = first.From;
+                var temp = first.From;
                 first.From = first.To;
-                first.To = badFrom;
+                first.To = temp;
             }
             
             var from = edgeSegs.First().From;
             var to = edgeSegs.Last().To;
-            var epsilon = .1f;
+            var epsilon = 1f;
             if (hiNexusP.DistanceTo(from) <= epsilon 
                 && loNexusP.DistanceTo(to) <= epsilon)
             {
@@ -271,10 +274,6 @@ public class MapPolyRiverTriInfo
             }
             else
             {
-                
-                
-                
-                
                 GD.Print("loNexus rel " + loNexusP);
                 GD.Print("hiNexus rel " + hiNexusP);
                 GD.Print("hi to to " + hiNexusP.DistanceTo(to));
@@ -318,10 +317,54 @@ public class MapPolyRiverTriInfo
                 if(add) InnerBoundary.Add(seg);
                 if (seg.To == continueTo) break;
             }
-            
+        }
+
+        InnerBoundary.OrderByClockwise(Vector2.Zero, ls => ls.Mid());
+        InnerBoundary.CorrectSegmentsToClockwise(Vector2.Zero);
+
+        if (InnerBoundary[0].To != InnerBoundary[1].From)
+        {
+            if (InnerBoundary[0].From == InnerBoundary[1].From)
+            {
+                InnerBoundary[0].Flip();
+            }
+            else if (InnerBoundary[0].From == InnerBoundary[1].To)
+            {
+                InnerBoundary[0].Flip();
+                InnerBoundary[1].Flip();
+            }
+            else if (InnerBoundary[0].To == InnerBoundary[1].To)
+            {
+                InnerBoundary[1].Flip();
+            }
+        }
+        
+        for (var i = 1; i < InnerBoundary.Count - 1; i++)
+        {
+            var s = InnerBoundary[i];
+            var next = InnerBoundary.Modulo(i + 1);
+            if (s.To == next.To)
+            {
+                next.Flip();
+            }
+        }
+        if (InnerBoundary.IsCircuit() == false)
+        {
+            GD.Print("not circuit");
+            for (var i = 0; i < InnerBoundary.Count; i++)
+            {
+                GD.Print(InnerBoundary[i].ToString());
+            }
+
+            throw new Exception();
         }
     }
 
+    private void MakeLandTris(TempRiverData rData, GenWriteKey key)
+    {
+        var graph = new Graph<PolyTri, bool>();
+        LandTris = InnerBoundary.TriangulateArbitrary(Poly, key, graph, true);
+    }
     private Vector2 GetPivot(EdgeEndKey key, TempRiverData rData, Data data)
     {
         var pivot = rData.HiPivots[key];
@@ -332,26 +375,5 @@ public class MapPolyRiverTriInfo
 
         return pivot;
     }
-    private struct LineSegmentStruct
-    {
-        public Vector2 From { get; private set; }
-        public Vector2 To { get; private set; }
-
-        public LineSegmentStruct(LineSegment ls)
-        {
-            From = ls.From;
-            To = ls.To;
-        }
-
-        public LineSegmentStruct(Vector2 from, Vector2 to)
-        {
-            From = from;
-            To = to;
-        }
-
-        public LineSegmentStruct Reverse()
-        {
-            return new LineSegmentStruct(To, From);
-        }
-    }
+    
 }

@@ -19,7 +19,13 @@ public class LineSegment : ISegment<Vector2>
         From = from;
         To = to;
     }
-    
+
+    public void Flip()
+    {
+        var temp = From;
+        From = To;
+        To = temp;
+    }
     public LineSegment Reverse()
     {
         return new LineSegment(To, From);

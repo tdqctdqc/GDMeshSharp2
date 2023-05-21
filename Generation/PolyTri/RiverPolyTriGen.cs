@@ -97,7 +97,7 @@ public class RiverPolyTriGen
                 var loNexusP = edge.LoNexus.Entity().Point;
                 var loNexusRel = edge.HighPoly.Entity().GetOffsetTo(loNexusP, key.GenData);
 
-                float epsilon = .1f;
+                float epsilon = 0f;
                 var hiFromDist = hiNexusRel.DistanceTo(newHiSegs.First().From);
                 var hiToDist = hiNexusRel.DistanceTo(newHiSegs.Last().To);
                 if (hiFromDist > epsilon

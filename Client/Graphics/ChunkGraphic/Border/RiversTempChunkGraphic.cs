@@ -53,10 +53,18 @@ public class RiversTempChunkGraphic : MapChunkGraphicModule
                         mb.AddTri(t.Transpose(offset), Colors.Blue)
                     );
                 }
-                // mb.AddArrows(
+                // mb.AddArrowsRainbow(
                 //     info.InnerBoundary
-                //         .Select(ls => ls.Translate(relTo.GetOffsetTo(poly, data))).ToList(),
-                //     2f, col);
+                //         .Select(ls => new LineSegment(ls.From * .9f, ls.To * .9f))
+                //         .Select(ls => ls.Translate(relTo.GetOffsetTo(poly, data)))
+                //         .ToList(),
+                //     2f
+                // );
+                
+                foreach (var lt in info.LandTris)
+                {
+                    mb.AddTri(lt.Transpose(offset), ColorsExt.GetRandomColor());
+                }
             }
             if(mb.Tris.Count > 0) 
                 AddChild(mb.GetMeshInstance());
