@@ -24,7 +24,7 @@ public class PolyAuxData
     }
     private List<LineSegment> BuildBoundarySegments(Data data)
     {
-        var neighborSegs = OrderedNeighborBorders.SelectMany(b => b.Segments).ToList();
+        var neighborSegs = OrderedNeighborBorders.SelectMany(b => b.Segments).Where(s => s.To != s.From).ToList();
 
         if (neighborSegs.IsCircuit() == false)
         {

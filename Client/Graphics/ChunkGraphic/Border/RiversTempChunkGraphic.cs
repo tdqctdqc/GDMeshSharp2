@@ -39,20 +39,27 @@ public class RiversTempChunkGraphic : MapChunkGraphicModule
             
             foreach (var poly in Chunk.Polys)
             {
+                if (rd.Infos.ContainsKey(poly) == false) continue;
                 var info = rd.Infos[poly];
                 var offset = relTo.GetOffsetTo(poly, data);
                 int i = 0;
                 var col = ColorsExt.GetRandomColor();
-                foreach (var kvp in info.InnerTris)
-                {
-                    mb.AddTri(kvp.Value.Transpose(offset), Colors.Blue);
-                }
+                
                 foreach (var kvp in info.BankTris)
                 {
                     kvp.Value.ForEach(t => 
-                        mb.AddTri(t.Transpose(offset), Colors.Blue)
+                        mb.AddTri(t.Transpose(offset), col.GetPeriodicShade(i++))
                     );
                 }
+                foreach (var kvp in info.InnerTris)
+                {
+                    mb.AddTri(kvp.Value.Transpose(offset), Colors.Red);
+                }
+                int iter = 0;
+                // foreach (var lt in info.LandTris)
+                // {
+                //     mb.AddTri(lt.Transpose(offset), col.GetPeriodicShade(iter++));
+                // }
                 // mb.AddArrowsRainbow(
                 //     info.InnerBoundary
                 //         .Select(ls => new LineSegment(ls.From * .9f, ls.To * .9f))
@@ -60,11 +67,6 @@ public class RiversTempChunkGraphic : MapChunkGraphicModule
                 //         .ToList(),
                 //     2f
                 // );
-                
-                foreach (var lt in info.LandTris)
-                {
-                    mb.AddTri(lt.Transpose(offset), ColorsExt.GetRandomColor());
-                }
             }
             if(mb.Tris.Count > 0) 
                 AddChild(mb.GetMeshInstance());

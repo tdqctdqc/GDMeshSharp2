@@ -44,7 +44,7 @@ public class Triangle
             throw new Exception();
         }
     }
-    public bool HasPoint(Vector2 v)
+    public bool PointIsVertex(Vector2 v)
     {
         return v == A || v == B || v == C;
     }

@@ -15,6 +15,15 @@ public static class ISegmentExt
 
         return true;
     }
+    public static bool IsChain<TPrim>(this IReadOnlyList<ISegment<TPrim>> segs)
+    {
+        for (int i = 0; i < segs.Count - 1; i++)
+        {
+            if (segs[i].PointsTo(segs[i + 1]) == false) return false;
+        }
+
+        return true;
+    }
     public static TSeg Reverse<TSeg, TPrim>(this TSeg s)
         where TSeg : ISegment<TPrim>
     {

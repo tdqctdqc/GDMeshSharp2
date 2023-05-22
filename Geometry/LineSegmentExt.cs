@@ -20,25 +20,85 @@ public static class LineSegmentExt
     {
         return segs.Select(s => new LineSegment((s.From - center) * insetFactor, (s.To - center) * insetFactor));
     }
-    public static IEnumerable<LineSegment> GetOpposing(this IEnumerable<LineSegment> segs, Vector2 offset)
+    public static List<LineSegment> Chainify(this List<LineSegment> lineSegments)
     {
-        return segs.Select(s => s.Translate(-offset).Reverse()).Reverse();
+        var hash = new HashSet<LineSegment>(lineSegments.Where(ls => ls.From != ls.To));
+        
+        var start = hash.First();
+        hash.Remove(start);
+        var tos = new List<LineSegment>();
+        var froms = new List<LineSegment>();
+        var to = start.To;
+        var from = start.From;
+
+        while (hash.Count > 0)
+        {
+            var nextTo = hash.FirstOrDefault(ls => ls.From == to || ls.To == to);
+            if (nextTo == null) break;
+            hash.Remove(nextTo);
+            if (nextTo.To == to) nextTo = nextTo.Reverse();
+            to = nextTo.To;
+            tos.Add(nextTo);
+        }
+        while (hash.Count > 0)
+        {
+            var nextFrom = hash.FirstOrDefault(ls => ls.From == from || ls.To == from);
+            if (nextFrom == null) break;
+            hash.Remove(nextFrom);
+            if (nextFrom.From == from) nextFrom = nextFrom.Reverse();
+            from = nextFrom.From;
+            froms.Add(nextFrom);
+        }
+
+        froms.Reverse();
+        froms.Add(start);
+        froms.AddRange(tos);
+        
+        if (hash.Count != 0)
+        {
+            DebugDumpCircuit(lineSegments, froms, hash);
+            throw new Exception("chainification could not complete");
+        }
+
+        if (froms.IsChain() == false) throw new Exception();
+        return froms; 
     }
 
-    public static IEnumerable<LineSegment> ChangeOrigin(this IEnumerable<LineSegment> segs, Vector2 oldOrigin,
-        Vector2 newOrigin)
+    private static void DebugDumpCircuit(List<LineSegment> source, List<LineSegment> res, HashSet<LineSegment> left)
     {
-        return segs.Select(l => l.ChangeOrigin(oldOrigin, newOrigin));
+        GD.Print("SOURCE");
+        for (var i = 0; i < source.Count; i++)
+        {
+            GD.Print(source[i].ToString());
+        }
+        GD.Print("RES");
+        for (var i = 0; i < res.Count; i++)
+        {
+            GD.Print(res[i].ToString());
+        }
+        GD.Print("LEFT");
+        foreach (var ls in left)
+        {
+            GD.Print(ls.ToString());
+        }
     }
-
-    public static IEnumerable<LineSegment> ChangeOrigin(this IEnumerable<LineSegment> segs,
-        MapPolygon oldOrigin, MapPolygon newOrigin, Data data)
+    public static List<LineSegment> Circuitify(this List<LineSegment> lineSegments)
     {
-        var offset = newOrigin.GetOffsetTo(oldOrigin, data);
-        return segs.Select(l => new LineSegment(l.From + offset,
-            l.To + offset));
+        var circuit = lineSegments.Chainify();
+        if (circuit.First().From != circuit.Last().To)
+        {
+            circuit.Add(new LineSegment(circuit.Last().To, circuit.First().From));
+        }
+        if (circuit.IsCircuit() == false)
+        {
+            GD.Print("not circuit");
+            for (var i = 0; i < circuit.Count; i++)
+            {
+                GD.Print(circuit[i].ToString());
+            }
+        }
+        return circuit;
     }
-
     public static void SplitToMinLength(this MapPolygonEdge edge, float minLength, GenWriteKey key)
     {
         var newSegsAbs = new List<LineSegment>();
@@ -76,30 +136,6 @@ public static class LineSegmentExt
         //todo implement
         return true;
     }
-    public static Vector2 GetHullPoint(this List<LineSegment> segs, out int hullPointIndex)
-    {
-        Vector2 hullPoint = segs[0].From;
-        hullPointIndex = 0;
-        for (var i = 1; i < segs.Count; i++)
-        {
-            var p = segs[i].From;
-            if (p.x < hullPoint.x)
-            {
-                hullPoint = p;
-                hullPointIndex = i;
-            }
-            else if (p.x == hullPoint.x && p.y < hullPoint.y)
-            {
-                hullPoint = p;
-                hullPointIndex = i;
-            }
-        }
-
-        return hullPoint;
-    }
-    
-    
-    
     
     public static List<PolyTri> PolyTriangulate(this IReadOnlyList<LineSegment> boundarySegs, GenData data, 
         MapPolygon poly, IdDispenser id,
@@ -178,7 +214,6 @@ public static class LineSegmentExt
     
     public static IEnumerable<LineSegment> GetLineSegments(this List<Vector2> points, bool close = false)
     {
-        
         return Enumerable.Range(0, points.Count() - (close ? 0 : 1))
             .Select(i =>
             {
@@ -194,78 +229,11 @@ public static class LineSegmentExt
         result.Add(pairs.Last().To);
         return result;
     }
-    public static Vector2 GetPointAtRatio(this IEnumerable<LineSegment> pairs, float ratio)
-    {
-        var totalLength = pairs.GetLength();
-        var lengthSoFar = 0f;
-        var iter = 0;
-        var count = pairs.Count();
-        while (iter < count)
-        {
-            var seg = pairs.ElementAt(iter);
-            if (lengthSoFar + seg.Length() > totalLength * ratio)
-            {
-                var portion = totalLength * ratio - lengthSoFar;
-                return seg.From.LinearInterpolate(seg.To, portion / seg.Length());
-            }
-            lengthSoFar += seg.Length();
-            iter++;
-        }
-
-        throw new Exception();
-    }
-
-    public static Vector2 GetPointAtLength(this LineSegment ls, float length)
-    {
-        if (length > ls.Length()) return ls.To;
-        return ls.From + (ls.To - ls.From).Normalized() * length;
-    }
-    public static Vector2 GetPointAtLength(this IEnumerable<LineSegment> pairs, float length)
-    {
-        var totalLength = pairs.GetLength();
-        var lengthSoFar = 0f;
-        var iter = 0;
-        var count = pairs.Count();
-        while (iter < count)
-        {
-            var seg = pairs.ElementAt(iter);
-            if (lengthSoFar + seg.Length() > length)
-            {
-                var portion = totalLength - lengthSoFar;
-                return seg.From.LinearInterpolate(seg.To, portion / seg.Length());
-            }
-            lengthSoFar += seg.Length();
-            iter++;
-        }
-
-        throw new Exception();
-    }
-
     public static float GetLength(this IEnumerable<LineSegment> pairs)
     {
         return pairs.Select(p => p.From.DistanceTo(p.To)).Sum();
     }
-    public static Vector2 GetMiddlePoint(this IEnumerable<LineSegment> pairs)
-    {
-        var totalLength = pairs.GetLength();
-        var lengthSoFar = 0f;
-        var iter = 0;
-        var count = pairs.Count();
-        while (iter < count)
-        {
-            var seg = pairs.ElementAt(iter);
-            if (lengthSoFar + seg.Length() > totalLength / 2f)
-            {
-                var portion = totalLength / 2f - lengthSoFar;
-                return seg.From.LinearInterpolate(seg.To, portion / seg.Length());
-            }
-            lengthSoFar += seg.Length();
-            iter++;
-        }
-
-        throw new Exception();
-    }
-
+    
     public static Vector2 GetCornerPoint(this LineSegment l1, LineSegment l2, float thickness)
     {
         var angle = l1.AngleBetween(l2);

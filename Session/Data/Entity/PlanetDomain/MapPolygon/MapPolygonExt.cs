@@ -126,6 +126,11 @@ public static class MapPolygonExt
         return data.Society.PolyPeepAux.ByPoly[poly] != null;
     }
 
+    public static IEnumerable<MapPolyNexus> GetNexi(this MapPolygon p, Data data)
+    {
+        var edges = p.GetEdges(data);
+        return edges.Select(e => e.HiNexus.Entity()).Union(edges.Select(e => e.LoNexus.Entity())).Distinct();
+    }
     public static IEnumerable<MapPolygonEdge> GetEdges(this MapPolygon p, Data data)
     {
         return p.Neighbors.Select(n => p.GetEdge(n, data));

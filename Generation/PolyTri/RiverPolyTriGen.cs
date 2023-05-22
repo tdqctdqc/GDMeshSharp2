@@ -30,17 +30,85 @@ public class RiverPolyTriGen
  
         foreach (var nexus in rNexi)
         {
+            if(nexus.IsRiverNexus() == false && nexus.IncidentPolys.Any(p => p.IsWater()) == false) continue;
+            // var width = rEdges.Select(re => River.GetWidthFromFlow(re.MoistureFlow)).Average();
             var rEdges = nexus.IncidentEdges.Where(e => e.IsRiver());
-            if(rEdges.Count() == 0) continue;
-            var width = rEdges.Select(re => River.GetWidthFromFlow(re.MoistureFlow)).Average();
-            
+
             foreach (var poly in nexus.IncidentPolys)
             {
-                var offset = poly.GetOffsetTo(nexus.Point, key.Data);
-                if (width > offset.Length()) throw new Exception();
-                var inner = offset.Normalized() * (offset.Length() - width);
-                // inner = inner.Intify();
-                rd.Inners.Add(new PolyCornerKey(nexus, poly), inner);
+                var nexusRelative = poly.GetOffsetTo(nexus.Point, key.Data);
+                // if (nexus.IncidentEdges.Count() > 3) throw new Exception();
+                var polyNexusEdges = nexus.IncidentEdges.Where(e => e.EdgeToPoly(poly));
+                
+                if (polyNexusEdges.Count() == 2)
+                {
+                    var e1 = polyNexusEdges.ElementAt(0);
+                    var e2 = polyNexusEdges.ElementAt(1);
+                    
+                    float width1;
+                    if(e1.IsRiver()) width1 = River.GetWidthFromFlow(e1.MoistureFlow);
+                    else if (e2.IsRiver()) width1 = River.GetWidthFromFlow(e2.MoistureFlow);
+                    else
+                    {
+                        width1 = nexus.IncidentEdges.Average(e => River.GetWidthFromFlow(e.MoistureFlow));
+                    }
+                    var e1segs = e1.GetSegsRel(poly).Segments;
+                    var nexusSeg1 = e1segs.First(s => s.From == nexusRelative || s.To == nexusRelative);
+                    var axis1 = nexusSeg1.To - nexusSeg1.From;
+                    var shift1 = axis1.Rotated(-Mathf.Pi / 2f).Normalized() * width1 / 2f;
+                    
+                    float width2; 
+                    if(e2.IsRiver()) width2 = River.GetWidthFromFlow(e2.MoistureFlow);
+                    else if (e1.IsRiver()) width2 = width1;
+                    else
+                    {
+                        width2 = nexus.IncidentEdges.Average(e => River.GetWidthFromFlow(e.MoistureFlow));
+                    }
+                    var e2segs = e2.GetSegsRel(poly).Segments;
+                    var nexusSeg2 = e2segs.First(s => s.From == nexusRelative || s.To == nexusRelative);
+                    var axis2 = nexusSeg2.To - nexusSeg2.From;
+                    var shift2 = axis2.Rotated(-Mathf.Pi / 2f).Normalized() * width2 / 2f;
+                    
+
+                    var intersect = Vector2Ext.GetLineIntersection(nexusSeg1.From - shift1, nexusSeg1.To - shift1, 
+                        nexusSeg2.From - shift2, nexusSeg2.To - shift2, 
+                        out var inner);
+                    if (intersect)
+                    {
+                        rd.Inners.Add(new PolyCornerKey(nexus, poly), inner);
+                    }
+                    else throw new Exception();
+                }
+                else if (polyNexusEdges.Count() == 1)
+                {
+                    var edge = polyNexusEdges.First();
+                    var width = River.GetWidthFromFlow(edge.MoistureFlow);
+                    var edgeSegs = edge.GetSegsRel(poly).Segments;
+                    var edgeFrom = edgeSegs[0].From;
+                    var edgeTo = edgeSegs[edgeSegs.Count - 1].To;
+                    var edgeAxis = (edgeTo - edgeFrom).Normalized();
+                    
+                    Vector2 nexusEdgeAxis;
+                    if (nexusRelative == edgeFrom)
+                    {
+                        nexusEdgeAxis = (edgeSegs[0].To - nexusRelative).Normalized();
+                    }
+                    else if (nexusRelative == edgeTo)
+                    {
+                        nexusEdgeAxis = (nexusRelative - edgeSegs.Last().From).Normalized();
+                    }
+                    else throw new Exception();
+
+                    var axisPerp = nexusEdgeAxis.Rotated(-Mathf.Pi / 2f);
+
+                    var intersect = Vector2Ext.GetLineIntersection(nexusRelative, Vector2.Zero,
+                        nexusRelative + axisPerp * width / 2f, nexusRelative + nexusEdgeAxis + axisPerp * width / 2f,
+                        out var inner);
+                    if (intersect == false) throw new Exception();
+                    
+                    rd.Inners.Add(new PolyCornerKey(nexus, poly), inner);
+                }
+                else throw new Exception();
             }
         }
     }
@@ -59,107 +127,41 @@ public class RiverPolyTriGen
                 var loPolyInner = rd.Inners[new PolyCornerKey(nexus, edge.LowPoly.Entity())];
                 var loInnerRelToHi = loPolyInner + edge.HighPoly.Entity().GetOffsetTo(edge.LowPoly.Entity(), key.Data);
                 var pivot = (hiPolyInner + loInnerRelToHi) / 2f;
-                // pivot = pivot.Intify();
                 
                 rd.HiPivots.Add(new EdgeEndKey(nexus, edge), pivot);
 
                 var oldHiSegs = edge.HighSegsRel().Segments.Select(s => new LineSegment(s.From, s.To)).ToList();
-                var first = oldHiSegs.First().From;
+                var points = edge.HighSegsRel().Segments.GetPoints().ToList();
+                var from = points[0];
+                var to = points[points.Count - 1];
+                var axis = to - from;
+                var edgeLength = from.DistanceTo(to);
+                points.Add(pivot);
+                points = points.Where(p =>
+                {
+                    var arm = p - from;
+                    var projLength = arm.GetProjectionLength(axis);
+                    if (projLength <= 0 && p != from) return false;
+                    if (projLength >= edgeLength && p != to) return false;
+                    return true;
+                }).OrderBy(p =>
+                {
+                    var arm = p - from;
+                    return arm.GetProjectionLength(axis);
+                }).ToList();
+                if (points[0] != from) throw new Exception();   
+                if (points[points.Count - 1] != to) throw new Exception();
+                
                 var newHiSegs = new List<LineSegment>();
-                for (var i = 0; i < oldHiSegs.Count; i++)
+                for (var i = 0; i < points.Count - 1; i++)
                 {
-                    var seg = oldHiSegs[i];
-                    var fromAngle = first.GetClockwiseAngleTo(seg.From);
-                    var pivotAngle = first.GetClockwiseAngleTo(pivot);
-                    var toAngle = first.GetClockwiseAngleTo(seg.To);
-                    if (
-                        pivotAngle >= fromAngle && pivotAngle <= toAngle
-                        || 
-                        pivotAngle <= fromAngle && pivotAngle >= toAngle
-                        )
-                    {
-                        newHiSegs.Add(new LineSegment(seg.From, pivot));
-                        newHiSegs.Add(new LineSegment(pivot, seg.To));
-                    }
-                    else
-                    {
-                        newHiSegs.Add(new LineSegment(seg.From, seg.To));
-                    }
-                }
-                // newHiSegs.CorrectSegmentsToClockwise(Vector2.Zero);
-                // newHiSegs.OrderByClockwise(Vector2.Zero, ls => ls.From);
-                var newAbsSegs = newHiSegs.Select(s => s.Translate(edge.HighPoly.Entity().Center)).ToList();
-                edge.ReplacePoints(newAbsSegs, key);
-                newHiSegs = edge.HighSegsRel().Segments;
-
-                var hiNexusP = edge.HiNexus.Entity().Point;
-                var hiNexusRel = edge.HighPoly.Entity().GetOffsetTo(hiNexusP, key.GenData);
-                var loNexusP = edge.LoNexus.Entity().Point;
-                var loNexusRel = edge.HighPoly.Entity().GetOffsetTo(loNexusP, key.GenData);
-
-                float epsilon = 0f;
-                var hiFromDist = hiNexusRel.DistanceTo(newHiSegs.First().From);
-                var hiToDist = hiNexusRel.DistanceTo(newHiSegs.Last().To);
-                if (hiFromDist > epsilon
-                    && hiToDist > epsilon)
-                {
-                    GD.Print("hi nexus rel to From " + hiFromDist);
-                    GD.Print("hi nexus rel to To " + hiToDist);
-                    GD.Print("pivot " + pivot);
-                    GD.Print("OLD");
-                    for (var i = 0; i < oldHiSegs.Count; i++)
-                    {
-                        GD.Print(oldHiSegs[i].ToString());
-                    }
-                    GD.Print("NEW");
-                    for (var i = 0; i < newHiSegs.Count; i++)
-                    {
-                        GD.Print(newHiSegs[i].ToString());
-                    }
-                    throw new Exception();
+                    if (points[i] == points[i + 1]) continue;
+                    newHiSegs.Add(new LineSegment(points[i], points[i + 1]));
                 }
                 
-                var loFromDist = loNexusRel.DistanceTo(newHiSegs.First().From);
-                var loToDist = loNexusRel.DistanceTo(newHiSegs.Last().To);
-                if (loFromDist > epsilon
-                    && loToDist > epsilon)
-                {
-                    GD.Print("lo nexus rel to From " + loFromDist);
-                    GD.Print("lo nexus rel to To " + loToDist);
-                    GD.Print("pivot " + pivot);
-
-                    GD.Print("OLD");
-                    for (var i = 0; i < oldHiSegs.Count; i++)
-                    {
-                        GD.Print(oldHiSegs[i].ToString());
-                    }
-                    GD.Print("NEW");
-                    for (var i = 0; i < newHiSegs.Count; i++)
-                    {
-                        GD.Print(newHiSegs[i].ToString());
-                    }
-                    throw new Exception();
-                }
-
-                if (newHiSegs.IsContinuous() == false)
-                {
-                    GD.Print("not continuous");
-                    GD.Print("pivot " + pivot);
-                    GD.Print("OLD");
-                    for (var i = 0; i < oldHiSegs.Count; i++)
-                    {
-                        GD.Print(oldHiSegs[i].ToString());
-                    }
-                    GD.Print("NEW");
-                    for (var i = 0; i < newHiSegs.Count; i++)
-                    {
-                        GD.Print(newHiSegs[i].ToString());
-                    }
-
-                    throw new Exception();
-                }
-
-                
+                var newAbsSegs = newHiSegs.Select(s => s.Translate(edge.HighPoly.Entity().Center))
+                    .Where(ls => ls.From != ls.To)
+                    .ToList();
             }
         }
     }

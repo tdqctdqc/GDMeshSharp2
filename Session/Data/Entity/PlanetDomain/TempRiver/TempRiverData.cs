@@ -26,6 +26,7 @@ public class TempRiverData : Entity
     {
         foreach (var poly in key.Data.Planet.Polygons.Entities)
         {
+            if (poly.GetEdges(key.Data).Any(e => e.IsRiver()) == false) continue;
             var info = new MapPolyRiverTriInfo(poly, this, key);
             Infos.Add(poly, info);
         }
@@ -44,7 +45,6 @@ public class MapPolyRiverTriInfo
     public Dictionary<EdgeEndKey, PolyTri> InnerTris { get; private set; }
     public Dictionary<MapPolygonEdge, List<PolyTri>> BankTris { get; private set; }
     public List<PolyTri> LandTris { get; private set; }
-
     public Dictionary<MapPolygonEdge, List<LineSegment>> BankSegs { get; private set; }
     public List<LineSegment> InnerBoundary { get; private set; }
     public MapPolyRiverTriInfo(MapPolygon poly, TempRiverData rData, GenWriteKey key)
@@ -83,31 +83,39 @@ public class MapPolyRiverTriInfo
                 throw new Exception();
                 continue;
             }
+            
 
             
             var innerKey = new PolyCornerKey(nexus, Poly);
             var inner = rData.Inners[innerKey];
-
             var edge1 = nexusEdges.ElementAt(0);
-            var endKey1 = new EdgeEndKey(nexus, edge1);
-            var pivot1 = rData.HiPivots[endKey1];
-            if (Poly != edge1.HighPoly.Entity())
-            {
-                pivot1 += Poly.GetOffsetTo(edge1.HighPoly.Entity(), data);
-            }
 
-            var edge2 = nexusEdges.ElementAt(1);
-            var endKey2 = new EdgeEndKey(nexus, edge2);
-            var pivot2 = rData.HiPivots[endKey2];
-            if (Poly != edge2.HighPoly.Entity())
+            if (edge1.IsRiver() == false)
             {
-                pivot2 += Poly.GetOffsetTo(edge2.HighPoly.Entity(), data);
+                var endKey1 = new EdgeEndKey(nexus, edge1);
+                var pivot1 = rData.HiPivots[endKey1];
+                if (Poly != edge1.HighPoly.Entity())
+                {
+                    pivot1 += Poly.GetOffsetTo(edge1.HighPoly.Entity(), data);
+                }
+                InnerTris.Add(endKey1, PolyTri.Construct(nexusPoint, inner, pivot1, 
+                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
             }
             
-            InnerTris.Add(endKey1, PolyTri.Construct(nexusPoint, inner, pivot1, 
-                LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
-            InnerTris.Add(endKey2, PolyTri.Construct(nexusPoint, inner, pivot2, 
-                LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
+            var edge2 = nexusEdges.ElementAt(1);
+
+
+            if (edge2.IsRiver() == false)
+            {
+                var endKey2 = new EdgeEndKey(nexus, edge2);
+                var pivot2 = rData.HiPivots[endKey2];
+                if (Poly != edge2.HighPoly.Entity())
+                {
+                    pivot2 += Poly.GetOffsetTo(edge2.HighPoly.Entity(), data);
+                }
+                InnerTris.Add(endKey2, PolyTri.Construct(nexusPoint, inner, pivot2, 
+                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
+            }
         }
     }
     private void MakeBankTris(Data data, TempRiverData rData,
@@ -116,108 +124,82 @@ public class MapPolyRiverTriInfo
 
         foreach (var edge in edges)
         {
-            if (edge.IsRiver())
+            if (edge.IsRiver() == false) continue;
+            
+            var width = River.GetWidthFromFlow(edge.MoistureFlow);
+            
+            var hiNexus = edge.HiNexus.Entity();
+            var hiNexusPoint = Poly.GetOffsetTo(hiNexus.Point, data);
+            var hiEnd = new EdgeEndKey(hiNexus, edge);
+            var hiCorner = new PolyCornerKey(hiNexus, Poly);
+            var hiInner = rData.Inners[hiCorner];
+            
+            var loNexus = edge.LoNexus.Entity();
+            var loNexusPoint = Poly.GetOffsetTo(loNexus.Point, data);
+            var loEnd = new EdgeEndKey(loNexus, edge);
+            var loCorner = new PolyCornerKey(loNexus, Poly);
+            var loInner = rData.Inners[loCorner];
+            
+            var edgePoints = edge.GetSegsRel(Poly).Segments.GetPoints().ToList();
+            Vector2 startInner;
+            Vector2 endInner;
+            if (loNexusPoint == edgePoints.First() && hiNexusPoint == edgePoints.Last())
             {
-                var hiNexus = edge.HiNexus.Entity();
-                var hiNexusPoint = Poly.GetOffsetTo(hiNexus.Point, data);
-                var hiEnd = new EdgeEndKey(hiNexus, edge);
-                var hiCorner = new PolyCornerKey(hiNexus, Poly);
-                var hiInner = rData.Inners[hiCorner];
-                var hiPivot = GetPivot(hiEnd, rData, data);
-                
-                var loNexus = edge.LoNexus.Entity();
-                var loNexusPoint = Poly.GetOffsetTo(loNexus.Point, data);
-                var loEnd = new EdgeEndKey(loNexus, edge);
-                var loCorner = new PolyCornerKey(loNexus, Poly);
-                var loInner = rData.Inners[loCorner];
-                var loPivot = GetPivot(loEnd, rData, data);
-                
-                List<Vector2> edgePoints;
-                var bankTris = new List<PolyTri>();
-                if (Poly == edge.HighPoly.Entity())
-                {
-                    edgePoints = edge.HighSegsRel().Segments.GetPoints().ToList();
-                }
-                else
-                {
-                    edgePoints = edge.LowSegsRel().Segments.GetPoints().ToList();
-                }
-                
-                hiPivot = edgePoints.OrderBy(ep => ep.DistanceTo(hiPivot)).First();
-                loPivot = edgePoints.OrderBy(ep => ep.DistanceTo(loPivot)).First();
-
-                var hiPivI = edgePoints.IndexOf(hiPivot);
-                var loPivI = edgePoints.IndexOf(loPivot);
-
-                if (hiPivI == -1 || loPivI == -1)
-                {
-                    throw new Exception();
-                }
-
-                if (hiPivI < loPivI)
-                {
-                    hiPivI = edgePoints.Count - (1 + hiPivI);
-                    loPivI = edgePoints.Count - (1 + loPivI);
-                    edgePoints.Reverse();
-                }
-                var bankOuterPoints = new List<Vector2>();
-                for (var i = loPivI + 1; i <= hiPivI - 1; i++)
-                {
-                    bankOuterPoints.Add(edgePoints[i]);
-                }
-
-                var bankInnerPoints = bankOuterPoints
-                    .Select(o => o * .9f).ToList();
-                var edgeBankSegs = new List<LineSegment>();
-                
-                
-                if (bankOuterPoints.Count > 0)
-                {
-                    edgeBankSegs.Add(new LineSegment(loInner, bankInnerPoints.First()));
-                    for (var i = 0; i < bankInnerPoints.Count - 1; i++)
-                    {
-                        edgeBankSegs.Add(new LineSegment(bankInnerPoints[i], bankInnerPoints[i + 1]));
-                    }
-                    edgeBankSegs.Add(new LineSegment(bankInnerPoints.Last(), hiInner));
-                }
-                else
-                {
-                    edgeBankSegs.Add(new LineSegment(loInner, hiInner));
-                }
-                BankSegs.Add(edge, edgeBankSegs);
-
-                if (bankOuterPoints.Count > 0)
-                {
-                    bankTris.Add(PolyTri.Construct(loInner, loPivot, bankOuterPoints[0], 
-                        LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
-                    bankTris.Add(PolyTri.Construct(loInner, bankInnerPoints[0], bankOuterPoints[0], 
-                        LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
-                    for (var i = 0; i < bankOuterPoints.Count - 1; i++)
-                    {
-                        var o1 = bankOuterPoints[i];
-                        var o2 = bankOuterPoints[i + 1];
-                        var i1 = bankInnerPoints[i];
-                        var i2 = bankInnerPoints[i + 1];
-                        bankTris.Add(PolyTri.Construct(o1, o2, i1, 
-                            LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
-                        bankTris.Add(PolyTri.Construct(i2, o2, i1, 
-                            LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
-                    }
-                    bankTris.Add(PolyTri.Construct(hiInner, hiPivot, bankOuterPoints.Last(), 
-                        LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
-                    bankTris.Add(PolyTri.Construct(hiInner, bankInnerPoints.Last(), bankOuterPoints.Last(), 
-                        LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
-                    BankTris.Add(edge, bankTris);
-                }
-                else
-                {
-                    bankTris.Add(PolyTri.Construct(loInner, loPivot, hiInner, 
-                        LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
-                    bankTris.Add(PolyTri.Construct(loPivot, hiPivot, hiInner, 
-                        LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
-                    BankTris.Add(edge, bankTris);
-                }
+                startInner = loInner;
+                endInner = hiInner;
             }
+            else if (hiNexusPoint == edgePoints.First() && loNexusPoint == edgePoints.Last())
+            {
+                startInner = hiInner;
+                endInner = loInner;
+            }
+            else throw new Exception();
+
+            var edgeSegs = edge.GetSegsRel(Poly).Segments;
+            if (edgeSegs.Any(e => e.IsCCW(Vector2.Zero))) throw new Exception();
+            if (edgeSegs.Any(e => e.From == e.To)) throw new Exception();
+            if (edgeSegs.IsChain() == false) throw new Exception();
+            var bankInnerPoints = new List<Vector2>();
+            var edgeInnerSegs = new List<LineSegment>();
+            
+            for (var i = 0; i < edgeSegs.Count - 1; i++)
+            {
+                var thisSeg = edgeSegs[i];
+                var nextSeg = edgeSegs[i + 1];
+                if (thisSeg.To != nextSeg.From) throw new Exception();
+                var thisSegAxis = (thisSeg.To - thisSeg.From).Normalized();
+                var thisShift = thisSegAxis.Rotated(Mathf.Pi / 2f) * width / 2f;
+                bankInnerPoints.Add(thisSeg.To + thisShift);
+            }
+
+            
+            if (bankInnerPoints.Count > 0)
+            {
+                edgeInnerSegs.Add(new LineSegment(startInner, bankInnerPoints.First()));
+                for (var i = 0; i < bankInnerPoints.Count - 1; i++)
+                {
+                    edgeInnerSegs.Add(new LineSegment(bankInnerPoints[i], bankInnerPoints[i + 1]));
+                }
+                edgeInnerSegs.Add(new LineSegment(bankInnerPoints.Last(), endInner));
+            }
+            else
+            {
+                edgeInnerSegs.Add(new LineSegment(startInner, endInner));
+            }
+            BankSegs.Add(edge, edgeInnerSegs);
+            if (edgeSegs.Count != edgeInnerSegs.Count) throw new Exception();
+
+            var bankTris = new List<PolyTri>();
+            for (var i = 0; i < edgeSegs.Count; i++)
+            {
+                var outSeg = edgeSegs[i];
+                var inSeg = edgeInnerSegs[i];
+                bankTris.Add(PolyTri.Construct(outSeg.From, outSeg.To, inSeg.From,
+                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
+                bankTris.Add(PolyTri.Construct(outSeg.To, inSeg.To, inSeg.From,
+                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
+            }
+            BankTris.Add(edge, bankTris);
         }
     }
 
@@ -274,17 +256,7 @@ public class MapPolyRiverTriInfo
             }
             else
             {
-                GD.Print("loNexus rel " + loNexusP);
-                GD.Print("hiNexus rel " + hiNexusP);
-                GD.Print("hi to to " + hiNexusP.DistanceTo(to));
-                GD.Print("hi to from " + hiNexusP.DistanceTo(from));
-                GD.Print("lo to to " + loNexusP.DistanceTo(to));
-                GD.Print("lo to from " + loNexusP.DistanceTo(from));
-                for (int i = 0; i < edge.GetSegsRel(Poly).Segments.Count; i++)
-                {
-                    GD.Print(edge.GetSegsRel(Poly).Segments[i]);
-                }
-                throw new Exception();
+                throw new Exception("bad epsilon");
             }
 
             Vector2 continueFrom = from;
@@ -313,57 +285,27 @@ public class MapPolyRiverTriInfo
             for (var i = 0; i < edgeSegs.Count; i++)
             {
                 var seg = edgeSegs[i];
+                if (seg.From == seg.To) continue;
                 if (seg.From == continueFrom) add = true;
                 if(add) InnerBoundary.Add(seg);
                 if (seg.To == continueTo) break;
             }
         }
-
-        InnerBoundary.OrderByClockwise(Vector2.Zero, ls => ls.Mid());
-        InnerBoundary.CorrectSegmentsToClockwise(Vector2.Zero);
-
-        if (InnerBoundary[0].To != InnerBoundary[1].From)
-        {
-            if (InnerBoundary[0].From == InnerBoundary[1].From)
-            {
-                InnerBoundary[0].Flip();
-            }
-            else if (InnerBoundary[0].From == InnerBoundary[1].To)
-            {
-                InnerBoundary[0].Flip();
-                InnerBoundary[1].Flip();
-            }
-            else if (InnerBoundary[0].To == InnerBoundary[1].To)
-            {
-                InnerBoundary[1].Flip();
-            }
-        }
-        
-        for (var i = 1; i < InnerBoundary.Count - 1; i++)
-        {
-            var s = InnerBoundary[i];
-            var next = InnerBoundary.Modulo(i + 1);
-            if (s.To == next.To)
-            {
-                next.Flip();
-            }
-        }
-        if (InnerBoundary.IsCircuit() == false)
-        {
-            GD.Print("not circuit");
-            for (var i = 0; i < InnerBoundary.Count; i++)
-            {
-                GD.Print(InnerBoundary[i].ToString());
-            }
-
-            throw new Exception();
-        }
+        InnerBoundary = InnerBoundary.Circuitify();
     }
 
     private void MakeLandTris(TempRiverData rData, GenWriteKey key)
     {
         var graph = new Graph<PolyTri, bool>();
-        LandTris = InnerBoundary.TriangulateArbitrary(Poly, key, graph, true);
+        if (InnerBoundary.First().IsCCW(Vector2.Zero))
+        {
+            InnerBoundary = InnerBoundary.Select(ls => ls.Reverse()).Reverse().ToList();
+            LandTris = InnerBoundary.TriangulateArbitrary(Poly, key, graph, true);
+        }
+        else
+        {
+            LandTris = InnerBoundary.TriangulateArbitrary(Poly, key, graph, true);
+        }
     }
     private Vector2 GetPivot(EdgeEndKey key, TempRiverData rData, Data data)
     {

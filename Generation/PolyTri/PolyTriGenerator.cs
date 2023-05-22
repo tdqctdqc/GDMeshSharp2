@@ -23,16 +23,13 @@ public class PolyTriGenerator : Generator
         var report = new GenReport(GetType().Name);
         var polys = _data.Planet.Polygons.Entities;
         
-        new RiverPolyTriGen().DoRivers(key);
-
-        
         report.StartSection();
+        new RiverPolyTriGen().DoRivers(key);
         report.StopSection("Finding river segs");
         
         report.StartSection();
         Parallel.ForEach(polys, p => BuildTris(p, key));
         report.StopSection("Building poly terrain tris");
-        
         
         report.StartSection();
         Parallel.ForEach(_data.Planet.PolyEdges.Entities, p => MakeDiffPolyTriPaths(p, key));
@@ -179,12 +176,12 @@ public class PolyTriGenerator : Generator
         var hi = edge.HighPoly.Entity();
         
         var loEdgeTris = lo.GetBorder(hi.Id).Segments
-            .Select(seg => lo.Tris.Tris.FirstOrDefault(t => t.HasPoint(seg.From) && t.HasPoint(seg.To)))
+            .Select(seg => lo.Tris.Tris.FirstOrDefault(t => t.PointIsVertex(seg.From) && t.PointIsVertex(seg.To)))
             .Where(t => t != null)            
             .ToList();
         
         var hiEdgeTris = hi.GetBorder(lo.Id).Segments
-            .Select(seg => hi.Tris.Tris.FirstOrDefault(t => t.HasPoint(seg.From) && t.HasPoint(seg.To)))
+            .Select(seg => hi.Tris.Tris.FirstOrDefault(t => t.PointIsVertex(seg.From) && t.PointIsVertex(seg.To)))
             .Where(t => t != null)
             .Reverse()
             .ToList();

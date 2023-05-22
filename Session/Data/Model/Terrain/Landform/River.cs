@@ -17,6 +17,6 @@ public class River : Landform
     public static float GetWidthFromFlow(float flow)
     {
         var logBase = Mathf.Pow(River.FlowCeil, 1f / (River.WidthCeil - River.WidthFloor));
-        return (float)Math.Log(flow, logBase);
+        return Mathf.Max(0f, (float)Math.Log(flow, logBase));
     }
 }

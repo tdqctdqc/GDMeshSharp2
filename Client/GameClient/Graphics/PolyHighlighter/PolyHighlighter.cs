@@ -46,7 +46,10 @@ public class PolyHighlighter : Node2D
     private void DrawSimple(Data data, MapPolygon poly, PolyTri pt, MeshBuilder mb)
     {
         DrawBordersSimple(poly, mb, data);
-        DrawnNeighborBordersSimple(poly, mb, data);
+        DrawnLinesToNeighbors(poly, mb, data);
+
+        DrawRiverInfo(poly, mb, data);
+        // DrawnNeighborBordersSimple(poly, mb, data);
     }
 
     private static void DrawComplex(Data data, MapPolygon poly, PolyTri pt, MeshBuilder mb)
@@ -78,7 +81,15 @@ public class PolyHighlighter : Node2D
     private static void DrawBordersSimple(MapPolygon poly, MeshBuilder mb, Data data)
     {
         var edgeBorders = poly.GetOrderedNeighborSegments(data).Segments;
-        mb.AddLines(edgeBorders, 10f, Colors.Black);
+        mb.AddLines(edgeBorders, 2f, Colors.Black);
+    }
+    private static void DrawnLinesToNeighbors(MapPolygon poly, MeshBuilder mb, Data data)
+    {
+        foreach (var n in poly.Neighbors)
+        {
+            var offset = poly.GetOffsetTo(n, data);
+            mb.AddLine(Vector2.Zero, offset, Colors.White, 10f);
+        }
     }
     private static void DrawnNeighborBordersSimple(MapPolygon poly, MeshBuilder mb, Data data)
     {
@@ -88,7 +99,6 @@ public class PolyHighlighter : Node2D
             var nEdgeBorders = n.GetOrderedNeighborSegments(data).Segments
                 .Select(s => s.Translate(offset)).ToList();
             mb.AddLines(nEdgeBorders, 10f, Colors.Black);
-            mb.AddLine(Vector2.Zero, offset, Colors.White, 10f);
         }
     }
     private static void DrawNeighborBorders(MapPolygon poly, MeshBuilder mb, Data data)
@@ -146,6 +156,31 @@ public class PolyHighlighter : Node2D
 
             }
         }
+    }
+
+    private static void DrawRiverInfo(MapPolygon poly, MeshBuilder mb, Data data)
+    {
+        var rd = data.Planet.GetRegister<TempRiverData>().Entities.First();
+        if (rd.Infos.ContainsKey(poly) == false) return;
+        var info = rd.Infos[poly];
+        var edges = poly.GetEdges(data).Distinct();
+        var nexi = poly.GetNexi(data);
+        foreach (var nexus in nexi)
+        {
+            var key = new PolyCornerKey(nexus, poly);
+            if (rd.Inners.ContainsKey(key))
+            {
+                mb.AddCircle(rd.Inners[key], 3f, 4, Colors.Red);
+            }
+        }
+        
+        foreach (var edge in edges)
+        {
+            if (edge.IsRiver() == false) continue;
+            var innerSegs = rd.Infos[poly].BankSegs[edge];
+            mb.AddArrowsRainbow(innerSegs, 3f);
+        }
+        mb.AddArrows(poly.GetOrderedBoundarySegs(data), 3f, Colors.Black);
     }
     private void TakeFromMeshBuilder(MeshBuilder mb)
     {

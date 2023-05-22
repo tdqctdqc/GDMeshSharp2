@@ -31,6 +31,7 @@ public class WorldGenerator
 
     private GenData GenerateInner(GenReport r)
     {
+        _sw.Start();
         var polySize = 200f;
         var edgePointMargin = new Vector2(polySize, polySize);
         var dim = Data.GenMultiSettings.Dimensions;
@@ -39,12 +40,17 @@ public class WorldGenerator
         PlanetInfo.Create(Data.GenMultiSettings.Dimensions, _key);
         RuleVars.CreateDefault(_key);
         CurrentConstruction.Create(_key);
-        _sw.Start();
         
         var points = PointsGenerator
             .GenerateConstrainedSemiRegularPoints
                 (Data.GenMultiSettings.Dimensions - edgePointMargin, polySize, polySize * .75f, false, true)
             .Select(v => v + edgePointMargin / 2f).ToList();
+        
+        foreach (var p in points)
+        {
+            if (p != p.Intify()) throw new Exception("not int point");
+            if (p.x < 0 || p.x > dim.x || p.y < 0 || p.y > dim.y) throw new Exception("point out of bounds");
+        }
 
         RunGenerator(new PolygonGenerator(points, Data.GenMultiSettings.Dimensions, true, polySize));
         
@@ -52,10 +58,10 @@ public class WorldGenerator
         
         RunGenerator(new ResourceGenerator());
         
-        RunGenerator(new MoistureGenerator());
-        
         EdgeDisturber.SplitEdges(Data.Planet.Polygons.Entities, _key, 
             Data.GenMultiSettings.PlanetSettings.PreferredMinPolyEdgeLength.Value);
+
+        RunGenerator(new MoistureGenerator());
         
         RunGenerator(new PolyTriGenerator());
         

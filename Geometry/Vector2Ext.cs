@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
+using GeometRi;
 
 public static class Vector2Ext
 {
@@ -219,7 +220,15 @@ public static class Vector2Ext
     public static Vector2 GetReflectionOfPointAcrossLine(this Vector2 point, Vector2 from, Vector2 to)
     {
         var fp = point - from;
-        return to - fp;
+        var dist = point.DistToLine(from, to);
+        var axis = to - from;
+        var projLength = fp.GetProjectionLength(axis);
+        // var newP = from + axis * projLength +         
+        
+        
+        var angle = fp.AngleTo(axis);
+        var rotated = fp.Rotated(angle * 2f);
+        return from + rotated;
     }
     public static float DistToLine(this Vector2 point, Vector2 start, Vector2 end)
     {

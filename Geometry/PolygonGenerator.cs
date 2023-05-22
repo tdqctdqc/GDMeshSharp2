@@ -118,7 +118,11 @@ public class PolygonGenerator : Generator
             var edge = MapPolygonEdge.Create(b.Key, b.Value, key);
 
             var start = chain1.Segments.First().From + b.Key.Native.Entity().Center;
+            if (start != start.Intify()) throw new Exception();
+            
             var end = chain1.Segments.Last().To + b.Key.Native.Entity().Center;
+            if (end != end.Intify()) throw new Exception();
+
             if (start.x < 0) start.x += mapWidth;
             if (end.x < 0) end.x += mapWidth;
             
@@ -190,6 +194,11 @@ public class PolygonGenerator : Generator
                 if (edge.From == edge.To)
                 {
                     return;
+                }
+
+                if (edge.From != edge.From.Intify() || edge.To != edge.To.Intify())
+                {
+                    throw new Exception();
                 }
 
                 if (edge.IsCCW(mp.Center))

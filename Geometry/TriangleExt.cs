@@ -22,7 +22,7 @@ public static class TriangleExt
         int pointsShared = 0;
         t.ForEachPoint(v =>
         {
-            if (r.HasPoint(v)) pointsShared++;
+            if (r.PointIsVertex(v)) pointsShared++;
         });
         if (pointsShared > 1) return true;
         return t.AnyPointPairs((p, q) =>
