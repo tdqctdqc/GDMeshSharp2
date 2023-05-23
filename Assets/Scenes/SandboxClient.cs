@@ -45,7 +45,7 @@ public class SandboxClient : Node, IClient
 
         Key = new ClientWriteKey(null, null);
         this.AssignChildNode(ref _canvas, "Canvas");
-        var cam = CameraController.Construct(null); //todo make dummy
+        var cam = WorldCameraController.Construct(null); //todo make dummy
         AddChild(cam);
         cam.Current = true;
         Cam = cam;

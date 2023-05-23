@@ -4,13 +4,15 @@ using Godot;
 
 public class SegmentsException : DisplayableException
 {
+    public string Message { get; private set; }
     public List<List<LineSegment>> SegLayers { get; private set; }
     public List<string> SegLayerNames { get; private set; }
     public List<List<Vector2>> PointSets { get; private set; }
     public List<string> PointSetNames { get; private set; }
 
-    public SegmentsException()
+    public SegmentsException(string message)
     {
+        Message = message;
         SegLayers = new List<List<LineSegment>>();
         SegLayerNames = new List<string>();
         PointSets = new List<List<Vector2>>();
@@ -31,7 +33,7 @@ public class SegmentsException : DisplayableException
     
     public override Node2D GetGraphic()
     {
-        var d = SceneManager.Instance<SegmentsNotConnectedDisplay>();
+        var d = SceneManager.Instance<SegmentsExceptionDisplay>();
         d.Setup(this);
         return d;
     }

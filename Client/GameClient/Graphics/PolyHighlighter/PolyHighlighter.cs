@@ -80,7 +80,7 @@ public class PolyHighlighter : Node2D
     }
     private static void DrawBordersSimple(MapPolygon poly, MeshBuilder mb, Data data)
     {
-        var edgeBorders = poly.GetOrderedNeighborSegments(data).Segments;
+        var edgeBorders = poly.GetOrderedBoundarySegs(data);
         mb.AddLines(edgeBorders, 2f, Colors.Black);
     }
     private static void DrawnLinesToNeighbors(MapPolygon poly, MeshBuilder mb, Data data)
@@ -96,14 +96,14 @@ public class PolyHighlighter : Node2D
         foreach (var n in poly.Neighbors)
         {
             var offset = poly.GetOffsetTo(n, data);
-            var nEdgeBorders = n.GetOrderedNeighborSegments(data).Segments
+            var nEdgeBorders = n.GetOrderedBoundarySegs(data)
                 .Select(s => s.Translate(offset)).ToList();
             mb.AddLines(nEdgeBorders, 10f, Colors.Black);
         }
     }
     private static void DrawNeighborBorders(MapPolygon poly, MeshBuilder mb, Data data)
     {
-        var edgeBorders = poly.GetOrderedNeighborSegments(data).Segments;
+        var edgeBorders = poly.GetOrderedBoundarySegs(data);
         mb.AddArrowsRainbow(edgeBorders, 5f);
         mb.AddNumMarkers(edgeBorders.Select(ls => ls.Mid()).ToList(), 20f, 
             Colors.Transparent, Colors.White, Vector2.Zero);

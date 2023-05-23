@@ -43,17 +43,17 @@ public class RiversTempChunkGraphic : MapChunkGraphicModule
                 var info = rd.Infos[poly];
                 var offset = relTo.GetOffsetTo(poly, data);
                 int i = 0;
-                var col = ColorsExt.GetRandomColor();
+                var col = Colors.Blue;//ColorsExt.GetRandomColor();
                 
                 foreach (var kvp in info.BankTris)
                 {
                     kvp.Value.ForEach(t => 
-                        mb.AddTri(t.Transpose(offset), col.GetPeriodicShade(i++))
+                        mb.AddTri(t.Transpose(offset), col)
                     );
                 }
                 foreach (var kvp in info.InnerTris)
                 {
-                    mb.AddTri(kvp.Value.Transpose(offset), Colors.Red);
+                    mb.AddTri(kvp.Value.Transpose(offset), Colors.Blue);
                 }
                 int iter = 0;
                 // foreach (var lt in info.LandTris)

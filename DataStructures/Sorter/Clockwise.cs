@@ -54,23 +54,6 @@ public static class Clockwise
         return IsCCW(a, b, c) == false;
     }
     
-    public static void CorrectSegmentsToClockwise(this List<LineSegment> segs, Vector2 center)
-    {
-        if (segs.IsConvexAround(center) == false) throw new Exception();
-        for (var i = 0; i < segs.Count; i++)
-        {
-            if (IsClockwise(segs[i], center) == false) segs[i] = segs[i].Reverse();
-        }
-    }
-    public static void CorrectSegmentsToCCW(this List<LineSegment> segs, Vector2 center)
-    {
-        if (segs.IsConvexAround(center) == false) throw new Exception();
-        for (var i = 0; i < segs.Count; i++)
-        {
-            if (IsClockwise(segs[i], center)) segs[i] = segs[i].Reverse();
-        }
-    }
-    
     public static float GetCCWAngle(this Vector2 v)
     {
         return v.GetCCWAngleTo(Vector2.Right);

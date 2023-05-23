@@ -2,7 +2,7 @@ using Godot;
 using System;
 using System.Collections.Generic;
 
-public class CameraController : Camera2D, ICameraController
+public class WorldCameraController : Camera2D, ICameraController
 {
     public float ScaledZoomOut => _zoomLevel / _maxZoomLevel;
     public float SmoothedZoomOut => ShapingFunctions.EaseInCubic(_zoomLevel, _maxZoom, _minZoom);
@@ -20,13 +20,13 @@ public class CameraController : Camera2D, ICameraController
     public float XScrollRatio { get; private set; }
     private Data _data;
 
-    public static CameraController Construct(Data data)
+    public static WorldCameraController Construct(Data data)
     {
-        var c = new CameraController();
+        var c = new WorldCameraController();
         c.Setup(data);
         return c;
     }
-    private CameraController()
+    private WorldCameraController()
     {
         UpdateZoom();
     }

@@ -63,15 +63,6 @@ public static class MapPolygonExt
     public static PolyBorderChain GetBorder(this MapPolygon poly, int nId) => poly.NeighborBorders[nId];
     public static IEnumerable<PolyBorderChain> GetPolyBorders(this MapPolygon poly) => poly.Neighbors.RefIds
         .Select(n => poly.GetBorder(n));
-    public static IChain<LineSegment> GetOrderedNeighborSegments(this MapPolygon poly, Data data)
-    {
-        var segs = poly.GetOrderedNeighborBorders(data).SelectMany(b => b.Segments).ToList();
-        return new Chain<LineSegment, Vector2>(segs);
-    }
-    public static List<PolyBorderChain> GetOrderedNeighborBorders(this MapPolygon poly, Data data)
-    {
-        return data.Planet.PolygonAux.AuxDatas[poly].OrderedNeighborBorders;
-    }
     public static List<LineSegment> GetOrderedBoundarySegs(this MapPolygon poly, Data data)
     {
         return data.Planet.PolygonAux.AuxDatas[poly].OrderedBoundarySegs;

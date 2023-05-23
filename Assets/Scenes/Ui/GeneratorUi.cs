@@ -71,26 +71,49 @@ public class GeneratorUi : Ui
     {
         if (_generating) return;
         _generating = true;
-        await Task.Run(() => Generate()); 
+        try
+        {
+            await Task.Run(_session.Generate); 
+        }
+        catch (Exception e)
+        {
+            if (e is DisplayableException d)
+            {
+                DisplayException(d);
+            }
+            else
+            {
+                if (e is AggregateException a)
+                {
+                    var da = (DisplayableException)a.InnerExceptions.FirstOrDefault(i => i is DisplayableException);
+                    if (da != null)
+                    {
+                        DisplayException(da);
+                    }
+                }
+                else
+                {
+                    GD.Print(e.Message);
+                    GD.Print(e.StackTrace);
+                    throw e;
+                }
+            }
+        }
+        
         _generating = false;
     }
-    private void MonitorGeneration(string tag, string report)
-    {
-        _progress.Text = tag + " " + report;
-    }
+
     private void DisplayException(DisplayableException d)
     {
-        AddChild(d.GetGraphic());
+        var display = new Node2D();
+        AddChild(display);
         GD.Print(d.StackTrace);
-    }
-    private void Generate()
-    {
-        _session.WorldGen.GenerationFeedback += MonitorGeneration;
-        _session.WorldGen.GenerationFailed += DisplayException;
-        _session.Generate();
-        // if (_session.WorldGen.Failed == false)
-        // {
-        //     _graphics.Setup(_session.Data);
-        // }
+                
+        var graphic = d.GetGraphic();
+        display.AddChild(graphic);
+        var cam = new DebugCameraController(graphic);
+        cam.Current = true;
+
+        display.AddChild(cam);
     }
 }

@@ -7,12 +7,9 @@ using Godot;
 public class WorldGenerator
 {
     public GenData Data { get; private set; }
-    public bool Failed { get; private set; }
     private GenWriteKey _key;
     private Stopwatch _sw;
     private GeneratorSession _session;
-    public Action<DisplayableException> GenerationFailed { get; set; }
-    public Action<string, string> GenerationFeedback { get; set; }
     public WorldGenerator(GeneratorSession session, GenData data)
     {
         _session = session;
@@ -25,7 +22,7 @@ public class WorldGenerator
     {
         Game.I.Random.Seed = (ulong)_session.GenMultiSettings.PlanetSettings.Seed.Value;
         var report = new GenReport(GetType().Name);
-        Failed = ! ExceptionCatcher.Try(() => GenerateInner(report), GenerationFailed);
+        GenerateInner(report);
         return report;
     }
 
@@ -60,6 +57,7 @@ public class WorldGenerator
         
         EdgeDisturber.SplitEdges(Data.Planet.Polygons.Entities, _key, 
             Data.GenMultiSettings.PlanetSettings.PreferredMinPolyEdgeLength.Value);
+        EdgeDisturber.DisturbEdges(Data.Planet.Polygons.Entities, _key);
 
         RunGenerator(new MoistureGenerator());
         
@@ -83,24 +81,6 @@ public class WorldGenerator
 
     private void RunGenerator(Generator gen)
     {
-        try
-        {
-            var r = gen.Generate(_key);
-            GenerationFeedback?.Invoke(gen.GetType().Name, r.GetTimes());
-        }
-        catch (Exception e)
-        {
-            if (e is DisplayableException d)
-            {
-                GenerationFailed.Invoke(d);
-                return;
-            }
-            else
-            {
-                Console.WriteLine(e);
-                throw;
-            }
-        }
-        
+        gen.Generate(_key);
     }
 }

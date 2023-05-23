@@ -20,6 +20,18 @@ public class PolyBorderChain : Chain<LineSegment, Vector2>, IBorderChain<LineSeg
     {
         Native = native;
         Foreign = foreign;
+        for (var i = 0; i < segments.Count - 1; i++)
+        {
+            var thisSeg = segments[i];
+            var nextSeg = segments[i + 1];
+            if (thisSeg.From == nextSeg.To && thisSeg.To == nextSeg.From)
+            {
+                GD.Print("doot");
+                var e = new SegmentsException("retracking boundary seg");
+                e.AddSegLayer(segments, "ordered");
+                throw e;
+            }
+        }
     }
 
     public IEnumerable<LineSegment> SegsAbs()

@@ -22,7 +22,9 @@ public static class LineSegmentExt
     }
     public static List<LineSegment> Chainify(this List<LineSegment> lineSegments)
     {
-        var hash = new HashSet<LineSegment>(lineSegments.Where(ls => ls.From != ls.To));
+        var hash = new HashSet<LineSegment>(lineSegments
+            // .Where(ls => ls.From != ls.To)
+        );
         
         var start = hash.First();
         hash.Remove(start);
@@ -56,8 +58,12 @@ public static class LineSegmentExt
         
         if (hash.Count != 0)
         {
-            DebugDumpCircuit(lineSegments, froms, hash);
-            throw new Exception("chainification could not complete");
+            var e = new SegmentsException("chainification could not complete");
+            e.AddSegLayer(lineSegments, "before");
+            e.AddSegLayer(froms, "attempt");
+            e.AddSegLayer(hash.ToList(), "leftover");
+            
+            throw e;
         }
 
         if (froms.IsChain() == false) throw new Exception();
@@ -81,6 +87,55 @@ public static class LineSegmentExt
         {
             GD.Print(ls.ToString());
         }
+    }
+
+    public static List<LineSegment> Circuitify(this List<List<LineSegment>> source)
+    {
+        var neighborSegs = source.Chainify();
+        if (neighborSegs.IsCircuit() == false || neighborSegs.IsContinuous() == false)
+        {
+            var e = new SegmentsException("still not circuit");
+            e.AddSegLayer(source.SelectMany(l => l).ToList(), "source");
+            e.AddSegLayer(neighborSegs, "attempt");
+            throw e;
+        }
+        return neighborSegs;
+    }
+    
+    
+    public static List<LineSegment> Chainify(this List<List<LineSegment>> source)
+    {
+        var sourceHash = source.ToHashSet();
+        var startList = sourceHash.First();
+        var from = startList.First().From;
+        sourceHash.Remove(startList);
+        var to = startList.Last().To;
+        var wholeList = new List<List<LineSegment>>();
+        while (sourceHash.FirstOrDefault(s => s.Last().To == from) is List<LineSegment> prevList)
+        {
+            sourceHash.Remove(prevList);
+            from = prevList.First().From;
+            wholeList.Insert(0, prevList);
+        }
+        wholeList.Add(startList);
+        while (sourceHash.FirstOrDefault(s => s.First().From == to) is List<LineSegment> nextList)
+        {
+            sourceHash.Remove(nextList);
+            to = nextList.Last().To;
+            wholeList.Add(nextList);
+        }
+
+        var neighborSegs = wholeList.SelectMany(l => l).ToList();
+        
+
+        if (neighborSegs.IsContinuous() == false)
+        {
+            var e = new SegmentsException("still not circuit");
+            e.AddSegLayer(source.SelectMany(l => l).ToList(), "source");
+            e.AddSegLayer(neighborSegs, "attempt");
+            throw e;
+        }
+        return neighborSegs;
     }
     public static List<LineSegment> Circuitify(this List<LineSegment> lineSegments)
     {

@@ -69,9 +69,11 @@ public class LocationGenerator : Generator
         for (var i = 0; i < regimeUnionPolys.Count; i++)
         {
             var p = regimeUnionPolys[i];
+            
+            
             if (p.Tris.Tris.Any(t => t.Landform != LandformManager.Mountain
-                                            && t.Landform != LandformManager.Peak
-                                            && t.Landform != LandformManager.River))
+                           && t.Landform != LandformManager.Peak
+                           && t.Landform != LandformManager.River))
             {
                 polyQueue.Enqueue(p, -SettlementDesireability(p));
             }

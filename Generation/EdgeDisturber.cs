@@ -5,43 +5,26 @@ using System.Linq;
 
 public static class EdgeDisturber
 {
-    private static GenWriteKey _key;
     
     public static void SplitEdges(IReadOnlyCollection<MapPolygon> polys, GenWriteKey key, float minLength)
     {
-        _key = key;
-        var edges = new HashSet<Vector2>();
-
-        void AddEdge(MapPolygon p1, MapPolygon p2)
-        {
-            edges.Add(p1.GetV2EdgeKey(p2));
-        }
-
         int iter = 0;
-        foreach (var poly in polys)
+        foreach (var edge in key.Data.Planet.PolyEdges.Entities)
         {
-            foreach (var n in poly.Neighbors.Entities())
+            // if (poly.IsWater() && n.IsWater()) continue;
+
+            if (edge.HighSegsRel().Segments.Any(s => s.Length() > minLength * 2f))
             {
-                if (poly.IsWater() && n.IsWater()) continue;
-                var edge = poly.GetV2EdgeKey(n);
-                if (edges.Contains(edge)) continue;
-                edges.Add(edge);
-                var polyEdge =  poly.GetEdge(n, key.Data);
-                if (polyEdge.HighSegsRel().Segments.Any(s => s.Length() > minLength * 2f))
-                {
-                    iter++;
-                    polyEdge.SplitToMinLength(minLength, _key);
-                }
+                iter++;
+                edge.SplitToMinLength(minLength, key);
             }
         }
+        key.Data.Notices.SetPolyShapes.Invoke();
     }
+
     
-    public static void DisturbEdges(IReadOnlyCollection<MapPolygon> polys, Vector2 dimensions, GenWriteKey key)
+    public static void DisturbEdges(IReadOnlyCollection<MapPolygon> polys, GenWriteKey key)
     {
-        _key = key;
-        var noise = new OpenSimplexNoise();
-        noise.Period = dimensions.x;
-        noise.Octaves = 2;
         var disturbedEdges = new HashSet<Vector2>();
         for (var i = 0; i < polys.Count; i++)
         {
@@ -51,9 +34,47 @@ public static class EdgeDisturber
                 var nPoly = poly.Neighbors.Entities().ElementAt(j);
                 if (poly.Id > nPoly.Id)
                 {
-                    // DisturbEdge(_key.Data, poly, nPoly, noise);
+                    DisturbEdge(poly.GetEdge(nPoly, key.Data), key);
                 }
             }
         }
+        key.Data.Notices.SetPolyShapes.Invoke();
+    }
+
+    private static void DisturbEdge(MapPolygonEdge edge, GenWriteKey key)
+    {
+        var maxRatio = .3f;
+        var minRatio = .2f;
+        var ratio = Game.I.Random.RandfRange(minRatio, maxRatio);
+        var points = edge.HighSegsRel().Segments.GetPoints().ToList();
+        var newPoints = new List<Vector2>();
+        newPoints.Add(points[0]);
+        var hi = edge.HighPoly.Entity();
+        var lo = edge.LowPoly.Entity();
+        var offset = hi.GetOffsetTo(lo, key.Data);
+
+        for (var i = 1; i < points.Count - 1; i++)
+        {
+            var point = points[i];
+            bool disturbToHi = Game.I.Random.Randf() > .5f;
+            if (disturbToHi)
+            {
+                var newP = point.Normalized() * (point.Length() * (1f - ratio));
+                newPoints.Add(newP);
+            }
+            else
+            {
+                var axis = (offset - point).Normalized() * ratio;
+                var newP = point + axis;
+                newPoints.Add(newP);
+            }
+        }
+        newPoints.Add(points[points.Count - 1]);
+
+        var newSegs = newPoints.GetLineSegments()
+            .Select(p => p.Translate(hi.Center))
+            .Where(ls => ls.From != ls.To)
+            .ToList();
+        edge.ReplacePoints(newSegs, key);
     }
 }

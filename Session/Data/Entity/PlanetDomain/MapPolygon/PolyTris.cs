@@ -15,7 +15,7 @@ public class PolyTris
         IReadOnlyGraph<PolyTri> graph, 
         GenWriteKey key)
     {
-        if (tris.Count == 0) return null;
+        if (tris.Count == 0) throw new Exception();
         if (tris.Count != graph.Elements.Count) throw new Exception();
         if (tris.Count > 254) throw new Exception("Too many tris");
         

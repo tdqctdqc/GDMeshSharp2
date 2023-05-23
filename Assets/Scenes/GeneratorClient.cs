@@ -28,7 +28,7 @@ public class GeneratorClient : Node, IClient
         Key = new ClientWriteKey(session.Data, session);
         Settings = ClientSettings.Load();
         
-        var cam = CameraController.Construct(session.Data);
+        var cam = WorldCameraController.Construct(session.Data);
         AddChild(cam);
         cam.Current = true;
         Cam = cam;

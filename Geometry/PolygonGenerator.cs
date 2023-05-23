@@ -113,14 +113,14 @@ public class PolygonGenerator : Generator
         
         foreach (var b in borderChains)
         {
-            var chain1 = b.Key;
-            var chain2 = b.Value;
+            var hiChain = b.Key;
+            var loChain = b.Value;
             var edge = MapPolygonEdge.Create(b.Key, b.Value, key);
 
-            var start = chain1.Segments.First().From + b.Key.Native.Entity().Center;
+            var start = hiChain.Segments.First().From + b.Key.Native.Entity().Center;
             if (start != start.Intify()) throw new Exception();
             
-            var end = chain1.Segments.Last().To + b.Key.Native.Entity().Center;
+            var end = hiChain.Segments.Last().To + b.Key.Native.Entity().Center;
             if (end != end.Intify()) throw new Exception();
 
             if (start.x < 0) start.x += mapWidth;
@@ -186,7 +186,7 @@ public class PolygonGenerator : Generator
             }
             var neighbors = graph.GetNeighbors(mp).Where(n => rHash.Contains(n) == false).ToList();
             if (neighbors.Count == 0) throw new Exception();
-
+            
             neighbors.ForEach(nMp =>
             {
                 if (nMp.Id > mp.Id) return;
@@ -200,18 +200,26 @@ public class PolygonGenerator : Generator
                 {
                     throw new Exception();
                 }
+                
 
-                if (edge.IsCCW(mp.Center))
+                var lowEdge = new LineSegment(nMp.GetOffsetTo(edge.From, key.Data), 
+                    nMp.GetOffsetTo(edge.To, key.Data));
+                if (lowEdge.IsCCW(Vector2.Zero))
                 {
-                    edge = edge.Reverse();
+                    lowEdge = lowEdge.Reverse();
                 }
-
+                var highEdge = new LineSegment(mp.GetOffsetTo(edge.From, key.Data), 
+                    mp.GetOffsetTo(edge.To, key.Data));
+                if (highEdge.IsCCW(Vector2.Zero))
+                {
+                    highEdge = highEdge.Reverse();
+                }
                 var chain1 = MapPolygonEdge.ConstructBorderChain(mp, nMp,
-                    new List<LineSegment> {edge}, key.Data);
+                    new List<LineSegment> {highEdge}, key.Data);
                 
                 
                 var chain2 = MapPolygonEdge.ConstructBorderChain(nMp, mp,
-                    new List<LineSegment> {edge}, key.Data);
+                    new List<LineSegment> {lowEdge}, key.Data);
                 borderChains.TryAdd(chain1, chain2);
             });
         }

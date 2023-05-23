@@ -36,15 +36,7 @@ public class GeneratorSession : Node, IDataSession
         _generating = true;
         if (Generated)
         {
-            this.ClearChildren();
-            Client = null;
-            Game.I.SetSerializer();
-            Server = new DummyServer();
-            Data = new GenData(GenMultiSettings);
-            WorldGen = new WorldGenerator(this, Data);
-            Client = new GeneratorClient();
-            Client.Setup(this);
-            AddChild(Client);
+            Reset();
         }
         Game.I.Random.Seed = (ulong) GenMultiSettings.PlanetSettings.Seed.Value;
         WorldGen.Generate();
@@ -52,6 +44,19 @@ public class GeneratorSession : Node, IDataSession
         _generating = false;
         Client.Graphics.Setup(Data);
 
+    }
+
+    private void Reset()
+    {
+        this.ClearChildren();
+        Client = null;
+        Game.I.SetSerializer();
+        Server = new DummyServer();
+        Data = new GenData(GenMultiSettings);
+        WorldGen = new WorldGenerator(this, Data);
+        Client = new GeneratorClient();
+        Client.Setup(this);
+        AddChild(Client);
     }
     public override void _Process(float delta)
     {

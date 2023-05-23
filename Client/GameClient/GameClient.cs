@@ -32,7 +32,7 @@ public class GameClient : Node, IClient
         Settings = ClientSettings.Load();
         Key = new ClientWriteKey(session.Data, session);
         Data = session.Data;
-        var cam = CameraController.Construct(Data);
+        var cam = WorldCameraController.Construct(Data);
         AddChild(cam);
         cam.Current = true;
         Cam = cam;

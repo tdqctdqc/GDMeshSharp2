@@ -33,25 +33,11 @@ public class MapPolygonEdge : Entity
         LoNexus = loNexus;
         HiNexus = hiNexus;
     }
-    public static MapPolygonEdge Create(PolyBorderChain chain1, PolyBorderChain chain2, GenWriteKey key)
+    public static MapPolygonEdge Create(PolyBorderChain hiChain, PolyBorderChain lowChain, GenWriteKey key)
     {
-        EntityRef<MapPolygon> lowId;
-        EntityRef<MapPolygon> highId;
-        if (chain1.Native.Entity().Id < chain2.Native.Entity().Id)
-        {
-            lowId = new EntityRef<MapPolygon>(chain1.Native.Entity(), key);
-            highId = new EntityRef<MapPolygon>(chain2.Native.Entity(), key);
-        }
-        else
-        {
-            lowId = new EntityRef<MapPolygon>(chain2.Native.Entity(), key);
-            highId = new EntityRef<MapPolygon>(chain1.Native.Entity(), key);
-        }
+        var lowId = lowChain.Native;
+        var highId = hiChain.Native;
         
-        PolyBorderChain lowChain = chain1.Native.Entity() == lowId.Entity() 
-            ? chain1 : chain2;
-        PolyBorderChain hiChain = chain1.Native.Entity() == lowId.Entity() 
-            ? chain2 : chain1;
         lowId.Entity().AddNeighbor(highId.Entity(), lowChain, key);
         highId.Entity().AddNeighbor(lowId.Entity(), hiChain, key);
         var b = new MapPolygonEdge(
@@ -63,38 +49,44 @@ public class MapPolygonEdge : Entity
     }
     
     public static PolyBorderChain ConstructBorderChain(MapPolygon native, MapPolygon foreign, 
-        List<LineSegment> segments, Data data)
+        List<LineSegment> segmentsRel, Data data)
     {
-        var segsRel = RelativizeSegments(segments, native, data, out _);
-        return PolyBorderChain.Construct(native, foreign, segsRel);
+        
+        return PolyBorderChain.Construct(native, foreign, segmentsRel);
     }
-    private static List<LineSegment> RelativizeSegments(List<LineSegment> abs, MapPolygon poly, Data data, out bool reversed)
+    private List<LineSegment> RelativizeSegments(List<LineSegment> abs, MapPolygon poly, Data data)
     {
-        reversed = false;
-        var res = new List<LineSegment>();
-        for (var i = 0; i < abs.Count; i++)
-        {
-            var absSeg = abs[i];
-            var t = poly.GetOffsetTo(absSeg.To, data);
-            var f = poly.GetOffsetTo(absSeg.From, data);
-            var relSeg = Clockwise.IsClockwise(t, f, Vector2.Zero)
-                ? new LineSegment(t, f)
-                : new LineSegment(f, t);
-            res.Add(relSeg);
-        }
+        var oldSegs = this.GetSegsRel(poly).Segments;
+        var oldFrom = oldSegs[0].From;
+        var oldTo = oldSegs[oldSegs.Count - 1].To;
+        
+        var absFirstRel = poly.GetOffsetTo(abs[0].From, data);
+        var absLastRel = poly.GetOffsetTo(abs[abs.Count - 1].To, data);
 
-        if (res.IsContinuous() == false)
+        List<LineSegment> newSegs;
+        if (absFirstRel == oldFrom && absLastRel == oldTo)
         {
-            res.Reverse();
-            reversed = true;
+            newSegs = abs
+                .Select(s => new LineSegment(poly.GetOffsetTo(s.From, data), poly.GetOffsetTo(s.To, data)))
+                .ToList();
         }
-        return res;
+        else if (absLastRel == oldFrom && absFirstRel == oldTo)
+        {
+            newSegs = abs
+                .Select(s => new LineSegment(poly.GetOffsetTo(s.To, data), poly.GetOffsetTo(s.From, data)))
+                .Reverse()
+                .ToList();
+        }
+        else throw new Exception();
+        
+        
+        return newSegs;
     }
     public void ReplacePoints(List<LineSegment> newSegmentsAbs,
         GenWriteKey key)
     {
-        var highBorderSegs = RelativizeSegments(newSegmentsAbs, HighPoly.Entity(), key.Data, out var hiRev);
-        var lowBorderSegs = RelativizeSegments(newSegmentsAbs, LowPoly.Entity(), key.Data, out var loRev);
+        var highBorderSegs = RelativizeSegments(newSegmentsAbs, HighPoly.Entity(), key.Data);
+        var lowBorderSegs = RelativizeSegments(newSegmentsAbs, LowPoly.Entity(), key.Data);
         
         var lowSegsRel = PolyBorderChain.Construct(LowPoly.Entity(), HighPoly.Entity(), 
             lowBorderSegs);

@@ -29,15 +29,6 @@ public static class ISegmentExt
     {
         return (TSeg)s.ReverseGeneric();
     }
-    public static bool ConnectsToStart<T>(this ISegment<T> seg, ISegment<T> connect)
-    {
-        return connect.To.Equals(seg.From);
-    }
-
-    public static bool ConnectsToEnd<T>(this ISegment<T> seg, ISegment<T> connect)
-    {
-        return connect.From.Equals(seg.To);
-    }
 
     public static List<TSeg> Ordered<TSeg, TPrim>
         (this IEnumerable<TSeg> segs) where TSeg : ISegment<TPrim>
@@ -71,24 +62,6 @@ public static class ISegmentExt
 
         prevRes.Reverse();
         prevRes.AddRange(res);
-        
-        //todo its creating degenerate segs somewhere?
-        // if (prevRes.Count != segCount)
-        // {
-        //     if (typeof(ISegment<Vector2>).IsAssignableFrom(typeof(TSeg)))
-        //     {
-        //         var vSegs1 = (IEnumerable<ISegment<Vector2>>)segs;
-        //         var vSegs2 = (IEnumerable<ISegment<Vector2>>)prevRes;
-        //         
-        //         GD.Print($"result has {prevRes.Count}, source has {segCount}");
-        //         throw new SegmentsNotConnectedException(vSegs1.Select(s => new LineSegment(s.From, s.To)).ToList(),
-        //             vSegs2.Select(s => new LineSegment(s.From, s.To)).ToList());
-        //     }
-        //     else
-        //     {
-        //         throw new Exception(typeof(TSeg).ToString());
-        //     }
-        // }
         
         return prevRes;
     }
