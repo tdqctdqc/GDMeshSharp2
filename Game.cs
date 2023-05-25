@@ -27,8 +27,60 @@ public class Game : Node
         Assets.Setup();
         SetSerializer();
         StartMainMenuSession();
+        Test();
     }
 
+    private void Test()
+    {
+        // var segCount = 100f;
+        // var testIters = 1000;
+        // var segs = new List<LineSegment>();
+        // var arm = Vector2.One * 100f;
+        // var points = new List<Vector2>();
+        // for (var i = 0; i < segCount - 1; i++)
+        // {
+        //     var ratioFrom = i / segCount;
+        //     var ratioTo = (i + 1) / segCount;
+        //     var point = arm.Rotated(ratioFrom * Mathf.Pi * 2f);
+        //     points.Add(point);
+        // }
+        //
+        // for (var i = 0; i < points.Count - 1; i++)
+        // {
+        //     segs.Add(new LineSegment(points[i], points[i + 1]));
+        // }
+        //
+        // segs = segs.OrderBy(s => Random.Randf()).ToList();
+        // var sw = new Stopwatch();
+        //
+        // var chainedNew = segs.Chainify();
+        // sw.Start();
+        // for (var i = 0; i < testIters; i++)
+        // {
+        //     chainedNew = segs.ChainifyNew();
+        // }
+        // sw.Stop();
+        // var newTime = sw.Elapsed.TotalMilliseconds;
+        // sw.Reset();
+        //
+        //
+        // var chainedOld = segs.Chainify();
+        // sw.Start();
+        // for (var i = 0; i < testIters; i++)
+        // {
+        //     chainedOld = segs.Chainify();
+        // }
+        // sw.Stop();
+        // var oldTime = sw.Elapsed.TotalMilliseconds;
+        // sw.Reset();
+        //
+        //
+        //
+        //
+        //
+        // GD.Print("old " + oldTime);
+        // GD.Print("new " + newTime);
+    }
     public void SetSerializer()
     {
         Serializer = new Serializer();

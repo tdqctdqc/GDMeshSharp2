@@ -160,10 +160,6 @@ public class RiverPolyTriGen
                 edge.ReplacePoints(split, key);
                 continue;
             }
-
-            
-
-            
             
             var margin = 10f;
             
@@ -171,7 +167,8 @@ public class RiverPolyTriGen
             var newHiSegs = new List<LineSegment>();
             
             var fromSeg = hiSegments[0];
-            var fromPivotWidth = fromNexus.IncidentEdges.Average(e => River.GetWidthFromFlow(e.MoistureFlow)) / 2f;
+            var fromPivotWidth = fromNexus.IncidentEdges
+                .Average(e => River.GetWidthFromFlow(e.MoistureFlow)) / 2f;
             var fromSegWidth = fromSeg.Length();
             if (fromPivotWidth + 10f >= fromSegWidth)
             {
@@ -209,27 +206,6 @@ public class RiverPolyTriGen
                 var s2 = new LineSegment(pivot, toSeg.To);
                 if (s2.Length() != 0f) newHiSegs.Add(s2);
             }
-
-
-            var otherSegs = hiPoly.GetEdges(key.Data).Where(e => e != edge)
-                .SelectMany(e => e.GetSegsRel(hiPoly).Segments);
-            
-            foreach (var otherSeg in otherSegs)
-            {
-                for (var i = 0; i < newHiSegs.Count - 1; i++)
-                {
-                    var thisSeg = newHiSegs[i];
-                    if (thisSeg.From == otherSeg.To && thisSeg.To == otherSeg.From)
-                    {
-                        var e = new SegmentsException("retracking boundary seg");
-                        e.AddSegLayer(hiSegments, "source");
-                        e.AddSegLayer(newHiSegs, "new");
-                        throw e;
-                    }
-                }
-            }
-            
-            
             
             var newAbsSegs = newHiSegs.Select(s => s.Translate(hiPoly.Center)).ToList();
             edge.ReplacePoints(newAbsSegs, key);

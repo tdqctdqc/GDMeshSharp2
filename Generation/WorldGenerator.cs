@@ -81,6 +81,10 @@ public class WorldGenerator
 
     private void RunGenerator(Generator gen)
     {
-        gen.Generate(_key);
+        var sw = new Stopwatch();
+        sw.Start();
+        var r = gen.Generate(_key);
+        sw.Stop();
+        GD.Print(r.GetTimes());
     }
 }

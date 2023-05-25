@@ -25,7 +25,7 @@ public class PolyTriGenerator : Generator
         
         report.StartSection();
         new RiverPolyTriGen().DoRivers(key);
-        report.StopSection("Finding river segs");
+        report.StopSection("Finding rivers");
         
         report.StartSection();
         Parallel.ForEach(polys, p => BuildTris(p, key));

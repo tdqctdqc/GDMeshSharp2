@@ -36,11 +36,6 @@ public static class LineSegmentExt
     {
         return segs.Select(s => new LineSegment((s.From - center) * insetFactor, (s.To - center) * insetFactor));
     }
-
-    // public static List<LineSegment> ChainifyNew(this List<LineSegment> lineSegments)
-    // {
-    //     var froms = 
-    // }
     public static List<LineSegment> FlipChainify(this List<LineSegment> lineSegments)
     {
         var hash = new HashSet<LineSegment>(lineSegments);
@@ -65,7 +60,6 @@ public static class LineSegmentExt
             to = nextTo.To;
             tos.Add(nextTo);
         }
-        // GD.Print("starting froms");
 
         while (hash.Count > 0)
         {
@@ -97,52 +91,37 @@ public static class LineSegmentExt
         if (froms.IsChain() == false) throw new Exception();
         return froms; 
     }
+
     public static List<LineSegment> Chainify(this List<LineSegment> lineSegments)
     {
-        var hash = new HashSet<LineSegment>(lineSegments);
-        
-        var start = hash.First();
-        hash.Remove(start);
-        var tos = new List<LineSegment>();
-        var froms = new List<LineSegment>();
-        var to = start.To;
-        var from = start.From;
-
-        while (hash.Count > 0)
+        var froms = new Dictionary<Vector2, LineSegment>();
+        var tos = new Dictionary<Vector2, LineSegment>();
+        Vector2 first = Vector2.Inf;
+        for (var i = 0; i < lineSegments.Count; i++)
         {
-            var nextTo = hash.FirstOrDefault(ls => ls.From == to);
-            if (nextTo == null) break;
-            hash.Remove(nextTo);
-            to = nextTo.To;
-            tos.Add(nextTo);
+            var seg = lineSegments[i];
+            tos.Add(seg.To, seg);
         }
-        while (hash.Count > 0)
+        for (var i = 0; i < lineSegments.Count; i++)
         {
-            var nextFrom = hash.FirstOrDefault(ls => ls.To == from);
-            if (nextFrom == null) break;
-            hash.Remove(nextFrom);
-            from = nextFrom.From;
-            froms.Add(nextFrom);
+            var seg = lineSegments[i];
+            froms.Add(seg.From, seg);
+            if (tos.ContainsKey(seg.From) == false) first = seg.From;
         }
 
-        froms.Reverse();
-        froms.Add(start);
-        froms.AddRange(tos);
-        
-        if (hash.Count != 0)
+        if (first == Vector2.Inf) first = lineSegments[0].From;
+
+        var curr = froms[first];
+        var res = new List<LineSegment>{curr};
+        for (var i = 0; i < lineSegments.Count - 1; i++)
         {
-            var e = new SegmentsException("chainification could not complete");
-            e.AddSegLayer(lineSegments, "before");
-            e.AddSegLayer(froms, "attempt");
-            e.AddSegLayer(hash.ToList(), "leftover");
-            
-            throw e;
+            var next = froms[curr.To];
+            res.Add(next);
+            curr = next;
         }
 
-        if (froms.IsChain() == false) throw new Exception();
-        return froms; 
+        return res;
     }
-
 
     public static List<LineSegment> Circuitify(this List<List<LineSegment>> source)
     {

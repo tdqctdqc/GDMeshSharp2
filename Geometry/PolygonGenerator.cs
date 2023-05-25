@@ -110,8 +110,9 @@ public class PolygonGenerator : Generator
         {
             CreateEdgeAndBorderChains(b, key, mapWidth, nexuses);
         }
+        
         partitions.ForEach(ps => ps.ForEach(p => FlipEdgeSegsToClockwise(p)));
-        GD.Print("done flipping");
+        
 
         var edgeNexi = new Dictionary<MapPolygonEdge, Vector2>();
         
