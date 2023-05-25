@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Godot;
 
 public class TempRiverData : Entity
@@ -24,11 +26,17 @@ public class TempRiverData : Entity
 
     public void GenerateInfos(GenWriteKey key)
     {
-        foreach (var poly in key.Data.Planet.Polygons.Entities)
+        var polys = key.Data.Planet.Polygons.Entities;
+        var tempInfos = new ConcurrentDictionary<MapPolygon, MapPolyRiverTriInfo>();
+        Parallel.ForEach(polys, poly =>
         {
-            if (poly.GetEdges(key.Data).Any(e => e.IsRiver()) == false) continue;
+            if (poly.GetEdges(key.Data).Any(e => e.IsRiver()) == false) return;
             var info = new MapPolyRiverTriInfo(poly, this, key);
-            Infos.Add(poly, info);
+            tempInfos.TryAdd(poly, info);
+        });
+        foreach (var kvp in tempInfos)
+        {
+            Infos.Add(kvp.Key, kvp.Value);
         }
     }
     
@@ -86,11 +94,7 @@ public class MapPolyRiverTriInfo
             if (edge1.IsRiver() == false)
             {
                 var endKey1 = new EdgeEndKey(nexus, edge1);
-                var pivot1 = rData.HiPivots[endKey1];
-                if (Poly != edge1.HighPoly.Entity())
-                {
-                    pivot1 += Poly.GetOffsetTo(edge1.HighPoly.Entity(), data);
-                }
+                var pivot1 = GetPivot(endKey1, rData, data);
                 InnerTris.Add(endKey1, PolyTri.Construct(nexusPoint, inner, pivot1, 
                     LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
             }
@@ -101,11 +105,7 @@ public class MapPolyRiverTriInfo
                 if (edge2.IsRiver() == false)
                 {
                     var endKey2 = new EdgeEndKey(nexus, edge2);
-                    var pivot2 = rData.HiPivots[endKey2];
-                    if (Poly != edge2.HighPoly.Entity())
-                    {
-                        pivot2 += Poly.GetOffsetTo(edge2.HighPoly.Entity(), data);
-                    }
+                    var pivot2 = GetPivot(endKey2, rData, data);
                     InnerTris.Add(endKey2, PolyTri.Construct(nexusPoint, inner, pivot2, 
                         LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
                 }
@@ -115,11 +115,9 @@ public class MapPolyRiverTriInfo
     private void MakeBankTris(Data data, TempRiverData rData,
         IEnumerable<MapPolygonEdge> edges)
     {
-
         foreach (var edge in edges)
         {
             if (edge.IsRiver() == false) continue;
-            
             var width = River.GetWidthFromFlow(edge.MoistureFlow);
             
             var hiNexus = edge.HiNexus.Entity();
@@ -134,24 +132,23 @@ public class MapPolyRiverTriInfo
             var loCorner = new PolyCornerKey(loNexus, Poly);
             var loInner = rData.Inners[loCorner];
             
-            var edgePoints = edge.GetSegsRel(Poly).Segments.GetPoints().ToList();
+            var edgeSegs = edge.GetSegsRel(Poly).Segments;
+            var firstEdgeP = edgeSegs[0].From;
+            var lastEdgeP = edgeSegs[edgeSegs.Count - 1].To;
             Vector2 startInner;
             Vector2 endInner;
-            if (loNexusPoint == edgePoints.First() && hiNexusPoint == edgePoints.Last())
+            if (loNexusPoint == firstEdgeP && hiNexusPoint == lastEdgeP)
             {
                 startInner = loInner;
                 endInner = hiInner;
             }
-            else if (hiNexusPoint == edgePoints.First() && loNexusPoint == edgePoints.Last())
+            else if (hiNexusPoint == firstEdgeP && loNexusPoint == lastEdgeP)
             {
                 startInner = hiInner;
                 endInner = loInner;
             }
             else throw new Exception();
-
-            var edgeSegs = edge.GetSegsRel(Poly).Segments;
-            if (edgeSegs.Any(e => e.From == e.To)) throw new Exception();
-            if (edgeSegs.IsChain() == false) throw new Exception();
+            
             var bankInnerPoints = new List<Vector2>();
             var edgeInnerSegs = new List<LineSegment>();
             
@@ -179,6 +176,7 @@ public class MapPolyRiverTriInfo
             {
                 edgeInnerSegs.Add(new LineSegment(startInner, endInner));
             }
+            
             BankSegs.Add(edge, edgeInnerSegs);
             if (edgeSegs.Count != edgeInnerSegs.Count) throw new Exception();
 
@@ -254,16 +252,14 @@ public class MapPolyRiverTriInfo
                     var fromInner = rData.Inners[new PolyCornerKey(fromNexus, Poly)];
                     var fromPivotSource = GetPivot(new EdgeEndKey(fromNexus, edge), rData, data);
                     var fromPivot = edgePoints.OrderBy(p => p.DistanceTo(fromPivotSource)).First();
+                    
                     if (fromPivotSource.DistanceTo(fromPivot) > epsilon)
                     {
-                        if (fromPivotSource.DistanceTo(fromPivot) > epsilon)
-                        {
-                            GD.Print("source pivot " + fromPivotSource);
-                            GD.Print("closest pivot " + fromPivot);
-                            throw new Exception();
-                        }
+                        GD.Print("source pivot " + fromPivotSource);
+                        GD.Print("closest pivot " + fromPivot);
                         throw new Exception();
                     }
+                    
                     var fromPivotSeg = edgeSegs.First(ep => ep.To == fromPivot);
                     fromPivot = fromPivotSeg.To;
                     firstInnerEdge = new LineSegment(fromInner, fromPivot);
@@ -289,15 +285,7 @@ public class MapPolyRiverTriInfo
 
                 var continueFromIndex = edgeSegs.FindIndex(ls => ls.From == continueFrom);
                 var continueToIndex = edgeSegs.FindIndex(ls => ls.To == continueTo);
-                // if (continueFromIndex > continueToIndex)
-                // {
-                //     var e = new SegmentsException($"bad indices from is {continueFromIndex} to is {continueToIndex}");
-                //     e.AddSegLayer(edgeSegs, "edge segs");
-                //     e.AddPointSet(new List<Vector2>{continueFrom}, "continue from");
-                //     e.AddPointSet(new List<Vector2>{continueTo}, "continue to");
-                //     throw e;
-                // }
-                // if (continueFromIndex == continueToIndex) throw new Exception("one index");
+                
                 if(firstInnerEdge != null) edgeInner.Add(firstInnerEdge);
                 for (var i = continueFromIndex; i <= continueToIndex; i++)
                 {
@@ -309,7 +297,6 @@ public class MapPolyRiverTriInfo
                 }
             }
             edgeInner = edgeInner.Chainify();
-            
             edgeInners.Add(edgeInner);
         }
 
@@ -335,12 +322,11 @@ public class MapPolyRiverTriInfo
         
         
         
-        if (InnerBoundary.IsCircuit() == false)
+        if (InnerBoundary[0].From != InnerBoundary[InnerBoundary.Count - 1].To)
         {
             InnerBoundary.Add(new LineSegment(InnerBoundary.Last().To, InnerBoundary.First().From));
         }
-
-        if (InnerBoundary.IsCircuit() == false) throw new Exception();
+        // if (InnerBoundary.IsCircuit() == false) throw new Exception();
     }
 
     private void MakeLandTris(TempRiverData rData, GenWriteKey key)
@@ -363,7 +349,6 @@ public class MapPolyRiverTriInfo
         {
             pivot += Poly.GetOffsetTo(key.Edge.HighPoly.Entity(), data);
         }
-
         return pivot;
     }
     
