@@ -78,18 +78,11 @@ public class MapPolyRiverTriInfo
             if (nexus.IsRiverNexus() == false) continue;
             var nexusPoint = Poly.GetOffsetTo(nexus.Point, data);
             var nexusEdges = edges.Where(e => nexus.IncidentEdges.Contains(e));
-            if (nexusEdges.Count() != 2)
-            {
-                throw new Exception();
-                continue;
-            }
-            
-
             
             var innerKey = new PolyCornerKey(nexus, Poly);
             var inner = rData.Inners[innerKey];
+            
             var edge1 = nexusEdges.ElementAt(0);
-
             if (edge1.IsRiver() == false)
             {
                 var endKey1 = new EdgeEndKey(nexus, edge1);
@@ -101,20 +94,21 @@ public class MapPolyRiverTriInfo
                 InnerTris.Add(endKey1, PolyTri.Construct(nexusPoint, inner, pivot1, 
                     LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
             }
-            
-            var edge2 = nexusEdges.ElementAt(1);
 
-
-            if (edge2.IsRiver() == false)
+            if (nexusEdges.Count() > 1)
             {
-                var endKey2 = new EdgeEndKey(nexus, edge2);
-                var pivot2 = rData.HiPivots[endKey2];
-                if (Poly != edge2.HighPoly.Entity())
+                var edge2 = nexusEdges.ElementAt(1);
+                if (edge2.IsRiver() == false)
                 {
-                    pivot2 += Poly.GetOffsetTo(edge2.HighPoly.Entity(), data);
+                    var endKey2 = new EdgeEndKey(nexus, edge2);
+                    var pivot2 = rData.HiPivots[endKey2];
+                    if (Poly != edge2.HighPoly.Entity())
+                    {
+                        pivot2 += Poly.GetOffsetTo(edge2.HighPoly.Entity(), data);
+                    }
+                    InnerTris.Add(endKey2, PolyTri.Construct(nexusPoint, inner, pivot2, 
+                        LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
                 }
-                InnerTris.Add(endKey2, PolyTri.Construct(nexusPoint, inner, pivot2, 
-                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
             }
         }
     }
@@ -221,80 +215,126 @@ public class MapPolyRiverTriInfo
             else
             {
                 var hiNexusP = Poly.GetOffsetTo(edge.HiNexus.Entity().Point, data);
-            var loNexusP = Poly.GetOffsetTo(edge.LoNexus.Entity().Point, data);
-            
-            
-            var edgeSegs = edge.GetSegsRel(Poly).Segments;
+                var loNexusP = Poly.GetOffsetTo(edge.LoNexus.Entity().Point, data);
+                
+                
+                var edgeSegs = edge.GetSegsRel(Poly).Segments;
 
-            MapPolyNexus fromNexus;
-            MapPolyNexus toNexus;
+                MapPolyNexus fromNexus;
+                MapPolyNexus toNexus;
 
-            var first = edgeSegs.First();
-            if (edgeSegs.Count > 1 && first.From == edgeSegs[1].From)
-            {
-                GD.Print("short fix");
-                var temp = first.From;
-                first.From = first.To;
-                first.To = temp;
-            }
-            
-            var from = edgeSegs.First().From;
-            var to = edgeSegs.Last().To;
-            var epsilon = 1f;
-            if (hiNexusP.DistanceTo(from) <= epsilon 
-                && loNexusP.DistanceTo(to) <= epsilon)
-            {
-                fromNexus = edge.HiNexus.Entity();
-                toNexus = edge.LoNexus.Entity();
-            }
-            else if (hiNexusP.DistanceTo(to) <= epsilon 
-                     && loNexusP.DistanceTo(from) <= epsilon)
-            {
-                toNexus = edge.HiNexus.Entity();
-                fromNexus = edge.LoNexus.Entity();
-            }
-            else
-            {
-                throw new Exception("bad epsilon");
-            }
+                if (edgeSegs.Count > 1 && edgeSegs.First().From == edgeSegs[1].From)
+                {
+                    throw new Exception();
+                }
+                
+                var from = edgeSegs.First().From;
+                var to = edgeSegs.Last().To;
+                if (hiNexusP == from
+                    && loNexusP == to)
+                {
+                    fromNexus = edge.HiNexus.Entity();
+                    toNexus = edge.LoNexus.Entity();
+                }
+                else if (hiNexusP == to
+                         && loNexusP == from)
+                {
+                    toNexus = edge.HiNexus.Entity();
+                    fromNexus = edge.LoNexus.Entity();
+                } else { throw new Exception("bad epsilon"); }
 
-            Vector2 continueFrom = from;
-            Vector2 continueTo = to;
-            if (fromNexus.IsRiverNexus())
-            {
-                var fromInner = rData.Inners[new PolyCornerKey(fromNexus, Poly)];
-                var fromPivot = GetPivot(new EdgeEndKey(fromNexus, edge), rData, data);
-                var fromPivotSeg = edgeSegs.OrderBy(ep => ep.From.DistanceTo(fromPivot)).First();
-                fromPivot = fromPivotSeg.From;
-                edgeInner.Add(new LineSegment(fromInner, fromPivot));
-                continueFrom = fromPivot;
-            }
-            
-            if (toNexus.IsRiverNexus())
-            {
-                var toInner = rData.Inners[new PolyCornerKey(toNexus, Poly)];
-                var toPivot = GetPivot(new EdgeEndKey(toNexus, edge), rData, data);
-                var toPivotSeg = edgeSegs.OrderBy(ep => ep.To.DistanceTo(toPivot)).First();
-                toPivot = toPivotSeg.To;
-                edgeInner.Add(new LineSegment(toPivot, toInner));
-                continueTo = toPivot;
-            }
+                Vector2 continueFrom = from;
+                Vector2 continueTo = to;
+                
+                LineSegment firstInnerEdge = null;
+                var edgePoints = edgeSegs.GetPoints().ToHashSet();
+                var epsilon = .01f;
+                if (fromNexus.IsRiverNexus())
+                {
+                    var fromInner = rData.Inners[new PolyCornerKey(fromNexus, Poly)];
+                    var fromPivotSource = GetPivot(new EdgeEndKey(fromNexus, edge), rData, data);
+                    var fromPivot = edgePoints.OrderBy(p => p.DistanceTo(fromPivotSource)).First();
+                    if (fromPivotSource.DistanceTo(fromPivot) > epsilon)
+                    {
+                        if (fromPivotSource.DistanceTo(fromPivot) > epsilon)
+                        {
+                            GD.Print("source pivot " + fromPivotSource);
+                            GD.Print("closest pivot " + fromPivot);
+                            throw new Exception();
+                        }
+                        throw new Exception();
+                    }
+                    var fromPivotSeg = edgeSegs.First(ep => ep.To == fromPivot);
+                    fromPivot = fromPivotSeg.To;
+                    firstInnerEdge = new LineSegment(fromInner, fromPivot);
+                    continueFrom = fromPivot;
+                }
 
-            bool add = false;
-            for (var i = 0; i < edgeSegs.Count; i++)
-            {
-                var seg = edgeSegs[i];
-                if (seg.From == seg.To) continue;
-                if (seg.From == continueFrom) add = true;
-                if(add) edgeInner.Add(seg);
-                if (seg.To == continueTo) break;
-            }
+                LineSegment lastInnerEdge = null;
+                if (toNexus.IsRiverNexus())
+                {
+                    var toInner = rData.Inners[new PolyCornerKey(toNexus, Poly)];
+                    var toPivotSource = GetPivot(new EdgeEndKey(toNexus, edge), rData, data);
+                    var toPivot = edgePoints.OrderBy(p => p.DistanceTo(toPivotSource)).First();
+                    if (toPivotSource.DistanceTo(toPivot) > epsilon)
+                    {
+                        GD.Print("source pivot " + toPivotSource);
+                        GD.Print("closest pivot " + toPivot);
+                        throw new Exception();
+                    }
+                    var toPivotSeg = edgeSegs.First(ep => ep.From == toPivot);
+                    lastInnerEdge = new LineSegment(toPivot, toInner);
+                    continueTo = toPivot;
+                }
+
+                var continueFromIndex = edgeSegs.FindIndex(ls => ls.From == continueFrom);
+                var continueToIndex = edgeSegs.FindIndex(ls => ls.To == continueTo);
+                // if (continueFromIndex > continueToIndex)
+                // {
+                //     var e = new SegmentsException($"bad indices from is {continueFromIndex} to is {continueToIndex}");
+                //     e.AddSegLayer(edgeSegs, "edge segs");
+                //     e.AddPointSet(new List<Vector2>{continueFrom}, "continue from");
+                //     e.AddPointSet(new List<Vector2>{continueTo}, "continue to");
+                //     throw e;
+                // }
+                // if (continueFromIndex == continueToIndex) throw new Exception("one index");
+                if(firstInnerEdge != null) edgeInner.Add(firstInnerEdge);
+                for (var i = continueFromIndex; i <= continueToIndex; i++)
+                {
+                    edgeInner.Add(edgeSegs[i]);
+                }
+                if(lastInnerEdge != null && lastInnerEdge.IsSame(firstInnerEdge) == false)
+                {
+                    edgeInner.Add(lastInnerEdge);
+                }
             }
             edgeInner = edgeInner.Chainify();
+            
             edgeInners.Add(edgeInner);
         }
 
-        InnerBoundary = edgeInners.Chainify();
+        try
+        {
+            InnerBoundary = edgeInners.Chainify();
+        }
+        catch
+        {
+            var e = new SegmentsException("failed to chainify inner river boundary");
+            e.AddSegLayer(edgeInners.SelectMany(l => l).ToList(), "edge inners");
+
+            int iter = 0;
+            foreach (var eInner in edgeInners)
+            {
+                e.AddSegLayer(eInner, "edge inner " + iter++);
+
+            }
+            e.AddSegLayer(edges.SelectMany(b => b.GetSegsRel(Poly).Segments).ToList(), "poly edges");
+            GD.Print(Poly.Center);
+            throw e;
+        }
+        
+        
+        
         if (InnerBoundary.IsCircuit() == false)
         {
             InnerBoundary.Add(new LineSegment(InnerBoundary.Last().To, InnerBoundary.First().From));

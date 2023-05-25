@@ -217,18 +217,16 @@ public static class Vector2Ext
         var angle = v.AngleTo(onto);
         return v.Dot(onto) / onto.Length();
     }
-    public static Vector2 GetReflectionOfPointAcrossLine(this Vector2 point, Vector2 from, Vector2 to)
+
+    public static Vector2 ClampToBox(this Vector2 p, Vector2 bound1, Vector2 bound2)
     {
-        var fp = point - from;
-        var dist = point.DistToLine(from, to);
-        var axis = to - from;
-        var projLength = fp.GetProjectionLength(axis);
-        // var newP = from + axis * projLength +         
-        
-        
-        var angle = fp.AngleTo(axis);
-        var rotated = fp.Rotated(angle * 2f);
-        return from + rotated;
+        var minXBound = Mathf.Min(bound1.x, bound2.x);
+        var minYBound = Mathf.Min(bound1.y, bound2.y);
+        var maxXBound = Mathf.Max(bound1.x, bound2.x);
+        var maxYBound = Mathf.Max(bound1.y, bound2.y);
+
+        return new Vector2(Mathf.Clamp(p.x, minXBound, maxXBound),
+            Mathf.Clamp(p.y, minYBound, maxYBound));
     }
     public static float DistToLine(this Vector2 point, Vector2 start, Vector2 end)
     {

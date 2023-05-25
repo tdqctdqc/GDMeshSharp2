@@ -22,13 +22,21 @@ public class SegmentsExceptionDisplay : Node2D
         for (int i = 0; i < e.SegLayers.Count; i++)
         {
             var mb = new MeshBuilder();
-            
+
             mb.AddCircle(Vector2.Zero, 10f, 12, Colors.Pink);
             var segs = e.SegLayers[i];
-            var height = segs.Max(s => Mathf.Max(s.From.y, s.To.y)) - segs.Min(s => Mathf.Min(s.From.y, s.To.y));
-            var width = segs.Max(s => Mathf.Max(s.From.x, s.To.x)) - segs.Min(s => Mathf.Min(s.From.x, s.To.x));
             
             
+            var maxY = segs.Max(s => Mathf.Max(s.From.y, s.To.y));
+            var minY = segs.Min(s => Mathf.Min(s.From.y, s.To.y));
+            var height = maxY - minY;
+            height = new List<float> {height, maxY, -minY }.Max();
+
+            var maxX = segs.Max(s => Mathf.Max(s.From.x, s.To.x));
+            var minX = segs.Min(s => Mathf.Min(s.From.x, s.To.x));
+            var width = maxX - minX;
+            width = new List<float> {height, maxX, -minX}.Max();
+
             var col = ColorsExt.GetRainbowColor(iter);
             mb.AddArrows(segs, (e.SegLayers.Count - iter + 1) * widthStep, col);
             mb.AddNumMarkers(segs.Select(s => s.Mid()).ToList(), markerSize, Colors.Transparent, Colors.White, Vector2.Zero);

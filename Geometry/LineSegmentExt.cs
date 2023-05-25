@@ -8,6 +8,22 @@ using Poly2Tri.Utility;
 
 public static class LineSegmentExt
 {
+    public static float GetAngleAroundSum(this List<LineSegment> segs, Vector2 center)
+    {
+        float res = 0f;
+        for (var i = 0; i < segs.Count; i++)
+        {
+            var seg = segs[i];
+            res += (seg.From - center).AngleTo(seg.To - center);
+        }
+        return res;
+    }
+    public static bool IsSame(this LineSegment ls, LineSegment compare)
+    {
+        if (ls == null && compare == null) return true;
+        if (ls == null || compare == null) return false;
+        return ls.From == compare.From && ls.To == compare.To;
+    }
     public static Vector2 Average(this IEnumerable<LineSegment> segs)
     {
         var avgX = segs.Average(s => (s.From.x + s.To.x) / 2f);
@@ -20,11 +36,70 @@ public static class LineSegmentExt
     {
         return segs.Select(s => new LineSegment((s.From - center) * insetFactor, (s.To - center) * insetFactor));
     }
+
+    // public static List<LineSegment> ChainifyNew(this List<LineSegment> lineSegments)
+    // {
+    //     var froms = 
+    // }
+    public static List<LineSegment> FlipChainify(this List<LineSegment> lineSegments)
+    {
+        var hash = new HashSet<LineSegment>(lineSegments);
+        
+        var start = hash.First();
+        hash.Remove(start);
+        var tos = new List<LineSegment>();
+        var froms = new List<LineSegment>();
+        var to = start.To;
+        var from = start.From;
+
+        // GD.Print("starting tos");
+        while (hash.Count > 0)
+        {
+            var nextTo = hash.FirstOrDefault(ls => ls.From == to || ls.To == to);
+            if (nextTo == null) break;
+            hash.Remove(nextTo);
+            if (nextTo.To == to)
+            {
+                nextTo = nextTo.Reverse();
+            }
+            to = nextTo.To;
+            tos.Add(nextTo);
+        }
+        // GD.Print("starting froms");
+
+        while (hash.Count > 0)
+        {
+            var nextFrom = hash.FirstOrDefault(ls => ls.From == from || ls.To == from);
+            if (nextFrom == null) break;
+            hash.Remove(nextFrom);
+            if (nextFrom.From == from)
+            {
+                nextFrom = nextFrom.Reverse();
+            }
+            from = nextFrom.From;
+            froms.Add(nextFrom);
+        }
+
+        froms.Reverse();
+        froms.Add(start);
+        froms.AddRange(tos);
+        
+        if (hash.Count != 0)
+        {
+            var e = new SegmentsException("chainification could not complete");
+            e.AddSegLayer(lineSegments, "before");
+            e.AddSegLayer(froms, "attempt");
+            e.AddSegLayer(hash.ToList(), "leftover");
+            
+            throw e;
+        }
+
+        if (froms.IsChain() == false) throw new Exception();
+        return froms; 
+    }
     public static List<LineSegment> Chainify(this List<LineSegment> lineSegments)
     {
-        var hash = new HashSet<LineSegment>(lineSegments
-            // .Where(ls => ls.From != ls.To)
-        );
+        var hash = new HashSet<LineSegment>(lineSegments);
         
         var start = hash.First();
         hash.Remove(start);
@@ -35,19 +110,17 @@ public static class LineSegmentExt
 
         while (hash.Count > 0)
         {
-            var nextTo = hash.FirstOrDefault(ls => ls.From == to || ls.To == to);
+            var nextTo = hash.FirstOrDefault(ls => ls.From == to);
             if (nextTo == null) break;
             hash.Remove(nextTo);
-            if (nextTo.To == to) nextTo = nextTo.Reverse();
             to = nextTo.To;
             tos.Add(nextTo);
         }
         while (hash.Count > 0)
         {
-            var nextFrom = hash.FirstOrDefault(ls => ls.From == from || ls.To == from);
+            var nextFrom = hash.FirstOrDefault(ls => ls.To == from);
             if (nextFrom == null) break;
             hash.Remove(nextFrom);
-            if (nextFrom.From == from) nextFrom = nextFrom.Reverse();
             from = nextFrom.From;
             froms.Add(nextFrom);
         }
@@ -70,24 +143,6 @@ public static class LineSegmentExt
         return froms; 
     }
 
-    private static void DebugDumpCircuit(List<LineSegment> source, List<LineSegment> res, HashSet<LineSegment> left)
-    {
-        GD.Print("SOURCE");
-        for (var i = 0; i < source.Count; i++)
-        {
-            GD.Print(source[i].ToString());
-        }
-        GD.Print("RES");
-        for (var i = 0; i < res.Count; i++)
-        {
-            GD.Print(res[i].ToString());
-        }
-        GD.Print("LEFT");
-        foreach (var ls in left)
-        {
-            GD.Print(ls.ToString());
-        }
-    }
 
     public static List<LineSegment> Circuitify(this List<List<LineSegment>> source)
     {
@@ -124,9 +179,18 @@ public static class LineSegmentExt
             to = nextList.Last().To;
             wholeList.Add(nextList);
         }
-
-        var neighborSegs = wholeList.SelectMany(l => l).ToList();
         
+        var neighborSegs = wholeList.SelectMany(l => l).ToList();
+
+        if (sourceHash.Count > 0)
+        {
+            var e = new SegmentsException("segments left over");
+            e.AddSegLayer(source.SelectMany(l => l).ToList(), "source");
+            e.AddSegLayer(neighborSegs, "attempt");
+            e.AddSegLayer(sourceHash.SelectMany(l => l).ToList(), "leftover");
+            throw e;
+        }
+
 
         if (neighborSegs.IsContinuous() == false)
         {

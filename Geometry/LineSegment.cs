@@ -99,14 +99,18 @@ public class LineSegment : ISegment<Vector2>
     ISegment<Vector2> ISegment<Vector2>.ReverseGeneric() => Reverse();
     bool ISegment<Vector2>.PointsTo(ISegment<Vector2> s)
     {
-        if (s is ISegment<Vector2> t == false) return false;
-        return To == t.From;
+        return To == s.From;
     }
 
     bool ISegment<Vector2>.ComesFrom(ISegment<Vector2> s)
     {
         if (s is ISegment<Vector2> t == false) return false;
         return From == t.To;
+    }
+
+    public LineSegment Copy()
+    {
+        return new LineSegment(From, To);
     }
 }
 

@@ -14,9 +14,7 @@ public class PolyAuxData
         var nbs = p.NeighborBorders.Values.ToList();
         if (nbs.Count() > 0)
         {
-            
             OrderedBoundarySegs = BuildBoundarySegments(p, data);
-            
             GraphicalCenter = OrderedBoundarySegs.Average();
             SetWheelTris(p, data);
         }
@@ -24,7 +22,17 @@ public class PolyAuxData
     private List<LineSegment> BuildBoundarySegments(MapPolygon p, Data data)
     {
         var source = p.Neighbors.Select(n => p.GetBorder(n.Id).Segments).ToList();
-        var ordered = source.ToList().Chainify();
+        List<LineSegment> ordered;
+        try
+        {
+            ordered = source.ToList().Chainify();
+        }
+        catch (Exception e)
+        {
+            GD.Print(p.Center);
+            GD.Print(p.Neighbors.Count() + " neighbors");
+            throw;
+        }
         for (var i = 0; i < ordered.Count - 1; i++)
         {
             var thisSeg = ordered[i];
@@ -34,7 +42,7 @@ public class PolyAuxData
                 var e = new SegmentsException("retracking boundary seg");
                 e.AddSegLayer(source.SelectMany(l => l).ToList(), "source");
                 e.AddSegLayer(ordered, "ordered");
-
+            
                 var nList = p.Neighbors.ToList();
                 for (var j = 0; j < nList.Count; j++)
                 {

@@ -95,46 +95,135 @@ public class PolygonGenerator : Generator
         rHash.Add(info.CornerPolys[3]);
 
         var borderChains = new ConcurrentDictionary<PolyBorderChain, PolyBorderChain>();
-        var sw = new Stopwatch(); 
-        
         var partitions = graph.Elements.Partition(10);
         
+        Parallel.ForEach(partitions, 
+            ps => ps.ForEach(p => BuildBorderSegs(p, info, rHash, graph, key, borderChains)));
         
-        sw.Start();
-        Parallel.ForEach(partitions, buildBordersForChunk);
-        sw.Stop();
-        sw.Reset();
         
-        sw.Start();
+        
         
         var mapWidth = key.GenData.GenMultiSettings.Dimensions.x;
-
         var nexuses = new Dictionary<Vector2, List<MapPolygonEdge>>();
         
         foreach (var b in borderChains)
         {
-            var hiChain = b.Key;
-            var loChain = b.Value;
-            var edge = MapPolygonEdge.Create(b.Key, b.Value, key);
-
-            var start = hiChain.Segments.First().From + b.Key.Native.Entity().Center;
-            if (start != start.Intify()) throw new Exception();
-            
-            var end = hiChain.Segments.Last().To + b.Key.Native.Entity().Center;
-            if (end != end.Intify()) throw new Exception();
-
-            if (start.x < 0) start.x += mapWidth;
-            if (end.x < 0) end.x += mapWidth;
-            
-            if(nexuses.ContainsKey(start) == false) nexuses.Add(start, new List<MapPolygonEdge>());
-            if(nexuses.ContainsKey(end) == false) nexuses.Add(end, new List<MapPolygonEdge>());
-            
-            nexuses[start].Add(edge);
-            nexuses[end].Add(edge);
+            CreateEdgeAndBorderChains(b, key, mapWidth, nexuses);
         }
+        partitions.ForEach(ps => ps.ForEach(p => FlipEdgeSegsToClockwise(p)));
+        GD.Print("done flipping");
 
         var edgeNexi = new Dictionary<MapPolygonEdge, Vector2>();
         
+        CreateNexi(nexuses, edgeNexi, key);
+        BindNexiToEdges(edgeNexi, key);
+        
+        key.Data.Notices.SetPolyShapes.Invoke();
+    }
+    
+    private void FlipEdgeSegsToClockwise(MapPolygon poly)
+    {
+        // GD.Print(poly.Id);
+        var borders = poly.GetPolyBorders();
+        
+        var allEdgeSegs = borders.SelectMany(b => b.Segments).ToList();
+        if (allEdgeSegs.Count == 0) throw new Exception();
+        // GD.Print(poly.Id + " 1");
+        allEdgeSegs = allEdgeSegs.FlipChainify();
+
+        
+        
+        var sum = allEdgeSegs.GetAngleAroundSum(Vector2.Zero);
+
+        if (sum == 0f) throw new Exception();
+        if (sum < 0f) allEdgeSegs = allEdgeSegs.Select(e => e.Reverse()).ToList();
+        
+        foreach (var border in borders)
+        {
+            if (border.Segments.Count != 1) throw new Exception();
+            var edgeSeg = border.Segments[0];
+            var newSeg = allEdgeSegs.First(ls => ls.IsSame(edgeSeg) || ls.Reverse().IsSame(edgeSeg));
+            if (newSeg.IsSame(edgeSeg) == false)
+            {
+                edgeSeg.From = newSeg.From;
+                edgeSeg.To = newSeg.To;
+            }
+        }
+    }
+    private void BuildBorderSegs(MapPolygon mp, MapGenInfo info, HashSet<MapPolygon> rHash,
+        Graph<MapPolygon, LineSegment> graph, GenWriteKey key, 
+        ConcurrentDictionary<PolyBorderChain, PolyBorderChain> borderChains)
+    {
+        if (info.LRWrap && rHash.Contains(mp))
+        {
+            throw new Exception();
+        }
+        var neighbors = graph.GetNeighbors(mp).Where(n => rHash.Contains(n) == false).ToList();
+        if (neighbors.Count == 0) throw new Exception();
+            
+        neighbors.ForEach(nMp =>
+        {
+            if (nMp.Id > mp.Id) return;
+            var edge = graph.GetEdge(mp, nMp);
+            if (edge.From == edge.To)
+            {
+                return;
+            }
+
+            if (edge.From != edge.From.Intify() || edge.To != edge.To.Intify())
+            {
+                throw new Exception();
+            }
+                
+
+            var lowEdge = new LineSegment(nMp.GetOffsetTo(edge.From, key.Data), 
+                nMp.GetOffsetTo(edge.To, key.Data));
+            if (lowEdge.IsCCW(Vector2.Zero))
+            {
+                lowEdge = lowEdge.Reverse();
+            }
+            var highEdge = new LineSegment(mp.GetOffsetTo(edge.From, key.Data), 
+                mp.GetOffsetTo(edge.To, key.Data));
+            if (highEdge.IsCCW(Vector2.Zero))
+            {
+                highEdge = highEdge.Reverse();
+            }
+            var chain1 = MapPolygonEdge.ConstructBorderChain(mp, nMp,
+                new List<LineSegment> {highEdge}, key.Data);
+                
+                
+            var chain2 = MapPolygonEdge.ConstructBorderChain(nMp, mp,
+                new List<LineSegment> {lowEdge}, key.Data);
+            borderChains.TryAdd(chain1, chain2);
+        });
+    }
+
+    private void CreateEdgeAndBorderChains(KeyValuePair<PolyBorderChain, PolyBorderChain> b, GenWriteKey key,
+        float mapWidth, Dictionary<Vector2, List<MapPolygonEdge>> nexuses)
+    {
+        var hiChain = b.Key;
+        var loChain = b.Value;
+        var edge = MapPolygonEdge.Create(b.Key, b.Value, key);
+
+        var start = hiChain.Segments.First().From + b.Key.Native.Entity().Center;
+        if (start != start.Intify()) throw new Exception();
+            
+        var end = hiChain.Segments.Last().To + b.Key.Native.Entity().Center;
+        if (end != end.Intify()) throw new Exception();
+
+        if (start.x < 0) start.x += mapWidth;
+        if (end.x < 0) end.x += mapWidth;
+            
+        if(nexuses.ContainsKey(start) == false) nexuses.Add(start, new List<MapPolygonEdge>());
+        if(nexuses.ContainsKey(end) == false) nexuses.Add(end, new List<MapPolygonEdge>());
+            
+        nexuses[start].Add(edge);
+        nexuses[end].Add(edge);
+    }
+
+    private void CreateNexi(Dictionary<Vector2, List<MapPolygonEdge>> nexuses,
+        Dictionary<MapPolygonEdge, Vector2> edgeNexi, GenWriteKey key)
+    {
         foreach (var kvp in nexuses)
         {
             var point = kvp.Key;
@@ -153,6 +242,10 @@ public class PolygonGenerator : Generator
                 }
             }
         }
+    }
+
+    private void BindNexiToEdges(Dictionary<MapPolygonEdge, Vector2> edgeNexi, GenWriteKey key)
+    {
         foreach (var kvp in edgeNexi)
         {
             var edge = kvp.Key;
@@ -160,73 +253,11 @@ public class PolygonGenerator : Generator
             var n2 = key.Data.Planet.PolyNexi[(int)kvp.Value.y];
             edge.SetNexi(n1, n2, key);
         }
-        
-        
-        sw.Stop();
-        GD.Print($"create time {sw.Elapsed.TotalMilliseconds}");
-        sw.Reset();
-        
-        sw.Start();
-        key.Data.Notices.SetPolyShapes.Invoke();
-        sw.Stop();
-        GD.Print($"set poly shapes time {sw.Elapsed.TotalMilliseconds}");
-
-        void buildBordersForChunk(List<MapPolygon> polys)
-        {
-            foreach (var mapPolygon in polys)
-            {
-                buildBorders(mapPolygon);
-            }
-        }
-        void buildBorders(MapPolygon mp)
-        {
-            if (info.LRWrap && rHash.Contains(mp))
-            {
-                throw new Exception();
-            }
-            var neighbors = graph.GetNeighbors(mp).Where(n => rHash.Contains(n) == false).ToList();
-            if (neighbors.Count == 0) throw new Exception();
-            
-            neighbors.ForEach(nMp =>
-            {
-                if (nMp.Id > mp.Id) return;
-                var edge = graph.GetEdge(mp, nMp);
-                if (edge.From == edge.To)
-                {
-                    return;
-                }
-
-                if (edge.From != edge.From.Intify() || edge.To != edge.To.Intify())
-                {
-                    throw new Exception();
-                }
-                
-
-                var lowEdge = new LineSegment(nMp.GetOffsetTo(edge.From, key.Data), 
-                    nMp.GetOffsetTo(edge.To, key.Data));
-                if (lowEdge.IsCCW(Vector2.Zero))
-                {
-                    lowEdge = lowEdge.Reverse();
-                }
-                var highEdge = new LineSegment(mp.GetOffsetTo(edge.From, key.Data), 
-                    mp.GetOffsetTo(edge.To, key.Data));
-                if (highEdge.IsCCW(Vector2.Zero))
-                {
-                    highEdge = highEdge.Reverse();
-                }
-                var chain1 = MapPolygonEdge.ConstructBorderChain(mp, nMp,
-                    new List<LineSegment> {highEdge}, key.Data);
-                
-                
-                var chain2 = MapPolygonEdge.ConstructBorderChain(nMp, mp,
-                    new List<LineSegment> {lowEdge}, key.Data);
-                borderChains.TryAdd(chain1, chain2);
-            });
-        }
     }
 }
 public class MapGenInfo
 {
+    public Vector2 Dimensions { get; private set; }
     public bool LRWrap { get; private set; }
     public List<Vector2> Points,
         TopPoints,
@@ -246,6 +277,7 @@ public class MapGenInfo
     public Dictionary<Vector2,MapPolygon> PolysByCenter { get; private set; }
     public MapGenInfo(List<Vector2> points, Vector2 dimensions, float polySize, bool leftRightWrap)
     {
+        Dimensions = dimensions;
         LRWrap = leftRightWrap;
         var numLrEdgePoints = (int)(dimensions.y / polySize);
         var numTbEdgePoints = (int)(dimensions.x / polySize);

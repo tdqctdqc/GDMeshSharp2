@@ -16,6 +16,8 @@ public static class GraphGenerator
             mp => mp.Center,
             (v1, v2, mp1, mp2) =>
             {
+                v1 = v1.ClampToBox(Vector2.Zero, info.Dimensions);
+                v2 = v2.ClampToBox(Vector2.Zero, info.Dimensions);
                 return new LineSegment(v1, v2);
             },
             new Vector2(key.GenData.Planet.Width, key.GenData.Planet.Height)

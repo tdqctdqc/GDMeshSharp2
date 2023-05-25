@@ -20,6 +20,7 @@ public static class ISegmentExt
         for (int i = 0; i < segs.Count - 1; i++)
         {
             if (segs[i].PointsTo(segs[i + 1]) == false) return false;
+            if (segs[i].From.Equals(segs[i + 1].To)) return false;
         }
 
         return true;

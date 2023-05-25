@@ -89,6 +89,18 @@ public class PolyTriGenerator : Generator
     private List<PolyTri> DoLandPolyNoRivers(MapPolygon poly, Graph<PolyTri, bool> graph, GenWriteKey key)
     {
         var borderSegs = poly.GetOrderedBoundarySegs(key.Data);
+
+        if (borderSegs.IsChain() == false)
+        {
+            var e = new SegmentsException("bad border");
+            e.AddSegLayer(borderSegs, "whole boundary segs");
+            int i = 0;
+            foreach (var ls in poly.Neighbors.Select(n => poly.GetBorder(n.Id).Segments))
+            {
+                e.AddSegLayer(ls, "edge " + i++);
+            }
+            throw e;
+        }
         List<PolyTri> tris = borderSegs.TriangulateArbitrary(poly, key, graph, true);
         if (tris.Count == 0)
         {
