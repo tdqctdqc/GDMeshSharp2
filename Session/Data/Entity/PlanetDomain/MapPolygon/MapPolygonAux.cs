@@ -53,7 +53,6 @@ public class MapPolygonAux : EntityAux<MapPolygon>
     {
         foreach (var kvp in AuxDatas.Dic)
         {
-            // GD.Print(kvp.Key.Id);
             var aux = kvp.Value;
             if (aux.Stale)
             {
@@ -66,7 +65,6 @@ public class MapPolygonAux : EntityAux<MapPolygon>
     private void BuildPolyGrid(Data data)
     {
         var sw = new Stopwatch();
-        sw.Start();
         var gridCellSize = 1000f;
         var numPartitions = Mathf.CeilToInt(data.Planet.Info.Dimensions.x / gridCellSize);
         MapPolyGrid = new PolyGrid(numPartitions, data.Planet.Info.Dimensions, data);
@@ -75,8 +73,6 @@ public class MapPolygonAux : EntityAux<MapPolygon>
             if(p.NeighborBorders.Count > 0) MapPolyGrid.AddElement(p);
         }
         MapPolyGrid.Update();
-        sw.Stop();
-        GD.Print("poly grid build " + sw.Elapsed.TotalMilliseconds);
     }
     private void BuildChunks(Data data)
     {

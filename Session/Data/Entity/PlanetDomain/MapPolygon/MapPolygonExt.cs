@@ -5,10 +5,14 @@ using Godot;
 
 public static class MapPolygonExt
 {
-    public static bool PointInPoly(this MapPolygon poly, Vector2 posAbs, Data data)
+    public static bool PointInPolyAbs(this MapPolygon poly, Vector2 posAbs, Data data)
     {
         var posRel = poly.GetOffsetTo(posAbs, data);
-        return data.Planet.PolygonAux.AuxDatas[poly].PointInPoly(posRel);
+        return data.Planet.PolygonAux.AuxDatas[poly].PointInPoly(poly, posRel, data);
+    }
+    public static bool PointInPolyRel(this MapPolygon poly, Vector2 posRel, Data data)
+    {
+        return data.Planet.PolygonAux.AuxDatas[poly].PointInPoly(poly, posRel, data);
     }
     public static Vector2 GetOffsetTo(this MapPolygon poly, MapPolygon p, Data data)
     {

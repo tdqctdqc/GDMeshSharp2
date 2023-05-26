@@ -27,10 +27,11 @@ public class PolyTriGenerator : Generator
         new RiverPolyTriGen().DoRivers(key);
         report.StopSection("Finding rivers");
         
+        
         report.StartSection();
         Parallel.ForEach(polys, p => BuildTris(p, key));
         report.StopSection("Building poly terrain tris");
-        
+
         report.StartSection();
         Parallel.ForEach(_data.Planet.PolyEdges.Entities, p => MakeDiffPolyTriPaths(p, key));
         report.StopSection("making poly tri paths");
@@ -64,8 +65,6 @@ public class PolyTriGenerator : Generator
             if (polyTerrainTris == null) throw new Exception();
             poly.SetTerrainTris(polyTerrainTris, key);
         }
-            
-        
     }
     
     private List<PolyTri> DoSeaPoly(MapPolygon poly, Graph<PolyTri, bool> graph, GenWriteKey key)
@@ -73,10 +72,11 @@ public class PolyTriGenerator : Generator
         var borderSegs = poly.GetOrderedBoundarySegs(key.Data);
         if (borderSegs.Count == 0) throw new Exception();
 
-        var tris = new List<PolyTri>();// borderSegs.TriangulateArbitrary(poly, key, graph, true);
+        var tris = new List<PolyTri>();
         
         for (var i = 0; i < borderSegs.Count; i++)
         {
+            //todo produces overlap b/c non clockwise segs
             var seg = borderSegs[i];
             var pt = PolyTri.Construct(seg.From, seg.To, Vector2.Zero, LandformManager.Sea.MakeRef(),
                 VegetationManager.Barren.MakeRef());
@@ -89,34 +89,8 @@ public class PolyTriGenerator : Generator
     private List<PolyTri> DoLandPolyNoRivers(MapPolygon poly, Graph<PolyTri, bool> graph, GenWriteKey key)
     {
         var borderSegs = poly.GetOrderedBoundarySegs(key.Data);
-
-        if (borderSegs.IsChain() == false)
-        {
-            var e = new SegmentsException("bad border");
-            e.AddSegLayer(borderSegs, "whole boundary segs");
-            int i = 0;
-            foreach (var ls in poly.Neighbors.Select(n => poly.GetBorder(n.Id).Segments))
-            {
-                e.AddSegLayer(ls, "edge " + i++);
-            }
-            throw e;
-        }
+        
         List<PolyTri> tris = borderSegs.TriangulateArbitrary(poly, key, graph, true);
-        if (tris.Count == 0)
-        {
-            var e = new SegmentsException("produced 0 tris from");
-            e.AddSegLayer(borderSegs, "border segs");
-
-            var borders = new List<LineSegment>();
-            foreach (var n in poly.Neighbors)
-            {
-                var nBorder = poly.GetBorder(n.Id).Segments;
-                borders.AddRange(nBorder);
-            }
-            e.AddSegLayer(borders,
-                "borders");
-            throw e;
-        }
         foreach (var polyTri in tris)
         {
             //todo actually build graph

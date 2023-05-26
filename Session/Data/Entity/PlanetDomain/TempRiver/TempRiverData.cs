@@ -7,37 +7,37 @@ using Godot;
 
 public class TempRiverData : Entity
 {
-    public Dictionary<PolyCornerKey, Vector2> Inners { get; private set; }
-    public Dictionary<EdgeEndKey, Vector2> HiPivots { get; private set; }
-    public Dictionary<MapPolygon, MapPolyRiverTriInfo> Infos { get; private set; }
+    public ConcurrentDictionary<PolyCornerKey, Vector2> Inners { get; private set; }
+    public ConcurrentDictionary<EdgeEndKey, Vector2> HiPivots { get; private set; }
+    public ConcurrentDictionary<MapPolygon, MapPolyRiverTriInfo> Infos { get; private set; }
     public static TempRiverData Construct(GenWriteKey key)
     {
-        var r = new TempRiverData(new Dictionary<PolyCornerKey, Vector2>(), new Dictionary<EdgeEndKey, Vector2>(), key.IdDispenser.GetID());
+        var r = new TempRiverData(new ConcurrentDictionary<PolyCornerKey, Vector2>(), 
+            new ConcurrentDictionary<EdgeEndKey, Vector2>(), 
+            new ConcurrentDictionary<MapPolygon, MapPolyRiverTriInfo>(),
+            key.IdDispenser.GetID());
         key.Create(r);
         return r;
     }
-    private TempRiverData(Dictionary<PolyCornerKey, Vector2> inners, 
-        Dictionary<EdgeEndKey, Vector2> hiPivots, int id) : base(id)
+    private TempRiverData(ConcurrentDictionary<PolyCornerKey, Vector2> inners, 
+        ConcurrentDictionary<EdgeEndKey, Vector2> hiPivots, 
+        ConcurrentDictionary<MapPolygon, MapPolyRiverTriInfo> infos,
+        int id) : base(id)
     {
         HiPivots = hiPivots;
         Inners = inners;
-        Infos = new Dictionary<MapPolygon, MapPolyRiverTriInfo>();
+        Infos = infos;
     }
 
     public void GenerateInfos(GenWriteKey key)
     {
         var polys = key.Data.Planet.Polygons.Entities;
-        var tempInfos = new ConcurrentDictionary<MapPolygon, MapPolyRiverTriInfo>();
         Parallel.ForEach(polys, poly =>
         {
             if (poly.GetEdges(key.Data).Any(e => e.IsRiver()) == false) return;
             var info = new MapPolyRiverTriInfo(poly, this, key);
-            tempInfos.TryAdd(poly, info);
+            Infos.TryAdd(poly, info);
         });
-        foreach (var kvp in tempInfos)
-        {
-            Infos.Add(kvp.Key, kvp.Value);
-        }
     }
     
     public override Type GetDomainType() => DomainType();
@@ -149,8 +149,8 @@ public class MapPolyRiverTriInfo
             }
             else throw new Exception();
             
-            var bankInnerPoints = new List<Vector2>();
-            var edgeInnerSegs = new List<LineSegment>();
+            var bankPoints = new List<Vector2>();
+            var bankSegs = new List<LineSegment>();
             
             for (var i = 0; i < edgeSegs.Count - 1; i++)
             {
@@ -159,32 +159,38 @@ public class MapPolyRiverTriInfo
                 if (thisSeg.To != nextSeg.From) throw new Exception();
                 var thisSegAxis = (thisSeg.To - thisSeg.From).Normalized();
                 var thisShift = thisSegAxis.Rotated(Mathf.Pi / 2f) * width / 2f;
-                bankInnerPoints.Add(thisSeg.To + thisShift);
+                var bankPoint = thisSeg.To + thisShift;
+                if (Poly.PointInPolyRel(bankPoint, data) == false)
+                {
+                    bankPoint = thisSeg.To.Normalized() * (thisSeg.To.Length() - width);
+                    if (Poly.PointInPolyRel(bankPoint, data) == false) throw new Exception();
+                }
+                bankPoints.Add(bankPoint);
             }
 
             
-            if (bankInnerPoints.Count > 0)
+            if (bankPoints.Count > 0)
             {
-                edgeInnerSegs.Add(new LineSegment(startInner, bankInnerPoints.First()));
-                for (var i = 0; i < bankInnerPoints.Count - 1; i++)
+                bankSegs.Add(new LineSegment(startInner, bankPoints.First()));
+                for (var i = 0; i < bankPoints.Count - 1; i++)
                 {
-                    edgeInnerSegs.Add(new LineSegment(bankInnerPoints[i], bankInnerPoints[i + 1]));
+                    bankSegs.Add(new LineSegment(bankPoints[i], bankPoints[i + 1]));
                 }
-                edgeInnerSegs.Add(new LineSegment(bankInnerPoints.Last(), endInner));
+                bankSegs.Add(new LineSegment(bankPoints.Last(), endInner));
             }
             else
             {
-                edgeInnerSegs.Add(new LineSegment(startInner, endInner));
+                bankSegs.Add(new LineSegment(startInner, endInner));
             }
             
-            BankSegs.Add(edge, edgeInnerSegs);
-            if (edgeSegs.Count != edgeInnerSegs.Count) throw new Exception();
+            BankSegs.Add(edge, bankSegs);
+            if (edgeSegs.Count != bankSegs.Count) throw new Exception();
 
             var bankTris = new List<PolyTri>();
             for (var i = 0; i < edgeSegs.Count; i++)
             {
                 var outSeg = edgeSegs[i];
-                var inSeg = edgeInnerSegs[i];
+                var inSeg = bankSegs[i];
                 bankTris.Add(PolyTri.Construct(outSeg.From, outSeg.To, inSeg.From,
                     LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
                 bankTris.Add(PolyTri.Construct(outSeg.To, inSeg.To, inSeg.From,

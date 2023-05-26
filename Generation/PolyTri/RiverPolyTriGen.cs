@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Godot;
 
 public class RiverPolyTriGen
@@ -10,32 +11,26 @@ public class RiverPolyTriGen
     {
         var rd = TempRiverData.Construct(key);
         var sw = new Stopwatch();
+        
         sw.Start();
         //todo partition by riverpoly union find instead?
-        key.Data.Planet.PolygonAux.LandSea.Landmasses.ForEach(lm => DoLandmass(lm, key));
+        var lms = key.Data.Planet.PolygonAux.LandSea.Landmasses;
+        Parallel.ForEach(lms, lm => PreprocessRiversForLandmass(lm, key));
         sw.Stop();
         GD.Print("preprocessing rivers " + sw.Elapsed.TotalMilliseconds);
         sw.Reset();
-        
-        sw.Start();
+        GD.Print("doot");
         key.Data.Notices.SetPolyShapes?.Invoke();
-        sw.Stop();
-        GD.Print("setting poly shapes 1 " + sw.Elapsed.TotalMilliseconds);
-        sw.Reset();
-        
+        GD.Print("set poly shapes");
         sw.Start();
         rd.GenerateInfos(key);
         sw.Stop();
-        GD.Print("generating river segs " + sw.Elapsed.TotalMilliseconds);
+        GD.Print("generating river infos " + sw.Elapsed.TotalMilliseconds);
         sw.Reset();
         
-        sw.Start();
         key.Data.Notices.SetPolyShapes?.Invoke();
-        sw.Stop();
-        GD.Print("setting poly shapes 2 " + sw.Elapsed.TotalMilliseconds);
-        sw.Reset();
     }
-    private void DoLandmass(HashSet<MapPolygon> lm, GenWriteKey key)
+    private void PreprocessRiversForLandmass(HashSet<MapPolygon> lm, GenWriteKey key)
     {
         var riverNexi = key.Data.Planet.PolyNexi.Entities
             .Where(n => n.IncidentPolys.Any(p => lm.Contains(p)))
@@ -56,7 +51,6 @@ public class RiverPolyTriGen
             foreach (var poly in nexus.IncidentPolys)
             {
                 var nexusRelative = poly.GetOffsetTo(nexus.Point, key.Data);
-                // if (nexus.IncidentEdges.Count() > 3) throw new Exception();
                 var polyNexusEdges = nexus.IncidentEdges.Where(e => e.EdgeToPoly(poly));
                 
                 if (polyNexusEdges.Count() == 2)
@@ -87,16 +81,33 @@ public class RiverPolyTriGen
                     var nexusSeg2 = e2segs.First(s => s.From == nexusRelative || s.To == nexusRelative);
                     var axis2 = nexusSeg2.To - nexusSeg2.From;
                     var shift2 = axis2.Rotated(-Mathf.Pi / 2f).Normalized() * width2 / 2f;
-                    
 
-                    var intersect = Vector2Ext.GetLineIntersection(nexusSeg1.From - shift1, nexusSeg1.To - shift1, 
-                        nexusSeg2.From - shift2, nexusSeg2.To - shift2, 
-                        out var inner);
-                    if (intersect)
+
+                    var intersect = Geometry.LineIntersectsLine2d(nexusSeg1.From - shift1, axis1,
+                        nexusSeg2.From - shift2, axis2);
+                    
+                    
+                    // var intersect = Vector2Ext.GetLineIntersection(nexusSeg1.From - shift1, nexusSeg1.To - shift1, 
+                    //     nexusSeg2.From - shift2, nexusSeg2.To - shift2, 
+                    //     out var inner);
+                    
+                    
+                    
+                    if (intersect is Vector2 inner)
                     {
-                        rd.Inners.Add(new PolyCornerKey(nexus, poly), inner);
+                        if (poly.PointInPolyRel(inner, key.Data) == false)
+                        {
+                            var w = (width1 + width2) / 2f;
+                            inner = nexusRelative.Normalized() * (nexusRelative.Length() - w);
+                            if (poly.PointInPolyRel(inner, key.Data) == false) 
+                                throw new Exception();
+                        }
+                        
+                        rd.Inners.TryAdd(new PolyCornerKey(nexus, poly), inner);
                     }
                     else throw new Exception();
+
+                    
                 }
                 else if (polyNexusEdges.Count() == 1)
                 {
@@ -120,12 +131,21 @@ public class RiverPolyTriGen
 
                     var axisPerp = nexusEdgeAxis.Rotated(-Mathf.Pi / 2f);
 
-                    var intersect = Vector2Ext.GetLineIntersection(nexusRelative, Vector2.Zero,
-                        nexusRelative + axisPerp * width / 2f, nexusRelative + nexusEdgeAxis + axisPerp * width / 2f,
-                        out var inner);
-                    if (intersect == false) throw new Exception();
-                    
-                    rd.Inners.Add(new PolyCornerKey(nexus, poly), inner);
+                    var intersect = Geometry.LineIntersectsLine2d(nexusRelative + axisPerp * width / 2f, nexusEdgeAxis,
+                        Vector2.Zero, nexusRelative);
+
+                    if (intersect is Vector2 inner)
+                    {
+                        if (poly.PointInPolyRel(inner, key.Data) == false)
+                        {
+                            inner = nexusRelative.Normalized() * (nexusRelative.Length() - width);
+                            if (poly.PointInPolyRel(inner, key.Data) == false)
+                                throw new Exception();
+                        }
+
+                        rd.Inners.TryAdd(new PolyCornerKey(nexus, poly), inner);
+                    }
+                    else throw new Exception();
                 }
                 else throw new Exception();
             }
@@ -166,8 +186,8 @@ public class RiverPolyTriGen
                 var fromPivot = seg.From + axis * segLength * 1f / 3f;
                 var toPivot = seg.From + axis * segLength * 2f / 3f;
                 
-                rd.HiPivots.Add(new EdgeEndKey(fromNexus, edge), fromPivot);
-                rd.HiPivots.Add(new EdgeEndKey(toNexus, edge), toPivot);
+                rd.HiPivots.TryAdd(new EdgeEndKey(fromNexus, edge), fromPivot);
+                rd.HiPivots.TryAdd(new EdgeEndKey(toNexus, edge), toPivot);
                 var offset = edge.HighPoly.Entity().Center;
                 
                 var split = new List<LineSegment>
@@ -190,13 +210,13 @@ public class RiverPolyTriGen
             var fromSegWidth = fromSeg.Length();
             if (fromPivotWidth + 10f >= fromSegWidth)
             {
-                rd.HiPivots.Add(new EdgeEndKey(fromNexus, edge), fromSeg.To);
+                rd.HiPivots.TryAdd(new EdgeEndKey(fromNexus, edge), fromSeg.To);
                 newHiSegs.Add(fromSeg.Copy());
             }
             else
             {
                 var pivot = fromSeg.From + fromSeg.GetNormalizedAxis() * fromPivotWidth;
-                rd.HiPivots.Add(new EdgeEndKey(fromNexus, edge), pivot);
+                rd.HiPivots.TryAdd(new EdgeEndKey(fromNexus, edge), pivot);
                 var s1 = new LineSegment(fromSeg.From, pivot);
                 if (s1.Length() != 0f) newHiSegs.Add(s1);
                 var s2 = new LineSegment(pivot, fromSeg.To);
@@ -212,13 +232,13 @@ public class RiverPolyTriGen
             var toSegWidth = toSeg.Length();
             if (toPivotWidth + 10f >= toSegWidth)
             {
-                rd.HiPivots.Add(new EdgeEndKey(toNexus, edge), toSeg.From);
+                rd.HiPivots.TryAdd(new EdgeEndKey(toNexus, edge), toSeg.From);
                 newHiSegs.Add(toSeg.Copy());
             }
             else
             {
                 var pivot = toSeg.To - toSeg.GetNormalizedAxis() * toPivotWidth;
-                rd.HiPivots.Add(new EdgeEndKey(toNexus, edge), pivot);
+                rd.HiPivots.TryAdd(new EdgeEndKey(toNexus, edge), pivot);
                 var s1 = new LineSegment(toSeg.From, pivot);
                 if (s1.Length() != 0f) newHiSegs.Add(s1);
                 var s2 = new LineSegment(pivot, toSeg.To);

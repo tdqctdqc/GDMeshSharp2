@@ -94,7 +94,7 @@ public class PolyGrid
     {
         if (Cells.TryGetValue(key, out var cell))
         {
-            p = cell.FirstOrDefault(mp => mp.PointInPoly(point, _data));
+            p = cell.FirstOrDefault(mp => mp.PointInPolyAbs(point, _data));
             if (p != null)
             {
                 return true;

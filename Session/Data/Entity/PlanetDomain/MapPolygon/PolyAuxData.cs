@@ -30,6 +30,7 @@ public class PolyAuxData
     private void MakeBoundarySegs(MapPolygon p, Data data, List<List<LineSegment>> source)
     {
         var ordered = source.Chainify();
+        
         if (ordered.IsChain() == false)
         {
             var e = new SegmentsException("couldnt order boundary");
@@ -38,14 +39,24 @@ public class PolyAuxData
             throw e;
         }
         ordered.CompleteCircuit();
+        
+        if (ordered.Any(ls => ls.From == ls.To))
+        {
+            var e = new SegmentsException("degenerate seg");
+            e.AddSegLayer(_orderedBoundarySegs, "old");
+            e.AddSegLayer(ordered, "new");
+            throw e;
+        }
 
         _orderedBoundarySegs = ordered;
         _orderedBoundaryPoints = ordered.GetPoints().ToArray();
         GraphicalCenter = OrderedBoundarySegs.Average();
     }
 
-    public bool PointInPoly(Vector2 pointRel)
+    public bool PointInPoly(MapPolygon poly, Vector2 pointRel, Data data)
     {
+        // return poly.GetOrderedBoundarySegs(data)
+        //     .Any(s => TriangleExt.ContainsPoint(s.From, s.To, Vector2.Zero, pointRel));
         return Geometry.IsPointInPolygon(pointRel, _orderedBoundaryPoints);
     }
     public void MarkStale(GenWriteKey key)

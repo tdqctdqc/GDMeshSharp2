@@ -161,7 +161,7 @@ public static class LineSegmentExt
 
     public static void CompleteCircuit(this List<LineSegment> segs)
     {
-        segs.Add(new LineSegment(segs[segs.Count - 1].To, segs[0].From));
+        if(segs[segs.Count - 1].To != segs[0].From) segs.Add(new LineSegment(segs[segs.Count - 1].To, segs[0].From));
     }
     
     public static void SplitToMinLength(this MapPolygonEdge edge, float minLength, GenWriteKey key)
@@ -216,11 +216,16 @@ public static class LineSegmentExt
         Func<Vector2, Vector2, Vector2, T> constructor, 
         HashSet<Vector2> interiorPoints = null) where T : Triangle
     {
-        var points = boundarySegs.GetPoints().GetPoly2TriTriPoints();
-        var boundaryHash = points.Select(p => p.GetV2()).ToHashSet();
-        var hash = points.Select(p => p.GetV2()).ToHashSet();
+        var boundaryV2s = boundarySegs.GetPoints();
+        var points = boundaryV2s.GetPoly2TriTriPoints();
+        var boundaryPointIndices = new Dictionary<Vector2, int>();
         
-        if(points.Last().GetV2() == points[0].GetV2()) points.RemoveAt(points.Count - 1);
+        for (var i = 0; i < boundaryV2s.Count; i++)
+        {
+            boundaryPointIndices.Add(boundaryV2s[i], i);
+        }
+        
+        var hash = boundaryV2s.ToHashSet();
         
         var constraints = new List<TriangulationConstraint>();
         for (var i = 0; i < points.Count; i++)
@@ -234,7 +239,6 @@ public static class LineSegmentExt
         }
         var con = new ConstrainedPointSet(points, constraints);
         Poly2Tri.P2T.Triangulate(con);
-
         var tris = new List<T>();
         for (var i = 0; i < con.Triangles.Count; i++)
         {
@@ -248,12 +252,12 @@ public static class LineSegmentExt
             
             if (dt.Points.Any(p => hash.Contains(p.GetV2()) == false)) continue;
 
-            if (boundaryHash.Contains(v0)
-                && boundaryHash.Contains(v1)
-                && boundaryHash.Contains(v2)
+            if (boundaryPointIndices.ContainsKey(v0)
+                && boundaryPointIndices.ContainsKey(v1)
+                && boundaryPointIndices.ContainsKey(v2)
                 )
             {
-                var index = points.IndexOf(t0);    
+                var index = boundaryPointIndices[v0];
                 var next = points
                     .FindNext(v => v.EqualsV2(v1) || v.EqualsV2(v2), index);
                 if (next.EqualsV2(v1) == false) continue;

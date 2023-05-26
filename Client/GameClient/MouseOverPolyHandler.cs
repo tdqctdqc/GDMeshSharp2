@@ -30,7 +30,7 @@ public class MouseOverPolyHandler
             Game.I.Client.Requests.HideTooltip.Invoke(_instance);
             return;
         }
-        else if (MouseOverPoly != null && MouseOverPoly.PointInPoly(mousePosMapSpace, data))
+        else if (MouseOverPoly != null && MouseOverPoly.PointInPolyAbs(mousePosMapSpace, data))
         {
             if (MouseOverTri != null && MouseOverTri.ContainsPoint(mousePosMapSpace - MouseOverPoly.Center))
             {
@@ -39,7 +39,7 @@ public class MouseOverPolyHandler
         }
         else if (MouseOverPoly != null && 
                  MouseOverPoly.Neighbors.Entities()
-                         .FirstOrDefault(n => n.PointInPoly(mousePosMapSpace, data))
+                         .FirstOrDefault(n => n.PointInPolyAbs(mousePosMapSpace, data))
                      is MapPolygon neighbor)
         {
             MouseOverPoly = neighbor;
