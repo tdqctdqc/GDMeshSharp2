@@ -7,6 +7,7 @@ public class EntityValueCache<TEntity, TValue> : AuxData<TEntity>
     where TEntity : Entity
 {
     public TValue this[TEntity t] => _dic.ContainsKey(t) ? _dic[t] : default;
+    public IReadOnlyDictionary<TEntity, TValue> Dic => _dic;
     protected Dictionary<TEntity, TValue> _dic;
     protected Func<TEntity, TValue> _get;
     
@@ -50,18 +51,19 @@ public class EntityValueCache<TEntity, TValue> : AuxData<TEntity>
     private void Initialize(Data data)
     {
         var register = data.GetRegister<TEntity>();
+        // _dic = register.Entities.Select(e =>
+        // {
+        //     var v = _get((TEntity) e);
+        //     return new KeyValuePair<TEntity, TValue>(e, v);
+        // }).AsParallel()
+        // .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        //
         _dic.Clear();
         foreach (var e in register.Entities)
         {
-            if (_dic.ContainsKey((TEntity) e))
-            {
-                //todo fix this duplicate
-                continue;
-            }
             var v = _get((TEntity) e);
             if (v != null)
             {
-                
                 _dic.Add((TEntity)e, v);
             }
         }

@@ -245,7 +245,7 @@ public class MapPolyRiverTriInfo
                 Vector2 continueTo = to;
                 
                 LineSegment firstInnerEdge = null;
-                var edgePoints = edgeSegs.GetPoints().ToHashSet();
+                var edgePoints = edgeSegs.GetPoints();
                 var epsilon = .01f;
                 if (fromNexus.IsRiverNexus())
                 {
@@ -324,23 +324,21 @@ public class MapPolyRiverTriInfo
         
         if (InnerBoundary[0].From != InnerBoundary[InnerBoundary.Count - 1].To)
         {
-            InnerBoundary.Add(new LineSegment(InnerBoundary.Last().To, InnerBoundary.First().From));
+            InnerBoundary.Add(new LineSegment(InnerBoundary[InnerBoundary.Count - 1].To,
+                InnerBoundary[0].From));
         }
-        // if (InnerBoundary.IsCircuit() == false) throw new Exception();
+        if (InnerBoundary.IsCircuit() == false)
+        {
+            var e = new SegmentsException("inner boundary not circuit");
+            e.AddSegLayer(InnerBoundary, "inner");
+            throw e;
+        }
     }
 
     private void MakeLandTris(TempRiverData rData, GenWriteKey key)
     {
         var graph = new Graph<PolyTri, bool>();
-        if (InnerBoundary.First().IsCCW(Vector2.Zero))
-        {
-            InnerBoundary = InnerBoundary.Select(ls => ls.Reverse()).Reverse().ToList();
-            LandTris = InnerBoundary.TriangulateArbitrary(Poly, key, graph, true);
-        }
-        else
-        {
-            LandTris = InnerBoundary.TriangulateArbitrary(Poly, key, graph, true);
-        }
+        LandTris = InnerBoundary.TriangulateArbitrary(Poly, key, graph, true);
     }
     private Vector2 GetPivot(EdgeEndKey key, TempRiverData rData, Data data)
     {

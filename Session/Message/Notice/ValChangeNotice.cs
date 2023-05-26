@@ -8,8 +8,6 @@ public abstract class ValChangeNotice : IEntityNotice
 {
     public string FieldName { get; protected set; }
     Type IEntityNotice.EntityType => Entity.GetType();
-    
-
     public Entity Entity { get; private set; }
     protected ValChangeNotice(string fieldName, Entity entity)
     {

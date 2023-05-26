@@ -113,6 +113,7 @@ public static class LineSegmentExt
 
         var curr = froms[first];
         var res = new List<LineSegment>{curr};
+        
         for (var i = 0; i < lineSegments.Count - 1; i++)
         {
             var next = froms[curr.To];
@@ -122,81 +123,47 @@ public static class LineSegmentExt
 
         return res;
     }
+    
+    
+    public static List<LineSegment> Chainify(this List<List<LineSegment>> chains)
+    {
+        var froms = new Dictionary<Vector2, List<LineSegment>>();
+        var tos = new Dictionary<Vector2, List<LineSegment>>();
+        Vector2 first = Vector2.Inf;
+        for (var i = 0; i < chains.Count; i++)
+        {
+            var chain = chains[i];
+            tos.Add(chain[chain.Count - 1].To, chain);
+        }
+        for (var i = 0; i < chains.Count; i++)
+        {
+            var chain = chains[i];
+            froms.Add(chain[0].From, chain);
+            if (tos.ContainsKey(chain[0].From) == false) first = chain[0].From;
+        }
 
-    public static List<LineSegment> Circuitify(this List<List<LineSegment>> source)
-    {
-        var neighborSegs = source.Chainify();
-        if (neighborSegs.IsCircuit() == false || neighborSegs.IsContinuous() == false)
-        {
-            var e = new SegmentsException("still not circuit");
-            e.AddSegLayer(source.SelectMany(l => l).ToList(), "source");
-            e.AddSegLayer(neighborSegs, "attempt");
-            throw e;
-        }
-        return neighborSegs;
-    }
-    
-    
-    public static List<LineSegment> Chainify(this List<List<LineSegment>> source)
-    {
-        var sourceHash = source.ToHashSet();
-        var startList = sourceHash.First();
-        var from = startList.First().From;
-        sourceHash.Remove(startList);
-        var to = startList.Last().To;
-        var wholeList = new List<List<LineSegment>>();
-        while (sourceHash.FirstOrDefault(s => s.Last().To == from) is List<LineSegment> prevList)
-        {
-            sourceHash.Remove(prevList);
-            from = prevList.First().From;
-            wholeList.Insert(0, prevList);
-        }
-        wholeList.Add(startList);
-        while (sourceHash.FirstOrDefault(s => s.First().From == to) is List<LineSegment> nextList)
-        {
-            sourceHash.Remove(nextList);
-            to = nextList.Last().To;
-            wholeList.Add(nextList);
-        }
+        if (first == Vector2.Inf) first = chains[0][0].From;
+
+        var curr = froms[first];
         
-        var neighborSegs = wholeList.SelectMany(l => l).ToList();
-
-        if (sourceHash.Count > 0)
+        
+        var res = new List<LineSegment>(curr);
+        
+        for (var i = 0; i < chains.Count - 1; i++)
         {
-            var e = new SegmentsException("segments left over");
-            e.AddSegLayer(source.SelectMany(l => l).ToList(), "source");
-            e.AddSegLayer(neighborSegs, "attempt");
-            e.AddSegLayer(sourceHash.SelectMany(l => l).ToList(), "leftover");
-            throw e;
+            var next = froms[curr[curr.Count - 1].To];
+            res.AddRange(next);
+            curr = next;
         }
 
-
-        if (neighborSegs.IsContinuous() == false)
-        {
-            var e = new SegmentsException("still not circuit");
-            e.AddSegLayer(source.SelectMany(l => l).ToList(), "source");
-            e.AddSegLayer(neighborSegs, "attempt");
-            throw e;
-        }
-        return neighborSegs;
+        return res;
     }
-    public static List<LineSegment> Circuitify(this List<LineSegment> lineSegments)
+
+    public static void CompleteCircuit(this List<LineSegment> segs)
     {
-        var circuit = lineSegments.Chainify();
-        if (circuit.First().From != circuit.Last().To)
-        {
-            circuit.Add(new LineSegment(circuit.Last().To, circuit.First().From));
-        }
-        if (circuit.IsCircuit() == false)
-        {
-            GD.Print("not circuit");
-            for (var i = 0; i < circuit.Count; i++)
-            {
-                GD.Print(circuit[i].ToString());
-            }
-        }
-        return circuit;
+        segs.Add(new LineSegment(segs[segs.Count - 1].To, segs[0].From));
     }
+    
     public static void SplitToMinLength(this MapPolygonEdge edge, float minLength, GenWriteKey key)
     {
         var newSegsAbs = new List<LineSegment>();
@@ -229,11 +196,6 @@ public static class LineSegmentExt
         }
         edge.ReplacePoints(newSegsAbs, key);
     }
-    public static bool IsConvexAround(this List<LineSegment> segs, Vector2 center)
-    {
-        //todo implement
-        return true;
-    }
     
     public static List<PolyTri> PolyTriangulate(this IReadOnlyList<LineSegment> boundarySegs, GenData data, 
         MapPolygon poly, IdDispenser id,
@@ -254,12 +216,6 @@ public static class LineSegmentExt
         Func<Vector2, Vector2, Vector2, T> constructor, 
         HashSet<Vector2> interiorPoints = null) where T : Triangle
     {
-        if (boundarySegs.IsCircuit() == false)
-        {
-            GD.Print("not circuit");
-            throw new BadTriangulationException(poly, new List<Triangle>(), new List<Color>(), data, boundarySegs.ToList());
-        }
-        
         var points = boundarySegs.GetPoints().GetPoly2TriTriPoints();
         var boundaryHash = points.Select(p => p.GetV2()).ToHashSet();
         var hash = points.Select(p => p.GetV2()).ToHashSet();
@@ -319,12 +275,14 @@ public static class LineSegmentExt
             });
     }
 
-    public static IEnumerable<Vector2> GetPoints(this IEnumerable<LineSegment> pairs)
+    public static List<Vector2> GetPoints(this IEnumerable<LineSegment> pairs)
     {
-        var result = Enumerable.Range(0, pairs.Count())
-            .Select(i => pairs.ElementAt(i).From)
+        var first = pairs.First();
+        var result = pairs
+            .Select(pair => pair.From)
             .ToList();
-        result.Add(pairs.Last().To);
+        var last = pairs.Last();
+        if(last.To != first.From) result.Add(last.To);
         return result;
     }
     public static float GetLength(this IEnumerable<LineSegment> pairs)

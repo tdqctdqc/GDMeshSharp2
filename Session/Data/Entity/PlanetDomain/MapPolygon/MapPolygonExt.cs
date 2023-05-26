@@ -7,13 +7,15 @@ public static class MapPolygonExt
 {
     public static bool PointInPoly(this MapPolygon poly, Vector2 posAbs, Data data)
     {
-        return poly.GetWheelTris(data).Any(t => t.ContainsPoint(poly.GetOffsetTo(posAbs, data)));
+        var posRel = poly.GetOffsetTo(posAbs, data);
+        return data.Planet.PolygonAux.AuxDatas[poly].PointInPoly(posRel);
     }
     public static Vector2 GetOffsetTo(this MapPolygon poly, MapPolygon p, Data data)
     {
+        var w = data.Planet.Width;
         var off1 = p.Center - poly.Center;
-        var off2 = (off1 + Vector2.Right * data.Planet.Width);
-        var off3 = (off1 + Vector2.Left * data.Planet.Width);
+        var off2 = (off1 + Vector2.Right * w);
+        var off3 = (off1 + Vector2.Left * w);
         if (off1.Length() < off2.Length() && off1.Length() < off3.Length()) return off1;
         if (off2.Length() < off1.Length() && off2.Length() < off3.Length()) return off2;
         return off3;
@@ -25,21 +27,13 @@ public static class MapPolygonExt
     }
     public static Vector2 GetOffsetTo(this MapPolygon poly, Vector2 p, Data data)
     {
+        var w = data.Planet.Width;
         var off1 = p - poly.Center;
-        var off2 = (off1 + Vector2.Right * data.Planet.Width);
-        var off3 = (off1 + Vector2.Left * data.Planet.Width);
+        var off2 = (off1 + Vector2.Right * w);
+        var off3 = (off1 + Vector2.Left * w);
         if (off1.Length() < off2.Length() && off1.Length() < off3.Length()) return off1;
         if (off2.Length() < off1.Length() && off2.Length() < off3.Length()) return off2;
         return off3;
-    }
-    
-    public static IReadOnlyList<Triangle> GetWheelTris(this MapPolygon poly, Data data)
-    {
-        return data.Planet.PolygonAux.AuxDatas[poly].WheelTris;
-    }
-    public static float GetArea(this MapPolygon poly, Data data)
-    {
-        return data.Planet.PolygonAux.AuxDatas[poly].WheelTris.Sum(t => t.GetArea());
     }
     public static float GetScore(this MapPolygon poly, MapPolygon closest, MapPolygon secondClosest, 
         Vector2 pRel, Data data, Func<MapPolygon, float> getScore)
@@ -53,8 +47,6 @@ public static class MapPolygonExt
 
         return closeInt + secondInt;
     }
-
-    
     public static bool HasNeighbor(this MapPolygon poly, MapPolygon n) => poly.Neighbors.Entities().Contains(n);
     public static bool IsWater(this MapPolygon poly) => poly.IsLand == false;
     public static bool IsCoast(this MapPolygon poly) => poly.IsLand && poly.Neighbors.Entities().Any(n => n.IsWater());
@@ -63,11 +55,14 @@ public static class MapPolygonExt
     public static PolyBorderChain GetBorder(this MapPolygon poly, int nId) => poly.NeighborBorders[nId];
     public static IEnumerable<PolyBorderChain> GetPolyBorders(this MapPolygon poly) => poly.Neighbors.RefIds
         .Select(n => poly.GetBorder(n));
-    public static List<LineSegment> GetOrderedBoundarySegs(this MapPolygon poly, Data data)
+    public static IReadOnlyList<LineSegment> GetOrderedBoundarySegs(this MapPolygon poly, Data data)
     {
         return data.Planet.PolygonAux.AuxDatas[poly].OrderedBoundarySegs;
     }
-
+    public static IReadOnlyList<Vector2> GetOrderedBoundaryPoints(this MapPolygon poly, Data data)
+    {
+        return data.Planet.PolygonAux.AuxDatas[poly].OrderedBoundaryPoints;
+    }
     public static ReadOnlyHash<ResourceDeposit> GetResourceDeposits(this MapPolygon p, Data data)
     {
         var rd = data.Planet.ResourceDepositAux.ByPoly[p];

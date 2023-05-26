@@ -22,5 +22,4 @@ public abstract class AuxData<TEntity> : IEntityAux
         });
         data.SubscribeForDestruction<TEntity>(n => HandleRemoved((TEntity)n.Entity));
     }
-
 }

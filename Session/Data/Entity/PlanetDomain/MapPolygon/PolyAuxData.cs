@@ -6,72 +6,55 @@ using Godot;
 
 public class PolyAuxData
 {
+    public bool Stale { get; private set; }
     public Vector2 GraphicalCenter { get; private set; }
-    public List<Triangle> WheelTris { get; private set; }
-    public List<LineSegment> OrderedBoundarySegs { get; private set; }
+    public IReadOnlyList<LineSegment> OrderedBoundarySegs => _orderedBoundarySegs;
+    private List<LineSegment> _orderedBoundarySegs;
+    public IReadOnlyList<Vector2> OrderedBoundaryPoints => _orderedBoundaryPoints;
+    private Vector2[] _orderedBoundaryPoints;
     public PolyAuxData(MapPolygon p, Data data)
+    {
+        Update(p, data);
+    }
+
+    public void Update(MapPolygon p, Data data)
     {
         var nbs = p.NeighborBorders.Values.ToList();
         if (nbs.Count() > 0)
         {
-            OrderedBoundarySegs = BuildBoundarySegments(p, data);
-            GraphicalCenter = OrderedBoundarySegs.Average();
-            SetWheelTris(p, data);
+            var source = p.Neighbors.Select(n => p.GetBorder(n.Id).Segments).ToList();
+            MakeBoundarySegs(p, data, source);   
         }
     }
-    private List<LineSegment> BuildBoundarySegments(MapPolygon p, Data data)
+
+    private void MakeBoundarySegs(MapPolygon p, Data data, List<List<LineSegment>> source)
     {
-        var source = p.Neighbors.Select(n => p.GetBorder(n.Id).Segments).ToList();
-        List<LineSegment> ordered;
-        try
+        var ordered = source.Chainify();
+        if (ordered.IsChain() == false)
         {
-            ordered = source.ToList().Chainify();
+            var e = new SegmentsException("couldnt order boundary");
+            e.AddSegLayer(_orderedBoundarySegs, "old");
+            e.AddSegLayer(ordered, "new");
+            throw e;
         }
-        catch (Exception e)
-        {
-            GD.Print(p.Center);
-            GD.Print(p.Neighbors.Count() + " neighbors");
-            throw;
-        }
-        for (var i = 0; i < ordered.Count - 1; i++)
-        {
-            var thisSeg = ordered[i];
-            var nextSeg = ordered[i + 1];
-            if (thisSeg.From == nextSeg.To && thisSeg.To == nextSeg.From)
-            {
-                var e = new SegmentsException("retracking boundary seg");
-                e.AddSegLayer(source.SelectMany(l => l).ToList(), "source");
-                e.AddSegLayer(ordered, "ordered");
-            
-                var nList = p.Neighbors.ToList();
-                for (var j = 0; j < nList.Count; j++)
-                {
-                    var n = nList[j];
-                    var edge = p.GetEdge(n, data);
-                    e.AddSegLayer(edge.GetSegsRel(p).Segments, "n " + j);
-                }
-                throw e;
-            }
-        }
-        
-        return ordered.ToList().Circuitify();
+        ordered.CompleteCircuit();
+
+        _orderedBoundarySegs = ordered;
+        _orderedBoundaryPoints = ordered.GetPoints().ToArray();
+        GraphicalCenter = OrderedBoundarySegs.Average();
     }
-    
-    private void SetWheelTris(MapPolygon p, Data data)
+
+    public bool PointInPoly(Vector2 pointRel)
     {
-        WheelTris = new List<Triangle>();
-        if (p.Neighbors.RefIds.Count == 0)
-        {
-            throw new Exception();
-        }
-        foreach (var n in p.Neighbors.RefIds)
-        {
-            var segs = p.GetBorder(n).Segments;
-            for (var j = 0; j < segs.Count; j++)
-            {
-                var tri = new Triangle(Vector2.Zero, segs[j].From, segs[j].To);
-                WheelTris.Add(tri);
-            }
-        }
+        return Geometry.IsPointInPolygon(pointRel, _orderedBoundaryPoints);
+    }
+    public void MarkStale(GenWriteKey key)
+    {
+        Stale = true;
+    }
+
+    public void MarkFresh()
+    {
+        Stale = false;
     }
 }

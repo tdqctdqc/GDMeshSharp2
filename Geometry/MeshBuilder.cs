@@ -76,7 +76,7 @@ public class MeshBuilder
         foreach (var p in polys)
         {
             var color = getColor(p);
-            var polyTris = p.GetWheelTris(data)
+            var polyTris = p.Tris.Tris
                 .Select(v => v.Transpose(relTo.GetOffsetTo(p, data)))
                 .ToList();
             for (int j = 0; j < polyTris.Count(); j++)
@@ -222,9 +222,12 @@ public class MeshBuilder
             AddArrow(segs[i].From, segs[i].To, thickness, ColorsExt.GetRainbowColor(i));
         }
     }
-    public void AddArrows(List<LineSegment> segs, float thickness, Color color)
+    public void AddArrows(IReadOnlyList<LineSegment> segs, float thickness, Color color)
     {
-        segs.ForEach(s => AddArrow(s.From, s.To, thickness, color));
+        foreach (var s in segs)
+        {
+            AddArrow(s.From, s.To, thickness, color);
+        }
     }
     public void AddArrow(Vector2 from, Vector2 to, float thickness, Color color)
     {

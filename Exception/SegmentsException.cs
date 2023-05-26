@@ -19,9 +19,9 @@ public class SegmentsException : DisplayableException
         PointSetNames = new List<string>();
     }
 
-    public void AddSegLayer(List<LineSegment> lines, string name)
+    public void AddSegLayer(IReadOnlyList<LineSegment> lines, string name)
     {
-        SegLayers.Add(lines);
+        SegLayers.Add(lines.ToList());
         SegLayerNames.Add(name);
     }
 

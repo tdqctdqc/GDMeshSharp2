@@ -11,27 +11,35 @@ public class RiverPolyTriGen
         var rd = TempRiverData.Construct(key);
         var sw = new Stopwatch();
         sw.Start();
+        //todo partition by riverpoly union find instead?
         key.Data.Planet.PolygonAux.LandSea.Landmasses.ForEach(lm => DoLandmass(lm, key));
         sw.Stop();
         GD.Print("preprocessing rivers " + sw.Elapsed.TotalMilliseconds);
         sw.Reset();
         
+        sw.Start();
         key.Data.Notices.SetPolyShapes?.Invoke();
-
+        sw.Stop();
+        GD.Print("setting poly shapes 1 " + sw.Elapsed.TotalMilliseconds);
+        sw.Reset();
         
         sw.Start();
         rd.GenerateInfos(key);
         sw.Stop();
         GD.Print("generating river segs " + sw.Elapsed.TotalMilliseconds);
         sw.Reset();
+        
+        sw.Start();
         key.Data.Notices.SetPolyShapes?.Invoke();
+        sw.Stop();
+        GD.Print("setting poly shapes 2 " + sw.Elapsed.TotalMilliseconds);
+        sw.Reset();
     }
     private void DoLandmass(HashSet<MapPolygon> lm, GenWriteKey key)
     {
         var riverNexi = key.Data.Planet.PolyNexi.Entities
             .Where(n => n.IncidentPolys.Any(p => lm.Contains(p)))
             .Where(n => n.IncidentEdges.Any(e => e.IsRiver()));
-        var riverPolys = riverNexi.SelectMany(n => n.IncidentPolys).Distinct();
         MakeInners(riverNexi, key);
         MakePivots(riverNexi, key);
     }

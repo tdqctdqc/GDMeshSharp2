@@ -46,7 +46,7 @@ public static class EdgeDisturber
         var maxRatio = .3f;
         var minRatio = .2f;
         var ratio = Game.I.Random.RandfRange(minRatio, maxRatio);
-        var points = edge.HighSegsRel().Segments.GetPoints().ToList();
+        var points = edge.HighSegsRel().Segments.GetPoints();
         var newPoints = new List<Vector2>();
         newPoints.Add(points[0]);
         var hi = edge.HighPoly.Entity();

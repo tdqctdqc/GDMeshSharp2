@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Godot;
 
@@ -19,11 +20,9 @@ public class MapPolygonAux : EntityAux<MapPolygon>
             () => Register.Entities, 
             () => Register.Entities.SelectMany(e => e.GetPolyBorders()).ToHashSet()
         );
-        AuxDatas = EntityValueCache<MapPolygon, PolyAuxData>.ConstructTrigger(
+        AuxDatas = EntityValueCache<MapPolygon, PolyAuxData>.ConstructConstant(
             data,
-            p => new PolyAuxData(p, data),
-             new RefAction[] {data.Notices.SetPolyShapes, data.Notices.FinishedStateSync},
-            new RefAction<Tuple<MapPolygon, PolyAuxData>>[]{}
+            p => new PolyAuxData(p, data)
         );
         ChangedRegime = new RefAction<ValChangeNotice<EntityRef<Regime>>>();
         Game.I.Serializer.GetEntityMeta<MapPolygon>()
@@ -41,34 +40,43 @@ public class MapPolygonAux : EntityAux<MapPolygon>
             LandSea.SetMasses(data);
         });
         
-        data.Notices.FinishedStateSync.Subscribe(() =>
-        {
-            SetupPolyGrid(data);
-        });
-        data.Notices.SetPolyShapes.Subscribe(() =>
-        {
-            SetupPolyGrid(data);
-        });
-    }
-
-    private void SetupPolyGrid(Data data)
-    {
         data.Notices.SetPolyShapes.Subscribe(() => BuildPolyGrid(data));
         data.Notices.FinishedStateSync.Subscribe(() => BuildPolyGrid(data));
         
         data.Notices.SetPolyShapes.Subscribe(() => BuildChunks(data));
         data.Notices.FinishedStateSync.Subscribe(() => BuildChunks(data));
+        
+        data.Notices.SetPolyShapes.Subscribe(() => UpdateAuxDatas(data));
+    }
+
+    private void UpdateAuxDatas(Data data)
+    {
+        foreach (var kvp in AuxDatas.Dic)
+        {
+            // GD.Print(kvp.Key.Id);
+            var aux = kvp.Value;
+            if (aux.Stale)
+            {
+                var poly = kvp.Key;
+                aux.Update(poly, data);
+                aux.MarkFresh();
+            }
+        }
     }
     private void BuildPolyGrid(Data data)
     {
+        var sw = new Stopwatch();
+        sw.Start();
         var gridCellSize = 1000f;
         var numPartitions = Mathf.CeilToInt(data.Planet.Info.Dimensions.x / gridCellSize);
         MapPolyGrid = new PolyGrid(numPartitions, data.Planet.Info.Dimensions, data);
         foreach (var p in data.Planet.Polygons.Entities)
         {
-            MapPolyGrid.AddElement(p);
+            if(p.NeighborBorders.Count > 0) MapPolyGrid.AddElement(p);
         }
         MapPolyGrid.Update();
+        sw.Stop();
+        GD.Print("poly grid build " + sw.Elapsed.TotalMilliseconds);
     }
     private void BuildChunks(Data data)
     {

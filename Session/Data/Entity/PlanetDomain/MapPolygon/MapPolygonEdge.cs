@@ -82,25 +82,25 @@ public class MapPolygonEdge : Entity
         
         return newSegs;
     }
-    public void ReplacePoints(List<LineSegment> newSegmentsAbs,
-        GenWriteKey key)
+    public void ReplacePoints(List<LineSegment> newSegmentsAbs, GenWriteKey key)
     {
-        var highBorderSegs = RelativizeSegments(newSegmentsAbs, HighPoly.Entity(), key.Data);
-        var lowBorderSegs = RelativizeSegments(newSegmentsAbs, LowPoly.Entity(), key.Data);
+        var hiPoly = HighPoly.Entity();
+        var loPoly = LowPoly.Entity();
+        var highBorderSegs = RelativizeSegments(newSegmentsAbs, hiPoly, key.Data);
+        var lowBorderSegs = RelativizeSegments(newSegmentsAbs, loPoly, key.Data);
         
-        var lowSegsRel = PolyBorderChain.Construct(LowPoly.Entity(), HighPoly.Entity(), 
+        var lowSegsRel = PolyBorderChain.Construct(loPoly, hiPoly, 
             lowBorderSegs);
-        var highSegsRel = PolyBorderChain.Construct(HighPoly.Entity(), LowPoly.Entity(), 
+        var highSegsRel = PolyBorderChain.Construct(hiPoly, loPoly, 
             highBorderSegs);
         
-        HighPoly.Entity().SetNeighborBorder(LowPoly.Entity(), highSegsRel, key);
-        LowPoly.Entity().SetNeighborBorder(HighPoly.Entity(), lowSegsRel, key);
+        hiPoly.SetNeighborBorder(loPoly, highSegsRel, key);
+        loPoly.SetNeighborBorder(hiPoly, lowSegsRel, key);
+        
+        key.Data.Planet.PolygonAux.AuxDatas.Dic[hiPoly].MarkStale(key);
+        key.Data.Planet.PolygonAux.AuxDatas.Dic[loPoly].MarkStale(key);
     }
     
-    public void SetFlow(float width, GenWriteKey key)
-    {
-        MoistureFlow = width;
-    }
     public void IncrementFlow(float increment, GenWriteKey key)
     {
         MoistureFlow += increment;
