@@ -28,9 +28,6 @@ public class TempRiverData
         //     Infos.TryAdd(poly, info);
         // });
         
-        
-        
-        
         try
         {
             Parallel.ForEach(polys, poly =>
@@ -40,9 +37,9 @@ public class TempRiverData
                 Infos.TryAdd(poly, info);
             });
         }
-        catch (Exception e)
+        catch
         {
-            throw e;
+            throw;
         }
         
     }
@@ -317,8 +314,28 @@ public class MapPolyRiverTriInfo
         catch
         {
             var e = new GeometryException("p2t failed for river poly inner boundary");
+            var bPoints = Poly.GetOrderedBoundaryPoints(data);
+            var bSegs = Poly.GetOrderedBoundarySegs(data);
+            
+            
             e.AddSegLayer(InnerBoundary, "inner boundary");
-            e.AddSegLayer(Poly.GetOrderedBoundarySegs(data), "poly boundary");
+            e.AddSegLayer(bSegs, "poly boundary");
+            e.AddSegLayer(InnerBoundary.Union(Poly.GetOrderedBoundarySegs(data)).ToList(),
+                "both");
+            var rEdges = Poly.GetEdges(data).Where(edge => edge.IsRiver());
+                
+            var rSegs = rEdges.SelectMany(edge => edge.GetSegsRel(Poly).Segments).ToList();
+            var rWidth = rEdges.Average(edge => River.GetWidthFromFlow(edge.MoistureFlow));
+
+            var ingraved = Geometry.OffsetPolygon2d(bPoints, -rWidth / 2f).Cast<Vector2[]>()
+                .SelectMany(vs => vs.ToList().GetLineSegments());
+            e.AddSegLayer(ingraved.Union(bSegs).ToList(), "ingraved");
+            
+                
+                
+            
+
+            
             var inners = new List<Vector2>();
             foreach (var nexus in Poly.GetNexi(data))
             {
