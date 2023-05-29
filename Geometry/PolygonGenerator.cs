@@ -39,7 +39,7 @@ public class PolygonGenerator : Generator
 
         
         report.StartSection();
-        var delaunayPoints = info.Points.Select(p => new DelaunayTriangulator.DelaunatorPoint(p)).ToList<IPoint>();
+        var delaunayPoints = info.Points.Select(p => new Triangulator.DelaunatorPoint(p)).ToList<IPoint>();
         CreateAndRegisterPolys(delaunayPoints, info, key);
         report.StopSection("Creating points and polys");
 

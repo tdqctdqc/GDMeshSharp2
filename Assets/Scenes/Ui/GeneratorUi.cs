@@ -83,13 +83,10 @@ public class GeneratorUi : Ui
             }
             else
             {
-                if (e is AggregateException a)
+                if (e is AggregateException a
+                    && a.InnerExceptions.FirstOrDefault(i => i is DisplayableException) is DisplayableException da)
                 {
-                    var da = (DisplayableException)a.InnerExceptions.FirstOrDefault(i => i is DisplayableException);
-                    if (da != null)
-                    {
-                        DisplayException(da);
-                    }
+                    DisplayException(da);
                 }
                 else
                 {

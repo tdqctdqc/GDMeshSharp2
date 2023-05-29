@@ -2,9 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
-using Poly2Tri.Triangulation;
-using Poly2Tri.Triangulation.Sets;
-using Poly2Tri.Utility;
+
 
 public static class LineSegmentExt
 {
@@ -80,7 +78,7 @@ public static class LineSegmentExt
         
         if (hash.Count != 0)
         {
-            var e = new SegmentsException("chainification could not complete");
+            var e = new GeometryException("chainification could not complete");
             e.AddSegLayer(lineSegments, "before");
             e.AddSegLayer(froms, "attempt");
             e.AddSegLayer(hash.ToList(), "leftover");
@@ -195,79 +193,6 @@ public static class LineSegmentExt
             }
         }
         edge.ReplacePoints(newSegsAbs, key);
-    }
-    
-    public static List<PolyTri> PolyTriangulate(this IReadOnlyList<LineSegment> boundarySegs, GenData data, 
-        MapPolygon poly, IdDispenser id,
-        Graph<PolyTri, bool> graph,
-        HashSet<Vector2> interiorPoints = null)
-    {
-        return boundarySegs.Triangulate(data, poly,
-            (v, w, x) =>
-            {
-                var lf = data.Models.Landforms.GetAtPoint(poly, (v + w + x) / 3f, data);
-                var vg = data.Models.Vegetation.GetAtPoint(poly, (v + w + x) / 3f, lf, data);
-                return PolyTri.Construct(v, w, x, lf.MakeRef(), vg.MakeRef());
-            }, 
-            interiorPoints
-        );
-    }
-    private static List<T> Triangulate<T>(this IReadOnlyList<LineSegment> boundarySegs, GenData data, MapPolygon poly,
-        Func<Vector2, Vector2, Vector2, T> constructor, 
-        HashSet<Vector2> interiorPoints = null) where T : Triangle
-    {
-        var boundaryV2s = boundarySegs.GetPoints();
-        var points = boundaryV2s.GetPoly2TriTriPoints();
-        var boundaryPointIndices = new Dictionary<Vector2, int>();
-        
-        for (var i = 0; i < boundaryV2s.Count; i++)
-        {
-            boundaryPointIndices.Add(boundaryV2s[i], i);
-        }
-        
-        var hash = boundaryV2s.ToHashSet();
-        
-        var constraints = new List<TriangulationConstraint>();
-        for (var i = 0; i < points.Count; i++)
-        {
-            constraints.Add(new TriangulationConstraint(points.Next(i), points[i]));
-        } 
-        if(interiorPoints != null)
-        {
-            points.AddRange(interiorPoints.Select(p => p.GetPoly2TriTriPoint()));
-            hash.AddRange(interiorPoints);
-        }
-        var con = new ConstrainedPointSet(points, constraints);
-        Poly2Tri.P2T.Triangulate(con);
-        var tris = new List<T>();
-        for (var i = 0; i < con.Triangles.Count; i++)
-        {
-            var dt = con.Triangles[i];
-            var t0 = dt.Points.Item0;
-            var t1 = dt.Points.Item1;
-            var t2 = dt.Points.Item2;
-            var v0 = t0.GetV2();
-            var v1 = t1.GetV2();
-            var v2 = t2.GetV2();
-            
-            if (dt.Points.Any(p => hash.Contains(p.GetV2()) == false)) continue;
-
-            if (boundaryPointIndices.ContainsKey(v0)
-                && boundaryPointIndices.ContainsKey(v1)
-                && boundaryPointIndices.ContainsKey(v2)
-                )
-            {
-                var index = boundaryPointIndices[v0];
-                var next = points
-                    .FindNext(v => v.EqualsV2(v1) || v.EqualsV2(v2), index);
-                if (next.EqualsV2(v1) == false) continue;
-            }
-
-            var t = constructor(v0, v1, v2);
-            tris.Add(t);
-        }
-        //todo check for missing
-        return tris;
     }
     
     public static IEnumerable<LineSegment> GetLineSegments(this List<Vector2> points, bool close = false)

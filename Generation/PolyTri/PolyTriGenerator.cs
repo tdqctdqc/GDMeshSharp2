@@ -4,10 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Godot;
-using Poly2Tri;
-using Poly2Tri.Triangulation.Polygon;
-using Poly2Tri.Triangulation.Sets;
-using Poly2Tri.Utility;
 
 public class PolyTriGenerator : Generator
 {
@@ -24,13 +20,17 @@ public class PolyTriGenerator : Generator
         var polys = _data.Planet.Polygons.Entities;
         
         report.StartSection();
-        new RiverPolyTriGen().DoRivers(key);
+        var riverData = new RiverPolyTriGen().DoRivers(key);
         report.StopSection("Finding rivers");
         
-        
         report.StartSection();
-        Parallel.ForEach(polys, p => BuildTris(p, key));
+        Parallel.ForEach(polys, p => BuildTris(p, riverData, key));
+        // polys.ToList().ForEach(p => BuildTris(p, riverData, key));
         report.StopSection("Building poly terrain tris");
+        
+        
+        GD.Print("doot");
+
 
         report.StartSection();
         Parallel.ForEach(_data.Planet.PolyEdges.Entities, p => MakeDiffPolyTriPaths(p, key));
@@ -41,30 +41,34 @@ public class PolyTriGenerator : Generator
     }
     
 
-    private void BuildTris(MapPolygon poly, GenWriteKey key)
+    private void BuildTris(MapPolygon poly, TempRiverData rd, GenWriteKey key)
     {
         List<PolyTri> tris;
         var graph = new Graph<PolyTri, bool>();
         if (poly.IsWater())
         {
             tris = DoSeaPoly(poly, graph, key);
-            var polyTerrainTris = PolyTris.Create(tris,  graph, key);
-            if (polyTerrainTris == null) throw new Exception();
-            poly.SetTerrainTris(polyTerrainTris, key);
         }
-        // else if (poly.Neighbors.Entities()
-        //          .Select(n => poly.GetEdge(n, _data))
-        //          .Any(e => _riverEdgeWidths.ContainsKey(e)))
-        // {
-        //     tris = DoRiverPoly(poly, graph, key);
-        // }
+        else if (rd.Infos.ContainsKey(poly))
+        {
+            var info = rd.Infos[poly];
+            tris = info.LandTris
+                .Union(info.BankTris.SelectMany(kvp => kvp.Value))
+                .Union(info.InnerTris.Values.Select(kvp => kvp))
+                .ToList();
+            foreach (var t in tris)
+            {
+                graph.AddNode(t);
+            }
+        }
         else
         {
             tris = DoLandPolyNoRivers(poly, graph, key);
-            var polyTerrainTris = PolyTris.Create(tris,  graph, key);
-            if (polyTerrainTris == null) throw new Exception();
-            poly.SetTerrainTris(polyTerrainTris, key);
         }
+        
+        var polyTerrainTris = PolyTris.Create(tris,  graph, key);
+        if (polyTerrainTris == null) throw new Exception();
+        poly.SetTerrainTris(polyTerrainTris, key);
     }
     
     private List<PolyTri> DoSeaPoly(MapPolygon poly, Graph<PolyTri, bool> graph, GenWriteKey key)
@@ -88,9 +92,9 @@ public class PolyTriGenerator : Generator
     
     private List<PolyTri> DoLandPolyNoRivers(MapPolygon poly, Graph<PolyTri, bool> graph, GenWriteKey key)
     {
-        var borderSegs = poly.GetOrderedBoundarySegs(key.Data);
-        
-        List<PolyTri> tris = borderSegs.TriangulateArbitrary(poly, key, graph, true);
+        // var borderSegs = poly.GetOrderedBoundarySegs(key.Data);
+        var borderPs = poly.GetOrderedBoundaryPoints(_data);
+        List<PolyTri> tris = borderPs.PolyTriangulate(key.Data, poly);
         foreach (var polyTri in tris)
         {
             //todo actually build graph

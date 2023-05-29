@@ -7,21 +7,23 @@ using Godot;
 
 public class RiverPolyTriGen
 {
-    public void DoRivers(GenWriteKey key)
+    public TempRiverData DoRivers(GenWriteKey key)
     {
-        var rd = TempRiverData.Construct(key);
+        var rd = new TempRiverData();
         var sw = new Stopwatch();
         
         sw.Start();
         //todo partition by riverpoly union find instead?
         var lms = key.Data.Planet.PolygonAux.LandSea.Landmasses;
-        Parallel.ForEach(lms, lm => PreprocessRiversForLandmass(lm, key));
+        Parallel.ForEach(lms, lm => PreprocessRiversForLandmass(rd, lm, key));
+        // lms.ToList().ForEach(lm => PreprocessRiversForLandmass(rd, lm, key));
         sw.Stop();
         GD.Print("preprocessing rivers " + sw.Elapsed.TotalMilliseconds);
         sw.Reset();
-        GD.Print("doot");
         key.Data.Notices.SetPolyShapes?.Invoke();
         GD.Print("set poly shapes");
+        
+        
         sw.Start();
         rd.GenerateInfos(key);
         sw.Stop();
@@ -29,19 +31,21 @@ public class RiverPolyTriGen
         sw.Reset();
         
         key.Data.Notices.SetPolyShapes?.Invoke();
+        
+        GD.Print("finished w riverpolytrigen");
+        return rd;
     }
-    private void PreprocessRiversForLandmass(HashSet<MapPolygon> lm, GenWriteKey key)
+    private void PreprocessRiversForLandmass(TempRiverData rd, HashSet<MapPolygon> lm, GenWriteKey key)
     {
         var riverNexi = key.Data.Planet.PolyNexi.Entities
             .Where(n => n.IncidentPolys.Any(p => lm.Contains(p)))
             .Where(n => n.IncidentEdges.Any(e => e.IsRiver()));
-        MakeInners(riverNexi, key);
-        MakePivots(riverNexi, key);
+        MakeInners(rd, riverNexi, key);
+        MakePivots(rd, riverNexi, key);
     }
 
-    private void MakeInners(IEnumerable<MapPolyNexus> rNexi, GenWriteKey key)
+    private void MakeInners(TempRiverData rd, IEnumerable<MapPolyNexus> rNexi, GenWriteKey key)
     {
-        var rd = key.Data.Planet.GetRegister<TempRiverData>().Entities.First();
  
         foreach (var nexus in rNexi)
         {
@@ -82,25 +86,36 @@ public class RiverPolyTriGen
                     var axis2 = nexusSeg2.To - nexusSeg2.From;
                     var shift2 = axis2.Rotated(-Mathf.Pi / 2f).Normalized() * width2 / 2f;
 
-
                     var intersect = Geometry.LineIntersectsLine2d(nexusSeg1.From - shift1, axis1,
                         nexusSeg2.From - shift2, axis2);
                     
-                    
-                    // var intersect = Vector2Ext.GetLineIntersection(nexusSeg1.From - shift1, nexusSeg1.To - shift1, 
-                    //     nexusSeg2.From - shift2, nexusSeg2.To - shift2, 
-                    //     out var inner);
-                    
-                    
-                    
                     if (intersect is Vector2 inner)
                     {
-                        if (poly.PointInPolyRel(inner, key.Data) == false)
+                        if (poly.PointInPolyRel(inner, key.Data) == false
+                             || innerOnEdge())
                         {
                             var w = (width1 + width2) / 2f;
                             inner = nexusRelative.Normalized() * (nexusRelative.Length() - w);
                             if (poly.PointInPolyRel(inner, key.Data) == false) 
                                 throw new Exception();
+                            // if (innerOnEdge()) throw new Exception();
+                        }
+
+                        bool innerOnEdge()
+                        {
+                            var segs = poly.GetOrderedBoundarySegs(key.Data);
+                            for (var i = 0; i < segs.Count; i++)
+                            {
+                                var seg = segs[i];
+                                
+                                var close = Geometry.GetClosestPointToSegment2d(inner, seg.From, seg.To);
+                                if (inner.DistanceTo(close) < .01f)
+                                {
+                                    GD.Print("FIXING INNER ON EDGE");
+                                    return true;
+                                }
+                            }
+                            return false;
                         }
                         
                         rd.Inners.TryAdd(new PolyCornerKey(nexus, poly), inner);
@@ -140,7 +155,11 @@ public class RiverPolyTriGen
                         {
                             inner = nexusRelative.Normalized() * (nexusRelative.Length() - width);
                             if (poly.PointInPolyRel(inner, key.Data) == false)
-                                throw new Exception();
+                            {
+                                var e = new GeometryException("Fixing inner failed");
+                                // e.AddSegLayer();
+                                throw e;
+                            }
                         }
 
                         rd.Inners.TryAdd(new PolyCornerKey(nexus, poly), inner);
@@ -152,9 +171,8 @@ public class RiverPolyTriGen
         }
     }
 
-    private void MakePivots(IEnumerable<MapPolyNexus> rNexi, GenWriteKey key)
+    private void MakePivots(TempRiverData rd, IEnumerable<MapPolyNexus> rNexi, GenWriteKey key)
     {
-        var rd = key.Data.Planet.GetRegister<TempRiverData>().Entities.First();
         var rIncidentEdges = rNexi.SelectMany(n => n.IncidentEdges).Distinct();
         foreach (var edge in rIncidentEdges)
         {

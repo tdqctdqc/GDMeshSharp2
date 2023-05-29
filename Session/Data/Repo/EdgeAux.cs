@@ -1,7 +1,6 @@
 
 using System;
 using System.Collections.Generic;
-using Poly2Tri.Triangulation;
 
 public class EdgeAux<TEntity, TEnd> : AuxData<TEntity>
     where TEntity : Entity

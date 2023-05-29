@@ -159,6 +159,11 @@ public static class TriangleExt
 
         return !(hasNeg && hasPos);
     }
-    
-    
+
+    public static void CollectSegStructs(this Triangle tri, HashSet<LineSegStruct> col)
+    {
+        col.Add(new LineSegStruct(tri.A, tri.B));
+        col.Add(new LineSegStruct(tri.C, tri.B));
+        col.Add(new LineSegStruct(tri.A, tri.C));
+    }
 }

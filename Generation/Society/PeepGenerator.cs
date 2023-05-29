@@ -113,6 +113,7 @@ public class PeepGenerator : Generator
     
     private float GenerateExtractionBuildings(Regime r)
     {
+        return 0f;
         var extractBuildings = _data.Models.Buildings.Models
             .Values.SelectWhereOfType<BuildingModel, ExtractionBuildingModel>()
             .ToDictionary(m => m.ProdItem, m => m);

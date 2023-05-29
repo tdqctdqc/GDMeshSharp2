@@ -26,8 +26,7 @@ public class PolyBorderChain : Chain<LineSegment, Vector2>, IBorderChain<LineSeg
             var nextSeg = segments[i + 1];
             if (thisSeg.From == nextSeg.To && thisSeg.To == nextSeg.From)
             {
-                GD.Print("doot");
-                var e = new SegmentsException("retracking boundary seg");
+                var e = new GeometryException("retracking boundary seg");
                 e.AddSegLayer(segments, "ordered");
                 throw e;
             }

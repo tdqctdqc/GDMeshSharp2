@@ -212,7 +212,7 @@ public static class GraphGenerator
             var node = new GraphNode<TNode, TEdge>(elements[i]);
             graph.AddNode(node);
         }
-        var tris = DelaunayTriangulator.TriangulatePoints(poses);
+        var tris = Triangulator.TriangulatePoints(poses);
         for (int i = 0; i < tris.Count; i++)
         {
             var t = tris[i];
@@ -232,80 +232,6 @@ public static class GraphGenerator
 
         return graph;
     }
-    public static Graph<Vector2, float> GenerateDelaunayGraph(List<Vector2> poses)
-    {
-        var graph = new Graph<Vector2, float>();
-
-        foreach (var pos in poses)
-        {
-            var node = new GraphNode<Vector2, float>(pos);
-            graph.AddNode(node);
-        }
-        var tris = DelaunayTriangulator.TriangulatePoints(poses);
-        for (int i = 0; i < tris.Count; i++)
-        {
-            var a = graph[tris[i].A];
-            var b = graph[tris[i].B];
-            var c = graph[tris[i].C];
-
-            graph.AddUndirectedEdge(a,b,1f);
-            graph.AddUndirectedEdge(a,c,1f);
-            graph.AddUndirectedEdge(c,b,1f);
-        }
-
-        return graph;
-    }
+   
     
-    public static Graph<T, float> GenerateSpanningGraph<T, E>(IEnumerable<T> els, 
-        int branchLength, int maxVertexDegree, Func<E, float> edgeLength) where T : IReadOnlyGraphNode<T, E>
-    {
-        var underGraph = new Graph<T, float>();
-        foreach (var el in els)
-        {
-            underGraph.AddNode(el);
-            foreach (var elNeighbor in el.Neighbors)
-            {
-                underGraph.AddEdge(el, elNeighbor, edgeLength(el.GetEdge(elNeighbor)));
-            }
-        }
-
-        return GenerateSpanningGraph(underGraph, branchLength, maxVertexDegree);
-    }
-    public static Graph<T, float> GenerateSpanningGraph<T>(
-        Graph<T, float> underGraph, int branchLength, int maxVertexDegree)
-    {
-        var graph = new Graph<T, float>();
-        foreach (var e in underGraph.Elements)
-        {
-            graph.AddNode(e);
-        }
-        var openNodes = new List<IGraphNode<T, float>>(graph.Nodes);
-
-        while(openNodes.Count > 0)
-        {
-            var node = openNodes[0];
-            var branchNodes = new List<IGraphNode<T, float>>();
-            int branch = 0;
-            branchNodes.Add(node);
-            openNodes.Remove(node);
-            
-            while(branch < branchLength)
-            {
-                var backingNode = underGraph[node.Element];
-                var openNs = backingNode.Neighbors
-                    .Where(n => 
-                        branchNodes.Contains(underGraph[n]) == false
-                    )
-                    .Select(n => underGraph[n]);
-                if(openNs.Count() == 0) break;
-                var next = openNs.ElementAt(0);
-                graph.AddUndirectedEdge(node, next, 1f);
-                node = next;
-                branch++;
-                branchNodes.Add(node);
-                openNodes.Remove(node);
-            }
-        }
-        return graph; 
-    }
 }

@@ -8,9 +8,9 @@ public class PolyAuxData
 {
     public bool Stale { get; private set; }
     public Vector2 GraphicalCenter { get; private set; }
-    public IReadOnlyList<LineSegment> OrderedBoundarySegs => _orderedBoundarySegs;
+    public List<LineSegment> OrderedBoundarySegs => _orderedBoundarySegs;
     private List<LineSegment> _orderedBoundarySegs;
-    public IReadOnlyList<Vector2> OrderedBoundaryPoints => _orderedBoundaryPoints;
+    public Vector2[] OrderedBoundaryPoints => _orderedBoundaryPoints;
     private Vector2[] _orderedBoundaryPoints;
     public PolyAuxData(MapPolygon p, Data data)
     {
@@ -33,7 +33,7 @@ public class PolyAuxData
         
         if (ordered.IsChain() == false)
         {
-            var e = new SegmentsException("couldnt order boundary");
+            var e = new GeometryException("couldnt order boundary");
             e.AddSegLayer(_orderedBoundarySegs, "old");
             e.AddSegLayer(ordered, "new");
             throw e;
@@ -42,7 +42,7 @@ public class PolyAuxData
         
         if (ordered.Any(ls => ls.From == ls.To))
         {
-            var e = new SegmentsException("degenerate seg");
+            var e = new GeometryException("degenerate seg");
             e.AddSegLayer(_orderedBoundarySegs, "old");
             e.AddSegLayer(ordered, "new");
             throw e;

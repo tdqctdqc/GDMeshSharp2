@@ -131,6 +131,15 @@
           "lib/netstandard2.0/MessagePack.Annotations.dll": {}
         }
       },
+      "MIConvexHull/1.1.19.1019": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/MIConvexHull.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/MIConvexHull.dll": {}
+        }
+      },
       "Microsoft.Bcl.AsyncInterfaces/7.0.0": {
         "type": "package",
         "dependencies": {
@@ -205,15 +214,6 @@
         },
         "runtime": {
           "lib/netstandard1.0/PriorityQueue.dll": {}
-        }
-      },
-      "Poly2Tri/1.0.1": {
-        "type": "package",
-        "compile": {
-          "lib/net35-Client/Poly2Tri.dll": {}
-        },
-        "runtime": {
-          "lib/net35-Client/Poly2Tri.dll": {}
         }
       },
       "RandomFriendlyNameGenerator/1.0.7": {
@@ -867,6 +867,23 @@
         "messagepack.annotations.nuspec"
       ]
     },
+    "MIConvexHull/1.1.19.1019": {
+      "sha512": "Qz0BIRVyflj9jMkIKG1tpON5Xz1lFEA9XyRH0Pw5qIsCE75heHF4cHrBr8RqvQJRaaNXH+5jdWAfFP3m3OfTOA==",
+      "type": "package",
+      "path": "miconvexhull/1.1.19.1019",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/netstandard1.0/MIConvexHull.deps.json",
+        "lib/netstandard1.0/MIConvexHull.dll",
+        "lib/netstandard1.0/MIConvexHull.pdb",
+        "lib/netstandard2.0/MIConvexHull.deps.json",
+        "lib/netstandard2.0/MIConvexHull.dll",
+        "lib/netstandard2.0/MIConvexHull.pdb",
+        "miconvexhull.1.1.19.1019.nupkg.sha512",
+        "miconvexhull.nuspec"
+      ]
+    },
     "Microsoft.Bcl.AsyncInterfaces/7.0.0": {
       "sha512": "3aeMZ1N0lJoSyzqiP03hqemtb1BijhsJADdobn/4nsMJ8V1H+CrpuduUe4hlRdx+ikBQju1VGjMD1GJ3Sk05Eg==",
       "type": "package",
@@ -1144,18 +1161,6 @@
         "lib/portable-net40+sl5+win8+wpa81+wp8/PriorityQueue.xml",
         "optimizedpriorityqueue.5.1.0.nupkg.sha512",
         "optimizedpriorityqueue.nuspec"
-      ]
-    },
-    "Poly2Tri/1.0.1": {
-      "sha512": "+/V/DLKkJov+Lc83QE2aRAMqxl+cE6sjhMZ1kdfj1l7B/r0fPcBeLj5uU4sxrKkZVVN+j4JUNf6e2xW5vrhwqQ==",
-      "type": "package",
-      "path": "poly2tri/1.0.1",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "lib/net35-Client/Poly2Tri.dll",
-        "poly2tri.1.0.1.nupkg.sha512",
-        "poly2tri.nuspec"
       ]
     },
     "RandomFriendlyNameGenerator/1.0.7": {
@@ -1641,12 +1646,12 @@
     ".NETStandard,Version=v2.0": [
       "GeometRi >= 1.4.0.3",
       "Google.OrTools >= 6.7.4973",
+      "MIConvexHull >= 1.1.19.1019",
       "MarkovNextGen >= 1.2.6",
       "MessagePack >= 2.4.59",
       "Microsoft.Extensions.ObjectPool >= 7.0.4",
       "NETStandard.Library >= 2.0.3",
       "OptimizedPriorityQueue >= 5.1.0",
-      "Poly2Tri >= 1.0.1",
       "RandomFriendlyNameGenerator >= 1.0.7",
       "System.Text.Json >= 7.0.2"
     ]
@@ -1702,6 +1707,10 @@
             "target": "Package",
             "version": "[6.7.4973, )"
           },
+          "MIConvexHull": {
+            "target": "Package",
+            "version": "[1.1.19.1019, )"
+          },
           "MarkovNextGen": {
             "target": "Package",
             "version": "[1.2.6, )"
@@ -1723,10 +1732,6 @@
           "OptimizedPriorityQueue": {
             "target": "Package",
             "version": "[5.1.0, )"
-          },
-          "Poly2Tri": {
-            "target": "Package",
-            "version": "[1.0.1, )"
           },
           "RandomFriendlyNameGenerator": {
             "target": "Package",
@@ -1758,16 +1763,6 @@
       "warningLevel": 1,
       "message": "Package 'Google.OrTools 6.7.4973' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8' instead of the project target framework '.NETStandard,Version=v2.0'. This package may not be fully compatible with your project.",
       "libraryId": "Google.OrTools",
-      "targetGraphs": [
-        ".NETStandard,Version=v2.0"
-      ]
-    },
-    {
-      "code": "NU1701",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "Package 'Poly2Tri 1.0.1' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8' instead of the project target framework '.NETStandard,Version=v2.0'. This package may not be fully compatible with your project.",
-      "libraryId": "Poly2Tri",
       "targetGraphs": [
         ".NETStandard,Version=v2.0"
       ]

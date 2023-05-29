@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "pN38pDd8L4r35gkfsaU6jBfrRVv9XFUp5fTa9op28wJXXP2o3iChQJ5lOidbO0chcYkZxui6bDV7SOEuF0eGWA==",
+  "dgSpecHash": "PIKT2UK0vgdqsgLsdI2YRQzoTFeHlKKeC0bWlmsS/Po1w6ID32ywPiK4h2E3Wz4bscScdEIpLEIXAcA4vCaH5A==",
   "success": true,
   "projectFilePath": "C:\\Users\\Tynan Dion\\desktop\\games\\gdMeshSharp2\\gdMeshSharp2.csproj",
   "expectedPackageFiles": [
@@ -11,6 +11,7 @@
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\markovnextgen\\1.2.6\\markovnextgen.1.2.6.nupkg.sha512",
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\messagepack\\2.4.59\\messagepack.2.4.59.nupkg.sha512",
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\messagepack.annotations\\2.4.59\\messagepack.annotations.2.4.59.nupkg.sha512",
+    "C:\\Users\\Tynan Dion\\.nuget\\packages\\miconvexhull\\1.1.19.1019\\miconvexhull.1.1.19.1019.nupkg.sha512",
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\7.0.0\\microsoft.bcl.asyncinterfaces.7.0.0.nupkg.sha512",
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\microsoft.extensions.objectpool\\7.0.4\\microsoft.extensions.objectpool.7.0.4.nupkg.sha512",
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\microsoft.net.stringtools\\17.4.0\\microsoft.net.stringtools.17.4.0.nupkg.sha512",
@@ -18,7 +19,6 @@
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\netstandard.library\\2.0.3\\netstandard.library.2.0.3.nupkg.sha512",
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\newtonsoft.json\\11.0.1\\newtonsoft.json.11.0.1.nupkg.sha512",
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\optimizedpriorityqueue\\5.1.0\\optimizedpriorityqueue.5.1.0.nupkg.sha512",
-    "C:\\Users\\Tynan Dion\\.nuget\\packages\\poly2tri\\1.0.1\\poly2tri.1.0.1.nupkg.sha512",
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\randomfriendlynamegenerator\\1.0.7\\randomfriendlynamegenerator.1.0.7.nupkg.sha512",
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\system.buffers\\4.5.1\\system.buffers.4.5.1.nupkg.sha512",
     "C:\\Users\\Tynan Dion\\.nuget\\packages\\system.collections.immutable\\1.7.1\\system.collections.immutable.1.7.1.nupkg.sha512",
@@ -39,16 +39,6 @@
       "warningLevel": 1,
       "message": "Package 'Google.OrTools 6.7.4973' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8' instead of the project target framework '.NETStandard,Version=v2.0'. This package may not be fully compatible with your project.",
       "libraryId": "Google.OrTools",
-      "targetGraphs": [
-        ".NETStandard,Version=v2.0"
-      ]
-    },
-    {
-      "code": "NU1701",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "Package 'Poly2Tri 1.0.1' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8' instead of the project target framework '.NETStandard,Version=v2.0'. This package may not be fully compatible with your project.",
-      "libraryId": "Poly2Tri",
       "targetGraphs": [
         ".NETStandard,Version=v2.0"
       ]

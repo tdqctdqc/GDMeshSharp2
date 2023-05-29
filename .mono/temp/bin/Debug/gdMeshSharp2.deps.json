@@ -11,12 +11,12 @@
         "dependencies": {
           "GeometRi": "1.4.0.3",
           "Google.OrTools": "6.7.4973",
+          "MIConvexHull": "1.1.19.1019",
           "MarkovNextGen": "1.2.6",
           "MessagePack": "2.4.59",
           "Microsoft.Extensions.ObjectPool": "7.0.4",
           "NETStandard.Library": "2.0.3",
           "OptimizedPriorityQueue": "5.1.0",
-          "Poly2Tri": "1.0.1",
           "RandomFriendlyNameGenerator": "1.0.7",
           "System.Text.Json": "7.0.2"
         },
@@ -146,6 +146,14 @@
           }
         }
       },
+      "MIConvexHull/1.1.19.1019": {
+        "runtime": {
+          "lib/netstandard2.0/MIConvexHull.dll": {
+            "assemblyVersion": "1.1.19.1018",
+            "fileVersion": "1.1.19.1018"
+          }
+        }
+      },
       "Microsoft.Bcl.AsyncInterfaces/7.0.0": {
         "dependencies": {
           "System.Threading.Tasks.Extensions": "4.5.4"
@@ -196,14 +204,6 @@
           "lib/netstandard1.0/PriorityQueue.dll": {
             "assemblyVersion": "5.0.0.0",
             "fileVersion": "5.0.0.0"
-          }
-        }
-      },
-      "Poly2Tri/1.0.1": {
-        "runtime": {
-          "lib/net35-Client/Poly2Tri.dll": {
-            "assemblyVersion": "1.0.1.0",
-            "fileVersion": "1.0.1.0"
           }
         }
       },
@@ -391,6 +391,13 @@
       "path": "messagepack.annotations/2.4.59",
       "hashPath": "messagepack.annotations.2.4.59.nupkg.sha512"
     },
+    "MIConvexHull/1.1.19.1019": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Qz0BIRVyflj9jMkIKG1tpON5Xz1lFEA9XyRH0Pw5qIsCE75heHF4cHrBr8RqvQJRaaNXH+5jdWAfFP3m3OfTOA==",
+      "path": "miconvexhull/1.1.19.1019",
+      "hashPath": "miconvexhull.1.1.19.1019.nupkg.sha512"
+    },
     "Microsoft.Bcl.AsyncInterfaces/7.0.0": {
       "type": "package",
       "serviceable": true,
@@ -439,13 +446,6 @@
       "sha512": "sha512-0AnX6kAs0GiLrSqrHKe5mpQhJSHTmXeqLNucV2CxGATP/I9UzLMc1N4MtS/z8qB6mcgX61OjHdY3YbOmETGs+A==",
       "path": "optimizedpriorityqueue/5.1.0",
       "hashPath": "optimizedpriorityqueue.5.1.0.nupkg.sha512"
-    },
-    "Poly2Tri/1.0.1": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-+/V/DLKkJov+Lc83QE2aRAMqxl+cE6sjhMZ1kdfj1l7B/r0fPcBeLj5uU4sxrKkZVVN+j4JUNf6e2xW5vrhwqQ==",
-      "path": "poly2tri/1.0.1",
-      "hashPath": "poly2tri.1.0.1.nupkg.sha512"
     },
     "RandomFriendlyNameGenerator/1.0.7": {
       "type": "package",

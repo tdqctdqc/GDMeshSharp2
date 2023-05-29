@@ -131,20 +131,20 @@ public static class PointsGenerator
     }
 
 
-    public static List<Vector2> GenerateInteriorPoints(this IReadOnlyList<LineSegment> border, float cellSize, float margin)
+    public static void GenerateInteriorPoints(this Vector2[] border, float cellSize, float margin, Action<Vector2> add)
     {
-        var res = new List<Vector2>();
-
-        var minX = border.Min(b => Mathf.Min(b.From.x, b.To.x));
-        var maxX = border.Max(b => Mathf.Max(b.From.x, b.To.x));
+        var minX = border.Min(b => b.x);
+        var maxX = border.Max(b => b.x);
         
-        var minY = border.Min(b => Mathf.Min(b.From.y, b.To.y));
-        var maxY = border.Max(b => Mathf.Max(b.From.y, b.To.y));
+        var minY = border.Min(b => b.y);
+        var maxY = border.Max(b => b.y);
 
         var xCells = Mathf.Abs(maxX - minX) / cellSize;
         var yCells = Mathf.Abs(maxY - minY) / cellSize;
         var mod = Vector2.Right * cellSize * .1f;
         var shift = Vector2.One * cellSize * .5f;
+
+        var innerBorder = Geometry.OffsetPolygon2d(border, -margin);
 
         for (int i = 0; i < xCells; i++)
         {
@@ -152,17 +152,12 @@ public static class PointsGenerator
             {
                 mod = mod.Rotated(Game.I.Random.RandfRange(0f, Mathf.Pi * 2f));
                 var p = new Vector2(minX + cellSize * i, minY + cellSize * j) + mod + shift;
-                if(border.All(b => 
-                        b.LeftOf(p) && 
-                        b.DistanceTo(p) > margin
-                        )
-                   )
+                if(innerBorder.Cast<Vector2[]>().Any(b => Geometry.IsPointInPolygon(p, b)))
                 {
-                    res.Add(p);
+                    add(p);
                 }
             }
         }
-        return res;
     }
     
     public static List<Vector2> GeneratePoissonPoints(float radius, Vector2 sampleRegionSize, int numSamplesBeforeRejection = 30) {

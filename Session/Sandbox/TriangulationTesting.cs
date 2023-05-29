@@ -5,11 +5,6 @@ using System.Diagnostics;
 using System.Linq;
 using Godot;
 using Poly2Tri;
-using Poly2Tri.Triangulation;
-using Poly2Tri.Triangulation.Polygon;
-using Poly2Tri.Triangulation.Sets;
-using Poly2Tri.Utility;
-
 public class TriangulationTesting
 {
     private SandboxClient _client;

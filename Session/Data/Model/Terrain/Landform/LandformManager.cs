@@ -10,7 +10,8 @@ public class LandformManager : TerrainAspectManager<Landform>
     public static Landform Mountain { get; private set; } = new Mountain();
     public static Landform Hill { get; private set; } = new Hill();
     public static Landform Plain  { get; private set; } = new Landform("Plain", 0f, 1f, Colors.SaddleBrown, false);
-    public static Landform Sea  { get; private set; } = new Landform("Sea", Mathf.Inf, 0f, Colors.Blue, true);
+    public static Landform Sea  { get; private set; } = new Landform("Sea", Mathf.Inf, 0f, 
+        Colors.DodgerBlue.Darkened(.2f), true);
     public static Landform River { get; private set; } = new River();
     public static Landform Urban { get; private set; } = new Urban();
     public LandformManager()

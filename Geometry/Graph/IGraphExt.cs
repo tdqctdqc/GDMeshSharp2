@@ -254,7 +254,7 @@ public static class IGraphExt
                     var a = adj.Select(x => x as ISegment<Vector2>).Select(s => new LineSegment(s.From, s.To)).ToList();
                     var ps = elements.Select(el => (Vector2) (object)el).ToList();
                     var graphPs = graph.Elements.Select(el => (Vector2) (object)el).ToList();
-                    var ex = new SegmentsException("couldnt sort border pairs");
+                    var ex = new GeometryException("couldnt sort border pairs");
                     ex.AddSegLayer(l, "left");
                     ex.AddSegLayer(r, "right");
                     ex.AddSegLayer(a, "adj");

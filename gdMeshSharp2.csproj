@@ -8,9 +8,9 @@
     <PackageReference Include="Google.OrTools" Version="6.7.4973" />
     <PackageReference Include="MarkovNextGen" Version="1.2.6" />
     <PackageReference Include="MessagePack" Version="2.4.59" />
+    <PackageReference Include="MIConvexHull" Version="1.1.19.1019" />
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="7.0.4" />
     <PackageReference Include="OptimizedPriorityQueue" Version="5.1.0" />
-    <PackageReference Include="Poly2Tri" Version="1.0.1" />
     <PackageReference Include="RandomFriendlyNameGenerator" Version="1.0.7" />
     <PackageReference Include="System.Text.Json" Version="7.0.2" />
   </ItemGroup>
@@ -35,6 +35,7 @@
     <EmbeddedResource Remove="Assets\Cultures\Unfinished\**" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Geometry\Triangulation\P2T\Properties" />
     <Folder Include="Session\Message\Procedure\Diplomatic" />
     <Folder Include="Session\Message\Procedure\Production" />
   </ItemGroup>
@@ -55,5 +56,8 @@
     <Content Include="Assets\Cultures\Cultures\Russian.json" />
     <Content Include="Assets\Cultures\Cultures\Turkic.json" />
     <Content Include="Assets\Cultures\Cultures\Yankee.json" />
+    <Content Include="Geometry\Triangulation\P2T\.gitignore" />
+    <Content Include="Geometry\Triangulation\P2T\AUTHORS.txt" />
+    <Content Include="Geometry\Triangulation\P2T\LICENSE.txt" />
   </ItemGroup>
 </Project>

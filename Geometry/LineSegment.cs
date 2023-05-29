@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Godot;
-using Poly2Tri.Triangulation;
-using Poly2Tri.Triangulation.Sets;
-using Poly2Tri.Utility;
 
 
 public class LineSegment : ISegment<Vector2>

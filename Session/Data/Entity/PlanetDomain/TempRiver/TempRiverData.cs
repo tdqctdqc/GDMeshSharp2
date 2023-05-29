@@ -5,46 +5,47 @@ using System.Linq;
 using System.Threading.Tasks;
 using Godot;
 
-public class TempRiverData : Entity
+public class TempRiverData
 {
     public ConcurrentDictionary<PolyCornerKey, Vector2> Inners { get; private set; }
     public ConcurrentDictionary<EdgeEndKey, Vector2> HiPivots { get; private set; }
     public ConcurrentDictionary<MapPolygon, MapPolyRiverTriInfo> Infos { get; private set; }
-    public static TempRiverData Construct(GenWriteKey key)
+    public TempRiverData()
     {
-        var r = new TempRiverData(new ConcurrentDictionary<PolyCornerKey, Vector2>(), 
-            new ConcurrentDictionary<EdgeEndKey, Vector2>(), 
-            new ConcurrentDictionary<MapPolygon, MapPolyRiverTriInfo>(),
-            key.IdDispenser.GetID());
-        key.Create(r);
-        return r;
-    }
-    private TempRiverData(ConcurrentDictionary<PolyCornerKey, Vector2> inners, 
-        ConcurrentDictionary<EdgeEndKey, Vector2> hiPivots, 
-        ConcurrentDictionary<MapPolygon, MapPolyRiverTriInfo> infos,
-        int id) : base(id)
-    {
-        HiPivots = hiPivots;
-        Inners = inners;
-        Infos = infos;
+        HiPivots = new ConcurrentDictionary<EdgeEndKey, Vector2>();
+        Inners = new ConcurrentDictionary<PolyCornerKey, Vector2>();
+        Infos = new ConcurrentDictionary<MapPolygon, MapPolyRiverTriInfo>();
     }
 
     public void GenerateInfos(GenWriteKey key)
     {
         var polys = key.Data.Planet.Polygons.Entities;
-        Parallel.ForEach(polys, poly =>
+        
+        // polys.ToList().ForEach(poly =>
+        // {
+        //     if (poly.GetEdges(key.Data).Any(e => e.IsRiver()) == false) return;
+        //     var info = new MapPolyRiverTriInfo(poly, this, key);
+        //     Infos.TryAdd(poly, info);
+        // });
+        
+        
+        
+        
+        try
         {
-            if (poly.GetEdges(key.Data).Any(e => e.IsRiver()) == false) return;
-            var info = new MapPolyRiverTriInfo(poly, this, key);
-            Infos.TryAdd(poly, info);
-        });
+            Parallel.ForEach(polys, poly =>
+            {
+                if (poly.GetEdges(key.Data).Any(e => e.IsRiver()) == false) return;
+                var info = new MapPolyRiverTriInfo(poly, this, key);
+                Infos.TryAdd(poly, info);
+            });
+        }
+        catch (Exception e)
+        {
+            throw e;
+        }
+        
     }
-    
-    public override Type GetDomainType() => DomainType();
-    private static Type DomainType() => typeof(PlanetDomain);
-    public override EntityTypeTreeNode GetEntityTypeTreeNode() => EntityTypeTreeNode;
-    public static EntityTypeTreeNode EntityTypeTreeNode { get; private set; }
-
 }
 
 public class MapPolyRiverTriInfo
@@ -115,6 +116,7 @@ public class MapPolyRiverTriInfo
     private void MakeBankTris(Data data, TempRiverData rData,
         IEnumerable<MapPolygonEdge> edges)
     {
+        var borderPoints = Poly.GetOrderedBoundaryPoints(data);
         foreach (var edge in edges)
         {
             if (edge.IsRiver() == false) continue;
@@ -221,7 +223,6 @@ public class MapPolyRiverTriInfo
                 var hiNexusP = Poly.GetOffsetTo(edge.HiNexus.Entity().Point, data);
                 var loNexusP = Poly.GetOffsetTo(edge.LoNexus.Entity().Point, data);
                 
-                
                 var edgeSegs = edge.GetSegsRel(Poly).Segments;
 
                 MapPolyNexus fromNexus;
@@ -305,46 +306,33 @@ public class MapPolyRiverTriInfo
             edgeInner = edgeInner.Chainify();
             edgeInners.Add(edgeInner);
         }
+        
+        InnerBoundary = edgeInners.Chainify();
+        InnerBoundary.CompleteCircuit();
 
         try
         {
-            InnerBoundary = edgeInners.Chainify();
+            InnerBoundary.GetPoints().ToArray().PolyTriangulate(data, Poly);
         }
         catch
         {
-            var e = new SegmentsException("failed to chainify inner river boundary");
-            e.AddSegLayer(edgeInners.SelectMany(l => l).ToList(), "edge inners");
-
-            int iter = 0;
-            foreach (var eInner in edgeInners)
+            var e = new GeometryException("p2t failed for river poly inner boundary");
+            e.AddSegLayer(InnerBoundary, "inner boundary");
+            e.AddSegLayer(Poly.GetOrderedBoundarySegs(data), "poly boundary");
+            var inners = new List<Vector2>();
+            foreach (var nexus in Poly.GetNexi(data))
             {
-                e.AddSegLayer(eInner, "edge inner " + iter++);
-
+                var key = new PolyCornerKey(nexus, Poly);
+                if(rData.Inners.TryGetValue(key, out var inner)) inners.Add(inner);
             }
-            e.AddSegLayer(edges.SelectMany(b => b.GetSegsRel(Poly).Segments).ToList(), "poly edges");
-            GD.Print(Poly.Center);
-            throw e;
-        }
-        
-        
-        
-        if (InnerBoundary[0].From != InnerBoundary[InnerBoundary.Count - 1].To)
-        {
-            InnerBoundary.Add(new LineSegment(InnerBoundary[InnerBoundary.Count - 1].To,
-                InnerBoundary[0].From));
-        }
-        if (InnerBoundary.IsCircuit() == false)
-        {
-            var e = new SegmentsException("inner boundary not circuit");
-            e.AddSegLayer(InnerBoundary, "inner");
+            e.AddPointSet(inners, "inners");
             throw e;
         }
     }
 
     private void MakeLandTris(TempRiverData rData, GenWriteKey key)
     {
-        var graph = new Graph<PolyTri, bool>();
-        LandTris = InnerBoundary.TriangulateArbitrary(Poly, key, graph, true);
+        LandTris = InnerBoundary.GetPoints().ToArray().PolyTriangulate(key.Data, Poly);
     }
     private Vector2 GetPivot(EdgeEndKey key, TempRiverData rData, Data data)
     {

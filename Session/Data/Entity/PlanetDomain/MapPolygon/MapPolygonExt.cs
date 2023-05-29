@@ -59,11 +59,11 @@ public static class MapPolygonExt
     public static PolyBorderChain GetBorder(this MapPolygon poly, int nId) => poly.NeighborBorders[nId];
     public static IEnumerable<PolyBorderChain> GetPolyBorders(this MapPolygon poly) => poly.Neighbors.RefIds
         .Select(n => poly.GetBorder(n));
-    public static IReadOnlyList<LineSegment> GetOrderedBoundarySegs(this MapPolygon poly, Data data)
+    public static List<LineSegment> GetOrderedBoundarySegs(this MapPolygon poly, Data data)
     {
         return data.Planet.PolygonAux.AuxDatas[poly].OrderedBoundarySegs;
     }
-    public static IReadOnlyList<Vector2> GetOrderedBoundaryPoints(this MapPolygon poly, Data data)
+    public static Vector2[] GetOrderedBoundaryPoints(this MapPolygon poly, Data data)
     {
         return data.Planet.PolygonAux.AuxDatas[poly].OrderedBoundaryPoints;
     }
