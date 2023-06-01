@@ -9,12 +9,12 @@ public class TempRiverData
 {
     public ConcurrentDictionary<PolyCornerKey, Vector2> Inners { get; private set; }
     public ConcurrentDictionary<EdgeEndKey, Vector2> HiPivots { get; private set; }
-    public ConcurrentDictionary<MapPolygon, MapPolyRiverTriInfo> Infos { get; private set; }
+    public ConcurrentDictionary<MapPolygon, MapPolyRiverTriInfoOld> Infos { get; private set; }
     public TempRiverData()
     {
         HiPivots = new ConcurrentDictionary<EdgeEndKey, Vector2>();
         Inners = new ConcurrentDictionary<PolyCornerKey, Vector2>();
-        Infos = new ConcurrentDictionary<MapPolygon, MapPolyRiverTriInfo>();
+        Infos = new ConcurrentDictionary<MapPolygon, MapPolyRiverTriInfoOld>();
     }
 
     public void GenerateInfos(GenWriteKey key)
@@ -33,7 +33,7 @@ public class TempRiverData
             Parallel.ForEach(polys, poly =>
             {
                 if (poly.GetEdges(key.Data).Any(e => e.IsRiver()) == false) return;
-                var info = new MapPolyRiverTriInfo(poly, this, key);
+                var info = new MapPolyRiverTriInfoOld(poly, this, key);
                 Infos.TryAdd(poly, info);
             });
         }
@@ -45,7 +45,7 @@ public class TempRiverData
     }
 }
 
-public class MapPolyRiverTriInfo
+public class MapPolyRiverTriInfoOld
 {
     public MapPolygon Poly { get; private set; }
     public Dictionary<EdgeEndKey, PolyTri> InnerTris { get; private set; }
@@ -53,7 +53,7 @@ public class MapPolyRiverTriInfo
     public List<PolyTri> LandTris { get; private set; }
     public Dictionary<MapPolygonEdge, List<LineSegment>> BankSegs { get; private set; }
     public List<LineSegment> InnerBoundary { get; private set; }
-    public MapPolyRiverTriInfo(MapPolygon poly, TempRiverData rData, GenWriteKey key)
+    public MapPolyRiverTriInfoOld(MapPolygon poly, TempRiverData rData, GenWriteKey key)
     {
         Poly = poly;
         InnerTris = new Dictionary<EdgeEndKey, PolyTri>();

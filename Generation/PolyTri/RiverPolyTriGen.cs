@@ -25,12 +25,12 @@ public class RiverPolyTriGen
         
         
         sw.Start();
-        rd.GenerateInfos(key);
+        // rd.GenerateInfos(key);
         sw.Stop();
         GD.Print("generating river infos " + sw.Elapsed.TotalMilliseconds);
         sw.Reset();
         
-        key.Data.Notices.SetPolyShapes?.Invoke();
+        // key.Data.Notices.SetPolyShapes?.Invoke();
         
         GD.Print("finished w riverpolytrigen");
         return rd;
@@ -40,14 +40,20 @@ public class RiverPolyTriGen
         var riverNexi = key.Data.Planet.PolyNexi.Entities
             .Where(n => n.IncidentPolys.Any(p => lm.Contains(p)))
             .Where(n => n.IncidentEdges.Any(e => e.IsRiver()));
-        foreach (var n in riverNexi)
-        {
-            MakeInners(rd, n, key);
-
-        }
+        var inscribed = new Dictionary<MapPolygon, Vector2[]>();
         MakePivots(rd, riverNexi, key);
+
+        // foreach (var n in riverNexi)
+        // {
+        //     MakeInners(rd, n, key);
+        // }
     }
 
+    private void MakeInnersNew(TempRiverData rd, MapPolyNexus nexus, Dictionary<MapPolygon, Vector2[]> inscribed,
+        GenWriteKey key)
+    {
+        
+    }
     private void MakeInners(TempRiverData rd, MapPolyNexus nexus, GenWriteKey key)
     {
         if(nexus.IsRiverNexus() == false && nexus.IncidentPolys.Any(p => p.IsWater()) == false) return;
@@ -221,7 +227,7 @@ public class RiverPolyTriGen
                     new LineSegment(fromPivot, toPivot).Translate(offset),
                     new LineSegment(toPivot, seg.To).Translate(offset)
                 };
-                edge.ReplacePoints(split, key);
+                edge.ReplaceMiddlePoints(split, key);
                 continue;
             }
             
@@ -281,7 +287,7 @@ public class RiverPolyTriGen
                 seg.To = newTo;
             }
             
-            edge.ReplacePoints(newHiSegs, key);
+            edge.ReplaceMiddlePoints(newHiSegs, key);
         }
     }
 }

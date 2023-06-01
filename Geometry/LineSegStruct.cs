@@ -55,3 +55,20 @@ public struct LineSegStruct
         }
     }
 }
+public struct LineSegStructNoFlip
+{
+    public Vector2 A { get; private set; }
+    public Vector2 B { get; private set; }
+
+    public LineSegStructNoFlip(LineSegment ls)
+    {
+        A = ls.From;
+        B = ls.To;
+    }
+    public LineSegStructNoFlip(Vector2 a, Vector2 b)
+    {
+        A = a;
+        B = b;
+    }
+    
+}

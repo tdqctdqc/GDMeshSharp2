@@ -82,25 +82,37 @@ public class MapPolygonEdge : Entity
         
         return newSegs;
     }
-    public void ReplacePoints(List<LineSegment> newSegmentsAbs, GenWriteKey key)
+    public void ReplaceMiddlePoints(List<LineSegment> newSegmentsAbs, GenWriteKey key)
     {
         var hiPoly = HighPoly.Entity();
         var loPoly = LowPoly.Entity();
         var highBorderSegs = RelativizeSegments(newSegmentsAbs, hiPoly, key.Data);
         var lowBorderSegs = RelativizeSegments(newSegmentsAbs, loPoly, key.Data);
         
-        var lowSegsRel = PolyBorderChain.Construct(loPoly, hiPoly, 
+        var loChain = PolyBorderChain.Construct(loPoly, hiPoly, 
             lowBorderSegs);
-        var highSegsRel = PolyBorderChain.Construct(hiPoly, loPoly, 
+        var hiChain = PolyBorderChain.Construct(hiPoly, loPoly, 
             highBorderSegs);
         
-        hiPoly.SetNeighborBorder(loPoly, highSegsRel, key);
-        loPoly.SetNeighborBorder(hiPoly, lowSegsRel, key);
+        hiPoly.SetNeighborBorder(loPoly, hiChain, key);
+        loPoly.SetNeighborBorder(hiPoly, loChain, key);
         
         key.Data.Planet.PolygonAux.AuxDatas.Dic[hiPoly].MarkStale(key);
         key.Data.Planet.PolygonAux.AuxDatas.Dic[loPoly].MarkStale(key);
     }
-    
+    public void ReplacePoints(MapPolygon poly, List<LineSegment> newSegsRel, GenWriteKey key)
+    {
+        var hiPoly = HighPoly.Entity();
+        var loPoly = LowPoly.Entity();
+
+        var otherPoly = poly == hiPoly ? loPoly : hiPoly;
+        var newChain = PolyBorderChain.Construct(poly, otherPoly, newSegsRel);
+        
+        poly.SetNeighborBorder(otherPoly, newChain, key);
+        
+        key.Data.Planet.PolygonAux.AuxDatas.Dic[hiPoly].MarkStale(key);
+        key.Data.Planet.PolygonAux.AuxDatas.Dic[loPoly].MarkStale(key);
+    }
     public void IncrementFlow(float increment, GenWriteKey key)
     {
         MoistureFlow += increment;

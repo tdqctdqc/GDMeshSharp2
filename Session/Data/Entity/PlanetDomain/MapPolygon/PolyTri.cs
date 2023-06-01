@@ -28,6 +28,27 @@ public class PolyTri : Triangle
         NeighborCount = neighborCount;
         NeighborStartIndex = neighborStartIndex;
     }
+
+    public void ForEachNeighbor(MapPolygon poly, Action<PolyTri> func)
+    {
+        for (var i = 0; i < NeighborCount; i++)
+        {
+            var n = poly.Tris.TriNativeNeighbors[i + NeighborStartIndex];
+            var nTri = poly.Tris.Tris[n];
+            func(nTri);
+        }
+    }
+    public bool AnyNeighbor(MapPolygon poly, Func<PolyTri, bool> func)
+    {
+        for (var i = 0; i < NeighborCount; i++)
+        {
+            var n = poly.Tris.TriNativeNeighbors[i + NeighborStartIndex];
+            var nTri = poly.Tris.Tris[n];
+            if(func(nTri)) return true;
+        }
+
+        return false;
+    }
     public void SetLandform(Landform lf, GenWriteKey key)
     {
         LandformModel = lf.MakeRef();

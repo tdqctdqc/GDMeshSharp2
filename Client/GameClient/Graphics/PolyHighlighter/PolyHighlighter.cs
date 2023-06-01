@@ -36,7 +36,7 @@ public class PolyHighlighter : Node2D
         }
         else if (mode == Modes.Complex)
         {
-            DrawComplex(data, poly, pt, mb);
+            DrawComplex(data, pos, poly, pt, mb);
         }
         else throw new Exception();
         
@@ -52,11 +52,11 @@ public class PolyHighlighter : Node2D
         // DrawnNeighborBordersSimple(poly, mb, data);
     }
 
-    private static void DrawComplex(Data data, MapPolygon poly, PolyTri pt, MeshBuilder mb)
+    private static void DrawComplex(Data data, PolyTriPosition pos, MapPolygon poly, PolyTri pt, MeshBuilder mb)
     {
         DrawBoundarySegments(poly, mb, data);
         DrawPolyTriBorders(poly, mb, data);
-        DrawPolyTriNetwork(poly, mb, data);
+        DrawPolyTriNetwork(pos, poly, mb, data);
     }
 
     private static void DrawIncidentEdges(MapPolygon poly, MeshBuilder mb, Data data)
@@ -126,35 +126,19 @@ public class PolyHighlighter : Node2D
             mb.AddArrow(inscribed.C, inscribed.A, 1f, col);
         }
     }
-    private static void DrawPolyTriNetwork(MapPolygon poly, MeshBuilder mb, Data data)
+    private static void DrawPolyTriNetwork(PolyTriPosition pos, MapPolygon poly, MeshBuilder mb, Data data)
     {
         var pts = poly.Tris.Tris;
-        foreach (var polyTri in pts)
-        {
-            for (var i = 0; i < polyTri.NeighborCount; i++)
-            {
-                var n = poly.Tris.TriNativeNeighbors[i + polyTri.NeighborStartIndex];
-                var nTri = pts[n];
-                mb.AddArrow(polyTri.GetCentroid(), nTri.GetCentroid(), 1f, Colors.White);
-            }
-        }
-        
-        foreach (var n in poly.Neighbors)
-        {
-            var offset = poly.GetOffsetTo(n, data);
-            var edge = poly.GetEdge(n, data);
-            var polyHi = edge.HighPoly.Entity() == poly;
-            var pairs = polyHi
-                ? edge.HiToLoTriPaths
-                : edge.LoToHiTriPaths;
-            foreach (var kvp in pairs)
-            {
-                var nativeTri = poly.Tris.Tris[kvp.Key];
-                var foreignTri = n.Tris.Tris[kvp.Value];
-                mb.AddArrow(nativeTri.GetCentroid(), foreignTri.GetCentroid() + offset,
-                    1f, Colors.White);
 
-            }
+        var mouseOver = pos.Tri(data);
+        mb.AddTri(mouseOver, Colors.White);
+        
+        for (var i = 0; i < mouseOver.NeighborCount; i++)
+        {
+            var n = poly.Tris.TriNativeNeighbors[i + mouseOver.NeighborStartIndex];
+            var nTri = pts[n];
+            mb.AddTri(nTri, Colors.Red);
+            mb.AddTriOutline(nTri, 2f, Colors.Black);
         }
     }
 

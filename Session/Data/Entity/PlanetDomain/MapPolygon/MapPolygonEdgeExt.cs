@@ -12,6 +12,32 @@ public static class MapPolygonEdgeExt
             .ToList().Ordered<LineSegment, Vector2>();
     }
 
+    public static (MapPolyNexus from, MapPolyNexus to) OrderNexi(this MapPolygonEdge edge, MapPolygon poly, Data data)
+    {
+        var edgeSegs = edge.GetSegsRel(poly).Segments;
+        var fromP = edgeSegs.First().From;
+        var toP = edgeSegs.Last().To;
+        
+        var hiNexusP = poly.GetOffsetTo(edge.HiNexus.Entity().Point, data);
+        var loNexusP = poly.GetOffsetTo(edge.LoNexus.Entity().Point, data);
+
+        MapPolyNexus from;
+        MapPolyNexus to;
+        if (hiNexusP == fromP
+            && loNexusP == toP)
+        {
+            from = edge.HiNexus.Entity();
+            to = edge.LoNexus.Entity();
+        }
+        else if (hiNexusP == toP
+                 && loNexusP == fromP)
+        {
+            to = edge.HiNexus.Entity();
+            from = edge.LoNexus.Entity();
+        } else { throw new Exception("bad edge nexi"); }
+
+        return (from, to);
+    }
     public static PolyBorderChain GetSegsRel(this MapPolygonEdge b, MapPolygon p)
     {
         if (b.HighPoly.Entity() == p)

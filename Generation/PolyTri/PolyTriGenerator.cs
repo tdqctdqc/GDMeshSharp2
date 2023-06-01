@@ -24,19 +24,21 @@ public class PolyTriGenerator : Generator
         report.StopSection("Finding rivers");
         
         report.StartSection();
-        Parallel.ForEach(polys, p => BuildTris(p, riverData, key));
-        // polys.ToList().ForEach(p => BuildTris(p, riverData, key));
+        Parallel.ForEach(polys, p =>
+        {
+            BuildTris(p, riverData, key);
+        });
         report.StopSection("Building poly terrain tris");
         
-        
-        GD.Print("doot");
-
-
         report.StartSection();
         Parallel.ForEach(_data.Planet.PolyEdges.Entities, p => MakeDiffPolyTriPaths(p, key));
         report.StopSection("making poly tri paths");
         
         _data.Notices.SetPolyShapes.Invoke();
+        
+        report.StartSection();
+        Postprocess(key);
+        report.StopSection("postprocessing polytris");
         return report;
     }
     
@@ -44,62 +46,44 @@ public class PolyTriGenerator : Generator
     private void BuildTris(MapPolygon poly, TempRiverData rd, GenWriteKey key)
     {
         List<PolyTri> tris;
-        var graph = new Graph<PolyTri, bool>();
         if (poly.IsWater())
         {
-            tris = DoSeaPoly(poly, graph, key);
+            tris = DoSeaPoly(poly, key);
         }
-        else if (rd.Infos.ContainsKey(poly))
+        else if (poly.GetNexi(key.Data).Any(n => n.IsRiverNexus()))
         {
-            var info = rd.Infos[poly];
-            tris = info.LandTris
-                .Union(info.BankTris.SelectMany(kvp => kvp.Value))
-                .Union(info.InnerTris.Values.Select(kvp => kvp))
-                .ToList();
-            foreach (var t in tris)
-            {
-                graph.AddNode(t);
-            }
+            tris = NewRiverTriGen.DoPoly(poly, key.Data, rd, key);
         }
         else
         {
-            tris = DoLandPolyNoRivers(poly, graph, key);
+            tris = DoLandPolyNoRivers(poly, key);
         }
         
-        var polyTerrainTris = PolyTris.Create(tris,  graph, key);
+        var polyTerrainTris = PolyTris.Create(tris,  key);
         if (polyTerrainTris == null) throw new Exception();
         poly.SetTerrainTris(polyTerrainTris, key);
     }
     
-    private List<PolyTri> DoSeaPoly(MapPolygon poly, Graph<PolyTri, bool> graph, GenWriteKey key)
+    private List<PolyTri> DoSeaPoly(MapPolygon poly, GenWriteKey key)
     {
-        var borderSegs = poly.GetOrderedBoundarySegs(key.Data);
-        if (borderSegs.Count == 0) throw new Exception();
-
         var tris = new List<PolyTri>();
-        
-        for (var i = 0; i < borderSegs.Count; i++)
+        var boundaryPs = poly.GetOrderedBoundaryPoints(_data);
+        var triPIndices = Geometry.TriangulatePolygon(boundaryPs);
+        for (var i = 0; i < triPIndices.Length; i+=3)
         {
-            //todo produces overlap b/c non clockwise segs
-            var seg = borderSegs[i];
-            var pt = PolyTri.Construct(seg.From, seg.To, Vector2.Zero, LandformManager.Sea.MakeRef(),
-                VegetationManager.Barren.MakeRef());
-            tris.Add(pt);
-            graph.AddNode(pt);
+            var a = boundaryPs[triPIndices[i]];
+            var b = boundaryPs[triPIndices[i+1]];
+            var c = boundaryPs[triPIndices[i+2]];
+            tris.Add(PolyTri.Construct(a,b,c,LandformManager.Sea.MakeRef(),
+                VegetationManager.Barren.MakeRef()));
         }
         return tris;
     }
     
-    private List<PolyTri> DoLandPolyNoRivers(MapPolygon poly, Graph<PolyTri, bool> graph, GenWriteKey key)
+    private List<PolyTri> DoLandPolyNoRivers(MapPolygon poly, GenWriteKey key)
     {
-        // var borderSegs = poly.GetOrderedBoundarySegs(key.Data);
         var borderPs = poly.GetOrderedBoundaryPoints(_data);
         List<PolyTri> tris = borderPs.PolyTriangulate(key.Data, poly);
-        foreach (var polyTri in tris)
-        {
-            //todo actually build graph
-            graph.AddNode(polyTri);
-        }
 
         return tris;
     }
@@ -140,6 +124,68 @@ public class PolyTriGenerator : Generator
         {
             edge.LoToHiTriPaths[loEdgeTris[i].Index] = hiEdgeTris[i].Index;
             edge.HiToLoTriPaths[hiEdgeTris[i].Index] = loEdgeTris[i].Index;
+        }
+    }
+
+    private void Postprocess(GenWriteKey key)
+    {
+        var polys = key.Data.Planet.Polygons.Entities;
+        var erodeChance = .75f;
+        var mountainNoise = new OpenSimplexNoise();
+        mountainNoise.Period = key.Data.Planet.Width;
+        foreach (var poly in polys)
+        {
+            foreach (var tri in poly.Tris.Tris)
+            {
+                erode(poly, tri);
+                irrigate(poly, tri);
+                mountainRidging(poly, tri);
+            }
+        }
+
+        void erode(MapPolygon poly, PolyTri tri)
+        {
+            if (
+                (tri.Landform == LandformManager.Mountain || tri.Landform == LandformManager.Peak)
+                && tri.AnyNeighbor(poly, n => n.Landform.IsWater)
+                && Game.I.Random.Randf() < erodeChance
+            )
+            {
+                var v = key.Data.Models.Vegetation.GetAtPoint(poly, tri.GetCentroid(), 
+                    LandformManager.Hill, _data);
+                tri.SetLandform(LandformManager.Hill, key);
+                tri.SetVegetation(v, key);
+            }
+        }
+
+        void irrigate(MapPolygon poly, PolyTri tri)
+        {
+            if (tri.Landform.IsLand
+                && tri.Vegetation.MinMoisture < VegetationManager.Grassland.MinMoisture
+                && VegetationManager.Grassland.AllowedLandforms.Contains(tri.Landform)
+                && tri.AnyNeighbor(poly, n => n.Landform.IsWater))
+            {
+                tri.SetVegetation(VegetationManager.Grassland, key);
+                tri.ForEachNeighbor(poly, nTri =>
+                {
+                    if (nTri.Landform.IsLand
+                        && nTri.Vegetation.MinMoisture < VegetationManager.Steppe.MinMoisture
+                        && VegetationManager.Steppe.AllowedLandforms.Contains(nTri.Landform))
+                    {
+                        nTri.SetVegetation(VegetationManager.Steppe, key);
+                    }
+                });
+            }
+        }
+
+        void mountainRidging(MapPolygon poly, PolyTri tri)
+        {
+            if (tri.Landform.IsLand && tri.Landform.MinRoughness >= LandformManager.Peak.MinRoughness)
+            {
+                var globalPos = tri.GetCentroid() + poly.Center;
+                var noise = mountainNoise.GetNoise2d(globalPos.x, globalPos.y);
+                if(noise < 0f) tri.SetLandform(LandformManager.Mountain, key);
+            }
         }
     }
 }

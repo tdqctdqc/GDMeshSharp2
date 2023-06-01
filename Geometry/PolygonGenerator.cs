@@ -60,6 +60,10 @@ public class PolygonGenerator : Generator
         report.StartSection();
         BuildBorders(info, graph, key);
         report.StopSection("Building borders");
+        
+        // report.StartSection();
+        // FixShortEdges(key);
+        // report.StopSection("fixing short edges");
         return report;
     }
 
@@ -100,15 +104,12 @@ public class PolygonGenerator : Generator
         Parallel.ForEach(partitions, 
             ps => ps.ForEach(p => BuildBorderSegs(p, info, rHash, graph, key, borderChains)));
         
-        
-        
-        
         var mapWidth = key.GenData.GenMultiSettings.Dimensions.x;
-        var nexuses = new Dictionary<Vector2, List<MapPolygonEdge>>();
+        var nexusPoints = new Dictionary<Vector2, List<MapPolygonEdge>>();
         
         foreach (var b in borderChains)
         {
-            CreateEdgeAndBorderChains(b, key, mapWidth, nexuses);
+            CreateEdgeAndBorderChains(b, key, mapWidth, nexusPoints);
         }
         
         partitions.ForEach(ps => ps.ForEach(p => FlipEdgeSegsToClockwise(p)));
@@ -116,7 +117,7 @@ public class PolygonGenerator : Generator
 
         var edgeNexi = new Dictionary<MapPolygonEdge, Vector2>();
         
-        CreateNexi(nexuses, edgeNexi, key);
+        CreateNexi(nexusPoints, edgeNexi, key);
         BindNexiToEdges(edgeNexi, key);
         
         key.Data.Notices.SetPolyShapes.Invoke();
@@ -255,116 +256,125 @@ public class PolygonGenerator : Generator
             edge.SetNexi(n1, n2, key);
         }
     }
-}
-public class MapGenInfo
-{
-    public Vector2 Dimensions { get; private set; }
-    public bool LRWrap { get; private set; }
-    public List<Vector2> Points,
-        TopPoints,
-        BottomPoints,
-        CornerPoints,
-        LeftPoints,
-        RightPoints;
-    public List<MapPolygon> Polys,
-        TopPolys,
-        BottomPolys,
-        CornerPolys,
-        LeftPolys,
-        RightPolys;
-    public HashSet<Vector2> LRCornerCenterHash { get; private set; }
-    public HashSet<MapPolygon> LRCornerPolyHash { get; private set; }
-    public Dictionary<MapPolygon, MapPolygon> LRPairs { get; private set; }
-    public Dictionary<Vector2,MapPolygon> PolysByCenter { get; private set; }
-    public MapGenInfo(List<Vector2> points, Vector2 dimensions, float polySize, bool leftRightWrap)
-    {
-        Dimensions = dimensions;
-        LRWrap = leftRightWrap;
-        var numLrEdgePoints = (int)(dimensions.y / polySize);
-        var numTbEdgePoints = (int)(dimensions.x / polySize);
     
-        if (leftRightWrap)
-        {
-            var leftRightPoints = GetLeftRightWrapEdgePoints(dimensions, points, numLrEdgePoints, .1f);
-            LeftPoints = leftRightPoints.leftPoints;
-            RightPoints = leftRightPoints.rightPoints;
-        }
-        else
-        {
-            LeftPoints = GetConstrainedRandomFloats(dimensions.y, .1f, numLrEdgePoints)
-                .Select(l => new Vector2(0f, l).Intify()).ToList();
-        
-            RightPoints = GetConstrainedRandomFloats(dimensions.y, .1f, numLrEdgePoints)
-                .Select(l => new Vector2(dimensions.x, l).Intify()).ToList();
-        
-        }
-        CornerPoints = new List<Vector2> { new Vector2(0f, 0f).Intify(), new Vector2(dimensions.x, 0f).Intify(), 
-            new Vector2(0f, dimensions.y).Intify(), new Vector2(dimensions.x, dimensions.y).Intify()};
-        
-        TopPoints = GetConstrainedRandomFloats(dimensions.x, .1f, numTbEdgePoints)
-            .Select(l => new Vector2(l, 0f).Intify()).ToList();
-        BottomPoints = GetConstrainedRandomFloats(dimensions.x, .1f, numTbEdgePoints)
-            .Select(l => new Vector2(l, dimensions.y).Intify()).ToList();
 
-        LRCornerCenterHash = LeftPoints.Union(RightPoints).Union(CornerPoints).ToHashSet();
-
-        CornerPolys = new List<MapPolygon>();
-        LRPairs = new Dictionary<MapPolygon, MapPolygon>();
-        PolysByCenter = new Dictionary<Vector2, MapPolygon>();
-        Points = points
-            .Union(CornerPoints)
-            .Union(LeftPoints)
-            .Union(RightPoints)
-            .Union(TopPoints)
-            .Union(BottomPoints).ToList();
-    }
-
-    public void SetupPolys(List<MapPolygon> polys)
+    private static void FixShortEdges(GenWriteKey key)
     {
-        Polys = polys;
-        var centerHash = Points.ToHashSet();
-        Polys.ForEach(p =>
+        var minLength = River.WidthCeil;
+        // var shortEdges = key.Data.Planet.PolyEdges.Entities.Where(e => e.GetLength() < minLength);
+        var sw = new Stopwatch();
+        sw.Start();
+        var maxTime = 1f;
+
+        var numFixed = 0;
+        var numCouldntFix = 0;
+        MapPolygonEdge getShortEdge()
         {
-            if (centerHash.Contains(p.Center) == false)
+            return key.Data.Planet.PolyEdges.Entities.FirstOrDefault(e => e.GetLength() < minLength);
+        }
+        while (getShortEdge() is MapPolygonEdge shortEdge && sw.Elapsed.TotalSeconds < maxTime)
+        {
+            var hiPoly = shortEdge.HighPoly.Entity();
+            
+            var seg = shortEdge.GetSegsRel(hiPoly)[0];
+            
+            var oldPAbs = seg.From;
+            var shiftAxis = (seg.To - seg.From).Normalized();
+            var missingDist = minLength - shortEdge.GetLength();
+            var newPRelToHiPoly = oldPAbs - shiftAxis * missingDist * 1.1f;
+            var newPAbs = newPRelToHiPoly + hiPoly.Center;
+            
+
+            var success = tryP(shortEdge, oldPAbs, shiftAxis,
+                missingDist, newPAbs, hiPoly.Neighbors);
+            
+            if (success == false)
             {
-                throw new Exception();
-            }
-        });
-        PolysByCenter = polys.ToDictionary(p => p.Center, p => p);
-        LeftPolys = LeftPoints.Select(p => PolysByCenter[p]).ToList();
-        RightPolys = RightPoints.Select(p => PolysByCenter[p]).ToList();
-        TopPolys = TopPoints.Select(p => PolysByCenter[p]).ToList();
-        BottomPolys = BottomPoints.Select(p => PolysByCenter[p]).ToList();
-        CornerPolys = CornerPoints.Select(p => PolysByCenter[p]).ToList();
-        LRCornerPolyHash = LRCornerCenterHash.Select(v => PolysByCenter[v]).ToHashSet();
-    }
-    private static (List<Vector2> leftPoints, List<Vector2> rightPoints) GetLeftRightWrapEdgePoints(Vector2 dimensions, List<Vector2> points, 
-        int numEdgePoints, float marginRatio)
-    {
-        var left = new List<Vector2>();
-        var right = new List<Vector2>();
-        var lengthPer = dimensions.y / numEdgePoints;
-        var margin = lengthPer * marginRatio;
-        var lats = GetConstrainedRandomFloats(dimensions.y, .1f, numEdgePoints);
-        for (int i = 0; i < lats.Count; i++)
-        {
-            var lat = lats[i];
-            left.Add(new Vector2(0f, lat).Intify());
-            right.Add(new Vector2(dimensions.x, lat).Intify());
-        }
+                oldPAbs = seg.To;
+                shiftAxis = (seg.From - seg.To).Normalized();
+                
+                newPRelToHiPoly = oldPAbs - shiftAxis * missingDist * 1.1f;
+                newPAbs = newPRelToHiPoly + hiPoly.Center;
 
-        return (left, right);
-    }
-    private static List<float> GetConstrainedRandomFloats(float range, float marginRatio, int count)
-    {
-        var result = new List<float>();
-        var lengthPer = range / count;
-        var margin = lengthPer * marginRatio;
-        for (int i = 1; i < count - 1; i++)
-        {
-            var sample = Game.I.Random.RandfRange(lengthPer * i + margin, lengthPer * (i + 1) - margin);
-            result.Add(sample);
+
+                success = tryP(shortEdge, oldPAbs, shiftAxis, 
+                    missingDist, newPAbs, hiPoly.Neighbors);
+                if (success == false)
+                {
+                    numCouldntFix++;
+                    continue;
+                    // var e = new GeometryException("failed new point");
+                    // var segs = new List<LineSegment>();
+                    // var borderSegs = hiPoly.GetPolyBorders().SelectMany(b => b.Segments).ToList();
+                    //
+                    // foreach (var n in hiPoly.Neighbors)
+                    // {
+                    //     borderSegs.AddRange(n.GetPolyBorders()
+                    //         .SelectMany(b => b.Segments.Select(ls => ls.Translate(hiPoly.GetOffsetTo(n, key.Data)))));
+                    // }
+                    //
+                    // borderSegs.Add(new LineSegment(Vector2.Zero, toShift));
+                    // borderSegs.Add(new LineSegment(Vector2.Zero, newPRelToHiPoly));
+                    // e.AddSegLayer(borderSegs, "border");
+                    // throw e;
+                }
+                else
+                {
+                    numFixed++;
+                }
+            }
+            else
+            {
+                numFixed++;
+            }
+
         }
-        return result;
+        GD.Print($"Fixed {numFixed} Couldnt fix {numCouldntFix}");
+        bool tryP(MapPolygonEdge shortEdge, Vector2 oldPAbs, Vector2 shiftAxis,
+            float missingDist, Vector2 newPAbs, IEnumerable<MapPolygon> incidentPolys)
+        {
+            if (oldPAbs.y == 0f || oldPAbs.y == key.Data.Planet.Height) return false;
+            var hiPoly = shortEdge.HighPoly.Entity();
+
+            var incPolys = shortEdge.HiNexus.Entity().IncidentPolys.Union(shortEdge.LoNexus.Entity().IncidentPolys)
+                .Distinct();
+            foreach (var poly in incPolys)
+            {
+                var newPRel = poly.GetOffsetTo(newPAbs, key.Data);
+                var oldPRel = poly.GetOffsetTo(oldPAbs, key.Data);
+                foreach (var border in poly.GetPolyBorders())
+                {
+                    if (border.Segments.Count > 1) throw new Exception();
+                    var borderSeg = border.Segments[0];
+                    if (borderSeg.From.DistanceTo(oldPRel) < .1f
+                        && borderSeg.From.DistanceTo(newPRel) < minLength)
+                    {
+                        return false;
+                    }
+                }
+            }
+            
+            foreach (var poly in incidentPolys)
+            {
+                var affectedEdges = poly.GetEdges(key.Data);
+                var newPRel = poly.GetOffsetTo(newPAbs, key.Data);
+                var oldPRel = poly.GetOffsetTo(oldPAbs, key.Data);
+                foreach (var affectedEdge in affectedEdges)
+                {
+                    var hiSegs = affectedEdge.GetSegsRel(poly).Segments;
+                    if (hiSegs.Count != 1) throw new Exception();
+                    var seg = hiSegs[0];
+                    var newFrom = seg.From;
+                    var newTo = seg.To;
+                    
+                    if (seg.From.DistanceTo(oldPRel) < .1f) newFrom = newPRel;
+                    else if (seg.To.DistanceTo(oldPRel) < .1f) newTo = newPRel;
+
+                    var newSeg = new LineSegment(newFrom, newTo).Translate(poly.Center);
+                    affectedEdge.ReplacePoints(poly, new List<LineSegment>{newSeg}, key);
+                }
+            }
+            return true;
+        }
     }
 }

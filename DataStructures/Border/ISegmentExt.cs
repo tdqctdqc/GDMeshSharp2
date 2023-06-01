@@ -5,6 +5,53 @@ using Godot;
 
 public static class ISegmentExt
 {
+    public static List<List<TSeg>> ChainSort<TSeg, TPrim>(this IEnumerable<TSeg> segs) where TSeg: ISegment<TPrim>
+    {
+        var res = new List<List<TSeg>>();
+        var count = segs.Count();
+        var index = 0;
+        res.Add(new List<TSeg> {segs.ElementAt(0)});
+        var uf = UnionFind.Find(segs, (s, r) => s.PointsTo(r) || r.PointsTo(s), s => segs);
+        return uf.Select(u => u.Chainify<TSeg, TPrim>()).ToList();
+    }
+    
+    public static List<TSeg> Chainify<TSeg, TPrim>(this List<TSeg> segments)
+        where TSeg : ISegment<TPrim>
+    {
+        var froms = new Dictionary<TPrim, TSeg>();
+        var tos = new Dictionary<TPrim, TSeg>();
+        TPrim first = default;
+        bool foundFirst = false;
+        for (var i = 0; i < segments.Count; i++)
+        {
+            var seg = segments[i];
+            tos.Add(seg.To, seg);
+        }
+        for (var i = 0; i < segments.Count; i++)
+        {
+            var seg = segments[i];
+            froms.Add(seg.From, seg);
+            if (tos.ContainsKey(seg.From) == false)
+            {
+                foundFirst = true;
+                first = seg.From;
+            }
+        }
+
+        if (foundFirst == false) first = segments[0].From;
+
+        var curr = froms[first];
+        var res = new List<TSeg>{curr};
+        
+        for (var i = 0; i < segments.Count - 1; i++)
+        {
+            var next = froms[curr.To];
+            res.Add(next);
+            curr = next;
+        }
+
+        return res;
+    }
     public static bool IsCircuit<TPrim>(this IReadOnlyList<ISegment<TPrim>> segs)
     {
         for (int i = 0; i < segs.Count - 1; i++)

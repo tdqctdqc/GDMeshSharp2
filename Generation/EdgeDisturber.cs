@@ -75,6 +75,6 @@ public static class EdgeDisturber
             .Select(p => p.Translate(hi.Center))
             .Where(ls => ls.From != ls.To)
             .ToList();
-        edge.ReplacePoints(newSegs, key);
+        edge.ReplaceMiddlePoints(newSegs, key);
     }
 }

@@ -6,6 +6,39 @@ using Godot;
 
 public static class LineSegmentExt
 {
+
+    public static List<LineSegment> FindTri(this List<LineSegment> segs)
+    {
+        for (var i = 0; i < segs.Count; i++)
+        {
+            var seg = segs[i];
+            var pointsTo = segs.Where(s => seg.To == s.From);
+            if (pointsTo.Count() == 0) continue;
+            foreach (var cand in pointsTo)
+            {
+                var complete = segs.FirstOrDefault(s => s.To == seg.From && s.From == cand.To);
+                if (complete is LineSegment ls) return new List<LineSegment> {seg, cand, complete};
+            }
+        }
+
+        return null;
+    }
+    public static bool Intersects(this LineSegment ls, Vector2 point, Vector2 dir)
+    {
+        var intersect = Geometry.LineIntersectsLine2d(ls.From, ls.GetNormalizedAxis(), point, dir);
+        if (intersect is Vector2 v == false) return false;
+        var inX = (ls.From.x <= v.x && v.x <= ls.To.x) || (ls.From.x >= v.x && v.x >= ls.To.x);
+        var inY = (ls.From.y <= v.y && v.y <= ls.To.y) || (ls.From.y >= v.y && v.y >= ls.To.y);
+        return inX && inY;
+    }
+    public static Vector2 IntersectOrInf(this LineSegment ls, Vector2 point, Vector2 dir)
+    {
+        var intersect = Geometry.LineIntersectsLine2d(ls.From, ls.GetNormalizedAxis(), point, dir);
+        if (intersect is Vector2 v == false) return Vector2.Inf;
+        var inX = (ls.From.x <= v.x && v.x <= ls.To.x) || (ls.From.x >= v.x && v.x >= ls.To.x);
+        var inY = (ls.From.y <= v.y && v.y <= ls.To.y) || (ls.From.y >= v.y && v.y >= ls.To.y);
+        return inX && inY ? v : Vector2.Inf;
+    }
     public static float GetAngleAroundSum(this List<LineSegment> segs, Vector2 center)
     {
         float res = 0f;
@@ -89,7 +122,7 @@ public static class LineSegmentExt
         if (froms.IsChain() == false) throw new Exception();
         return froms; 
     }
-
+    
     public static List<LineSegment> Chainify(this List<LineSegment> lineSegments)
     {
         var froms = new Dictionary<Vector2, LineSegment>();
@@ -157,6 +190,11 @@ public static class LineSegmentExt
         return res;
     }
 
+    public static bool Neighboring(this MapPolygonEdge e, MapPolygonEdge n)
+    {
+        return e.HiNexus.Entity().IncidentEdges.Contains(n) || e.LoNexus.Entity().IncidentEdges.Contains(n);
+    }
+
     public static void CompleteCircuit(this List<LineSegment> segs)
     {
         if(segs[segs.Count - 1].To != segs[0].From) segs.Add(new LineSegment(segs[segs.Count - 1].To, segs[0].From));
@@ -192,7 +230,7 @@ public static class LineSegmentExt
                 newSegsAbs.Add(seg);
             }
         }
-        edge.ReplacePoints(newSegsAbs, key);
+        edge.ReplaceMiddlePoints(newSegsAbs, key);
     }
     
     public static IEnumerable<LineSegment> GetLineSegments(this List<Vector2> points, bool close = false)

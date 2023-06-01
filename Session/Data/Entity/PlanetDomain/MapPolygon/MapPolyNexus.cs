@@ -41,6 +41,12 @@ public class MapPolyNexus : Entity
             return e.HiNexus.Entity();
         });
     }
+    
+
+    public void SetPoint(Vector2 point, GenWriteKey key)
+    {
+        Point = point;
+    }
     //ENTITY NECESSARIES
     public override Type GetDomainType() => DomainType();
     private static Type DomainType() => typeof(PlanetDomain);
