@@ -1,6 +1,8 @@
 using Godot;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using DelaunatorSharp;
 using MIConvexHull;
@@ -9,18 +11,37 @@ using Poly2Tri;
 
 public static class Triangulator
 {
+    public static ConcurrentBag<int> InteriorPointGenTimes = new ConcurrentBag<int>();
+    public static ConcurrentBag<int> P2TTriangulateTimes = new ConcurrentBag<int>();
+    public static ConcurrentBag<int> TotalPolyTriangulateTimes = new ConcurrentBag<int>();
+    public static ConcurrentBag<int> ConstructPolyTriTimes = new ConcurrentBag<int>();
+    public static ConcurrentBag<int> FindLfAndVTimes = new ConcurrentBag<int>();
+    
     public static List<PolyTri> PolyTriangulate(this Vector2[] boundaryPoints, Data data, MapPolygon poly)
     {
+        var sw1 = new Stopwatch();
+        sw1.Start();
+        var swLfV = new Stopwatch();
         Func<Vector2, Vector2, Vector2, PolyTri> constructor = (v, w, x) =>
         {
+            swLfV.Start();
             var lf = data.Models.Landforms.GetAtPoint(poly, (v + w + x) / 3f, data);
             var vg = data.Models.Vegetation.GetAtPoint(poly, (v + w + x) / 3f, lf, data);
+            swLfV.Stop();
+            FindLfAndVTimes.Add((int)swLfV.Elapsed.TotalMilliseconds);
+            swLfV.Reset();
             return PolyTri.Construct(v, w, x, lf.MakeRef(), vg.MakeRef());
         };
         var polygon = new Poly2Tri.Polygon(boundaryPoints.Select(p => new PolygonPoint(p.x, p.y)));
 
+        var sw = new Stopwatch();
+        
+        sw.Start();
         boundaryPoints.GenerateInteriorPoints(30f, 10f, 
             v => polygon.AddSteinerPoint(new TriangulationPoint(v.x, v.y)));
+        sw.Stop();
+        InteriorPointGenTimes.Add((int)sw.Elapsed.TotalMilliseconds);
+        sw.Reset();
         
         var sweep = new Poly2Tri.DTSweepContext();
         for (var i = 0; i < boundaryPoints.Length; i++)
@@ -31,19 +52,14 @@ public static class Triangulator
                 new TriangulationPoint(next.x, next.y));
         }
         polygon.Prepare(sweep);
-        P2T.Triangulate(polygon);
-        try
-        {
-            
-        }
-        catch
-        {
-            // var e = new GeometryException("p2t failed");
-            // e.AddSegLayer(boundarySegs, "boundary");
-            // throw e;
-            return new List<PolyTri>{constructor(Vector2.One, Vector2.Left, Vector2.Right)};
-        }
         
+        sw.Start();
+        P2T.Triangulate(polygon);
+        sw.Stop();
+        P2TTriangulateTimes.Add((int)sw.Elapsed.TotalMilliseconds);
+        sw.Reset();
+        
+        sw.Start();
         var tris = new List<PolyTri>{};
         foreach (var t in polygon.Triangles)
         {
@@ -58,7 +74,13 @@ public static class Triangulator
                 tris.Add(constructor(a, b, c));
             }
         }
-
+        sw.Stop();
+        ConstructPolyTriTimes.Add((int)sw.Elapsed.TotalMilliseconds);
+        sw.Reset();
+        
+        
+        sw1.Stop();
+        TotalPolyTriangulateTimes.Add((int)sw1.Elapsed.TotalMilliseconds);
         return tris;
     }
     

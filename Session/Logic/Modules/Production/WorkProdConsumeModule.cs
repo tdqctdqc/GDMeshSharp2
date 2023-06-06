@@ -36,19 +36,42 @@ public class WorkProdConsumeModule : LogicModule
     public override void Calculate(Data data, Action<Message> queueMessage,
         Action<Func<HostWriteKey, Entity>> queueEntityCreation)
     {
+        var swTotal = new Stopwatch();
+        swTotal.Start();
+        var sw = new Stopwatch();
+        
+        sw.Start();
         Clear();
         var tick = data.BaseDomain.GameClock.Tick;
         _ticksSinceLast = tick - _lastRunTick;
         _lastRunTick = tick;
         var proc = WorkProdConsumeProcedure.Create(_ticksSinceLast);
-
+        sw.Stop();
+        // GD.Print("\t workprodconsume pre time " + sw.Elapsed.TotalMilliseconds);
+        sw.Reset();
+        
+        sw.Start();
         Parallel.ForEach(data.Society.Regimes.Entities, 
             regime => ProduceForRegime(regime, data, proc));
+        sw.Stop();
+        // GD.Print("\t regime prod time " + sw.Elapsed.TotalMilliseconds);
+        sw.Reset();
         
+        sw.Start();
         Parallel.ForEach(data.Society.Regimes.Entities,
             regime => ConsumeForRegime(proc, regime, data));
-
+        sw.Stop();
+        // GD.Print("\t regime consume time " + sw.Elapsed.TotalMilliseconds);
+        sw.Reset();
+        
+        sw.Start();
         queueMessage(proc);
+        sw.Stop();
+        // GD.Print("\t queueing msgs " + sw.Elapsed.TotalMilliseconds);
+        sw.Reset();
+        
+        swTotal.Stop();
+        // GD.Print("\t total time for workprodconsume " + swTotal.Elapsed.TotalMilliseconds);
     }
 
     private void ProduceForRegime(Regime regime, Data data, WorkProdConsumeProcedure proc)
@@ -181,7 +204,6 @@ public class WorkProdConsumeModule : LogicModule
         var ratio = Mathf.Min(1f, (float)indig / gatherersNeeded);
         foodGathered *= ratio;
         scratch.HandleJobNeed(gathererJob, 1f, data);
-        // GD.Print(poly.Id + " indig " + indig + " gatherer labor " + labor);
         proc.RegimeResourceGains[r.Id].Add(ItemManager.Food, Mathf.CeilToInt(foodGathered));
     }
 

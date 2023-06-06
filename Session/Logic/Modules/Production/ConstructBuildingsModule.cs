@@ -14,7 +14,6 @@ public class ConstructBuildingsModule : LogicModule
         {
             foreach (var kvp in data.Society.CurrentConstruction.ByTri)
             {
-                var progress = 100f;
                 if (kvp.Value.TicksLeft < 0)
                 {
                     finished.Add(kvp.Value);

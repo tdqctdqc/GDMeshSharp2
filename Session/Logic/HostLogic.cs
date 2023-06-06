@@ -20,10 +20,8 @@ public class HostLogic : ILogic
     private float _frameTimer = 1f;
     private Task _calculating;
     
-    private Stopwatch _sw;
     public HostLogic(Data data)
     {
-        _sw = new Stopwatch();
         AIs = EntityValueCache<Regime, RegimeAi>
             .ConstructConstant(data, r => new RegimeAi(r, data));
         CommandQueue = new ConcurrentQueue<Command>();
@@ -54,15 +52,8 @@ public class HostLogic : ILogic
         {
             _frameTimer = 0f;
             _calculating = Task.Run(() => {
-                DoCommands(); 
-                
-                _sw.Reset();
-                _sw.Start();
+                DoCommands();
                 DoFrame();
-                _sw.Stop();
-                
-                if(_sw.Elapsed.TotalSeconds > _framePeriod) GD.Print("logic lagging");
-                GD.Print("frame time " + _sw.Elapsed.TotalMilliseconds);
                 _calculating = null;
             });
         }
@@ -85,9 +76,19 @@ public class HostLogic : ILogic
 
     private void DoFrame()
     {
+        //todo ticking for remote as well?
         new TickProcedure().Enact(_pKey);
+
+        var sw = new Stopwatch();
+        
+        sw.Start();
         var logicResult = _frames[_frameIter].Calculate(_data);
+        sw.Stop();
+        GD.Print("calculating logic result " + sw.Elapsed.TotalMilliseconds);
+        sw.Reset();
+        
         _frameIter = (_frameIter + 1) % _frames.Length;
+        
         
         for (var i = 0; i < logicResult.Procedures.Count; i++)
         {
@@ -98,7 +99,6 @@ public class HostLogic : ILogic
         {
             logicResult.CreateEntities[i].Invoke(_hKey);
         }
-        
         
         for (var i = 0; i < logicResult.Decisions.Count; i++)
         {
@@ -116,6 +116,7 @@ public class HostLogic : ILogic
                 }
             }
         }
+        
         _server.ReceiveLogicResult(logicResult, _hKey);
         _server.PushPackets(_hKey);
     }

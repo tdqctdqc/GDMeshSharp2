@@ -31,6 +31,7 @@ public class PolyTriGenerator : Generator
         report.StopSection("Building poly terrain tris");
         
         report.StartSection();
+        Parallel.ForEach(_data.Planet.Polygons.Entities, p => p.Tris.SetNativeNeighbors(key)); 
         Parallel.ForEach(_data.Planet.PolyEdges.Entities, p => MakeDiffPolyTriPaths(p, key));
         report.StopSection("making poly tri paths");
         
@@ -39,6 +40,13 @@ public class PolyTriGenerator : Generator
         report.StartSection();
         Postprocess(key);
         report.StopSection("postprocessing polytris");
+        
+        GD.Print("Total tris " + key.Data.Planet.Polygons.Entities.Sum(p => p.Tris.Tris.Length));
+        GD.Print("Generate interior ps time " + Triangulator.InteriorPointGenTimes.Sum(v => v));
+        GD.Print("P2T triangulate time " + Triangulator.P2TTriangulateTimes.Sum(v => v));
+        GD.Print("Consrtuct poly tri time " + Triangulator.ConstructPolyTriTimes.Sum(v => v));
+        GD.Print("Find lf and v time " + Triangulator.FindLfAndVTimes.Sum(v => v));
+        GD.Print("Total triangulate time " + Triangulator.TotalPolyTriangulateTimes.Sum(v => v));
         return report;
     }
     
@@ -94,37 +102,33 @@ public class PolyTriGenerator : Generator
     {
         var lo = edge.LowPoly.Entity();
         var hi = edge.HighPoly.Entity();
-        
-        if (lo.Tris == null) throw new Exception();
-        if (lo.Tris.Tris == null) throw new Exception();
-        if (lo.GetBorder(hi.Id).Segments == null) throw new Exception();
-        
-        var loEdgeTris = lo.GetBorder(hi.Id).Segments
-            .Select(seg => lo.Tris.Tris.FirstOrDefault(t => t.PointIsVertex(seg.From) && t.PointIsVertex(seg.To)))
-            .Where(t => t != null)            
-            .ToList();
 
-        if (hi.Tris == null) throw new Exception();
-        if (hi.Tris.Tris == null) throw new Exception();
-        if (hi.GetBorder(lo.Id).Segments == null) throw new Exception();
+        var loSegs = lo.GetBorder(hi.Id).Segments;
+        var hiSegs = hi.GetBorder(lo.Id).Segments;
+
+        var loEdgePs = loSegs.GetPoints();
+        loEdgePs.Reverse();
+
+        var hiEdgePs = hiSegs.GetPoints();
+
+        if (loEdgePs.Count != hiEdgePs.Count) throw new Exception();
         
         
-        var hiEdgeTris = hi.GetBorder(lo.Id).Segments
-            .Select(seg => hi.Tris.Tris.FirstOrDefault(t => t.PointIsVertex(seg.From) && t.PointIsVertex(seg.To)))
-            .Where(t => t != null)
-            .Reverse()
-            .ToList();
-            
-        if (loEdgeTris.Count != hiEdgeTris.Count)
+        for (var i = 0; i < hiEdgePs.Count; i++)
         {
-            return;
-            // throw new Exception();
+            var loP = loEdgePs[i];
+            var hiP = hiEdgePs[i];
+            var loTris = lo.Tris.Tris.Where(t => t.PointIsVertex(loP));
+            var hiTris = hi.Tris.Tris.Where(t => t.PointIsVertex(hiP));
+            foreach (var loTri in loTris)
+            {
+                foreach (var hiTri in hiTris)
+                {
+                    // edge.LoToHiTriPaths.Add();
+                }
+            }
         }
-        for (var i = 0; i < loEdgeTris.Count; i++)
-        {
-            edge.LoToHiTriPaths[loEdgeTris[i].Index] = hiEdgeTris[i].Index;
-            edge.HiToLoTriPaths[hiEdgeTris[i].Index] = loEdgeTris[i].Index;
-        }
+
     }
 
     private void Postprocess(GenWriteKey key)
@@ -133,7 +137,7 @@ public class PolyTriGenerator : Generator
         var erodeChance = .75f;
         var mountainNoise = new OpenSimplexNoise();
         mountainNoise.Period = key.Data.Planet.Width;
-        foreach (var poly in polys)
+        Parallel.ForEach(polys, poly =>
         {
             foreach (var tri in poly.Tris.Tris)
             {
@@ -141,7 +145,7 @@ public class PolyTriGenerator : Generator
                 irrigate(poly, tri);
                 mountainRidging(poly, tri);
             }
-        }
+        });
 
         void erode(MapPolygon poly, PolyTri tri)
         {
@@ -184,7 +188,7 @@ public class PolyTriGenerator : Generator
             {
                 var globalPos = tri.GetCentroid() + poly.Center;
                 var noise = mountainNoise.GetNoise2d(globalPos.x, globalPos.y);
-                if(noise < 0f) tri.SetLandform(LandformManager.Mountain, key);
+                if(noise < .2f) tri.SetLandform(LandformManager.Mountain, key);
             }
         }
     }

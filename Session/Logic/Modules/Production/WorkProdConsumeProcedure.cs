@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Godot;
 using MessagePack;
 
@@ -50,9 +51,15 @@ public class WorkProdConsumeProcedure : Procedure
 
     public override void Enact(ProcedureWriteKey key)
     {
+        var sw = new Stopwatch();
+        
         EnactProduce(key);
+        
         EnactConsume(key);
+
         EnactConstruct(key);
+        
+        
         foreach (var kvp in EmploymentReports)
         {
             var poly = key.Data.Planet.Polygons[kvp.Key];

@@ -15,279 +15,130 @@ public class RiverPolyTriGen
         sw.Start();
         //todo partition by riverpoly union find instead?
         var lms = key.Data.Planet.PolygonAux.LandSea.Landmasses;
-        Parallel.ForEach(lms, lm => PreprocessRiversForLandmass(rd, lm, key));
-        // lms.ToList().ForEach(lm => PreprocessRiversForLandmass(rd, lm, key));
+        var riverNexi = key.Data.Planet.PolyNexi.Entities
+            .Where(n => n.IncidentEdges.Any(e => e.IsRiver())).ToList();
+        Parallel.ForEach(lms, lm => PreprocessRiversForLandmass(rd, riverNexi, lm, key));
         sw.Stop();
         GD.Print("preprocessing rivers " + sw.Elapsed.TotalMilliseconds);
         sw.Reset();
         key.Data.Notices.SetPolyShapes?.Invoke();
-        GD.Print("set poly shapes");
-        
-        
         sw.Start();
-        // rd.GenerateInfos(key);
+
         sw.Stop();
         GD.Print("generating river infos " + sw.Elapsed.TotalMilliseconds);
         sw.Reset();
         
-        // key.Data.Notices.SetPolyShapes?.Invoke();
-        
-        GD.Print("finished w riverpolytrigen");
         return rd;
     }
-    private void PreprocessRiversForLandmass(TempRiverData rd, HashSet<MapPolygon> lm, GenWriteKey key)
+    private void PreprocessRiversForLandmass(TempRiverData rd, List<MapPolyNexus> riverNexi,
+        HashSet<MapPolygon> lm, GenWriteKey key)
     {
-        var riverNexi = key.Data.Planet.PolyNexi.Entities
+        var rIncidentEdges = riverNexi
             .Where(n => n.IncidentPolys.Any(p => lm.Contains(p)))
-            .Where(n => n.IncidentEdges.Any(e => e.IsRiver()));
-        var inscribed = new Dictionary<MapPolygon, Vector2[]>();
-        MakePivots(rd, riverNexi, key);
-
-        // foreach (var n in riverNexi)
-        // {
-        //     MakeInners(rd, n, key);
-        // }
+            .SelectMany(n => n.IncidentEdges)
+            .Distinct()
+            .ToList();
+        MakePivots(rd, rIncidentEdges, key);
     }
-
-    private void MakeInnersNew(TempRiverData rd, MapPolyNexus nexus, Dictionary<MapPolygon, Vector2[]> inscribed,
-        GenWriteKey key)
+    private void MakePivots(TempRiverData rd, List<MapPolygonEdge> rIncidentEdges, GenWriteKey key)
     {
-        
-    }
-    private void MakeInners(TempRiverData rd, MapPolyNexus nexus, GenWriteKey key)
-    {
-        if(nexus.IsRiverNexus() == false && nexus.IncidentPolys.Any(p => p.IsWater()) == false) return;
-        var rEdges = nexus.IncidentEdges.Where(e => e.IsRiver());
-
-        foreach (var poly in nexus.IncidentPolys)
-        {
-            var nexusRelative = poly.GetOffsetTo(nexus.Point, key.Data);
-            var polyNexusEdges = nexus.IncidentEdges.Where(e => e.EdgeToPoly(poly));
-            
-            if (polyNexusEdges.Count() == 2)
-            {
-                var e1 = polyNexusEdges.ElementAt(0);
-                var length1 = e1.GetLength();
-                var e2 = polyNexusEdges.ElementAt(1);
-                var length2 = e2.GetLength();
-
-                if (length1 < 10f || length2 < 10f)
-                {
-                    
-                }
-                
-                float width1;
-                if(e1.IsRiver()) width1 = River.GetWidthFromFlow(e1.MoistureFlow);
-                else if (e2.IsRiver()) width1 = River.GetWidthFromFlow(e2.MoistureFlow);
-                else
-                {
-                    width1 = nexus.IncidentEdges.Average(e => River.GetWidthFromFlow(e.MoistureFlow));
-                }
-                var e1segs = e1.GetSegsRel(poly).Segments;
-                var nexusSeg1 = e1segs.First(s => s.From == nexusRelative || s.To == nexusRelative);
-                var axis1 = nexusSeg1.To - nexusSeg1.From;
-                var shift1 = axis1.Rotated(-Mathf.Pi / 2f).Normalized() * width1 / 2f;
-                
-                float width2; 
-                if(e2.IsRiver()) width2 = River.GetWidthFromFlow(e2.MoistureFlow);
-                else if (e1.IsRiver()) width2 = width1;
-                else
-                {
-                    width2 = nexus.IncidentEdges.Average(e => River.GetWidthFromFlow(e.MoistureFlow));
-                }
-                var e2segs = e2.GetSegsRel(poly).Segments;
-                var nexusSeg2 = e2segs.First(s => s.From == nexusRelative || s.To == nexusRelative);
-                var axis2 = nexusSeg2.To - nexusSeg2.From;
-                var shift2 = axis2.Rotated(-Mathf.Pi / 2f).Normalized() * width2 / 2f;
-
-                var intersect = Geometry.LineIntersectsLine2d(nexusSeg1.From - shift1, axis1,
-                    nexusSeg2.From - shift2, axis2);
-                
-                if (intersect is Vector2 inner)
-                {
-                    if (poly.PointInPolyRel(inner, key.Data) == false
-                         || innerOnEdge())
-                    {
-                        var w = (width1 + width2) / 2f;
-                        inner = nexusRelative.Normalized() * (nexusRelative.Length() - w);
-                        if (poly.PointInPolyRel(inner, key.Data) == false) 
-                            throw new Exception();
-                        // if (innerOnEdge()) throw new Exception();
-                    }
-
-                    bool innerOnEdge()
-                    {
-                        var segs = poly.GetOrderedBoundarySegs(key.Data);
-                        for (var i = 0; i < segs.Count; i++)
-                        {
-                            var seg = segs[i];
-                            
-                            var close = Geometry.GetClosestPointToSegment2d(inner, seg.From, seg.To);
-                            if (inner.DistanceTo(close) < .01f)
-                            {
-                                GD.Print("FIXING INNER ON EDGE");
-                                return true;
-                            }
-                        }
-                        return false;
-                    }
-                    
-                    rd.Inners.TryAdd(new PolyCornerKey(nexus, poly), inner);
-                }
-                else throw new Exception();
-
-                
-            }
-            else if (polyNexusEdges.Count() == 1)
-            {
-                var edge = polyNexusEdges.First();
-                var width = River.GetWidthFromFlow(edge.MoistureFlow);
-                var edgeSegs = edge.GetSegsRel(poly).Segments;
-                var edgeFrom = edgeSegs[0].From;
-                var edgeTo = edgeSegs[edgeSegs.Count - 1].To;
-                var edgeAxis = (edgeTo - edgeFrom).Normalized();
-                
-                Vector2 nexusEdgeAxis;
-                if (nexusRelative == edgeFrom)
-                {
-                    nexusEdgeAxis = (edgeSegs[0].To - nexusRelative).Normalized();
-                }
-                else if (nexusRelative == edgeTo)
-                {
-                    nexusEdgeAxis = (nexusRelative - edgeSegs.Last().From).Normalized();
-                }
-                else throw new Exception();
-
-                var axisPerp = nexusEdgeAxis.Rotated(-Mathf.Pi / 2f);
-
-                var intersect = Geometry.LineIntersectsLine2d(nexusRelative + axisPerp * width / 2f, nexusEdgeAxis,
-                    Vector2.Zero, nexusRelative);
-
-                if (intersect is Vector2 inner)
-                {
-                    if (poly.PointInPolyRel(inner, key.Data) == false)
-                    {
-                        inner = nexusRelative.Normalized() * (nexusRelative.Length() - width);
-                        if (poly.PointInPolyRel(inner, key.Data) == false)
-                        {
-                            var e = new GeometryException("Fixing inner failed");
-                            // e.AddSegLayer();
-                            throw e;
-                        }
-                    }
-
-                    rd.Inners.TryAdd(new PolyCornerKey(nexus, poly), inner);
-                }
-                else throw new Exception();
-            }
-            else throw new Exception();
-        }
-    }
-
-    private void MakePivots(TempRiverData rd, IEnumerable<MapPolyNexus> rNexi, GenWriteKey key)
-    {
-        var rIncidentEdges = rNexi.SelectMany(n => n.IncidentEdges).Distinct();
         foreach (var edge in rIncidentEdges)
         {
             var hiSegments = edge.HighSegsRel().Segments;
             var hiPoly = edge.HighPoly.Entity();
-            var hiNexRel = hiPoly.GetOffsetTo(edge.HiNexus.Entity().Point, key.Data);
-            var loNexRel = hiPoly.GetOffsetTo(edge.LoNexus.Entity().Point, key.Data);
 
-            MapPolyNexus fromNexus;
-            MapPolyNexus toNexus;
-            
-            if (hiNexRel == hiSegments[0].From && loNexRel == hiSegments[hiSegments.Count - 1].To)
-            {
-                fromNexus = edge.HiNexus.Entity();
-                toNexus = edge.LoNexus.Entity();
-            }
-            else if (loNexRel == hiSegments[0].From && hiNexRel == hiSegments[hiSegments.Count - 1].To)
-            {
-                fromNexus = edge.LoNexus.Entity();
-                toNexus = edge.HiNexus.Entity();
-            }
-            else throw new Exception();
+            var fromTo = edge.OrderNexi(hiPoly, key.Data);
+            MapPolyNexus fromNexus = fromTo.from;
+            MapPolyNexus toNexus = fromTo.to;
             
             if (hiSegments.Count == 1)
             {
-                var seg = hiSegments[0];
-                var segLength = seg.Length();
-                var axis = seg.GetNormalizedAxis();
-                var fromPivot = seg.From + axis * segLength * 1f / 3f;
-                var toPivot = seg.From + axis * segLength * 2f / 3f;
-                
-                rd.HiPivots.TryAdd(new EdgeEndKey(fromNexus, edge), fromPivot);
-                rd.HiPivots.TryAdd(new EdgeEndKey(toNexus, edge), toPivot);
-                var offset = edge.HighPoly.Entity().Center;
-                
-                var split = new List<LineSegment>
-                {
-                    new LineSegment(seg.From, fromPivot).Translate(offset),
-                    new LineSegment(fromPivot, toPivot).Translate(offset),
-                    new LineSegment(toPivot, seg.To).Translate(offset)
-                };
-                edge.ReplaceMiddlePoints(split, key);
-                continue;
-            }
-            
-            var margin = 10f;
-            
-            //todo make this based on rotationally neighboring r edges instead
-            var newHiSegs = new List<LineSegment>();
-            
-            var fromSeg = hiSegments[0];
-            var fromPivotWidth = fromNexus.IncidentEdges.Average(e => River.GetWidthFromFlow(e.MoistureFlow)) / 2f;
-            var fromSegWidth = fromSeg.Length();
-            if (fromPivotWidth + 10f >= fromSegWidth)
-            {
-                rd.HiPivots.TryAdd(new EdgeEndKey(fromNexus, edge), fromSeg.To);
-                newHiSegs.Add(fromSeg.Copy());
+                MakePivotsSingleSeg(hiSegments, fromNexus, toNexus, edge, rd, key);
             }
             else
             {
-                var pivot = fromSeg.From + fromSeg.GetNormalizedAxis() * fromPivotWidth;
-                rd.HiPivots.TryAdd(new EdgeEndKey(fromNexus, edge), pivot);
-                var s1 = new LineSegment(fromSeg.From, pivot);
-                if (s1.Length() != 0f) newHiSegs.Add(s1);
-                var s2 = new LineSegment(pivot, fromSeg.To);
-                if (s2.Length() != 0f) newHiSegs.Add(s2);
+                MakePivotsMultSegs(hiSegments, fromNexus, toNexus, edge, rd, key);   
             }
-            for (var i = 1; i < hiSegments.Count - 1; i++)
-            {
-                newHiSegs.Add(hiSegments[i]);
-            }
-            
-            var toSeg = hiSegments[hiSegments.Count - 1];
-            var toPivotWidth = toNexus.IncidentEdges.Average(e => River.GetWidthFromFlow(e.MoistureFlow)) / 2f;
-            var toSegWidth = toSeg.Length();
-            if (toPivotWidth + 10f >= toSegWidth)
-            {
-                rd.HiPivots.TryAdd(new EdgeEndKey(toNexus, edge), toSeg.From);
-                newHiSegs.Add(toSeg.Copy());
-            }
-            else
-            {
-                var pivot = toSeg.To - toSeg.GetNormalizedAxis() * toPivotWidth;
-                rd.HiPivots.TryAdd(new EdgeEndKey(toNexus, edge), pivot);
-                var s1 = new LineSegment(toSeg.From, pivot);
-                if (s1.Length() != 0f) newHiSegs.Add(s1);
-                var s2 = new LineSegment(pivot, toSeg.To);
-                if (s2.Length() != 0f) newHiSegs.Add(s2);
-            }
-            
-            // var newAbsSegs = newHiSegs.Select(s => s.Translate(hiPoly.Center)).ToList();
-            
-            for (var i = 0; i < newHiSegs.Count; i++)
-            {
-                var seg = newHiSegs[i];
-                var newFrom = seg.From + hiPoly.Center;
-                var newTo = seg.To + hiPoly.Center;
-                seg.From = newFrom;
-                seg.To = newTo;
-            }
-            
-            edge.ReplaceMiddlePoints(newHiSegs, key);
         }
+    }
+
+    private void MakePivotsSingleSeg(List<LineSegment> hiSegments, MapPolyNexus fromNexus, MapPolyNexus toNexus,
+        MapPolygonEdge edge, TempRiverData rd, GenWriteKey key)
+    {
+        var seg = hiSegments[0];
+        var segLength = seg.Length();
+        var axis = seg.GetNormalizedAxis();
+        var fromPivot = seg.From + axis * segLength * 1f / 3f;
+        var toPivot = seg.From + axis * segLength * 2f / 3f;
+                
+        rd.HiPivots.TryAdd(new EdgeEndKey(fromNexus, edge), fromPivot);
+        rd.HiPivots.TryAdd(new EdgeEndKey(toNexus, edge), toPivot);
+        var offset = edge.HighPoly.Entity().Center;
+                
+        var split = new List<LineSegment>
+        {
+            new LineSegment(seg.From, fromPivot).Translate(offset),
+            new LineSegment(fromPivot, toPivot).Translate(offset),
+            new LineSegment(toPivot, seg.To).Translate(offset)
+        };
+        edge.ReplaceMiddlePoints(split, key);
+    }
+
+    private void MakePivotsMultSegs(List<LineSegment> hiSegments, MapPolyNexus fromNexus, MapPolyNexus toNexus,
+        MapPolygonEdge edge, TempRiverData rd, GenWriteKey key)
+    {
+        //todo make this based on rotationally neighboring r edges instead
+        var newHiSegs = new List<LineSegment>();
+        var hiPoly = edge.HighPoly.Entity();
+        var fromSeg = hiSegments[0];
+        var fromPivotWidth = fromNexus.IncidentEdges.Average(e => River.GetWidthFromFlow(e.MoistureFlow)) / 2f;
+        var fromSegWidth = fromSeg.Length();
+        if (fromPivotWidth + 10f >= fromSegWidth)
+        {
+            rd.HiPivots.TryAdd(new EdgeEndKey(fromNexus, edge), fromSeg.To);
+            newHiSegs.Add(fromSeg.Copy());
+        }
+        else
+        {
+            var pivot = fromSeg.From + fromSeg.GetNormalizedAxis() * fromPivotWidth;
+            rd.HiPivots.TryAdd(new EdgeEndKey(fromNexus, edge), pivot);
+            var s1 = new LineSegment(fromSeg.From, pivot);
+            if (s1.Length() != 0f) newHiSegs.Add(s1);
+            var s2 = new LineSegment(pivot, fromSeg.To);
+            if (s2.Length() != 0f) newHiSegs.Add(s2);
+        }
+        for (var i = 1; i < hiSegments.Count - 1; i++)
+        {
+            newHiSegs.Add(hiSegments[i]);
+        }
+        
+        var toSeg = hiSegments[hiSegments.Count - 1];
+        var toPivotWidth = toNexus.IncidentEdges.Average(e => River.GetWidthFromFlow(e.MoistureFlow)) / 2f;
+        var toSegWidth = toSeg.Length();
+        if (toPivotWidth + 10f >= toSegWidth)
+        {
+            rd.HiPivots.TryAdd(new EdgeEndKey(toNexus, edge), toSeg.From);
+            newHiSegs.Add(toSeg.Copy());
+        }
+        else
+        {
+            var pivot = toSeg.To - toSeg.GetNormalizedAxis() * toPivotWidth;
+            rd.HiPivots.TryAdd(new EdgeEndKey(toNexus, edge), pivot);
+            var s1 = new LineSegment(toSeg.From, pivot);
+            if (s1.Length() != 0f) newHiSegs.Add(s1);
+            var s2 = new LineSegment(pivot, toSeg.To);
+            if (s2.Length() != 0f) newHiSegs.Add(s2);
+        }
+        
+        for (var i = 0; i < newHiSegs.Count; i++)
+        {
+            var seg = newHiSegs[i];
+            var newFrom = seg.From + hiPoly.Center;
+            var newTo = seg.To + hiPoly.Center;
+            seg.From = newFrom;
+            seg.To = newTo;
+        }
+        
+        edge.ReplaceMiddlePoints(newHiSegs, key);
     }
 }

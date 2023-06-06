@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Godot;
 using Google.OrTools.LinearSolver;
@@ -39,8 +40,18 @@ public class ItemProdAiPriority : AiPriority
     {
         var availLabor = regime.Polygons.Sum(p => p.Employment.NumUnemployed() 
                                                   + p.Employment.NumJob(PeepJobManager.Gatherer) / 2);
+
+        var sw = new Stopwatch();
+        sw.Start();
         var buildings = SelectBuildings(data, budget, prices, credit, availLabor);
+        sw.Stop();
+        var selectBuildingTime = sw.Elapsed.TotalMilliseconds;
+        sw.Reset();
+        sw.Start();
         SelectBuildSites(regime, data, buildings, queueMessage);
+        sw.Stop();
+        var selectBuildSiteTime = sw.Elapsed.TotalMilliseconds;
+        // GD.Print("select buildings " + selectBuildingTime + " select sites " + selectBuildSiteTime);
     }
 
     private Dictionary<BuildingModel, int> SelectBuildings(Data data, ItemWallet budget, Dictionary<Item, float> prices,
@@ -59,6 +70,7 @@ public class ItemProdAiPriority : AiPriority
             var itemConstraint = solver.MakeConstraint(0f, budget[i]);
             itemNumConstraints.Add(i, itemConstraint);
         });
+        
         var creditConstraint = solver.MakeConstraint(0f, credit, "Credits");
         var constructLaborConstraint = solver.MakeConstraint(0, laborAvail, "ConstructLabor");
         var buildingLaborConstraint = solver.MakeConstraint(0, laborAvail, "BuildingLabor");

@@ -44,7 +44,7 @@ public class VegetationManager : TerrainAspectManager<Vegetation>
             GD.Print($"cant find veg for lf {lf.Name} and moisture score {score}");
             throw;
         }
-        
+
     }
 
 }

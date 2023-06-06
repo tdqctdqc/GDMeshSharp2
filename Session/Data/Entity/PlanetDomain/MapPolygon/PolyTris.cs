@@ -10,6 +10,7 @@ public class PolyTris
     public PolyTri this[int i] => Tris[i];
     public PolyTri[] Tris;
     public byte[] TriNativeNeighbors { get; private set; }
+    public PolyTriPosition[] TriForeignNeighbors { get; private set; }
 
     public static PolyTris Create(List<PolyTri> tris, 
         GenWriteKey key)
@@ -24,10 +25,9 @@ public class PolyTris
         }
         
         
-        
         var ts = new PolyTris(tris.ToArray(), new byte[0]);
         
-        ts.SetNeighbors(key);
+        // ts.SetNeighbors(key);
         
         return ts;
     }
@@ -44,45 +44,52 @@ public class PolyTris
         return Tris.FirstOrDefault(t => t.ContainsPoint(point));
     }
 
-    private void SetNeighbors(GenWriteKey key)
+    public void SetNativeNeighbors(GenWriteKey key)
     {
-        var dic = new Dictionary<Vector2, LinkedList<int>>();
-        var graph = new Graph<PolyTri, bool>();
-            
+        var points = Tris.Select(t => t.A)
+            .Union(Tris.Select(t => t.B))
+            .Union(Tris.Select(t => t.C))
+            .Distinct()
+            .ToDictionary(v => v, v => new LinkedList<byte>());
+        
         for (var i = 0; i < Tris.Length; i++)
         {
-            var tri = Tris[i];
-            graph.AddNode(tri);
-            tri.ForEachPoint(p =>
-            {
-                if (dic.ContainsKey(p) == false)
-                {
-                    dic.Add(p, new LinkedList<int>());
-                }
-                foreach (var j in dic[p])
-                {
-                    graph.AddEdge(tri, Tris[j], true);
-                }
-                dic[p].AddLast(i);
-            });
-        }
-        
-        var triNativeNeighbors = new List<byte>();
-        int neighborStartIter = 0;
-        for (var i = 0; i < Tris.Length; i++)
-        {
-            var tri = Tris[i];
-            tri.SetNeighborStart(neighborStartIter, key);
-            var neighbors = graph.GetNeighbors(tri);
-            tri.SetNeighborCount(neighbors.Count, key);
-        
-            for (var j = 0; j < neighbors.Count; j++)
-            {
-                triNativeNeighbors.Add(neighbors.ElementAt(j).Index);
-            }
-            neighborStartIter += neighbors.Count;
+            var t = Tris[i];
+            points[t.A].AddLast(t.Index);
+            points[t.B].AddLast(t.Index);
+            points[t.C].AddLast(t.Index);
         }
 
+        
+        var triNativeNeighbors = new List<byte>();
+        var hash = new HashSet<byte>();
+        int iter = 0;
+        for (var i = 0; i < Tris.Length; i++)
+        {
+            hash.Clear();
+            var tri = Tris[i];
+            tri.SetNeighborStart(iter, key);
+            int nCount = 0;
+            addNeighborsOfPoint(tri.A);
+            addNeighborsOfPoint(tri.B);
+            addNeighborsOfPoint(tri.C);
+
+            void addNeighborsOfPoint(Vector2 point)
+            {
+                foreach (var j in points[point])
+                {
+                    if (j != tri.Index && hash.Contains(j) == false)
+                    {
+                        hash.Add(j);
+                        triNativeNeighbors.Add(j);
+                        iter++;
+                        nCount++;
+                    }
+                }
+            }
+            tri.SetNeighborCount(nCount, key);
+        }
+        
         TriNativeNeighbors = triNativeNeighbors.ToArray();
     }
 }
