@@ -78,14 +78,12 @@ public class WorkProdConsumeModule : LogicModule
         proc.RegimeResourceGains.TryAdd(regime.Id, gains);
         var laborerClass = PeepClassManager.Laborer;
         var unemployedJob = PeepJobManager.Unemployed;
-        var gatherersNeeded = data.BaseDomain.Rules.GatherLaborCap;
         
-        var polys = regime.Polygons;
-        var totalLaborerUnemployed = 0f;
+        var regimePolys = regime.Polygons;
+        var totalLaborerUnemployed = 0;
         var labClass = PeepClassManager.Laborer;
-        var builderJob = PeepJobManager.Builder;
         
-        foreach (var poly in polys)
+        foreach (var poly in regimePolys)
         {
             var scratch = _polyScratches.GetOrAdd(poly.Id,
                 p => new PolyEmploymentScratch((MapPolygon) data[p], data));
@@ -96,23 +94,10 @@ public class WorkProdConsumeModule : LogicModule
                 totalLaborerUnemployed += sub.Available;
             }
         }
-
-        var construction = data.Society.CurrentConstruction.ByPoly;
-
-        var constructionLaborNeeded = regime.Polygons
-            .Where(p => construction.ContainsKey(p.Id))
-            .Select(p => construction[p.Id].Sum(c => c.Model.Model().LaborPerTickToBuild))
-            .Sum();
         
-        var constructLaborRatio = Mathf.Clamp(totalLaborerUnemployed  / constructionLaborNeeded, 0f, 1f);
-        if (constructionLaborNeeded == 0) constructLaborRatio = 0f; 
-        foreach (var poly in polys)
-        {
-            var scratch = _polyScratches[poly.Id];
-            scratch.HandleJobNeed(builderJob, constructLaborRatio,data);
-            ConstructForPoly(poly, scratch, constructLaborRatio, proc, data);
-        }
-        foreach (var poly in polys)
+        ConstructForRegime(regime, data, proc, totalLaborerUnemployed);
+        
+        foreach (var poly in regimePolys)
         {
             var scratch = _polyScratches[poly.Id];
             var numUnemployed = scratch.ByClass.Sum(kvp => kvp.Value.Available);
@@ -128,6 +113,49 @@ public class WorkProdConsumeModule : LogicModule
         }
     }
 
+    private void ConstructForRegime(Regime regime, Data data, WorkProdConsumeProcedure proc,
+        int totalLaborerUnemployed)
+    {
+        var builderJob = PeepJobManager.Builder;
+        var regimePolys = regime.Polygons;
+
+        var construction = data.Society.CurrentConstruction.ByPoly;
+
+        var constructionLaborNeeded = regime.Polygons
+            .Where(p => construction.ContainsKey(p.Id))
+            .Select(p => construction[p.Id].Sum(c => c.Model.Model().LaborPerTickToBuild))
+            .Sum();
+        var constructLaborRunningTotal = constructionLaborNeeded;
+        if (constructionLaborNeeded == 0) return;
+        
+        var constructLaborRatio = Mathf.Clamp(totalLaborerUnemployed  / constructionLaborNeeded, 0f, 1f);
+        if (constructionLaborNeeded == 0) constructLaborRatio = 0f; 
+        foreach (var poly in regimePolys)
+        {
+            var scratch = _polyScratches[poly.Id];
+            
+            var constructLabor = scratch.HandleConstructionJobs(data, totalLaborerUnemployed,
+                constructionLaborNeeded, constructLaborRunningTotal);
+            constructLaborRunningTotal -= constructLabor;
+            ConstructForPoly(poly, scratch, constructLaborRatio, proc, data);
+        }
+
+        var totalConstructLabor = regimePolys.Sum(p =>
+        {
+            var scratch = _polyScratches[p.Id].ByJob;
+            if (scratch.ContainsKey(builderJob))
+            {
+                return scratch[builderJob];
+            }
+
+            return 0;
+        });
+        if (totalConstructLabor > constructionLaborNeeded)
+        {
+            throw new Exception($"needed {constructionLaborNeeded} have {totalConstructLabor}");
+        }
+
+    }
     private void ProduceForPoly(MapPolygon poly, WorkProdConsumeProcedure proc, PolyEmploymentScratch scratch, Data data)
     {
         var peep = poly.GetPeep(data);

@@ -59,20 +59,31 @@ public class PolyEmploymentScratch
         }
     }
 
-    public void HandleJobNeed(PeepJob job, float contributeRatio, Data data)
+    public int HandleConstructionJobs(Data data, int regimeUnemployedLaborerTotal, int regimeConstructNeedTotal,
+        int regimeConstructNeedRunningTotal)
     {
-        var jobClass = job.PeepClass;
-        if (ByClass.ContainsKey(jobClass) == false) return;
-        var classSub = ByClass[jobClass];
-        if (classSub.Total < 0) throw new Exception();
-        var num = Mathf.CeilToInt(contributeRatio * classSub.Available);
-        num = Mathf.Min(num, classSub.Available);
-        if (num < 0)
+        if (regimeConstructNeedRunningTotal <= 0) return 0;
+        var builderJob = PeepJobManager.Builder;
+        if (ByClass.ContainsKey(builderJob.PeepClass) == false) return 0;
+        var laborers = ByClass[builderJob.PeepClass];
+        var unemployed = laborers.Available;
+        var contribution = 0;
+        if (regimeConstructNeedTotal > regimeUnemployedLaborerTotal)
         {
-            throw new Exception();
+            contribution = unemployed;
+            laborers.Distribute(contribution);
+            ByJob.AddOrSum(builderJob, contribution);
         }
-        ByJob.AddOrSum(job, num);
-        classSub.Distribute(num);
+        else
+        {
+            var shareOfTotalUnemployed = (float)unemployed / regimeUnemployedLaborerTotal;
+            contribution = Mathf.CeilToInt(shareOfTotalUnemployed * unemployed);
+            contribution = Mathf.Min(regimeConstructNeedRunningTotal, contribution);
+            laborers.Distribute(contribution);
+            ByJob.AddOrSum(builderJob, contribution);
+        }
+
+        return contribution;
     }
     public class PolyClassEmployment
     {
@@ -101,9 +112,19 @@ public class PolyEmploymentScratch
         public float EffectiveRatio()
         {
             float r = 0f;
-            if (Total == 0) r = 0f;
-            else if (Desired == 0) r = 1f;
-            else r = Mathf.Min(1f, ((float) Total) / ((float)Desired));
+            if (Total == 0)
+            {
+                r = 0f;
+            }
+            else if (Desired == 0)
+            {
+                r = 1f;
+            }
+            else
+            {
+                r = Mathf.Min(1f, ((float) Total) / ((float) Desired));
+            }
+            
             if (r > 1f || r < 0f || float.IsNaN(r)) throw new Exception();
 
             // GD.Print($"Ratio {Total} / {Desired} to {r}");
