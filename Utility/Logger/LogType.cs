@@ -1,4 +1,5 @@
 public enum LogType
 {
-    Logic
+    Logic,
+    Generation
 }

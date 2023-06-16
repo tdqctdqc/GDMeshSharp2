@@ -11,6 +11,8 @@ public class Landform : TerrainAspect
     public float DarkenFactor { get; private set; }
     public override Color Color { get; protected set; }
     public bool IsWater { get; private set; }
+    public override int Id { get; protected set; }
+
     public bool IsLand => IsWater == false;
     public Landform(string name, float minRoughness, float fertilityMod, 
         Color color, bool isWater, 

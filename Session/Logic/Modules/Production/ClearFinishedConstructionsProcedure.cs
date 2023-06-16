@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using MessagePack;
 
-public class ClearFinishedConstructionsProcedure : Procedure
+public class 
+    ClearFinishedConstructionsProcedure : Procedure
 {
     public List<PolyTriPosition> Positions { get; private set; }
 

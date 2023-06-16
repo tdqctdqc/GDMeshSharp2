@@ -93,8 +93,8 @@ public class MapPolyRiverTriInfoOld
             {
                 var endKey1 = new EdgeEndKey(nexus, edge1);
                 var pivot1 = GetPivot(endKey1, rData, data);
-                InnerTris.Add(endKey1, PolyTri.Construct(nexusPoint, inner, pivot1, 
-                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
+                InnerTris.Add(endKey1, PolyTri.Construct(Poly.Id, nexusPoint, inner, pivot1, 
+                    LandformManager.River, VegetationManager.Barren));
             }
 
             if (nexusEdges.Count() > 1)
@@ -104,8 +104,8 @@ public class MapPolyRiverTriInfoOld
                 {
                     var endKey2 = new EdgeEndKey(nexus, edge2);
                     var pivot2 = GetPivot(endKey2, rData, data);
-                    InnerTris.Add(endKey2, PolyTri.Construct(nexusPoint, inner, pivot2, 
-                        LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
+                    InnerTris.Add(endKey2, PolyTri.Construct(Poly.Id, nexusPoint, inner, pivot2, 
+                        LandformManager.River, VegetationManager.Barren));
                 }
             }
         }
@@ -190,10 +190,10 @@ public class MapPolyRiverTriInfoOld
             {
                 var outSeg = edgeSegs[i];
                 var inSeg = bankSegs[i];
-                bankTris.Add(PolyTri.Construct(outSeg.From, outSeg.To, inSeg.From,
-                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
-                bankTris.Add(PolyTri.Construct(outSeg.To, inSeg.To, inSeg.From,
-                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
+                bankTris.Add(PolyTri.Construct(Poly.Id, outSeg.From, outSeg.To, inSeg.From,
+                    LandformManager.River, VegetationManager.Barren));
+                bankTris.Add(PolyTri.Construct(Poly.Id, outSeg.To, inSeg.To, inSeg.From,
+                    LandformManager.River, VegetationManager.Barren));
             }
             BankTris.Add(edge, bankTris);
         }

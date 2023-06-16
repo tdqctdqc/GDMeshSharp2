@@ -11,9 +11,6 @@ public class ClientRequests
     public RefAction<ITooltipInstance> PromptTooltip { get; private set; }
     public RefAction<ITooltipInstance> HideTooltip { get; private set; }
     public RefAction<Command> QueueCommand { get; private set; }
-    
-    //todo move to MapGraphics
-    // public ChunkChangedCache ChunkChangedCache { get; private set; }
     public ClientRequests(ISession session)
     {
         OpenWindowRequest = new RefFunc<Type, WindowDialog>();
@@ -22,7 +19,6 @@ public class ClientRequests
         HideTooltip = new RefAction<ITooltipInstance>();
         QueueCommand = new RefAction<Command>();
         QueueCommand.Subscribe(session.Server.QueueCommandLocal);
-        // ChunkChangedCache = new ChunkChangedCache(session);
     }
     public void GiveTree(EntityTypeTree tree)
     {

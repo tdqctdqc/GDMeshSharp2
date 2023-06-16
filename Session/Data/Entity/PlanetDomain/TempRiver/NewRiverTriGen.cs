@@ -162,8 +162,8 @@ public class NewRiverTriGen
                 {
                     innerBoundarySegs.Add(new LineSegment(fromClose, fromPivot));
                 }
-                tris.Add(PolyTri.Construct(edgeSegs[0].From, fromPivot, fromClose, 
-                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
+                tris.Add(PolyTri.Construct(poly.Id, edgeSegs[0].From, fromPivot, fromClose, 
+                    LandformManager.River, VegetationManager.Barren));
             }
             else
             {
@@ -172,8 +172,8 @@ public class NewRiverTriGen
             if (fromTo.to.IsRiverNexus())
             {
                 if (edge.IsRiver() == false) innerBoundarySegs.Add(new LineSegment(toPivot, toClose));
-                tris.Add(PolyTri.Construct(edgeSegs[edgeSegs.Count - 1].To, toPivot, toClose, 
-                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
+                tris.Add(PolyTri.Construct(poly.Id, edgeSegs[edgeSegs.Count - 1].To, toPivot, toClose, 
+                    LandformManager.River, VegetationManager.Barren));
             }
             else
             {
@@ -232,8 +232,8 @@ public class NewRiverTriGen
                     var a = riverBPoints[bankTriPs[i]];
                     var b = riverBPoints[bankTriPs[i + 1]];
                     var c = riverBPoints[bankTriPs[i + 2]];
-                    tris.Add(PolyTri.Construct(a,b,c, 
-                        LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()));
+                    tris.Add(PolyTri.Construct(poly.Id, a,b,c, 
+                        LandformManager.River, VegetationManager.Barren));
                 }
             }
             else
@@ -274,10 +274,9 @@ public class NewRiverTriGen
                 var center = (a + b + c) / 3f;
                 var lf = data.Models.Landforms.GetAtPoint(poly, center, data);
                 var v = data.Models.Vegetation.GetAtPoint(poly, center, lf, data);
-                tris.Add(PolyTri.Construct(a,b,c, 
-                    LandformManager.River.MakeRef(), VegetationManager.Barren.MakeRef()
+                tris.Add(PolyTri.Construct(poly.Id, a,b,c, 
+                    LandformManager.River, VegetationManager.Barren
                     ));
-                GD.Print("FIXED " + poly.Id);
             }
             catch
             {

@@ -37,7 +37,7 @@ public class MapGraphics : Node2D
 
         Highlighter = new PolyHighlighter(_data);
         Highlighter.ZIndex = 99;
-        Highlighter.ZAsRelative = false;
+        // Highlighter.ZAsRelative = false;
         AddChild(Highlighter);
         
         AddChild(polySegmenter);

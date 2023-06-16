@@ -6,7 +6,7 @@ using Godot;
 public abstract class ExtractionBuildingModel : ProductionBuildingModel
 {
     public ExtractionBuildingModel(Item prodItem, string name, bool fromDeposit, int numTicksToBuild, int laborPerTickToBuild) 
-        : base(prodItem, name, numTicksToBuild, laborPerTickToBuild)
+        : base(BuildingType.Extraction, prodItem, name, numTicksToBuild, laborPerTickToBuild)
     {
         if (prodItem.Attributes.Has<ExtractableAttribute>() == false) throw new Exception();
     }
@@ -17,8 +17,7 @@ public abstract class ExtractionBuildingModel : ProductionBuildingModel
         var deposit = poly.GetResourceDeposits(data)
             .First(d => d.Item.Model() == ProdItem);
         var depSize = deposit.Size;
-        var ratio = GetProductionRatio(poly, staffingRatio, data);
-        var prod = Mathf.FloorToInt(ratio * ProductionCap);
+        var prod = Mathf.FloorToInt(staffingRatio * ProductionCap);
         prod = Mathf.Min(Mathf.FloorToInt(depSize), prod);
         prod *= ticksSinceLast;
         var rId = poly.Regime.RefId;

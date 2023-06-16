@@ -6,9 +6,9 @@ public static class PolyPeepExt
 {
     public static int GetNumOfClass(this PolyPeep peep, PeepClass peepClass)
     {
-        if (peep.ClassFragments.ContainsKey(peepClass.Name))
+        if (peep.ClassFragments.ContainsKey(peepClass.Id))
         {
-            return peep.ClassFragments[peepClass.Name].Size;
+            return peep.ClassFragments[peepClass.Id].Size;
         }
 
         return 0;

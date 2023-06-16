@@ -10,10 +10,10 @@ public static class PolyTriExt
     }
     public static bool HasBuilding(this PolyTri t, Data data)
     {
-        return data.Society.BuildingAux.ByTri[t] != null;
+        return data.Society.BuildingAux.ByTri[t.GetPosition()] != null;
     }
     public static MapBuilding GetBuilding(this PolyTri t, Data data)
     {
-        return data.Society.BuildingAux.ByTri[t];
+        return data.Society.BuildingAux.ByTri[t.GetPosition()];
     }
 }

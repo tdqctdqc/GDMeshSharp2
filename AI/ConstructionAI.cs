@@ -16,9 +16,13 @@ public class ConstructionAI
         Action<Func<HostWriteKey, Entity>> queueEntityCreation)
     {
         var prices = data.Models.Items.Models.Values.ToDictionary(v => v, v => 1f);
-        var credit = int.MaxValue;//prices.Sum(kvp => kvp.Value * _regime.Items[kvp.Key]);
+        var credit = int.MaxValue;
+        //prices.Sum(kvp => kvp.Value * _regime.Items[kvp.Key]);
         // var budget = ItemWallet.Construct();
-        new ItemProdAiPriority(ItemManager.Food, 1f)
+        new BuildingConstructAiPriority(ItemManager.Food, 1f)
+            .Calculate(_regime, data, _regime.Items, prices, credit,
+                queueMessage, queueEntityCreation);
+        new BuildingConstructAiPriority(ItemManager.IndustrialPoint, 1f)
             .Calculate(_regime, data, _regime.Items, prices, credit,
                 queueMessage, queueEntityCreation);
     }

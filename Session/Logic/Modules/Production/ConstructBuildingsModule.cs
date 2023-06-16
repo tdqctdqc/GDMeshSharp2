@@ -20,12 +20,12 @@ public class ConstructBuildingsModule : LogicModule
                 }
             }
         }
-        foreach (var f in finished)
+        foreach (var c in finished)
         {
-            clear.Positions.Add(f.Pos);
+            clear.Positions.Add(c.Pos);
             Func<HostWriteKey, Entity> create = k =>
             {
-                return MapBuilding.Create(f.Pos, f.Model.Model(), k);
+                return MapBuilding.Create(c.Pos, c.Model.Model(), k);
             };
             queueEntityCreation(create);
         }

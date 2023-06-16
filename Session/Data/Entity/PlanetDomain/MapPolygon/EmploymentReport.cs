@@ -5,14 +5,14 @@ using MessagePack;
 
 public class EmploymentReport
 {
-    public Dictionary<string, int> Counts { get; private set; }
+    public Dictionary<int, int> Counts { get; private set; }
     public static EmploymentReport Construct()
     {
-        return new EmploymentReport(new Dictionary<string, int>());
+        return new EmploymentReport(new Dictionary<int, int>());
     }
-    [SerializationConstructor] private EmploymentReport(Dictionary<string, int> counts)
+    [SerializationConstructor] private EmploymentReport(Dictionary<int, int> counts)
     {
-        Counts = new Dictionary<string, int>();
+        Counts = new Dictionary<int, int>();
     }
 
     public void Copy(EmploymentReport toCopy, ProcedureWriteKey key)
@@ -23,13 +23,13 @@ public class EmploymentReport
 
     public int NumUnemployed()
     {
-        if (Counts.ContainsKey(PeepJobManager.Unemployed.Name) == false) return 0;
-        return Counts[PeepJobManager.Unemployed.Name];
+        if (Counts.ContainsKey(PeepJobManager.Unemployed.Id) == false) return 0;
+        return Counts[PeepJobManager.Unemployed.Id];
     }
     public int NumJob(PeepJob job)
     {
-        if (Counts.ContainsKey(job.Name) == false) return 0;
-        return Counts[job.Name];
+        if (Counts.ContainsKey(job.Id) == false) return 0;
+        return Counts[job.Id];
     }
     public void Clear()
     {

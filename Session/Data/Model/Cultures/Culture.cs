@@ -8,6 +8,7 @@ using Godot;
 public class Culture : IModel
 {
     public string Name { get; }
+    public int Id { get; private set; }
     public List<string> SettlementNames { get; private set; }
     public List<RegimeTemplate> RegimeTemplates { get; private set; }
 

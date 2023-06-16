@@ -48,7 +48,7 @@ public class IconsChunkGraphic : MapChunkGraphicModule
                 // }
 
 
-                var buildings = p.GetMapBuildings(data);
+                var buildings = p.GetBuildings(data);
                 if (buildings != null)
                 {
                     foreach (var b in buildings)

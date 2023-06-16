@@ -8,6 +8,8 @@ public class RoadModel : IModel
     public string Name { get; private set; }
     public Color Color { get; private set; }
     public int Speed { get; private set; }
+    public int Id { get; private set; }
+
 
     public RoadModel(string name, int speed, Color color)
     {

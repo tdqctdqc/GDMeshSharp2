@@ -40,6 +40,7 @@ public class MapChunkGraphicHolder : Node2D
             if (factories[i].Active == false) continue;
             var node = factories[i].GetModule(chunk, data, mg);
             node.ZIndex = i;
+            // node.ZAsRelative = false;
             Modules.Add(factories[i].Name, node);
             AddChild(node);
         }

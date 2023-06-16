@@ -5,8 +5,8 @@ using System.Linq;
 public abstract class WorkBuildingModel : BuildingModel
 {
     public abstract Dictionary<PeepJobAttribute, int> JobLaborReqs { get; }
-    protected WorkBuildingModel(string name, int numTicksToBuild, int laborPerTickToBuild)
-        : base(name, numTicksToBuild, laborPerTickToBuild)
+    protected WorkBuildingModel(BuildingType buildingType, string name, int numTicksToBuild, int laborPerTickToBuild)
+        : base(buildingType, name, numTicksToBuild, laborPerTickToBuild)
     {
     }
     public abstract void Produce(WorkProdConsumeProcedure proc, MapPolygon poly, 

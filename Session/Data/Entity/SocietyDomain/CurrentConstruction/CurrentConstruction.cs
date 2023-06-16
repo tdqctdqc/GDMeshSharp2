@@ -34,7 +34,11 @@ public class CurrentConstruction : Entity
     {
         var poly = construction.Pos.Poly(key.Data);
         ByPoly.AddOrUpdate(poly.Id, construction);
-        if (ByTri.ContainsKey(construction.Pos)) throw new Exception("already constructing in tri");
+        if (ByTri.ContainsKey(construction.Pos))
+        {
+            throw new Exception($"trying to build {construction.Model.Model().Name}" +
+                                $"but already constructing {ByTri[construction.Pos].Model.Model().Name} in tri");
+        }
         ByTri.Add(construction.Pos, construction);
     }
     public void FinishConstruction(MapPolygon poly, PolyTriPosition pos, ProcedureWriteKey key)

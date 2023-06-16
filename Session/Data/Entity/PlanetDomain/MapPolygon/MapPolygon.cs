@@ -19,14 +19,17 @@ public partial class MapPolygon : Entity,
     public float Altitude { get; protected set; }
     public float Roughness { get; protected set; }
     public float Moisture { get; protected set; }
+    public float Fertility { get; private set; }
+    
     public EntityRef<Regime> Regime { get; protected set; }
     public PolyTris Tris { get; protected set; }
     public bool IsLand { get; protected set; }
     public EmploymentReport Employment { get; private set; }
+    public PolyBuildingSlots PolyBuildingSlots { get; private set; }
     [SerializationConstructor] private MapPolygon(int id, Vector2 center, EntityRefCollection<MapPolygon> neighbors, 
         Dictionary<int, PolyBorderChain> neighborBorders, Color color, float altitude, float roughness, 
-        float moisture, EntityRef<Regime> regime, PolyTris tris, bool isLand,
-        EmploymentReport employment) : base(id)
+        float moisture, float fertility, EntityRef<Regime> regime, PolyTris tris, bool isLand,
+        EmploymentReport employment, PolyBuildingSlots polyBuildingSlots) : base(id)
     {
         Center = center;
         Neighbors = neighbors;
@@ -35,10 +38,12 @@ public partial class MapPolygon : Entity,
         Altitude = altitude;
         Roughness = roughness;
         Moisture = moisture;
+        Fertility = fertility;
         Regime = regime;
         Tris = tris;
         IsLand = isLand;
         Employment = employment;
+        PolyBuildingSlots = polyBuildingSlots;
     }
 
     public static MapPolygon Create(Vector2 center, float mapWidth, GenWriteKey key)
@@ -46,17 +51,22 @@ public partial class MapPolygon : Entity,
         var mapCenter = center;
         if (mapCenter.x > mapWidth) mapCenter = new Vector2(mapCenter.x - mapWidth, center.y);
         if (mapCenter.x < 0f) mapCenter = new Vector2(mapCenter.x + mapWidth, center.y);
-        var p = new MapPolygon(key.IdDispenser.GetID(), mapCenter,
+
+        var id = key.IdDispenser.GetID();
+        
+        var p = new MapPolygon(id, mapCenter,
             EntityRefCollection<MapPolygon>.Construct(new HashSet<int>(), key.Data),
             new Dictionary<int, PolyBorderChain>(),
             ColorsExt.GetRandomColor(),
             0f,
             0f,
             0f,
+            0f,
             new EntityRef<Regime>(-1),
             null,
             true,
-            EmploymentReport.Construct()
+            EmploymentReport.Construct(),
+            PolyBuildingSlots.Construct()
         );
         key.Create(p);
         return p;
@@ -87,6 +97,11 @@ public partial class MapPolygon : Entity,
         Tris = tris;
     }
 
+    public void SetTerrainStats(GenWriteKey key)
+    {
+        PolyBuildingSlots.SetSlotNumbers(this, key);
+        Fertility = Tris.Tris.Select(i => i.GetFertility()).Average();
+    }
     public void SetIsLand(bool isLand, GenWriteKey key)
     {
         IsLand = isLand;
@@ -100,7 +115,6 @@ public partial class MapPolygon : Entity,
         this.GetBorder(neighbor.Id);
     
     MapPolygon IReadOnlyGraphNode<MapPolygon>.Element => this;
-
 
     IReadOnlyCollection<MapPolygon> IReadOnlyGraphNode<MapPolygon>.Neighbors => Neighbors;
 

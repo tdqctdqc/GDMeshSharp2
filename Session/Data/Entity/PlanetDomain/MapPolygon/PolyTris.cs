@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -9,13 +10,12 @@ public class PolyTris
 {
     public PolyTri this[int i] => Tris[i];
     public PolyTri[] Tris;
-    public byte[] TriNativeNeighbors { get; private set; }
-    public PolyTriPosition[] TriForeignNeighbors { get; private set; }
+    public byte[] TriNeighbors { get; private set; }
 
     public static PolyTris Create(List<PolyTri> tris, 
         GenWriteKey key)
     {
-        if (tris.Count == 0) throw new Exception();
+        // if (tris.Count == 0) throw new Exception();
         if (tris.Count > 254) throw new Exception("Too many tris");
         
 
@@ -33,10 +33,10 @@ public class PolyTris
     }
 
     [SerializationConstructor] private PolyTris(PolyTri[] tris,
-        byte[] triNativeNeighbors)
+        byte[] triNeighbors)
     {
         Tris = tris;
-        TriNativeNeighbors = triNativeNeighbors;
+        TriNeighbors = triNeighbors;
     }
 
     public PolyTri GetAtPoint(Vector2 point, Data data)
@@ -44,13 +44,14 @@ public class PolyTris
         return Tris.FirstOrDefault(t => t.ContainsPoint(point));
     }
 
-    public void SetNativeNeighbors(GenWriteKey key)
+    public void SetNeighbors(MapPolygon poly, GenWriteKey key)
     {
         var points = Tris.Select(t => t.A)
             .Union(Tris.Select(t => t.B))
             .Union(Tris.Select(t => t.C))
             .Distinct()
             .ToDictionary(v => v, v => new LinkedList<byte>());
+        
         
         for (var i = 0; i < Tris.Length; i++)
         {
@@ -87,9 +88,11 @@ public class PolyTris
                     }
                 }
             }
-            tri.SetNeighborCount(nCount, key);
+
+            if (nCount > 254) throw new Exception("too many neighbors"); 
+            tri.SetNeighborCount((byte)nCount, key);
         }
         
-        TriNativeNeighbors = triNativeNeighbors.ToArray();
+        TriNeighbors = triNativeNeighbors.ToArray();
     }
 }

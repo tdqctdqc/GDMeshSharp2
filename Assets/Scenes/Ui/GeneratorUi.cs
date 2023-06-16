@@ -10,6 +10,8 @@ public class GeneratorUi : Ui
     private bool _generating;
     private Label _progress;
     private MapDisplayOptionsUi _mapOptions;
+    public TooltipManager TooltipManager { get; private set; }
+
 
     // public GeneratorSettingsWindow GenSettingsWindow { get; private set; }
     public static GeneratorUi Construct(IClient client, GeneratorSession session, MapGraphics graphics)
@@ -33,12 +35,16 @@ public class GeneratorUi : Ui
         topBar.AddButton("Generate", PressedGenerate);
         topBar.AddButton("Done", GoToGameSession);
         topBar.AddWindowButton<GeneratorSettingsWindow>(Ui.GenSettings);
+        topBar.AddWindowButton<LoggerWindow>("Logger");
         topBar.AddButton("Test Serialization", () => Game.I.Serializer.Test(session.Data));
         
         AddChild(topBar.Container); 
 
         var genSettingsWindow = GeneratorSettingsWindow.Get(_session.GenMultiSettings);
         AddWindow(genSettingsWindow);
+
+        var loggerWindow = LoggerWindow.Get();
+        AddWindow(loggerWindow);
         
         var sideBar = ButtonBarToken.Create<VBoxContainer>();
         AddChild(sideBar.Container);
@@ -50,9 +56,13 @@ public class GeneratorUi : Ui
         sideBar.Container.RectPosition = Vector2.Down * 50f;
         sideBar.Container.AddChild(_mapOptions);
         AddWindow(new RegimeOverviewWindow());
+        
+        TooltipManager = new TooltipManager(session.Data);
+        AddChild(TooltipManager);
     }
-    public void Process(float delta)
+    public void Process(float delta, ICameraController cam)
     {
+        TooltipManager.Process(delta, cam.GetMousePosInMapSpace());
     }
     public void GoToGameSession()
     {

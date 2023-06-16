@@ -27,4 +27,12 @@ public static class ShapingFunctions
         var raw = x * x * x;
         return (scaleHeight - scaleFloor) * raw + scaleFloor;
     }
+
+    public static float ProjectToRange(float input, float inputMax, float outputMin, float outputMax)
+    {
+        var ratio = input / inputMax;
+        ratio = Mathf.Min(1f, ratio);
+        var range = outputMax - outputMin;
+        return outputMin + range * ratio;
+    }
 }

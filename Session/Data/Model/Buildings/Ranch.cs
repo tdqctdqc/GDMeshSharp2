@@ -1,18 +1,17 @@
-
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Godot;
 
-public class Farm : ProductionBuildingModel
+public class Ranch : ProductionBuildingModel
 {
-    public Farm() 
-        : base(BuildingType.Agriculture, ItemManager.Food, nameof(Farm), 
-            50, 
-            200
-            )
+    public Ranch() 
+        : base(BuildingType.Grazing, ItemManager.Food, nameof(Ranch), 
+            25, 
+            100
+        )
     {
     }
-    public override int ProductionCap { get; } = 2000;
+    public override int ProductionCap { get; } = 1000;
     public override Dictionary<Item, int> BuildCosts { get; protected set; }
         = new Dictionary<Item, int>
         {
@@ -21,7 +20,7 @@ public class Farm : ProductionBuildingModel
     public override Dictionary<PeepJobAttribute, int> JobLaborReqs { get; }
         = new Dictionary<PeepJobAttribute, int>
         {
-            {PeepJobAttribute.FarmerAttribute, 500}
+            {PeepJobAttribute.FarmerAttribute, 100}
         };
     protected override bool CanBuildInTriSpec(PolyTri t, Data data)
     {

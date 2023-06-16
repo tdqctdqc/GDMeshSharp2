@@ -9,6 +9,7 @@ public class BuildingModelManager : IModelManager<BuildingModel>
     public static Mine IronMine { get; private set; } = new Mine(nameof(IronMine), ItemManager.Iron);
     public static Factory Factory { get; private set; } = new Factory();
     public static TownHall TownHall { get; private set; } = new TownHall();
+    public static Ranch Ranch { get; private set; } = new Ranch();
     public static Dictionary<Item, Mine> Mines { get; private set; }
         
     public BuildingModelManager()

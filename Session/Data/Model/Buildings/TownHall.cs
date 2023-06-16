@@ -16,7 +16,7 @@ public class TownHall : WorkBuildingModel
         {
             {ItemManager.Iron, 200}
         };
-    public TownHall() : base(nameof(TownHall), 50, 100)
+    public TownHall() : base(BuildingType.Government, nameof(TownHall), 50, 100)
     {
     }
 
@@ -28,11 +28,6 @@ public class TownHall : WorkBuildingModel
     public override bool CanBuildInPoly(MapPolygon p, Data data)
     {
         return p.IsLand;
-    }
-
-    public override float GetPolyEfficiencyScore(MapPolygon poly, Data data)
-    {
-        return 1f;
     }
 
     

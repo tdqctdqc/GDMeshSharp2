@@ -46,9 +46,7 @@ public class PolyHighlighter : Node2D
     private void DrawSimple(Data data, MapPolygon poly, PolyTri pt, MeshBuilder mb)
     {
         DrawBordersSimple(poly, mb, data);
-        DrawnLinesToNeighbors(poly, mb, data);
 
-        DrawRiverInfo(poly, mb, data);
         // DrawnNeighborBordersSimple(poly, mb, data);
     }
 
@@ -135,37 +133,13 @@ public class PolyHighlighter : Node2D
         
         for (var i = 0; i < mouseOver.NeighborCount; i++)
         {
-            var n = poly.Tris.TriNativeNeighbors[i + mouseOver.NeighborStartIndex];
+            var n = poly.Tris.TriNeighbors[i + mouseOver.NeighborStartIndex];
             var nTri = pts[n];
             mb.AddTri(nTri, Colors.Red);
             mb.AddTriOutline(nTri, 2f, Colors.Black);
         }
     }
 
-    private static void DrawRiverInfo(MapPolygon poly, MeshBuilder mb, Data data)
-    {
-        // var rd = data.Planet.GetRegister<TempRiverData>().Entities.First();
-        // if (rd.Infos.ContainsKey(poly) == false) return;
-        // var info = rd.Infos[poly];
-        // var edges = poly.GetEdges(data).Distinct();
-        // var nexi = poly.GetNexi(data);
-        // foreach (var nexus in nexi)
-        // {
-        //     var key = new PolyCornerKey(nexus, poly);
-        //     if (rd.Inners.ContainsKey(key))
-        //     {
-        //         mb.AddCircle(rd.Inners[key], 3f, 4, Colors.Red);
-        //     }
-        // }
-        //
-        // foreach (var edge in edges)
-        // {
-        //     if (edge.IsRiver() == false) continue;
-        //     var innerSegs = rd.Infos[poly].BankSegs[edge];
-        //     mb.AddArrowsRainbow(innerSegs, 3f);
-        // }
-        // mb.AddArrows(poly.GetOrderedBoundarySegs(data), 3f, Colors.Black);
-    }
     private void TakeFromMeshBuilder(MeshBuilder mb)
     {
         if (mb.Tris.Count == 0) return;

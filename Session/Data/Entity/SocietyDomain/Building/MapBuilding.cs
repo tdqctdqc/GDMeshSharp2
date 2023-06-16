@@ -12,13 +12,25 @@ public class MapBuilding : Entity
     public ModelRef<BuildingModel> Model { get; protected set; }
     public float Efficiency { get; private set; } // out of 100
     
-    public static MapBuilding Create(PolyTriPosition position, BuildingModel model, CreateWriteKey key)
+    public static MapBuilding Create(PolyTriPosition pos, BuildingModel model, CreateWriteKey key)
     {
-        var b = new MapBuilding(key.IdDispenser.GetID(), position, model.MakeRef(), 1f);
+        var b = new MapBuilding(key.IdDispenser.GetID(), pos, model.MakeRef(), 1f);
         key.Create(b);
         return b;
     }
-
+    public static MapBuilding CreateGen(MapPolygon poly, BuildingModel model, GenWriteKey key)
+    {
+        var slots = poly.PolyBuildingSlots;
+        if (slots.AvailableSlots.TryGetValue(model.BuildingType, out var numSlots) == false || numSlots.Count < 1)
+        {
+            throw new Exception();
+        }
+        var pos = slots.AvailableSlots[model.BuildingType].First.Value;
+        slots.AvailableSlots[model.BuildingType].RemoveFirst();
+        var b = new MapBuilding(key.IdDispenser.GetID(), pos, model.MakeRef(), 1f);
+        key.Create(b);
+        return b;
+    }
     [SerializationConstructor] protected MapBuilding(int id, PolyTriPosition position, 
         ModelRef<BuildingModel> model, float efficiency) : base(id)
     {

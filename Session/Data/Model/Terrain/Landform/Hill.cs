@@ -4,7 +4,7 @@
     public class Hill : Landform, IDecaledTerrain
     {
         public Hill() : 
-            base("Hill", .4f, .3f, Colors.Brown, false, .2f)
+            base("Hill", .4f, .5f, Colors.Brown, false, .2f)
         {
         }
 

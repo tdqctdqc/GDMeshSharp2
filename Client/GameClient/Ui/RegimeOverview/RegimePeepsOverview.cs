@@ -33,7 +33,7 @@ public class RegimePeepsOverview : ScrollContainer
         foreach (var kvp in jobs.OrderByDescending(k => k.Value))
         {
             var hbox = new HBoxContainer();
-            var job = data.Models.PeepJobs.Models[kvp.Key];
+            var job = (PeepJob)data.Models[kvp.Key];
             var count = kvp.Value;
             hbox.AddChild(job.JobIcon.GetTextureRect(Vector2.One * 50f));
             hbox.CreateLabelAsChild(count.ToString());

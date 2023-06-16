@@ -36,17 +36,12 @@ public class StartConstructionProcedure : Procedure
         {
             return false;
         }
-        // var sameRegime = poly.Regime.RefId == regime.Id;
-        // if (sameRegime == false)
-        // {
-        //     GD.Print("dont have sameRegime");
-        //     return false;
-        // }
         return true;
     }
 
     public override void Enact(ProcedureWriteKey key)
     {
+        Construction.Pos.Poly(key.Data).PolyBuildingSlots.RemoveSlot(Construction.Model.Model().BuildingType, Construction.Pos);
         key.Data.Society.CurrentConstruction.StartConstruction(Construction, key);
     }
 }

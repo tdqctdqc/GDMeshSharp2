@@ -1,30 +1,36 @@
 
 using System;
 using Godot;
+using MessagePack;
 
 public class PolyTri : Triangle
 {
+    public int PolyId { get; private set; }
     public byte Index { get; private set; }
     public int NeighborStartIndex { get; private set; }
-    public int NeighborCount { get; private set; }
-    public Landform Landform => LandformModel.Model();
-    public Vegetation Vegetation => VegetationModel.Model();
-    public ModelRef<Landform> LandformModel { get; private set; }
-    public ModelRef<Vegetation> VegetationModel { get; private set; }
+    public byte NeighborCount { get; private set; }
+    public byte LfMarker { get; private set; }
+    public byte VMarker { get; private set; }
+    public Landform Landform => LandformManager.ByMarker[LfMarker];
+    public Vegetation Vegetation => VegetationManager.ByMarker[VMarker];
 
-    public static PolyTri Construct(Vector2 a, Vector2 b, Vector2 c, ModelRef<Landform> landformModel, 
-        ModelRef<Vegetation> vegetationModel)
+
+    public static PolyTri Construct(int polyId, Vector2 a, Vector2 b, Vector2 c, Landform landform,
+        Vegetation vegetation)
     {
-        return new PolyTri(a, b, c, landformModel, vegetationModel,
+        return new PolyTri(polyId, a, b, c, landform.Marker, vegetation.Marker,
             (byte) 255, -1, 0);
     }
-    public PolyTri(Vector2 a, Vector2 b, Vector2 c, ModelRef<Landform> landformModel, 
-        ModelRef<Vegetation> vegetationModel, byte index, int neighborStartIndex, int neighborCount)
-    : base(a,b,c)
+
+    [SerializationConstructor]
+    public PolyTri(int polyId, Vector2 a, Vector2 b, Vector2 c, byte lfMarker, byte vMarker, byte index,
+        int neighborStartIndex, byte neighborCount)
+        : base(a, b, c)
     {
+        PolyId = polyId;
         Index = index;
-        LandformModel = landformModel;
-        VegetationModel = vegetationModel;
+        LfMarker = lfMarker;
+        VMarker = vMarker;
         NeighborCount = neighborCount;
         NeighborStartIndex = neighborStartIndex;
     }
@@ -33,36 +39,43 @@ public class PolyTri : Triangle
     {
         for (var i = 0; i < NeighborCount; i++)
         {
-            var n = poly.Tris.TriNativeNeighbors[i + NeighborStartIndex];
+            var n = poly.Tris.TriNeighbors[i + NeighborStartIndex];
             var nTri = poly.Tris.Tris[n];
             func(nTri);
         }
     }
+
     public bool AnyNeighbor(MapPolygon poly, Func<PolyTri, bool> func)
     {
         for (var i = 0; i < NeighborCount; i++)
         {
-            var n = poly.Tris.TriNativeNeighbors[i + NeighborStartIndex];
+            var n = poly.Tris.TriNeighbors[i + NeighborStartIndex];
             var nTri = poly.Tris.Tris[n];
-            if(func(nTri)) return true;
+            if (func(nTri)) return true;
         }
 
         return false;
     }
-    public void SetLandform(Landform lf, GenWriteKey key)
+
+    public PolyTriPosition GetPosition()
     {
-        LandformModel = lf.MakeRef();
+        return new PolyTriPosition(PolyId, Index);
+    }
+
+public void SetLandform(Landform lf, GenWriteKey key)
+    {
+        LfMarker = lf.Marker;
     }
     public void SetVegetation(Vegetation v, GenWriteKey key)
     {
-        VegetationModel = v.MakeRef();
+        VMarker = v.Marker;
     }
 
     public void SetNeighborStart(int start, GenWriteKey key)
     {
         NeighborStartIndex = start;
     }
-    public void SetNeighborCount(int count, GenWriteKey key)
+    public void SetNeighborCount(byte count, GenWriteKey key)
     {
         NeighborCount = count;
     }
@@ -72,8 +85,8 @@ public class PolyTri : Triangle
     }
     public PolyTri Transpose(Vector2 offset)
     {
-        return new PolyTri(A + offset, B + offset, C + offset, 
-            LandformModel.Copy(), VegetationModel.Copy(), Index,
+        return new PolyTri(PolyId, A + offset, B + offset, C + offset, 
+            LfMarker, VMarker, Index,
             NeighborStartIndex, NeighborCount);
     }
 }

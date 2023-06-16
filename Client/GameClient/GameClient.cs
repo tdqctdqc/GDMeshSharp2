@@ -7,7 +7,6 @@ public class GameClient : Node, IClient
     public GameUi Ui { get; private set; }
     private IServer _server;
     public ClientRequests Requests { get; private set; }
-    public TooltipManager TooltipManager => Ui.TooltipManager;
     public ICameraController Cam { get; private set; }
     public MapGraphics Graphics { get; private set; }
     public Data Data { get; private set; }
@@ -22,8 +21,7 @@ public class GameClient : Node, IClient
     {
         if (GetParent() == null) return;
         Graphics?.Process(delta);
-        Ui?.Process(delta, Key);
-        TooltipManager?.Process(delta, Cam.GetMousePosInMapSpace());
+        Ui?.Process(delta, Cam, Key);
     }
     public void Setup(GameSession session, IServer server, MapGraphics graphics)
     {

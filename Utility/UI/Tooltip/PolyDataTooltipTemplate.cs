@@ -15,7 +15,8 @@ public class PolyDataTooltipTemplate : DataTooltipTemplate<PolyTriPosition>
             GetId,
             GetRegime,
             GetLandform,
-            GetVeg
+            GetVeg,
+            GetSlots
         };
     protected override List<Func<PolyTriPosition, Data, Control>> _slowGetters { get; }
         = new List<Func<PolyTriPosition, Data, Control>>
@@ -33,21 +34,21 @@ public class PolyDataTooltipTemplate : DataTooltipTemplate<PolyTriPosition>
 
     private static Control GetBuildings(PolyTriPosition t, Data d)
     {
-            var bs = t.Poly(d).GetMapBuildings(d);
-            if (bs != null)
+        var bs = t.Poly(d).GetBuildings(d);
+        if (bs != null)
+        {
+            var label = new Label();
+            var counts = bs.Select(b => b.Model.Model()).GetCounts();
+            int iter = 0;
+            foreach (var kvp in counts)
             {
-                var label = new Label();
-                var counts = bs.Select(b => b.Model.Model()).GetCounts();
-                int iter = 0;
-                foreach (var kvp in counts)
-                {
-                    if (iter != 0) label.Text += "\n";
-                    iter++;
-                    label.Text += $"{kvp.Key.Name} x {kvp.Value}";
-                }
-                return label;
+                if (iter != 0) label.Text += "\n";
+                iter++;
+                label.Text += $"{kvp.Key.Name} x {kvp.Value}";
             }
-            return null;
+            return label;
+        }
+        return null;
     }
 
     private static Control GetAltitude(PolyTriPosition t, Data d)
@@ -57,9 +58,7 @@ public class PolyDataTooltipTemplate : DataTooltipTemplate<PolyTriPosition>
 
     private static Control GetFertility(PolyTriPosition t, Data d)
     {
-        var tri = t.Tri(d);
-        if (tri == null) return null; //todo this should be fixed when the tri holes are fixed
-        return NodeExt.CreateLabel("Fertility: " + t.Poly(d).GetFertility());
+        return NodeExt.CreateLabel("Fertility: " + t.Poly(d).Fertility);
     }
 
     private static Control GetVeg(PolyTriPosition t, Data d)
@@ -100,7 +99,7 @@ public class PolyDataTooltipTemplate : DataTooltipTemplate<PolyTriPosition>
         jobs.AddChild(size);
         var peepJobCounts = t.Poly(d).Employment.Counts
             // .Where(kvp => kvp.Value > 0)
-            .Select(kvp => new KeyValuePair<PeepJob, int>(d.Models.PeepJobs.Models[kvp.Key], kvp.Value))
+            .Select(kvp => new KeyValuePair<PeepJob, int>((PeepJob)d.Models[kvp.Key], kvp.Value))
             .ToList();
         foreach (var peepJobCount in peepJobCounts)
         {
@@ -179,5 +178,15 @@ public class PolyDataTooltipTemplate : DataTooltipTemplate<PolyTriPosition>
         return  d.Society.SettlementAux.ByPoly[t.Poly(d)] is Settlement s
             ? NodeExt.CreateLabel("Settlement Name: " + s.Name)
             : null;
+    }
+
+    private static Control GetSlots(PolyTriPosition t, Data d)
+    {
+        var c = new VBoxContainer();
+        foreach (var kvp in t.Poly(d).PolyBuildingSlots.AvailableSlots)
+        {
+            c.AddChild(NodeExt.CreateLabel($"Available {kvp.Key} Slots: {kvp.Value.Count}"));
+        }
+        return c;
     }
 }

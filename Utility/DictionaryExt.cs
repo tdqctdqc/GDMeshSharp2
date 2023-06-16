@@ -1,5 +1,6 @@
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Godot;
 
@@ -22,7 +23,7 @@ public static class DictionaryExt
             return false;
         }
     }
-    public static bool AddOrUpdate<TKey, TValue, TCol>(this Dictionary<TKey, TCol> dic,
+    public static bool AddOrUpdate<TKey, TValue, TCol>(this IDictionary<TKey, TCol> dic,
         TKey key, TValue val) where TCol : ICollection<TValue>, new()
     {
         if (dic.ContainsKey(key))

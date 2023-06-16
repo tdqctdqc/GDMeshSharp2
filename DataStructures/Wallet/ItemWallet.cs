@@ -3,23 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using MessagePack;
 
-public class ItemWallet : Wallet<string>
+public class ItemWallet : Wallet<int>
 {
-    public int this[Item item] => this[item.Name];
+    public int this[Item item] => this[item.Id];
     public static ItemWallet Construct()
     {
-        return new ItemWallet(new Dictionary<string, int>());
+        return new ItemWallet(new Dictionary<int, int>());
     }
-    [SerializationConstructor] private ItemWallet(Dictionary<string, int> contents) : base(contents)
+    [SerializationConstructor] private ItemWallet(Dictionary<int, int> contents) : base(contents)
     {
     }
 
     public void Add(Item item, int amount)
     {
-        Add(item.Name, amount);
+        Add(item.Id, amount);
     }
     public void Remove(Item item, int amount)
     {
-        Remove(item.Name, amount);
+        Remove(item.Id, amount);
     }
 }

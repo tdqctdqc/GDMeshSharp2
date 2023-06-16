@@ -75,7 +75,10 @@ public class LineSegment : ISegment<Vector2>
     {
         return (p - From).Normalized() == (To - p).Normalized();
     }
-
+    public bool ContainsVertex(Vector2 p)
+    {
+        return p == From || p == To;
+    }
     public bool LeftOf(Vector2 point)
     {
         return (To.x - From.x)*(point.y - From.y) - (To.y - From.y)*(point.x - From.x) > 0;

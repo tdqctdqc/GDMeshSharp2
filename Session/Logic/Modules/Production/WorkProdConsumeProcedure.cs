@@ -76,7 +76,7 @@ public class WorkProdConsumeProcedure : Procedure
             var gains = kvp.Value;
             foreach (var kvp2 in gains.Contents)
             {
-                var item = key.Data.Models.Items.Models[kvp2.Key];
+                var item = (Item)key.Data.Models[kvp2.Key];
                 r.Items.Add(item, kvp2.Value);
             }
             r.History.ProdHistory.TakeSnapshot(tick, gains);
@@ -105,7 +105,7 @@ public class WorkProdConsumeProcedure : Procedure
 
             foreach (var kvp2 in consumptions.Contents)
             {
-                var item = key.Data.Models.Items.Models[kvp2.Key];
+                var item = (Item)key.Data.Models[kvp2.Key];
                 r.Items.Remove(item, kvp2.Value);
             }
             r.History.ConsumptionHistory.TakeSnapshot(tick, consumptions);
@@ -113,11 +113,7 @@ public class WorkProdConsumeProcedure : Procedure
         foreach (var kvp in DemandsByRegime)
         {
             var r = (Regime)key.Data[kvp.Key];
-            var demands = kvp.Value;
-            foreach (var kvp2 in demands.Contents)
-            {
-                var item = key.Data.Models.Items.Models[kvp2.Key];
-            }            
+            var demands = kvp.Value;     
             r.History.DemandHistory.TakeSnapshot(tick, demands);
         }
     }

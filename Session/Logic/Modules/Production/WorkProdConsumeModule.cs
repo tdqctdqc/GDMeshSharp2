@@ -124,12 +124,12 @@ public class WorkProdConsumeModule : LogicModule
             var numUnemployed = scratch.ByClass.Sum(kvp => kvp.Value.Available);
             var employment = _polyEmployReps.GetOrAdd(poly.Id, p => EmploymentReport.Construct());
             employment.Clear();
-            employment.Counts.AddOrSum(unemployedJob.Name, numUnemployed);
+            employment.Counts.AddOrSum(unemployedJob.Id, numUnemployed);
             proc.EmploymentReports[poly.Id] = employment;
             foreach (var kvp in scratch.ByJob)
             {
                 // if(kvp.Value.Total > 0) GD.Print(poly.Id + " Writing " + kvp.Value.Total);
-                employment.Counts[kvp.Key.Name] = kvp.Value;
+                employment.Counts[kvp.Key.Id] = kvp.Value;
             }
         }
     }
@@ -138,13 +138,13 @@ public class WorkProdConsumeModule : LogicModule
     {
         var peep = poly.GetPeep(data);
         if (peep == null) return;
-        IEnumerable<MapBuilding> mapBuildings = poly.GetMapBuildings(data);
+        IEnumerable<MapBuilding> mapBuildings = poly.GetBuildings(data);
             if(mapBuildings == null) return;
             
         mapBuildings = mapBuildings.Where(b => b.Model.Model() is WorkBuildingModel);
         if (mapBuildings.Count() == 0) return;
         
-        IEnumerable<WorkBuildingModel> workBuildings = poly.GetMapBuildings(data)
+        IEnumerable<WorkBuildingModel> workBuildings = poly.GetBuildings(data)
             .Where(b => b.Model.Model() is WorkBuildingModel)
             .Select(b => (WorkBuildingModel)b.Model.Model());
         if (workBuildings.Count() == 0) return;

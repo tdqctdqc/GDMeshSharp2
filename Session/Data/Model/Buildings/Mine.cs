@@ -23,10 +23,6 @@ public class Mine : ExtractionBuildingModel
         };
 
     public override int ProductionCap { get; } = 10;
-    public override float GetProductionRatio(MapPolygon poly, float staffingRatio, Data data)
-    {
-        return staffingRatio;
-    }
 
     protected override bool CanBuildInTriSpec(PolyTri t, Data data) => CanBuildInTri(t);
     public static bool CanBuildInTri(PolyTri t)
@@ -37,10 +33,5 @@ public class Mine : ExtractionBuildingModel
     {
         var ds = p.GetResourceDeposits(data);
         return ds != null && ds.Any(d => d.Item.Model() == ProdItem);
-    }
-
-    public override float GetPolyEfficiencyScore(MapPolygon poly, Data data)
-    {
-        return poly.Roughness;
     }
 }

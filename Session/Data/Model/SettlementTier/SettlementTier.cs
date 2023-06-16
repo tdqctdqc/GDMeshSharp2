@@ -5,6 +5,7 @@ using System.Linq;
 public class SettlementTier : IModel
 {
     public string Name { get; }
+    public int Id { get; private set; }
     public int MinSize { get; private set; }
     public Icon Icon { get; private set; }
 

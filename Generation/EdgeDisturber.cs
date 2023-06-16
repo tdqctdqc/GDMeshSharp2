@@ -21,7 +21,6 @@ public static class EdgeDisturber
         }
         key.Data.Notices.SetPolyShapes.Invoke();
     }
-
     
     public static void DisturbEdges(IReadOnlyCollection<MapPolygon> polys, GenWriteKey key)
     {
@@ -60,12 +59,14 @@ public static class EdgeDisturber
             if (disturbToHi)
             {
                 var newP = point.Normalized() * (point.Length() * (1f - ratio));
+                newP = newP.RoundTo2Digits();
                 newPoints.Add(newP);
             }
             else
             {
                 var axis = (offset - point).Normalized() * ratio;
                 var newP = point + axis;
+                newP = newP.RoundTo2Digits();
                 newPoints.Add(newP);
             }
         }

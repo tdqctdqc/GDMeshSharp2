@@ -18,7 +18,7 @@ public class RegimeProductionOverview : ScrollContainer
     public void Setup(Regime regime, Data data)
     {
         _container.ClearChildren();
-        var itemNames = data.Models.Items.Models.Keys;
+        var itemNames = data.Models.Items.Models.Values.Select(v => v.Id);
         
         foreach (var itemName in itemNames)
         {
@@ -27,7 +27,7 @@ public class RegimeProductionOverview : ScrollContainer
             if (lastDemand == 0 && lastProd == 0) continue;
             
             var hbox = new HBoxContainer();
-            var item = data.Models.Items.Models[itemName];
+            var item = (Item)data.Models[itemName];
             
             hbox.AddChild(item.Icon.GetTextureRect(Vector2.One * 50f));
             hbox.CreateLabelAsChild($"{lastProd} / {lastDemand}");

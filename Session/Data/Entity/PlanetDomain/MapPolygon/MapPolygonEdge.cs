@@ -67,18 +67,21 @@ public class MapPolygonEdge : Entity
         if (absFirstRel == oldFrom && absLastRel == oldTo)
         {
             newSegs = abs
-                .Select(s => new LineSegment(poly.GetOffsetTo(s.From, data), poly.GetOffsetTo(s.To, data)))
+                .Select(s => 
+                    new LineSegment(poly.GetOffsetTo(s.From, data).RoundTo2Digits(), 
+                        poly.GetOffsetTo(s.To, data).RoundTo2Digits()))
                 .ToList();
         }
         else if (absLastRel == oldFrom && absFirstRel == oldTo)
         {
             newSegs = abs
-                .Select(s => new LineSegment(poly.GetOffsetTo(s.To, data), poly.GetOffsetTo(s.From, data)))
+                .Select(s => 
+                    new LineSegment(poly.GetOffsetTo(s.To, data).RoundTo2Digits(), 
+                        poly.GetOffsetTo(s.From, data).RoundTo2Digits()))
                 .Reverse()
                 .ToList();
         }
         else throw new Exception();
-        
         
         return newSegs;
     }

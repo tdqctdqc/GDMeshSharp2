@@ -41,11 +41,10 @@ public class GenReport
         var r = Name;
         for (var i = 0; i < Times.Count; i++)
         {
-            r += $"\n \t {Sections[i]} Time: {Times[i]}ms";
+            r += $"\n \t \t {Sections[i]} Time: {Times[i]}ms";
         }
 
-        r += $"\n \t Total Time: {Times.Sum()}ms";
-        GD.Print(r);
+        r += $"\n \t \t Total Time: {Times.Sum()}ms";
         return r;
     }
 }

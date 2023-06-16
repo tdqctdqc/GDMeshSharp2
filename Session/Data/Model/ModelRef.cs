@@ -6,17 +6,17 @@ using MessagePack;
 
 public class ModelRef<T> : IRef where T : class, IModel
 {
-    public string ModelName { get; private set; }
+    public int ModelId { get; private set; }
     private T _ref;
 
     public ModelRef(T model, CreateWriteKey key)
     {
-        ModelName = model.Name;
+        ModelId = model.Id;
     }
 
-    public ModelRef(string modelName)
+    public ModelRef(int modelId)
     {
-        ModelName = modelName;
+        ModelId = modelId;
     }
 
     public T Model()
@@ -31,16 +31,16 @@ public class ModelRef<T> : IRef where T : class, IModel
 
     public ModelRef<T> Copy()
     {
-        return new ModelRef<T>(ModelName);
+        return new ModelRef<T>(ModelId);
     }
     public void SyncRef(Data data)
     {
-        _ref = data.Models.GetModel<T>(ModelName);
+        _ref = data.Models.GetModel<T>(ModelId);
     }
 
     public void ClearRef()
     {
         _ref = null;
-        ModelName = "";
+        ModelId = -1;
     }
 }

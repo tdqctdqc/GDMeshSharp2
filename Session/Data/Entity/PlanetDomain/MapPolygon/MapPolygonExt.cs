@@ -73,23 +73,14 @@ public static class MapPolygonExt
         return rd == null ? null : new ReadOnlyHash<ResourceDeposit>(rd.ToHashSet());
     }
 
-    public static float GetFertility(this MapPolygon poly)
-    {
-        return poly.Tris.Tris.Count() > 0 
-            ? poly.Tris.Tris.Select(i => i.GetFertility()).Average()
-            : 0f;
-    }
+    
 
     public static float GetGatheredFoodRatio(this MapPolygon poly)
     {
         return Mathf.Max(0f , poly.Moisture - poly.Roughness * .25f);
     }
 
-    public static int GetNumAllowedBuildings(this MapPolygon poly)
-    {
-        return 10;
-    }
-    public static List<MapBuilding> GetMapBuildings(this MapPolygon poly, Data data)
+    public static List<MapBuilding> GetBuildings(this MapPolygon poly, Data data)
     {
         return data.Society.BuildingAux.ByPoly[poly];
     }

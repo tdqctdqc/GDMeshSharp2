@@ -7,11 +7,9 @@ public class MouseOverPolyHandler
 {
     public MapPolygon MouseOverPoly { get; private set; }
     public PolyTri MouseOverTri { get; private set; }
-    private TimerAction _action;
     private DataTooltipInstance<PolyTriPosition> _instance;
     public MouseOverPolyHandler()
     {
-        _action = new TimerAction(.05f);
         _instance = new DataTooltipInstance<PolyTriPosition>(new PolyDataTooltipTemplate(), 
             new PolyTriPosition(-1, (byte)255));
     }
@@ -46,7 +44,9 @@ public class MouseOverPolyHandler
         }
         else
         {
-            MouseOverPoly = data.Planet.PolygonAux.MapPolyGrid.GetElementAtPoint(mousePosMapSpace);
+            var p = data.Planet.PolygonAux.MapPolyGrid.GetElementAtPoint(mousePosMapSpace);
+            if (p == null) return;
+            MouseOverPoly = p;
         }
         FindTri(MouseOverPoly, data, mousePosMapSpace);
         

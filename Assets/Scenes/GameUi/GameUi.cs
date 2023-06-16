@@ -6,8 +6,9 @@ public class GameUi : Ui
 {
     public PromptManager Prompts { get; private set; }
     public TooltipManager TooltipManager { get; private set; }
-    public void Process(float delta, ClientWriteKey key)
+    public void Process(float delta, ICameraController cam, ClientWriteKey key)
     {
+        TooltipManager.Process(delta, cam.GetMousePosInMapSpace());
         Prompts.Process(delta, key);    
     }
 

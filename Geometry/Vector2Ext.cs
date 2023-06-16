@@ -6,6 +6,10 @@ using GeometRi;
 
 public static class Vector2Ext
 {
+    public static Vector2 RoundTo2Digits(this Vector2 v)
+    {
+        return new Vector2(v.x.RoundTo2Digits(), v.y.RoundTo2Digits());
+    }
     public static List<Vector2> GeneratePointsAlong(this LineSegment seg, float spacing, 
         float variation, List<Vector2> addTo = null)
     {
@@ -45,11 +49,6 @@ public static class Vector2Ext
 
         return addTo;
     }
-    public static Vector2 Shorten(this Vector2 v, float shortenBy)
-    {
-        if (v.Length() <= shortenBy) throw new Exception();
-        return v.Normalized() * (v.Length() - shortenBy);
-    }
     public static Vector2 Intify(this Vector2 v)
     {
         return new Vector2(Mathf.FloorToInt(v.x), Mathf.FloorToInt(v.y));
@@ -73,38 +72,6 @@ public static class Vector2Ext
         }
 
         return r;
-    }
-    public static (Vector2 p1, Vector2 p2, float dist) FindClosestPointPair(this List<Vector2> p1s, List<Vector2> p2s)
-    {
-        float minDist = Mathf.Inf;
-        var closeP1 = Vector2.Zero;
-        var closeP2 = Vector2.Zero;
-        foreach (var p1 in p1s)
-        {
-            foreach (var p2 in p2s)
-            {
-                var dist = p1.DistanceTo(p2);
-                if (dist < minDist)
-                {
-                    minDist = Mathf.Min(dist, minDist);
-                    closeP1 = p1;
-                    closeP2 = p2;
-                }
-            }
-        }
-        return (closeP1, closeP2, minDist);
-    }
-    
-    public static float GridDistanceTo(this Vector2 point0, Vector2 point1)
-    {
-        return Mathf.Abs(point0.x - point1.x) + Mathf.Abs(point0.y - point1.y);
-    }
-    public static bool PointIsLeftOfLine(this Vector2 point, Vector2 line1, Vector2 line2){
-        return ((line2.x - line1.x)*(point.y - line1.y) - (line2.y - line1.y)*(point.x - line1.x)) > 0;
-    }
-    public static float GetDotProduct(Vector2 a, Vector2 b)
-    {
-        return a.x * b.x + a.y + b.y;
     }
 
     public static bool PointIsOnLine(this Vector2 point, Vector2 from, Vector2 to)

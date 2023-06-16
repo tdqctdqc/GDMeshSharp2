@@ -10,19 +10,15 @@ public class Factory : ProductionBuildingModel
             {PeepJobAttribute.ProleAttribute, 500}
         };
     public override int ProductionCap { get; } = 100;
-    public Factory() : base(ItemManager.IndustrialPoint, nameof(Factory),
+    public Factory() : base(BuildingType.Industry, ItemManager.IndustrialPoint, nameof(Factory),
         100, 200)
     {
-    }
-    public override float GetProductionRatio(MapPolygon poly, float staffingRatio, Data data)
-    {
-        return staffingRatio;
     }
 
     public override Dictionary<Item, int> BuildCosts { get; protected set; }
         = new Dictionary<Item, int>
         {
-            {ItemManager.Iron, 1000}
+            {ItemManager.Iron, 100}
         };
     protected override bool CanBuildInTriSpec(PolyTri t, Data data)
     {
@@ -32,10 +28,5 @@ public class Factory : ProductionBuildingModel
     public override bool CanBuildInPoly(MapPolygon p, Data data)
     {
         return p.IsLand && p.HasSettlement(data);
-    }
-
-    public override float GetPolyEfficiencyScore(MapPolygon poly, Data data)
-    {
-        return 1f;
     }
 }

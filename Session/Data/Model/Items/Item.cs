@@ -6,6 +6,7 @@ public abstract class Item : IModel
 {
     public string Name { get; private set; }
     public Color Color { get; private set; }
+    public int Id { get; private set; }
     public Icon Icon { get; } 
     public AttributeHolder<ItemAttribute> Attributes { get; private set; }
     

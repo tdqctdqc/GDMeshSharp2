@@ -10,24 +10,13 @@ public class RiverPolyTriGen
     public TempRiverData DoRivers(GenWriteKey key)
     {
         var rd = new TempRiverData();
-        var sw = new Stopwatch();
         
-        sw.Start();
         //todo partition by riverpoly union find instead?
         var lms = key.Data.Planet.PolygonAux.LandSea.Landmasses;
         var riverNexi = key.Data.Planet.PolyNexi.Entities
             .Where(n => n.IncidentEdges.Any(e => e.IsRiver())).ToList();
         Parallel.ForEach(lms, lm => PreprocessRiversForLandmass(rd, riverNexi, lm, key));
-        sw.Stop();
-        GD.Print("preprocessing rivers " + sw.Elapsed.TotalMilliseconds);
-        sw.Reset();
         key.Data.Notices.SetPolyShapes?.Invoke();
-        sw.Start();
-
-        sw.Stop();
-        GD.Print("generating river infos " + sw.Elapsed.TotalMilliseconds);
-        sw.Reset();
-        
         return rd;
     }
     private void PreprocessRiversForLandmass(TempRiverData rd, List<MapPolyNexus> riverNexi,
@@ -69,7 +58,9 @@ public class RiverPolyTriGen
         var segLength = seg.Length();
         var axis = seg.GetNormalizedAxis();
         var fromPivot = seg.From + axis * segLength * 1f / 3f;
+        fromPivot = fromPivot.RoundTo2Digits();
         var toPivot = seg.From + axis * segLength * 2f / 3f;
+        toPivot = toPivot.RoundTo2Digits();
                 
         rd.HiPivots.TryAdd(new EdgeEndKey(fromNexus, edge), fromPivot);
         rd.HiPivots.TryAdd(new EdgeEndKey(toNexus, edge), toPivot);
@@ -101,6 +92,7 @@ public class RiverPolyTriGen
         else
         {
             var pivot = fromSeg.From + fromSeg.GetNormalizedAxis() * fromPivotWidth;
+            pivot = pivot.RoundTo2Digits();
             rd.HiPivots.TryAdd(new EdgeEndKey(fromNexus, edge), pivot);
             var s1 = new LineSegment(fromSeg.From, pivot);
             if (s1.Length() != 0f) newHiSegs.Add(s1);
@@ -123,6 +115,7 @@ public class RiverPolyTriGen
         else
         {
             var pivot = toSeg.To - toSeg.GetNormalizedAxis() * toPivotWidth;
+            pivot = pivot.RoundTo2Digits();
             rd.HiPivots.TryAdd(new EdgeEndKey(toNexus, edge), pivot);
             var s1 = new LineSegment(toSeg.From, pivot);
             if (s1.Length() != 0f) newHiSegs.Add(s1);

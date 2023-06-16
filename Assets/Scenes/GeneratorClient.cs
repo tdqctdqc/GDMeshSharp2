@@ -14,7 +14,6 @@ public class GeneratorClient : Node, IClient
     private GeneratorUi _ui; 
     public ClientSettings Settings { get; private set; }
     public ClientRequests Requests { get; private set; }
-    public TooltipManager TooltipManager { get; private set; }
     private Node2D _camTest;
     public override void _Ready()
     {
@@ -35,8 +34,7 @@ public class GeneratorClient : Node, IClient
         
         Graphics = new MapGraphics();
         AddChild(Graphics);
-        TooltipManager = new TooltipManager(session.Data);
-        AddChild(TooltipManager);
+        
         _ui = GeneratorUi.Construct(this, session, Graphics);
         AddChild(_ui);
     }
@@ -45,7 +43,7 @@ public class GeneratorClient : Node, IClient
     }
     public void Process(float delta)
     {
-        _ui.Process(delta);
+        _ui.Process(delta, Cam);
         Graphics.Process(delta);
     }
 }

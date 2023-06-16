@@ -11,37 +11,20 @@ using Poly2Tri;
 
 public static class Triangulator
 {
-    public static ConcurrentBag<int> InteriorPointGenTimes = new ConcurrentBag<int>();
-    public static ConcurrentBag<int> P2TTriangulateTimes = new ConcurrentBag<int>();
-    public static ConcurrentBag<int> TotalPolyTriangulateTimes = new ConcurrentBag<int>();
-    public static ConcurrentBag<int> ConstructPolyTriTimes = new ConcurrentBag<int>();
-    public static ConcurrentBag<int> FindLfAndVTimes = new ConcurrentBag<int>();
-    
     public static List<PolyTri> PolyTriangulate(this Vector2[] boundaryPoints, Data data, MapPolygon poly)
     {
-        var sw1 = new Stopwatch();
-        sw1.Start();
-        var swLfV = new Stopwatch();
         Func<Vector2, Vector2, Vector2, PolyTri> constructor = (v, w, x) =>
         {
-            swLfV.Start();
             var lf = data.Models.Landforms.GetAtPoint(poly, (v + w + x) / 3f, data);
             var vg = data.Models.Vegetation.GetAtPoint(poly, (v + w + x) / 3f, lf, data);
-            swLfV.Stop();
-            FindLfAndVTimes.Add((int)swLfV.Elapsed.TotalMilliseconds);
-            swLfV.Reset();
-            return PolyTri.Construct(v, w, x, lf.MakeRef(), vg.MakeRef());
+            return PolyTri.Construct(poly.Id, v, w, x, lf, vg);
         };
         var polygon = new Poly2Tri.Polygon(boundaryPoints.Select(p => new PolygonPoint(p.x, p.y)));
 
-        var sw = new Stopwatch();
         
-        sw.Start();
         boundaryPoints.GenerateInteriorPoints(30f, 10f, 
             v => polygon.AddSteinerPoint(new TriangulationPoint(v.x, v.y)));
-        sw.Stop();
-        InteriorPointGenTimes.Add((int)sw.Elapsed.TotalMilliseconds);
-        sw.Reset();
+        
         
         var sweep = new Poly2Tri.DTSweepContext();
         for (var i = 0; i < boundaryPoints.Length; i++)
@@ -53,16 +36,12 @@ public static class Triangulator
         }
         polygon.Prepare(sweep);
         
-        sw.Start();
         P2T.Triangulate(polygon);
-        sw.Stop();
-        P2TTriangulateTimes.Add((int)sw.Elapsed.TotalMilliseconds);
-        sw.Reset();
         
-        sw.Start();
         var tris = new List<PolyTri>{};
-        foreach (var t in polygon.Triangles)
+        for (var i = 0; i < polygon.Triangles.Count; i++)
         {
+            var t = polygon.Triangles[i];
             var a = new Vector2(t.Points[0].Xf, t.Points[0].Yf);
             var b = new Vector2(t.Points[1].Xf, t.Points[1].Yf);
             var c = new Vector2(t.Points[2].Xf, t.Points[2].Yf);
@@ -74,43 +53,6 @@ public static class Triangulator
                 tris.Add(constructor(a, b, c));
             }
         }
-        sw.Stop();
-        ConstructPolyTriTimes.Add((int)sw.Elapsed.TotalMilliseconds);
-        sw.Reset();
-        
-        
-        sw1.Stop();
-        TotalPolyTriangulateTimes.Add((int)sw1.Elapsed.TotalMilliseconds);
-        return tris;
-    }
-    
-    private static float GetAreaFromBoundary(Vector2[] boundary)
-    {
-        var triIndices = Geometry.TriangulatePolygon(boundary);
-        if (triIndices.Length == 0) return Mathf.Inf;
-        var res = 0f;
-        for (var i = 0; i < triIndices.Length; i += 3)
-        {
-            res += TriangleExt.GetTriangleArea(boundary[triIndices[i]],
-                boundary[triIndices[i + 1]],
-                boundary[triIndices[i + 2]]);
-        }
-
-        return res;
-    }
-    private static List<ColorTri> GetTrisFromBoundary(Vector2[] boundary, Color col)
-    {
-        var triIndices = Geometry.TriangulatePolygon(boundary);
-        if (triIndices.Length == 0) return new List<ColorTri>();
-        var tris = new List<ColorTri>();
-        for (var i = 0; i < triIndices.Length; i += 3)
-        {
-            tris.Add(new ColorTri(col.GetPeriodicShade(i),
-                boundary[triIndices[i]], 
-                boundary[triIndices[i + 1]], 
-                boundary[triIndices[i + 2]]));
-        }
-
         return tris;
     }
     

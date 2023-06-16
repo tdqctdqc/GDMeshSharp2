@@ -5,7 +5,7 @@ using Godot;
 public class Forest : Vegetation, IDecaledTerrain
 {
     public Forest() : base(new HashSet<Landform>{LandformManager.Hill, LandformManager.Plain}, 
-        .3f, .25f, Colors.Limegreen.Darkened(.4f), "Forest", false)
+        .4f, .5f, Colors.Limegreen.Darkened(.4f), "Forest", false)
     {
         
     }

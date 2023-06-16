@@ -6,6 +6,7 @@ using Godot;
 public class PeepJob : IModel
 {
     public string Name { get; private set; }
+    public int Id { get; private set; }
     public Icon JobIcon { get; } 
     public AttributeHolder<PeepJobAttribute> Attributes { get; private set; }
     public PeepClass PeepClass { get; private set; }

@@ -7,6 +7,7 @@ using Godot;
 public class RegimeTemplate : IModel
 {
     public string Name { get; private set; }
+    public int Id { get; private set; }
     public string Adjective { get; private set; }
     public string PrimaryColor { get; private set; }
     public string SecondaryColor { get; private set; }

@@ -87,7 +87,7 @@ public class PolyEmploymentScratch
         }
         public void Init(PolyPeep peep, PeepClass peepClass)
         {
-            Total = peep.ClassFragments[peepClass.Name].Size;
+            Total = peep.ClassFragments[peepClass.Id].Size;
             Desired = 0;
             Available = Total;
         }

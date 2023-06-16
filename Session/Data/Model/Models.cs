@@ -1,15 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Godot;
 
 public class Models
 {
     private Dictionary<Type, IModelManager> _managers;
-    public IModel this[string name] => _models.TryGetValue(name, out var val) 
+    public IModel this[int id] => _models.TryGetValue(id, out var val) 
         ? (IModel) val
         : null;
-    public Dictionary<string, object> _models;
+    
+    public Dictionary<int, IModel> _models;
+    public Dictionary<string, IModel> _modelsByName;
     public LandformManager Landforms { get; private set; }
     public VegetationManager Vegetation { get; private set; }
     public PeepJobManager PeepJobs { get; private set; }
@@ -23,7 +26,8 @@ public class Models
     public Models()
     {
         _managers = new Dictionary<Type, IModelManager>();
-        _models = new Dictionary<string, object>();
+        _models = new Dictionary<int, IModel>();
+        _modelsByName = new Dictionary<string, IModel>();
         Landforms = new LandformManager();
         AddManager(Landforms);
         Vegetation = new VegetationManager();
@@ -44,23 +48,53 @@ public class Models
         AddManager(Cultures);
         RegimeTemplates = new RegimeTemplateManager(Cultures);
         AddManager(RegimeTemplates);
+
+        SetIds();
     }
 
-    public T GetModel<T>(string name)
+    private void SetIds()
     {
-        return (T)_models[name];
+        var ms = _modelsByName.Values.OrderBy(m => m.Name).ToList();
+        for (var i = 0; i < ms.Count; i++)
+        {
+            var model = ms[i];
+            var type = model.GetType();
+
+
+            MethodInfo setter = null;
+            while (setter == null)
+            {
+                var idProp = type.GetProperty(nameof(IModel.Id));
+                setter = idProp.GetSetMethod(true);
+
+                if (setter != null)
+                {
+                    setter.Invoke(model, new object[] {i});
+                    _models.Add(model.Id, model);
+                }
+                else
+                {
+                    type = type.BaseType;
+                    if(type == null) throw new Exception();
+                }
+            }
+        }
+    }
+    public T GetModel<T>(int id)
+    {
+        return (T)_models[id];
     }
 
     public IModelManager<TModel> GetManager<TModel>() where TModel : IModel
     {
         return (IModelManager<TModel>)_managers[typeof(TModel)];
     }
-    private void AddManager<T>(IModelManager<T> manager)
+    private void AddManager<T>(IModelManager<T> manager) where T : IModel
     {
         _managers.Add(typeof(T), manager);
         foreach (var keyValuePair in manager.Models)
         {
-            _models.Add(keyValuePair.Key, keyValuePair.Value);
+            _modelsByName.Add(keyValuePair.Key, keyValuePair.Value);
         }
     }
 }

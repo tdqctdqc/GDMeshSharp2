@@ -33,10 +33,14 @@ public class LoggerWindow : WindowDialog
     private void AddTab(LogType lt, List<string> msgs)
     {
         var name = Enum.GetName(typeof(LogType), lt);
+        var scroll = new ScrollContainer();
+        scroll.RectSize = _container.RectSize;
+        _container.AddChild(scroll);
+        scroll.Name = name;
+
         var vbox = new VBoxContainer();
-        vbox.Name = name;
-        _container.AddChild(vbox);
         vbox.RectSize = _container.RectSize;
+        scroll.AddChild(vbox);
         for (var i = 0; i < msgs.Count; i++)
         {
             vbox.AddChild(NodeExt.CreateLabel(msgs[i]));
