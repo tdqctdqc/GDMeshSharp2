@@ -120,7 +120,6 @@ public class WorkProdConsumeModule : LogicModule
         foreach (var poly in polys)
         {
             var scratch = _polyScratches[poly.Id];
-            GatherForPoly(regime, poly, scratch, proc, data);
             var numUnemployed = scratch.ByClass.Sum(kvp => kvp.Value.Available);
             var employment = _polyEmployReps.GetOrAdd(poly.Id, p => EmploymentReport.Construct());
             employment.Clear();
@@ -188,23 +187,6 @@ public class WorkProdConsumeModule : LogicModule
         {
             proc.ConstructionProgresses.TryAdd(construction.Pos, ratio);
         }
-    }
-    private void GatherForPoly(Regime r, MapPolygon poly, PolyEmploymentScratch scratch,
-        WorkProdConsumeProcedure proc, Data data)
-    {
-        var indig = poly.GetPeep(data).GetNumOfClass(PeepClassManager.Indigenous);
-        if (indig == 0) return;
-        var gathererJob = PeepJobManager.Gatherer;
-        var gatherersNeeded = data.BaseDomain.Rules.GatherLaborCap;
-        var foodCap = data.BaseDomain.Rules.GathererCeiling;
-        var foodFloor = data.BaseDomain.Rules.GathererFloor;
-        var foodGathered = poly.GetGatheredFoodRatio() * foodCap;
-        foodGathered = Math.Max(foodFloor, foodGathered);
-        
-        var ratio = Mathf.Min(1f, (float)indig / gatherersNeeded);
-        foodGathered *= ratio;
-        scratch.HandleJobNeed(gathererJob, 1f, data);
-        proc.RegimeResourceGains[r.Id].Add(ItemManager.Food, Mathf.CeilToInt(foodGathered));
     }
 
     private void ConsumeForRegime(WorkProdConsumeProcedure proc, Regime regime, Data data)

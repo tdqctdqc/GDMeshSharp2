@@ -34,7 +34,6 @@ public class PeepGenerator : Generator
         {
             GenerateForRegime(r);
         }
-        GenerateIndigenous();
         _data.Notices.PopulatedWorld.Invoke();
         report.StopSection("All");
 
@@ -238,27 +237,5 @@ public class PeepGenerator : Generator
             peep.GrowSize(polyUnemployed, PeepClassManager.Laborer, _key);
         }
     }
-    private void GenerateIndigenous()
-    {
-        var gathererFoodCeiling = _data.BaseDomain.Rules.GathererCeiling;
-        var gathererFoodFloor = _data.BaseDomain.Rules.GathererFloor;
-        var gathererNeeded = _data.BaseDomain.Rules.GatherLaborCap;
-        var foodConsPerPeep = _data.BaseDomain.Rules.FoodConsumptionPerPeepPoint;
-        var indigenous = PeepClassManager.Indigenous;
-        
-        foreach (var p in _data.Planet.Polygons.Entities)
-        {
-            if (p.HasPeep(_data) == false) continue;
-            var peep = p.GetPeep(_data);
-            var peepSize = peep.Size();
-            var foodCapacity = Mathf.Max(0f, p.Moisture - p.Roughness * .25f) * gathererFoodCeiling;
-            var peepCapacity = foodCapacity / foodConsPerPeep;
-
-            if (peepCapacity > peepSize)
-            {
-                var gatherers = Mathf.Min(gathererNeeded, peepCapacity - peepSize);
-                peep.GrowSize(Mathf.CeilToInt(gatherers), indigenous, _key);
-            }
-        }
-    }
+    
 }

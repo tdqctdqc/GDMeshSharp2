@@ -38,8 +38,7 @@ public class BuildingConstructAiPriority : AiPriority
     public override void Calculate(Regime regime, Data data, ItemWallet budget, Dictionary<Item, float> prices,
         int credit, Action<Message> queueMessage, Action<Func<HostWriteKey, Entity>> queueEntityCreation)
     {
-        var availLabor = regime.Polygons.Sum(p => p.Employment.NumUnemployed() 
-                                                  + p.Employment.NumJob(PeepJobManager.Gatherer) / 2);
+        var availLabor = regime.Polygons.Sum(p => p.Employment.NumUnemployed());
         var sw = new Stopwatch();
         sw.Start();
         var buildings = SelectBuildings(regime, data, budget, prices, credit, availLabor);

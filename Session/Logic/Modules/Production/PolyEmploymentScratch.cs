@@ -6,12 +6,12 @@ using Godot;
 public class PolyEmploymentScratch
 {
     public int PolyId { get; private set; }
-    public Dictionary<PeepClass, Sub> ByClass { get; private set; }
+    public Dictionary<PeepClass, PolyClassEmployment> ByClass { get; private set; }
     public Dictionary<PeepJob, int> ByJob { get; private set; }
 
     public PolyEmploymentScratch(MapPolygon poly, Data data)
     {
-        ByClass = new Dictionary<PeepClass, Sub>();
+        ByClass = new Dictionary<PeepClass, PolyClassEmployment>();
         ByJob = new Dictionary<PeepJob, int>();
         Init(poly, data);
     }
@@ -24,7 +24,7 @@ public class PolyEmploymentScratch
         ByClass = peep.ClassFragments.ToDictionary(kvp => (PeepClass) data.Models[kvp.Key],
             kvp =>
             {
-                var s = new Sub();
+                var s = new PolyClassEmployment();
                 s.Init(peep, kvp.Value.PeepClass.Model());
                 return s;
             });
@@ -74,12 +74,12 @@ public class PolyEmploymentScratch
         ByJob.AddOrSum(job, num);
         classSub.Distribute(num);
     }
-    public class Sub
+    public class PolyClassEmployment
     {
         public int Desired { get; set; }
         public int Total { get; private set; }
         public int Available { get; private set; }
-        public Sub()
+        public PolyClassEmployment()
         {
             Desired = 0;
             Total = 0;
