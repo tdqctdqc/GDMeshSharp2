@@ -21,10 +21,7 @@ public abstract class ExtractionBuildingModel : ProductionBuildingModel
         prod = Mathf.Min(Mathf.FloorToInt(depSize), prod);
         prod *= ticksSinceLast;
         var rId = poly.Regime.RefId;
-        var depletion = ProdItem.Attributes.Get<ExtractableAttribute>()
-            .GetDepletionFromProduction(deposit.Size, prod);
         
         proc.RegimeResourceGains[rId].Add(ProdItem, prod);
-        proc.Depletions[rId].Add(deposit, depletion);
     }
 }

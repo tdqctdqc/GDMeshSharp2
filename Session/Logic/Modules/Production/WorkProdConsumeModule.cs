@@ -11,8 +11,6 @@ public class WorkProdConsumeModule : LogicModule
 {
     private int _lastRunTick;
     private int _ticksSinceLast;
-    private ConcurrentDictionary<int, EntityWallet<ResourceDeposit>> 
-        _regimeDepletionWallets = new ConcurrentDictionary<int, EntityWallet<ResourceDeposit>>();
     private ConcurrentDictionary<int, ItemWallet> 
         _regimeProdWallets = new ConcurrentDictionary<int, ItemWallet>();
     private ConcurrentDictionary<int, ItemWallet> 
@@ -27,7 +25,6 @@ public class WorkProdConsumeModule : LogicModule
 
     private void Clear()
     {
-        foreach (var kvp in _regimeDepletionWallets) { kvp.Value.Clear(); }
         foreach (var kvp in _regimeProdWallets) { kvp.Value.Clear(); }
         foreach (var kvp in _regimeConsWallets) { kvp.Value.Clear(); }
         foreach (var kvp in _regimeDemandWallets) { kvp.Value.Clear(); }
@@ -52,7 +49,7 @@ public class WorkProdConsumeModule : LogicModule
         
         sw.Start();
         Parallel.ForEach(data.Society.Regimes.Entities, 
-            regime => ProduceForRegime(regime, data, proc));
+            regime => WorkForRegime(regime, data, proc));
         sw.Stop();
         // GD.Print("\t regime prod time " + sw.Elapsed.TotalMilliseconds);
         sw.Reset();
@@ -74,7 +71,7 @@ public class WorkProdConsumeModule : LogicModule
         // GD.Print("\t total time for workprodconsume " + swTotal.Elapsed.TotalMilliseconds);
     }
 
-    private void ProduceForRegime(Regime regime, Data data, WorkProdConsumeProcedure proc)
+    private void WorkForRegime(Regime regime, Data data, WorkProdConsumeProcedure proc)
     {
         var gains = _regimeProdWallets.GetOrAdd(regime.Id,
             id => ItemWallet.Construct());
@@ -82,9 +79,7 @@ public class WorkProdConsumeModule : LogicModule
         var laborerClass = PeepClassManager.Laborer;
         var unemployedJob = PeepJobManager.Unemployed;
         var gatherersNeeded = data.BaseDomain.Rules.GatherLaborCap;
-        var depletions = _regimeDepletionWallets.GetOrAdd(regime.Id, 
-            id => EntityWallet<ResourceDeposit>.Construct());
-        proc.Depletions.TryAdd(regime.Id, depletions);
+        
         var polys = regime.Polygons;
         var totalLaborerUnemployed = 0f;
         var labClass = PeepClassManager.Laborer;
