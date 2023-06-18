@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Godot;
@@ -20,8 +21,9 @@ public class LogicFrame
         var modCount = _modules.Length;
         Parallel.ForEach(_modules, m =>
         {
-            m.Calculate(data, results.Add, entityCreateFuncs.Add);
-            // GD.Print("finished module " + m.GetType().Name);
+            Game.I.Logger.RunAndLogTime(
+                () => m.Calculate(data, results.Add, entityCreateFuncs.Add),
+                m.GetType().Name, LogType.Logic);
         });
         
         return new LogicResults(results, entityCreateFuncs);

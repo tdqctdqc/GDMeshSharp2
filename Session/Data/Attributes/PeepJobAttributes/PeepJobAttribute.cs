@@ -10,9 +10,7 @@ public class PeepJobAttribute : GameAttribute
     public static MinerAttribute MinerAttribute { get; private set; } = new MinerAttribute();
     public static ConstructionAttribute ConstructionAttribute { get; private set; } = new ConstructionAttribute();
 
-    public PeepClass PeepClass { get; protected set; }
-    protected PeepJobAttribute(PeepClass peepClass)
+    protected PeepJobAttribute()
     {
-        PeepClass = peepClass;
     }
 }

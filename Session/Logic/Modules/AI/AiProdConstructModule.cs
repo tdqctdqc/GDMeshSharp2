@@ -18,14 +18,10 @@ public class AiProdConstructModule : LogicModule
         Action<Message> queueMessage, 
         Action<Func<HostWriteKey, Entity>> queueEntityCreation)
     {
-        var sw = new Stopwatch();
-        sw.Start();
         Parallel.ForEach(data.Society.Regimes.Entities, regime =>
         {
             if (regime.IsPlayerRegime(data)) return;
-            _ais[regime].Construction.Calculate(data, queueMessage, queueEntityCreation);
+            _ais[regime].Budget.Calculate(data, queueMessage, queueEntityCreation);
         });
-        sw.Stop();
-        GD.Print("total ai prod time " + sw.Elapsed.TotalMilliseconds);
     }
 }

@@ -5,6 +5,7 @@ using Godot;
 
 public abstract class LogicModule
 {
+
     public abstract void Calculate(Data data, Action<Message> queueMessage,
         Action<Func<HostWriteKey, Entity>> queueEntityCreation);
 }

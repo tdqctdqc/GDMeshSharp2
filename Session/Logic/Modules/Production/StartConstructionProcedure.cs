@@ -42,6 +42,11 @@ public class StartConstructionProcedure : Procedure
     public override void Enact(ProcedureWriteKey key)
     {
         Construction.Pos.Poly(key.Data).PolyBuildingSlots.RemoveSlot(Construction.Model.Model().BuildingType, Construction.Pos);
+        var regime = Construction.Pos.Poly(key.Data).Regime.Entity();
+        foreach (var kvp in Construction.Model.Model().BuildCosts)
+        {
+            regime.Items.Remove(kvp.Key, kvp.Value);
+        }
         key.Data.Society.CurrentConstruction.StartConstruction(Construction, key);
     }
 }

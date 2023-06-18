@@ -4,7 +4,4 @@ using System.Linq;
 
 public class ConstructionAttribute : PeepJobAttribute
 {
-    public ConstructionAttribute() : base(PeepClassManager.Laborer)
-    {
-    }
 }

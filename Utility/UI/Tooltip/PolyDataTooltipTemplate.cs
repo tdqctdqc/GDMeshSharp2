@@ -95,7 +95,7 @@ public class PolyDataTooltipTemplate : DataTooltipTemplate<PolyTriPosition>
         }
         var jobs = new VBoxContainer();
         var size = new Label();
-        size.Text = "Num Peeps: " + peeps.Size();
+        size.Text = "Num Peeps: " + peeps.Size;
         jobs.AddChild(size);
         var peepJobCounts = t.Poly(d).Employment.Counts
             // .Where(kvp => kvp.Value > 0)

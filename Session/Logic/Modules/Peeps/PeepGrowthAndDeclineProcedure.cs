@@ -26,7 +26,6 @@ public class PeepGrowthAndDeclineProcedure : Procedure
 
     private void DoGrowth(ProcedureWriteKey key)
     {
-        var labClass = PeepClassManager.Laborer;
         foreach (var kvp in Growths)
         {
             var peep = key.Data.Society.PolyPeeps[kvp.Key];
@@ -34,12 +33,12 @@ public class PeepGrowthAndDeclineProcedure : Procedure
             //todo divide by class
             if (growth < 0)
             {
-                peep.ShrinkSize(-growth, labClass, key);
+                peep.ShrinkSize(-growth, key);
             }
             
             if (growth > 0)
             {
-                peep.GrowSize(growth, labClass, key);
+                peep.GrowSize(growth, key);
             }
         }
     }

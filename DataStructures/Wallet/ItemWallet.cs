@@ -10,6 +10,10 @@ public class ItemWallet : Wallet<int>
     {
         return new ItemWallet(new Dictionary<int, int>());
     }
+    public static ItemWallet Construct(ItemWallet toCopy)
+    {
+        return new ItemWallet(new Dictionary<int, int>(toCopy.Contents));
+    }
     [SerializationConstructor] private ItemWallet(Dictionary<int, int> contents) : base(contents)
     {
     }

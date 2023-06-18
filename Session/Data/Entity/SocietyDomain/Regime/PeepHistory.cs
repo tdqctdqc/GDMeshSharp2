@@ -30,7 +30,7 @@ public class PeepHistory
         var peeps = regime.GetPeeps(key.Data);
         var polys = regime.Polygons.Entities();
         PeepCount.Add(peeps.Count(), tick);
-        PeepSize.Add(peeps.Sum(p => p.Size()), tick);
+        PeepSize.Add(peeps.Sum(p => p.Size), tick);
         var numUnemployed = polys.Sum(p => p.Employment.NumUnemployed());
         Unemployed.Add(numUnemployed, tick);
     }

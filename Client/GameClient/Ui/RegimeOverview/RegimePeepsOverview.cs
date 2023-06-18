@@ -23,7 +23,7 @@ public class RegimePeepsOverview : ScrollContainer
         var peeps = populatedPolys
             .Select(p => p.GetPeep(data));
         var peepCount = peeps.Count();
-        var peepSize = peeps.Sum(p => p.Size());
+        var peepSize = peeps.Sum(p => p.Size);
         var jobs = populatedPolys
             .SelectMany(p => p.Employment.Counts)
             .SortInto(kvp => kvp.Key, kvp => kvp.Value);

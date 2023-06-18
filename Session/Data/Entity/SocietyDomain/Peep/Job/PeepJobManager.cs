@@ -7,17 +7,17 @@ using Godot;
 public class PeepJobManager : IModelManager<PeepJob>
 {
     public static PeepJob Farmer { get; private set; } 
-            = new PeepJob(nameof(Farmer), PeepClassManager.Laborer, new FarmerAttribute());
+            = new PeepJob(nameof(Farmer), new FarmerAttribute());
     public static PeepJob Prole { get; private set; } 
-        = new PeepJob(nameof(Prole), PeepClassManager.Laborer, new ProleAttribute());
+        = new PeepJob(nameof(Prole), new ProleAttribute());
     public static PeepJob Miner { get; private set; } 
-        = new PeepJob(nameof(Miner), PeepClassManager.Laborer, new MinerAttribute());
+        = new PeepJob(nameof(Miner), new MinerAttribute());
     public static PeepJob Bureaucrat { get; private set; } 
-        = new PeepJob(nameof(Bureaucrat), PeepClassManager.Professional, new BureaucratAttribute());
+        = new PeepJob(nameof(Bureaucrat), new BureaucratAttribute());
     public static PeepJob Builder { get; private set; } 
-        = new PeepJob(nameof(Builder), PeepClassManager.Laborer, new ConstructionAttribute());
+        = new PeepJob(nameof(Builder), new ConstructionAttribute());
     public static PeepJob Unemployed { get; private set; } 
-        = new PeepJob(nameof(Unemployed), PeepClassManager.Laborer);
+        = new PeepJob(nameof(Unemployed));
     public Dictionary<string, PeepJob> Models { get; set; }
 
     public PeepJobManager()

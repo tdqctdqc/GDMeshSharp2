@@ -6,49 +6,40 @@ using MessagePack;
 public class PolyPeep : Entity
 {
     public EntityRef<MapPolygon> Poly { get; private set; }
-    public Dictionary<int, PeepClassFragment> ClassFragments { get; private set; }
-    public int Size() => ClassFragments.Sum(kvp => kvp.Value.Size);
+    public int Size { get; private set; }
 
     public static PolyPeep Create(MapPolygon poly, CreateWriteKey key)
     {
-        var p = new PolyPeep(poly.MakeRef(), new Dictionary<int, PeepClassFragment>(), 
+        var p = new PolyPeep(poly.MakeRef(), 0, 
             key.IdDispenser.GetID());
         key.Create(p);
         return p;
     }
     [SerializationConstructor] private PolyPeep(EntityRef<MapPolygon> poly,
-        Dictionary<int, PeepClassFragment> classFragments, int id) : base(id)
+        int size, int id) : base(id)
     {
-        ClassFragments = classFragments; 
+        Size = size;
         Poly = poly;
     }
 
-    public void GrowSize(int delta, PeepClass peepClass, ProcedureWriteKey key)
+    public void GrowSize(int delta, ProcedureWriteKey key)
     {
         if (delta == 0) return;
         if (delta < 0) throw new Exception();
-        if (ClassFragments.ContainsKey(peepClass.Id) == false)
-        {
-            ClassFragments.Add(peepClass.Id, new PeepClassFragment(0, peepClass.MakeRef()));
-        }
-        ClassFragments[peepClass.Id].Grow(delta);
+        Size += delta;
     }
-    public void GrowSize(int delta, PeepClass peepClass, GenWriteKey key)
+    public void GrowSize(int delta, GenWriteKey key)
     {
         if (delta == 0) return;
         if (delta < 0) throw new Exception();
-        if (ClassFragments.ContainsKey(peepClass.Id) == false)
-        {
-            ClassFragments.Add(peepClass.Id, new PeepClassFragment(0, peepClass.MakeRef()));
-        }
-        ClassFragments[peepClass.Id].Grow(delta);
+        Size += delta;
     }
 
-    public void ShrinkSize(int delta, PeepClass peepClass, ProcedureWriteKey key)
+    public void ShrinkSize(int delta, ProcedureWriteKey key)
     {
         if (delta == 0) return;
         if (delta < 0) throw new Exception();
-        ClassFragments[peepClass.Id].Shrink(delta);
+        Size -= delta;
     }
 
     public override Type GetDomainType() => DomainType();

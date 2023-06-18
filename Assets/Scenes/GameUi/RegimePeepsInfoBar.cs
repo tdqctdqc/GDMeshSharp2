@@ -30,7 +30,7 @@ public class RegimePeepsInfoBar : HBoxContainer
         var r = data.BaseDomain.PlayerAux.LocalPlayer.Regime;
         if (r.Empty() == false)
         {
-            return r.Entity().GetPeeps(data).Sum(p => p.Size());
+            return r.Entity().GetPeeps(data).Sum(p => p.Size);
         }
 
         return 0;

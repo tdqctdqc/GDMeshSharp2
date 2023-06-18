@@ -6,10 +6,10 @@ using Godot;
 using Google.OrTools.LinearSolver;
 
 
-public class BuildingConstructAiPriority : AiPriority
+public class ProdBuildingConstructAiPriority : AiPriority
 {
     public Item ProducedItem { get; private set; }
-    public BuildingConstructAiPriority(Item producedItem, float weight) : base(weight)
+    public ProdBuildingConstructAiPriority(Item producedItem, float weight) : base(weight)
     {
         ProducedItem = producedItem;
     }
@@ -46,7 +46,7 @@ public class BuildingConstructAiPriority : AiPriority
         var selectBuildingTime = sw.Elapsed.TotalMilliseconds;
         sw.Reset();
         sw.Start();
-        SelectBuildSites(regime, data, buildings, queueMessage);
+        SelectBuildSites(regime, data, buildings, budget, queueMessage);
         sw.Stop();
         var selectBuildSiteTime = sw.Elapsed.TotalMilliseconds;
         // GD.Print("select buildings " + selectBuildingTime + " select sites " + selectBuildSiteTime);
@@ -81,13 +81,7 @@ public class BuildingConstructAiPriority : AiPriority
         var slotTypes = buildings.Select(b => b.BuildingType).Distinct();
         foreach (var buildingType in slotTypes)
         {
-            var slots = regime.Polygons
-                // .Where(p => data.Society.CurrentConstruction.ByPoly.ContainsKey(p.Id) == false)
-                .Select(p => p.PolyBuildingSlots[buildingType]).Sum();
-            
-            slots -= data.Society.CurrentConstruction.ByTri.Where(c => regime.Polygons.Contains(c.Key.Poly(data)))
-                .Count();
-            
+            var slots = regime.Polygons.Select(p => p.PolyBuildingSlots[buildingType]).Sum();
             var slotConstraint = solver.MakeConstraint(0, slots, buildingType.ToString());
             slotConstraints.Add(buildingType, slotConstraint);
         }
@@ -125,16 +119,12 @@ public class BuildingConstructAiPriority : AiPriority
             var num = (int)projVar.SolutionValue();
             var proj = buildings.First(p => p.Name == projVar.Name());
             res.Add(proj, num);
-            
-            foreach (var kvp in proj.BuildCosts)
-            {
-                // budget.Remove(kvp.Key, kvp.Value);
-            }
         }
 
         return res;
     }
-    private void SelectBuildSites(Regime regime, Data data, Dictionary<BuildingModel, int> toBuild, Action<Message> queueMessage)
+    private void SelectBuildSites(Regime regime, Data data, Dictionary<BuildingModel, int> toBuild, 
+        ItemWallet budget, Action<Message> queueMessage)
     {
         var currConstruction = data.Society.CurrentConstruction;
         var availPolys = regime.Polygons;
@@ -162,6 +152,10 @@ public class BuildingConstructAiPriority : AiPriority
                     pos,
                     regime.MakeRef()
                 );
+                foreach (var buildCost in building.BuildCosts)
+                {
+                    budget.Remove(buildCost.Key, buildCost.Value);
+                }
                 queueMessage(proc);
             }
         }

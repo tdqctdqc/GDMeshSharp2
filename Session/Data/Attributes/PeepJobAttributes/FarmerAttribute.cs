@@ -4,7 +4,4 @@ using System.Linq;
 
 public class FarmerAttribute : PeepJobAttribute
 {
-    public FarmerAttribute() : base(PeepClassManager.Laborer)
-    {
-    }
 }

@@ -59,12 +59,10 @@ public class PeepGenerator : Generator
     {
         var developmentRatio = .5f;
         var foodConsPerPeep = _data.BaseDomain.Rules.FoodConsumptionPerPeepPoint;
-        var laborerClass = PeepClassManager.Laborer;
         var territory = r.Polygons.Entities();
         var foodSurplus = new ConcurrentBag<float>();
         makeFoodBuildings(BuildingModelManager.Farm);
         makeFoodBuildings(BuildingModelManager.Ranch);
-
 
         void makeFoodBuildings(ProductionBuildingModel building)
         {
@@ -81,7 +79,7 @@ public class PeepGenerator : Generator
                 foreach (var kvp in building.JobLaborReqs)
                 {
                     p.GetPeep(_key.Data)
-                        .GrowSize(kvp.Value * numBuilding, kvp.Key.PeepClass, _key);
+                        .GrowSize(kvp.Value * numBuilding, _key);
                 }
                 buildingPolyCounts.TryAdd(p, numBuilding);
             });
@@ -214,9 +212,8 @@ public class PeepGenerator : Generator
             {
                 foreach (var laborReq in wb.JobLaborReqs)
                 {
-                    var peepClass = laborReq.Key.PeepClass;
                     var num = Mathf.FloorToInt(laborReq.Value * laborRatio);
-                    peep.GrowSize(num, peepClass, _key);
+                    peep.GrowSize(num, _key);
                 }
             }
         }
@@ -234,7 +231,7 @@ public class PeepGenerator : Generator
             var poly = settlementPolys[i];
             var peep = poly.GetPeep(_data);
             var polyUnemployed = portions[i];
-            peep.GrowSize(polyUnemployed, PeepClassManager.Laborer, _key);
+            peep.GrowSize(polyUnemployed, _key);
         }
     }
     

@@ -46,11 +46,6 @@ public class PolyTriGenerator : Generator
         Parallel.ForEach(_data.Planet.Polygons.Entities, p => p.SetTerrainStats(key)); 
         report.StopSection("setting terrain stats");
 
-        var avgSize = _data.Planet.Polygons.Entities.Average(p => p.Tris.Tris
-            .Sum(t =>  float.IsNaN(t.GetArea()) ? 0f : t.GetArea())
-        );
-        GD.Print("avg poly size " + avgSize);
-
         return report;
     }
 

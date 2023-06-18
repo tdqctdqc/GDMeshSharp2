@@ -76,12 +76,10 @@ public class WorkProdConsumeModule : LogicModule
         var gains = _regimeProdWallets.GetOrAdd(regime.Id,
             id => ItemWallet.Construct());
         proc.RegimeResourceGains.TryAdd(regime.Id, gains);
-        var laborerClass = PeepClassManager.Laborer;
         var unemployedJob = PeepJobManager.Unemployed;
         
         var regimePolys = regime.Polygons;
         var totalLaborerUnemployed = 0;
-        var labClass = PeepClassManager.Laborer;
         
         foreach (var poly in regimePolys)
         {
@@ -89,10 +87,7 @@ public class WorkProdConsumeModule : LogicModule
                 p => new PolyEmploymentScratch((MapPolygon) data[p], data));
             scratch.Init(poly, data);
             ProduceForPoly(poly, proc, scratch, data);
-            if(scratch.ByClass.TryGetValue(laborerClass, out var sub))
-            {
-                totalLaborerUnemployed += sub.Available;
-            }
+            totalLaborerUnemployed += scratch.Available;
         }
         
         ConstructForRegime(regime, data, proc, totalLaborerUnemployed);
@@ -100,7 +95,7 @@ public class WorkProdConsumeModule : LogicModule
         foreach (var poly in regimePolys)
         {
             var scratch = _polyScratches[poly.Id];
-            var numUnemployed = scratch.ByClass.Sum(kvp => kvp.Value.Available);
+            var numUnemployed = scratch.Available;
             var employment = _polyEmployReps.GetOrAdd(poly.Id, p => EmploymentReport.Construct());
             employment.Clear();
             employment.Counts.AddOrSum(unemployedJob.Id, numUnemployed);
@@ -170,33 +165,9 @@ public class WorkProdConsumeModule : LogicModule
             .Where(b => b.Model.Model() is WorkBuildingModel)
             .Select(b => (WorkBuildingModel)b.Model.Model());
         if (workBuildings.Count() == 0) return;
-        
+        var effectiveRatio = scratch.HandleBuildingJobs(workBuildings, data);
         foreach (var wb in workBuildings)
         {
-            scratch.HandleClasses(wb, data);
-        }
-        foreach (var wb in workBuildings)
-        {
-            scratch.HandleBuildingJobs(wb, data);
-        }
-        foreach (var wb in workBuildings)
-        {
-            var effectiveRatio = 1f;
-            foreach (var jobReq in wb.JobLaborReqs)
-            {
-                var jobClass = jobReq.Key.PeepClass;
-                float ratio;
-                if (scratch.ByClass.ContainsKey(jobClass) == false)
-                {
-                    // GD.Print($"class {jobClass.Name} not found in {poly.Id}");
-                    ratio = 0f; 
-                }
-                else
-                {
-                    ratio = scratch.ByClass[jobClass].EffectiveRatio();
-                }
-                effectiveRatio = Mathf.Min(effectiveRatio, ratio);
-            }
             wb.Produce(proc, poly, effectiveRatio, _ticksSinceLast, data);
         }
     }
@@ -225,7 +196,7 @@ public class WorkProdConsumeModule : LogicModule
         var numHungryPeeps = regime.Polygons
             .Where(p => p.HasPeep(data))
             .Select(p => p.GetPeep(data))
-            .Sum(p => p.Size());
+            .Sum(p => p.Size);
         var foodDesired = numHungryPeeps * data.BaseDomain.Rules.FoodConsumptionPerPeepPoint * _ticksSinceLast;
         demands.Add(ItemManager.Food, foodDesired);
         var foodStock = regime.Items[ItemManager.Food] + proc.RegimeResourceGains[regime.Id][ItemManager.Food];

@@ -78,15 +78,7 @@ public class HostLogic : ILogic
     {
         //todo ticking for remote as well?
         new TickProcedure().Enact(_pKey);
-
-        var sw = new Stopwatch();
-        
-        sw.Start();
         var logicResult = _frames[_frameIter].Calculate(_data);
-        sw.Stop();
-        GD.Print("calculating logic result " + sw.Elapsed.TotalMilliseconds);
-        sw.Reset();
-        
         _frameIter = (_frameIter + 1) % _frames.Length;
         
         

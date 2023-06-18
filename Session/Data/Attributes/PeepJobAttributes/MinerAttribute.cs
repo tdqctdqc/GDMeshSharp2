@@ -4,7 +4,4 @@ using System.Linq;
 
 public class MinerAttribute : PeepJobAttribute
 {
-    public MinerAttribute() : base(PeepClassManager.Laborer)
-    {
-    }
 }
