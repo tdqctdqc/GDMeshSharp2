@@ -20,8 +20,11 @@ public abstract class MapChunkGraphicLayer : Node2D
 
     public void Update(Data data)
     {
-        if (_listener == null || _listener.Changed.Contains(Chunk) == false) return;
-        Draw(data);
+        if (_listener == null) return;
+        if (_listener.Changed.Contains(Chunk))
+        {
+            Draw(data);
+        }
     }
     public abstract void Draw(Data data);
 }

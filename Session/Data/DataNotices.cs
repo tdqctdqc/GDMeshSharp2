@@ -14,6 +14,9 @@ public class DataNotices
     public RefAction<int> Ticked { get; private set; }
     public RefAction SetPolyShapes { get; private set; }
     public RefAction SetLandAndSea { get; private set; }
+    
+    public RefAction<MapPolygon> StartedConstruction { get; set; }
+    public RefAction<MapPolygon> EndedConstruction { get; set; }
     public DataNotices()
     {
         Clear();
@@ -29,6 +32,8 @@ public class DataNotices
         Ticked = new RefAction<int>();
         SetPolyShapes = new RefAction();
         SetLandAndSea = new RefAction();
+        StartedConstruction = new RefAction<MapPolygon>();
+        EndedConstruction = new RefAction<MapPolygon>();
     }
 }
 

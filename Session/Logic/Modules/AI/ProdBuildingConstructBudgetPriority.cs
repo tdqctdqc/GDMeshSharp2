@@ -6,21 +6,22 @@ using Godot;
 using Google.OrTools.LinearSolver;
 
 
-public class ProdBuildingConstructAiPriority : AiPriority
+public class ProdBuildingConstructBudgetPriority : BudgetPriority
 {
     public Item ProducedItem { get; private set; }
-    public ProdBuildingConstructAiPriority(Item producedItem, float weight) : base(weight)
+    public ProdBuildingConstructBudgetPriority(Item producedItem, Func<Data, Regime, float> getWeight) 
+        : base(getWeight)
     {
         ProducedItem = producedItem;
     }
 
-    protected override float GetDemand(Regime r, Data d)
+    protected float GetDemand(Regime r, Data d)
     {
         var latest = r.History.DemandHistory[ProducedItem.Id].GetLatest();
         return Mathf.Max(100f, latest);
     }
 
-    protected override float GetSupply(Regime r, Data d)
+    protected float GetSupply(Regime r, Data d)
     {
         var relevantConstructions = d.Society.CurrentConstruction.ByPoly
             .Where(kvp => d.Planet.Polygons[kvp.Key].Regime.RefId == r.Id)
@@ -36,9 +37,8 @@ public class ProdBuildingConstructAiPriority : AiPriority
     }
 
     public override void Calculate(Regime regime, Data data, ItemWallet budget, Dictionary<Item, float> prices,
-        int credit, Action<Message> queueMessage, Action<Func<HostWriteKey, Entity>> queueEntityCreation)
+        int credit, int availLabor, Action<Message> queueMessage, Action<Func<HostWriteKey, Entity>> queueEntityCreation)
     {
-        var availLabor = regime.Polygons.Sum(p => p.Employment.NumUnemployed());
         var sw = new Stopwatch();
         sw.Start();
         var buildings = SelectBuildings(regime, data, budget, prices, credit, availLabor);

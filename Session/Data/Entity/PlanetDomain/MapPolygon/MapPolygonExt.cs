@@ -116,4 +116,11 @@ public static class MapPolygonExt
     {
         return p.Neighbors.Select(n => p.GetEdge(n, data));
     }
+
+    public static List<Construction> GetCurrentConstructions(this MapPolygon poly, Data data)
+    {
+        var curr = data.Society.CurrentConstruction.ByPoly;
+        if (curr.ContainsKey(poly.Id)) return curr[poly.Id];
+        return null;
+    }
 }

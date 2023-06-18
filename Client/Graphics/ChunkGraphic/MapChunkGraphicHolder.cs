@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Godot;
 
@@ -21,8 +22,7 @@ public class MapChunkGraphicHolder : Node2D
             Roads,
             ResourceDepositPolyFill,
             RegimeBorders,
-            Icons,
-            RiversTemp
+            Icons
         );
     }
 
@@ -72,9 +72,5 @@ public class MapChunkGraphicHolder : Node2D
                 if (p.Regime.Fulfilled()) return p.Regime.Entity().PrimaryColor;
                 return Colors.Transparent;
             }
-        );
-    public static ChunkGraphicFactory RiversTemp { get; private set; }
-        = new ChunkGraphicFactoryBasic(nameof(RiversTemp), true, 
-            (c,d,g) => new RiversTempChunkGraphic(c,d)
         );
 }

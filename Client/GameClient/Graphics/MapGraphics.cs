@@ -37,15 +37,18 @@ public class MapGraphics : Node2D
 
         Highlighter = new PolyHighlighter(_data);
         Highlighter.ZIndex = 99;
-        // Highlighter.ZAsRelative = false;
         AddChild(Highlighter);
         
         AddChild(polySegmenter);
         var inputCatcher = new MapInputCatcher(_data, this);
         AddChild(inputCatcher);
+        
         _updateChunks = new TimerAction(.5f, 0f, () =>
             {
-                MapChunkGraphics.ForEach(c => c.Update());
+                MapChunkGraphics.ForEach(c =>
+                {
+                    c.Update();
+                });
                 ChunkChangedCache.Clear();
             }
         );
@@ -59,7 +62,7 @@ public class MapGraphics : Node2D
         {
             _segmenters?.ForEach(s => s.Update(Game.I.Client.Cam.XScrollRatio));
         }
-
+        
         _updateChunks?.Process(delta);
     }
     

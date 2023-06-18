@@ -40,11 +40,13 @@ public class CurrentConstruction : Entity
                                 $"but already constructing {ByTri[construction.Pos].Model.Model().Name} in tri");
         }
         ByTri.Add(construction.Pos, construction);
+        key.Data.Notices.StartedConstruction.Invoke(poly);
     }
     public void FinishConstruction(MapPolygon poly, PolyTriPosition pos, ProcedureWriteKey key)
     {
         ByPoly[poly.Id].RemoveAll(c => c.Pos.Equals(pos));
         ByTri.Remove(pos);
+        key.Data.Notices.EndedConstruction.Invoke(poly);
     }
 
     public override Type GetDomainType() => DomainType();

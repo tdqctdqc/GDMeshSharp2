@@ -6,7 +6,17 @@ using Godot;
 public class ChunkChangeListener
 {
     public HashSet<MapChunk> Changed { get; private set; }
-    public static ChunkChangeListener ConstructDynamic<TEntity, TValue>(
+
+    public static ChunkChangeListener ListenDynamic(Data data, params RefAction<MapPolygon>[] triggers)
+    {
+        var l = new ChunkChangeListener();
+        foreach (var trigger in triggers)
+        {
+            trigger.Subscribe(p => l.Changed.Add(p.GetChunk(data)));
+        }
+        return l;
+    }
+    public static ChunkChangeListener ListenForValueChange<TEntity, TValue>(
         Data data, RefAction<ValChangeNotice<TValue>> valueTrigger, Func<TEntity, MapPolygon> getPoly)
         where TEntity : Entity
     {
@@ -18,7 +28,7 @@ public class ChunkChangeListener
         });
         return l;
     }
-    public static ChunkChangeListener ConstructConstant<TEntity>(Data data, Func<TEntity, MapPolygon> getPoly) 
+    public static ChunkChangeListener ListenForEntityCreateDestroy<TEntity>(Data data, Func<TEntity, MapPolygon> getPoly) 
         where TEntity : Entity
     {
         var l = new ChunkChangeListener();
@@ -26,7 +36,7 @@ public class ChunkChangeListener
         data.SubscribeForDestruction<TEntity>(n => l.RemovedEntity(n, data, getPoly));
         return l;
     }
-    public static ChunkChangeListener ConstructConstantMultiple<TEntity>(Data data, Func<TEntity, IEnumerable<MapPolygon>> getPolys) 
+    public static ChunkChangeListener ListenForEntityCreateDestroyMult<TEntity>(Data data, Func<TEntity, IEnumerable<MapPolygon>> getPolys) 
         where TEntity : Entity
     {
         var l = new ChunkChangeListener();

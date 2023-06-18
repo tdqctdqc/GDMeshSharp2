@@ -9,10 +9,10 @@ public class PolyTriChunkGraphic : MapChunkGraphicModule
     public PolyTriChunkGraphic(MapChunk chunk, Data data, MapGraphics mg)
     {
         var lfLayer = new PolyTriLayer(data, t => t.Landform.Color, 
-            chunk, mg.ChunkChangedCache.TerrainChanged);
+            chunk, null);
         AddLayer(new Vector2(0f, 1f), lfLayer);
         var vegLayer = new PolyTriLayer(data, t => t.Vegetation.Color.Darkened(t.Landform.DarkenFactor), 
-            chunk, mg.ChunkChangedCache.TerrainChanged);
+            chunk, null);
         AddLayer(new Vector2(0f, 1f), vegLayer);
     }
 
