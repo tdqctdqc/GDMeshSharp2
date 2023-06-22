@@ -18,7 +18,7 @@ public class HostLogic : ILogic
     private int _frameIter = 0;
     private float _framePeriod = 1f;
     private float _frameTimer = 1f;
-    private Task _calculating;
+    private Task<LogicResults> _calculating;
     
     public HostLogic(Data data)
     {
@@ -35,7 +35,7 @@ public class HostLogic : ILogic
         };
     }
 
-    public void Process(float delta)
+    public bool Process(float delta)
     {
         _frameTimer += delta;
         if (_calculating != null && _calculating.IsCompleted)
@@ -44,27 +44,27 @@ public class HostLogic : ILogic
             {
                 throw _calculating.Exception;
             }
+            
+            var result = _calculating.Result;
+            EnactFrame(result);
+            DoCommands();
             _calculating = null;
+            return true;
         }
         
         if (_frameTimer >= _framePeriod 
             && _calculating == null)
         {
             _frameTimer = 0f;
-            _calculating = Task.Run(() => {
-                DoCommands();
-                DoFrame();
-                _calculating = null;
-            });
+            // DoCommands();
+            _calculating = Task.Run(CalculateFrameResults);
         }
         else if (_calculating == null)
         {
-            _calculating = Task.Run(() =>
-            {
-                DoCommands();
-                _calculating = null;
-            });
+            // DoCommands();
         }
+
+        return false;
     }
     public void SetDependencies(HostServer server, GameSession session, Data data)
     {
@@ -74,14 +74,17 @@ public class HostLogic : ILogic
         _pKey = new ProcedureWriteKey(data, session);
     }
 
-    private void DoFrame()
+    private LogicResults CalculateFrameResults()
+    {
+        var logicResult = _frames[_frameIter].Calculate(_data);
+        _frameIter = (_frameIter + 1) % _frames.Length;
+        return logicResult;
+    }
+
+    private void EnactFrame(LogicResults logicResult)
     {
         //todo ticking for remote as well?
         new TickProcedure().Enact(_pKey);
-        var logicResult = _frames[_frameIter].Calculate(_data);
-        _frameIter = (_frameIter + 1) % _frames.Length;
-        
-        
         for (var i = 0; i < logicResult.Procedures.Count; i++)
         {
             logicResult.Procedures[i].Enact(_pKey);

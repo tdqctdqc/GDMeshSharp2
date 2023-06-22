@@ -43,7 +43,6 @@ public class GeneratorSession : Node, IDataSession
         Generated = true;
         _generating = false;
         Client.Graphics.Setup(Data);
-
     }
 
     private void Reset()
@@ -60,6 +59,6 @@ public class GeneratorSession : Node, IDataSession
     }
     public override void _Process(float delta)
     {
-        if(_generating == false) Client?.Process(delta);
+        if(_generating == false) Client?.Process(delta, false);
     }
 }

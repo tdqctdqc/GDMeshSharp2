@@ -5,12 +5,12 @@ using Godot;
 
 public class ChunkChangedCache
 {
-    public ChunkChangeListener BuildingsChanged { get; private set; }
-    public ChunkChangeListener RoadsChanged { get; private set; }
+    public ChunkChangeListener<int> BuildingsChanged { get; private set; }
+    public ChunkChangeListener<int> RoadsChanged { get; private set; }
     // public ChunkChangeListener TerrainChanged { get; private set; }
-    public ChunkChangeListener PolyRegimeChanged { get; private set; }
-    public ChunkChangeListener ConstructionsChanged { get; private set; }
-    public ChunkChangeListener SettlementTierChanged { get; private set; }
+    public ChunkChangeListener<int> PolyRegimeChanged { get; private set; }
+    public ChunkChangeListener<Construction> ConstructionsChanged { get; private set; }
+    public ChunkChangeListener<int> SettlementTierChanged { get; private set; }
     public void Clear()
     {
         BuildingsChanged.Clear();
@@ -21,22 +21,38 @@ public class ChunkChangedCache
     }
     public ChunkChangedCache(Data d)
     {
-        BuildingsChanged = ChunkChangeListener.ListenForEntityCreateDestroy<MapBuilding>(d,
-            mb => mb.Position.Poly(d));
-        RoadsChanged = ChunkChangeListener.ListenForEntityCreateDestroyMult<RoadSegment>(d,
-            mb =>
-            {
-                var e = mb.Edge.Entity();
-                return new[] {e.HighPoly.Entity(), e.LowPoly.Entity()};
-            });
+        BuildingsChanged = new ChunkChangeListener<int>(d);
+        BuildingsChanged.ListenForEntityCreationDestruction<MapBuilding, int>(d,
+            mb => mb.Id, mb => mb.Position.Poly(d));
+
+        RoadsChanged = new ChunkChangeListener<int>(d);
+        RoadsChanged.ListenForEntityCreationDestructionMult<RoadSegment, int>(
+            d,
+            e => e.Edge.Entity().Id,
+            e => new MapPolygon[]{e.Edge.Entity().HighPoly.Entity(), e.Edge.Entity().LowPoly.Entity()});
+        
         var px = d.Planet.PolygonAux;
         var changedRegime = d.Planet.PolygonAux.ChangedRegime;
-        PolyRegimeChanged = ChunkChangeListener.ListenForValueChange<MapPolygon, EntityRef<Regime>>
-            (d, changedRegime, mp => mp);
-        ConstructionsChanged = ChunkChangeListener.ListenDynamic(d, 
+        
+        PolyRegimeChanged = new ChunkChangeListener<int>(d);
+        PolyRegimeChanged.ListenForValueChange<int, MapPolygon, EntityRef<Regime>>(
+            d, changedRegime, p => p, p => p.Id);
+
+        ConstructionsChanged = new ChunkChangeListener<Construction>(d);
+        ConstructionsChanged.ListenDynamic<Construction, Construction>(
+            d, 
+            v => v.Pos.Poly(d),
+            v => v,
             d.Notices.StartedConstruction,
-            d.Notices.EndedConstruction);
-        SettlementTierChanged = ChunkChangeListener.ListenForValueChange<Settlement, ModelRef<SettlementTier>>
-            (d, d.Society.SettlementAux.ChangedTier, s => s.Poly.Entity());
+            d.Notices.EndedConstruction
+        );
+        
+        SettlementTierChanged = new ChunkChangeListener<int>(d);
+        SettlementTierChanged.ListenForValueChange<int, Settlement, ModelRef<SettlementTier>>(
+            d,
+            d.Society.SettlementAux.ChangedTier,
+            e => e.Poly.Entity(),
+            s => s.Poly.RefId
+        );
     }
 }

@@ -6,10 +6,10 @@ public class TownHall : WorkBuildingModel
 {
     public override int Capacity { get; } = 100;
 
-    public override Dictionary<PeepJobAttribute, int> JobLaborReqs { get; }
-        = new Dictionary<PeepJobAttribute, int>
+    public override Dictionary<PeepJob, int> JobLaborReqs { get; }
+        = new Dictionary<PeepJob, int>
         {
-            {PeepJobAttribute.BureaucratAttribute, 100}
+            {PeepJobManager.Bureaucrat, 100}
         };
     public override Dictionary<Item, int> BuildCosts { get; protected set; }
         = new Dictionary<Item, int>

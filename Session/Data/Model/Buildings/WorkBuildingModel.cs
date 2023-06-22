@@ -4,7 +4,7 @@ using System.Linq;
 
 public abstract class WorkBuildingModel : BuildingModel
 {
-    public abstract Dictionary<PeepJobAttribute, int> JobLaborReqs { get; }
+    public abstract Dictionary<PeepJob, int> JobLaborReqs { get; }
     protected WorkBuildingModel(BuildingType buildingType, string name, int numTicksToBuild, int laborPerTickToBuild)
         : base(buildingType, name, numTicksToBuild, laborPerTickToBuild)
     {

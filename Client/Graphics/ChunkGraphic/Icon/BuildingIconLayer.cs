@@ -1,21 +1,31 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Godot;
 
-public class BuildingIconLayer : TriIconChunkLayer
+public class BuildingIconLayer : MapChunkGraphicLayer<int>
 {
     public BuildingIconLayer(MapChunk chunk, Data data, MapGraphics mg) 
-        : base(chunk, data, mg.ChunkChangedCache.BuildingsChanged)
+        : base(data, chunk, mg.ChunkChangedCache.BuildingsChanged)
     {
+        Init(data);
     }
     private BuildingIconLayer() : base()
     {
     }
-    protected override IEnumerable<TriIcon> GetIcons(MapPolygon poly, Data data)
+
+    protected override Node2D MakeGraphic(int key, Data data)
     {
-        var buildings = poly.GetBuildings(data);
-        if (buildings == null) return null;
-        return buildings
-            .Select(b => new TriIcon(b.Model.Model().BuildingIcon, b.Position));
+        var building = data.Society.Buildings[key];
+        var icon = building.Model.Model().BuildingIcon.GetMeshInstance();
+        SetRelPos(icon, building.Position, data);
+        return icon;
+    }
+
+    protected override IEnumerable<int> GetKeys(Data data)
+    {
+        return Chunk.Polys
+            .Where(p => p.GetBuildings(data) != null)
+            .SelectMany(p => p.GetBuildings(data)).Select(b => b.Id);
     }
 }

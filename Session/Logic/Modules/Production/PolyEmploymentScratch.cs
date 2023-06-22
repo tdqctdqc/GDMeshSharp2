@@ -37,10 +37,9 @@ public class PolyEmploymentScratch
             foreach (var jobReq in model.JobLaborReqs)
             {
                 if (Available == 0) break;
-                var attr = jobReq.Key;
+                var job = jobReq.Key;
                 var size = jobReq.Value;
                 Desired += size;
-                var job = data.Models.PeepJobs.Models.First(kvp2 => kvp2.Value.Attributes.Has(attr)).Value;
                 var num = Mathf.CeilToInt(ratio * size);
                 num = Mathf.Min(Available, num);
                 Available -= num;

@@ -17,9 +17,9 @@ public class RemoteLogic : ILogic
         _syncingUpdates = new List<Update>();
     }
 
-    public void Process(float delta)
+    public bool Process(float delta)
     {
-        
+        return true;
     }
     public void ProcessUpdate(Update u)
     {

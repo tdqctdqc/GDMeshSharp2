@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Godot;
 using MessagePack;
 
@@ -41,7 +42,8 @@ public class StartConstructionProcedure : Procedure
 
     public override void Enact(ProcedureWriteKey key)
     {
-        Construction.Pos.Poly(key.Data).PolyBuildingSlots.RemoveSlot(Construction.Model.Model().BuildingType, Construction.Pos);
+        Construction.Pos.Poly(key.Data).PolyBuildingSlots
+            .RemoveSlot(Construction.Model.Model().BuildingType, Construction.Pos);
         var regime = Construction.Pos.Poly(key.Data).Regime.Entity();
         foreach (var kvp in Construction.Model.Model().BuildCosts)
         {

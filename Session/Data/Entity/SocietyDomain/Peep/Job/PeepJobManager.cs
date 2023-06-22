@@ -7,15 +7,15 @@ using Godot;
 public class PeepJobManager : IModelManager<PeepJob>
 {
     public static PeepJob Farmer { get; private set; } 
-            = new PeepJob(nameof(Farmer), new FarmerAttribute());
+            = new PeepJob(nameof(Farmer));
     public static PeepJob Prole { get; private set; } 
-        = new PeepJob(nameof(Prole), new ProleAttribute());
+        = new PeepJob(nameof(Prole));
     public static PeepJob Miner { get; private set; } 
-        = new PeepJob(nameof(Miner), new MinerAttribute());
+        = new PeepJob(nameof(Miner));
     public static PeepJob Bureaucrat { get; private set; } 
-        = new PeepJob(nameof(Bureaucrat), new BureaucratAttribute());
+        = new PeepJob(nameof(Bureaucrat));
     public static PeepJob Builder { get; private set; } 
-        = new PeepJob(nameof(Builder), new ConstructionAttribute());
+        = new PeepJob(nameof(Builder));
     public static PeepJob Unemployed { get; private set; } 
         = new PeepJob(nameof(Unemployed));
     public Dictionary<string, PeepJob> Models { get; set; }

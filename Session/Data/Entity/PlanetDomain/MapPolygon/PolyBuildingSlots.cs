@@ -33,7 +33,7 @@ public class PolyBuildingSlots
                 && float.IsNaN(t.GetArea()) == false
             )
             .Sum(t => t.GetArea() * t.Landform.FertilityMod * t.Vegetation.FertilityMod)
-            / 2500f;
+            / 5000f;
         
         
         var grazeSlots = poly.Tris.Tris
@@ -46,7 +46,7 @@ public class PolyBuildingSlots
               .Sum(t => t.GetArea() 
                         * t.Landform.FertilityMod 
                         * ShapingFunctions.ProjectToRange(t.Vegetation.FertilityMod, 1f, .5f, 1f))
-            / 5000f;
+            / 10000f;
 
         var industrySlots = 5;
         var govSlots = 1;

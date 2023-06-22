@@ -17,11 +17,16 @@ public class GameClient : Node, IClient
         
     }
 
-    public void Process(float delta)
+    public void Process(float delta, bool gameStateChanged)
     {
         if (GetParent() == null) return;
         Graphics?.Process(delta);
         Ui?.Process(delta, Cam, Key);
+        if (gameStateChanged)
+        {
+            Game.I.Logger.Log("updating graphics", LogType.Logic);
+            Graphics.Update();
+        }
     }
     public void Setup(GameSession session, IServer server, MapGraphics graphics)
     {

@@ -21,36 +21,33 @@ public class PolyTriChunkGraphic : MapChunkGraphicModule
         
     }
 
-    private class PolyTriLayer : MapChunkGraphicLayer
+    private class PolyTriLayer : MapChunkGraphicLayer<Vector2>
     {
         private Func<PolyTri, Color> _getColor;
-        public PolyTriLayer(Data data, Func<PolyTri, Color> getColor, MapChunk chunk, ChunkChangeListener listener) 
-            : base(chunk, listener)
+        public PolyTriLayer(Data data, Func<PolyTri, Color> getColor, MapChunk chunk, ChunkChangeListener<Vector2> listener) 
+            : base(data, chunk, listener)
         {
             _getColor = getColor;
-            Draw(data);
+            Init(data);
         }
-        public override void Draw(Data data)
+        protected override Node2D MakeGraphic(Vector2 key, Data data)
         {
-            var first = Chunk.RelTo;
             var mb = new MeshBuilder();
             foreach (var p in Chunk.Polys)
             {
-                var offset = first.GetOffsetTo(p, data);
-                var tris = p.Tris.Tris;
-                for (var j = 0; j < tris.Length; j++)
+                var offset = Chunk.RelTo.GetOffsetTo(p, data);
+                foreach (var tri in p.Tris.Tris)
                 {
-                    var t = tris[j];
-                    // if (t.GetMinAltitude() < 10f) continue;
-                    mb.AddTri(t.Transpose(offset), 
-                        _getColor(t)
-                    );
+                    mb.AddTri(tri.Transpose(offset), _getColor(tri));
                 }
             }
 
-            if (mb.Tris.Count == 0) return;
-            var mesh = mb.GetMeshInstance();
-            AddChild(mesh);
+            return mb.GetMeshInstance();
+        }
+
+        protected override IEnumerable<Vector2> GetKeys(Data data)
+        {
+            return new List<Vector2>{Chunk.Coords};
         }
     }
 }

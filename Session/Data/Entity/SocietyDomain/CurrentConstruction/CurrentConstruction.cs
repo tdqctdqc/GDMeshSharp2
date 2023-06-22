@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Godot;
 using MessagePack;
 
 public class CurrentConstruction : Entity
 {
     public Dictionary<PolyTriPosition, Construction> ByTri { get; private set; }
     public Dictionary<int, List<Construction>> ByPoly { get; private set; }
-
+    public HashSet<PolyTriPosition> Poses { get; private set; } = new HashSet<PolyTriPosition>();
     public static CurrentConstruction Create(GenWriteKey key)
     {
         var cc = new CurrentConstruction(key.IdDispenser.GetID(), 
@@ -40,13 +41,16 @@ public class CurrentConstruction : Entity
                                 $"but already constructing {ByTri[construction.Pos].Model.Model().Name} in tri");
         }
         ByTri.Add(construction.Pos, construction);
-        key.Data.Notices.StartedConstruction.Invoke(poly);
+        Poses.Add(construction.Pos);
+        key.Data.Notices.StartedConstruction.Invoke(construction);
     }
     public void FinishConstruction(MapPolygon poly, PolyTriPosition pos, ProcedureWriteKey key)
     {
+        var construction = ByTri[pos];
+        key.Data.Notices.EndedConstruction.Invoke(construction);
         ByPoly[poly.Id].RemoveAll(c => c.Pos.Equals(pos));
+        if (ByPoly[poly.Id].Count == 0) ByPoly.Remove(poly.Id);
         ByTri.Remove(pos);
-        key.Data.Notices.EndedConstruction.Invoke(poly);
     }
 
     public override Type GetDomainType() => DomainType();

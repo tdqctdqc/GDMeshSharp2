@@ -11,10 +11,10 @@ public class Mine : ExtractionBuildingModel
         if (prodItem.Attributes.Has<MineableAttribute>() == false) throw new Exception();
     }
 
-    public override Dictionary<PeepJobAttribute, int> JobLaborReqs { get; }
-        = new Dictionary<PeepJobAttribute, int>
+    public override Dictionary<PeepJob, int> JobLaborReqs { get; }
+        = new Dictionary<PeepJob, int>
         {
-            {PeepJobAttribute.MinerAttribute, 500}
+            {PeepJobManager.Miner, 500}
         };
     public override Dictionary<Item, int> BuildCosts { get; protected set; }
         = new Dictionary<Item, int>

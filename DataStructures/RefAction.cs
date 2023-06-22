@@ -7,10 +7,21 @@ public class RefAction
 {
     private Action _action;
     private HashSet<RefAction> _subscribingTo;
-    
+    private HashSet<RefAction> _refSubscribers;
+
+    public RefAction()
+    {
+    }
     public void Invoke()
     {
         _action?.Invoke();
+        if (_refSubscribers != null)
+        {
+            foreach (var refSubscriber in _refSubscribers)
+            {
+                refSubscriber.Invoke();
+            }
+        }
     }
 
     public void Clear()
@@ -24,7 +35,9 @@ public class RefAction
     }
     public void Subscribe(RefAction a)
     {
-        _action += a.Invoke;
+        // _action += a.Invoke;
+        if (_refSubscribers == null) _refSubscribers = new HashSet<RefAction>();
+        _refSubscribers.Add(a);
         if (a._subscribingTo == null) a._subscribingTo = new HashSet<RefAction>();
         a._subscribingTo.Add(this);
     }
@@ -34,7 +47,7 @@ public class RefAction
     }
     public void Unsubscribe(RefAction a)
     {
-        _action -= a.Invoke;
+        _refSubscribers.Remove(a);
     }
     public void EndSubscriptions()
     {
@@ -49,23 +62,26 @@ public class RefAction
 public class RefAction<TArg>
 {
     public RefAction Blank { get; private set; }
+    public HashSet<RefAction<TArg>> _refSubscribers;
+    private Action<TArg> _action;
+    private HashSet<RefAction<TArg>> _subscribingTo;
     public RefAction()
     {
         Blank = new RefAction();
         _action += t => Blank.Invoke();
     }
-    private Action<TArg> _action;
-    private HashSet<RefAction<TArg>> _subscribingTo;
-    public int Subscribers { get; private set; }
+    
     public void Invoke(TArg t)
     {
-        if (Subscribers > 0) _action?.Invoke(t);
+        _action?.Invoke(t);
+        if (_refSubscribers != null)
+        {
+            foreach (var refSubscriber in _refSubscribers)
+            {
+                refSubscriber.Invoke(t);
+            }
+        }
         Blank.Invoke();
-    }
-    public void Clear()
-    {
-        _action = t => { };
-        EndSubscriptions();
     }
     public void Subscribe(RefAction a)
     {
@@ -73,19 +89,19 @@ public class RefAction<TArg>
     }
     public void Subscribe(RefAction<TArg> a)
     {
-        _action += a.Invoke;
+        if (_refSubscribers == null) _refSubscribers = new HashSet<RefAction<TArg>>();
+        _refSubscribers.Add(a);
+        
         if (a._subscribingTo == null) a._subscribingTo = new HashSet<RefAction<TArg>>();
         a._subscribingTo.Add(this);
-        Subscribers++;
     }
     public void Subscribe(Action<TArg> a)
     {
         _action += a.Invoke;
-        Subscribers++;
     }
     public void Unsubscribe(RefAction<TArg> a)
     {
-        _action -= a.Invoke;
+        _refSubscribers.Remove(a);
     }
     public void Unsubscribe(ref Action<TArg> a)
     {
@@ -103,5 +119,12 @@ public class RefAction<TArg>
             refAction.Unsubscribe(this);
         }
         _subscribingTo.Clear();
+    }
+
+    public void Clear()
+    {
+        _refSubscribers = null;
+        _action = null;
+        Blank = new RefAction();
     }
 }

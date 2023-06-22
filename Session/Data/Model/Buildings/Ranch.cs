@@ -17,10 +17,10 @@ public class Ranch : ProductionBuildingModel
         {
             {ItemManager.Food, 1}
         };
-    public override Dictionary<PeepJobAttribute, int> JobLaborReqs { get; }
-        = new Dictionary<PeepJobAttribute, int>
+    public override Dictionary<PeepJob, int> JobLaborReqs { get; }
+        = new Dictionary<PeepJob, int>
         {
-            {PeepJobAttribute.FarmerAttribute, 100}
+            {PeepJobManager.Farmer, 100}
         };
     protected override bool CanBuildInTriSpec(PolyTri t, Data data)
     {

@@ -1,10 +1,11 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Godot;
 
-public class MapChunkGraphicHolder : Node2D
+public class MapChunkGraphic : Node2D
 {
     public Dictionary<string, MapChunkGraphicModule> Modules { get; private set; }
     private MapChunk _chunk;
@@ -40,7 +41,6 @@ public class MapChunkGraphicHolder : Node2D
             if (factories[i].Active == false) continue;
             var node = factories[i].GetModule(chunk, data, mg);
             node.ZIndex = i;
-            // node.ZAsRelative = false;
             Modules.Add(factories[i].Name, node);
             AddChild(node);
         }

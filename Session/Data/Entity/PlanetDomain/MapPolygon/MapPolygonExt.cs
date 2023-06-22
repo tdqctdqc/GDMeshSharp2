@@ -123,4 +123,9 @@ public static class MapPolygonExt
         if (curr.ContainsKey(poly.Id)) return curr[poly.Id];
         return null;
     }
+
+    public static MapChunk GetMapChunk(this MapPolygon poly, Data d)
+    {
+        return d.Planet.PolygonAux.ChunksByPoly[poly];
+    }
 }

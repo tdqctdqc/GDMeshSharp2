@@ -41,9 +41,13 @@ public class GeneratorClient : Node, IClient
     public void HandleInput(InputEvent e, float delta)
     {
     }
-    public void Process(float delta)
+    public void Process(float delta, bool gameStateChanged)
     {
         _ui.Process(delta, Cam);
         Graphics.Process(delta);
+        if (gameStateChanged)
+        {
+            Graphics.Update();
+        }
     }
 }

@@ -3,99 +3,146 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class ChunkChangeListener
+public class ChunkChangeListener<TKey>
 {
-    public HashSet<MapChunk> Changed { get; private set; }
+    public Dictionary<MapChunk, RefAction<TKey>> Added { get; private set; }
+    public Dictionary<MapChunk, RefAction<TKey>> Changed { get; private set; }
+    public Dictionary<MapChunk, RefAction<TKey>> Removed { get; private set; }
 
-    public static ChunkChangeListener ListenDynamic(Data data, params RefAction<MapPolygon>[] triggers)
+    public ChunkChangeListener(Data data)
     {
-        var l = new ChunkChangeListener();
-        foreach (var trigger in triggers)
+        Added = new Dictionary<MapChunk, RefAction<TKey>>();
+        Changed = new Dictionary<MapChunk, RefAction<TKey>>();
+        Removed = new Dictionary<MapChunk, RefAction<TKey>>();
+        foreach (var chunk in data.Planet.PolygonAux.Chunks)
         {
-            trigger.Subscribe(p => l.Changed.Add(p.GetChunk(data)));
+            Added.Add(chunk, new RefAction<TKey>());
+            Changed.Add(chunk, new RefAction<TKey>());
+            Removed.Add(chunk, new RefAction<TKey>());
         }
-        return l;
-    }
-    public static ChunkChangeListener ListenForValueChange<TEntity, TValue>(
-        Data data, RefAction<ValChangeNotice<TValue>> valueTrigger, Func<TEntity, MapPolygon> getPoly)
-        where TEntity : Entity
-    {
-        var l = new ChunkChangeListener();
-        valueTrigger.Subscribe(n =>
-        {
-            var poly = getPoly((TEntity) n.Entity);
-            l.Changed.Add(poly.GetChunk(data));
-        });
-        return l;
-    }
-    public static ChunkChangeListener ListenForEntityCreateDestroy<TEntity>(Data data, Func<TEntity, MapPolygon> getPoly) 
-        where TEntity : Entity
-    {
-        var l = new ChunkChangeListener();
-        data.SubscribeForCreation<TEntity>(n => l.AddedEntity(n, data, getPoly));
-        data.SubscribeForDestruction<TEntity>(n => l.RemovedEntity(n, data, getPoly));
-        return l;
-    }
-    public static ChunkChangeListener ListenForEntityCreateDestroyMult<TEntity>(Data data, Func<TEntity, IEnumerable<MapPolygon>> getPolys) 
-        where TEntity : Entity
-    {
-        var l = new ChunkChangeListener();
-        data.SubscribeForCreation<TEntity>(n => l.AddedEntities(n, data, getPolys));
-        data.SubscribeForDestruction<TEntity>(n => l.RemovedEntities(n, data, getPolys));
-        return l;
-    }
-    private ChunkChangeListener()
-    {
-        Changed = new HashSet<MapChunk>();
     }
 
+    public void MarkAdded(TKey key, MapChunk chunk)
+    {
+        Added[chunk].Invoke(key);
+    }
+    public void MarkRemoved(TKey key, MapChunk chunk)
+    {
+        Removed[chunk].Invoke(key);
+    }
     public void Clear()
     {
-        Changed.Clear();
+        // foreach (var v in Added.Values)
+        // {
+        //     v.Clear();
+        // }
+        //
+        // foreach (var v in Removed.Values)
+        // {
+        //     v.Clear();
+        // }
+        //
+        // foreach (var v in Changed.Values)
+        // {
+        //     v.Clear();
+        // }
     }
-    private void AddedEntities<TEntity>(EntityCreatedNotice n, Data data, 
-        Func<TEntity, IEnumerable<MapPolygon>> getPolys) 
-        where TEntity : Entity
+}
+
+public static class ChunkChangeListener2Ext
+{
+    public static void ListenForEntityCreationDestruction<TEntity, TKey>(
+        this ChunkChangeListener<TKey> l,
+        Data data, 
+        Func<TEntity, TKey> getKey,
+        Func<TEntity, MapPolygon> getPoly) where TEntity : Entity
     {
-        foreach (var e in n.Entities)
+        var created = data.EntityTypeTree[typeof(TEntity)].Created;
+        created.Subscribe(notice =>
         {
-            var t = (TEntity) e;
-            var polys = getPolys(t);
-            foreach (var poly in polys)
+            foreach (var e in notice.Entities)
             {
-                var chunk = poly.GetChunk(data);
-                Changed.Add(chunk); 
+                var v = (TEntity) e;
+                var p = getPoly(v);
+                var chunk = p.GetChunk(data);
+                l.MarkAdded(getKey(v), chunk);
             }
-        }
-    }
-    private void AddedEntity<TEntity>(EntityCreatedNotice n, Data data, Func<TEntity, MapPolygon> getPoly) 
-        where TEntity : Entity
-    {
-        foreach (var e in n.Entities)
+        });
+        var destroyed = data.EntityTypeTree[typeof(TEntity)].Destroyed;
+        destroyed.Subscribe(notice =>
         {
-            var t = (TEntity) e;
-            var poly = getPoly(t);
-            var chunk = poly.GetChunk(data);
-            Changed.Add(chunk);
-        }
+            var v = (TEntity) notice.Entity;
+            var p = getPoly(v);
+            var chunk = p.GetChunk(data);
+            l.MarkRemoved(getKey(v), chunk);
+        });
     }
-    private void RemovedEntity<TEntity>(EntityDestroyedNotice n, Data data, Func<TEntity, MapPolygon> getPoly) 
-        where TEntity : Entity
+    public static void ListenForEntityCreationDestructionMult<TEntity, TKey>(
+        this ChunkChangeListener<TKey> l,
+        Data data, 
+        Func<TEntity, TKey> getKey,
+        Func<TEntity, IEnumerable<MapPolygon>> getPoly) where TEntity : Entity
     {
-        var t = (TEntity) n.Entity;
-        var poly = getPoly(t);
-        var chunk = poly.GetChunk(data);
-        Changed.Add(chunk);
-    }
-    private void RemovedEntities<TEntity>(EntityDestroyedNotice n, Data data, Func<TEntity, IEnumerable<MapPolygon>> getPoly) 
-        where TEntity : Entity
-    {
-        var t = (TEntity) n.Entity;
-        var polys = getPoly(t);
-        foreach (var poly in polys)
+        var created = data.EntityTypeTree[typeof(TEntity)].Created;
+        created.Subscribe(notice =>
         {
-            var chunk = data.Planet.PolygonAux.ChunksByPoly[poly];
-            Changed.Add(chunk);
-        }
+            foreach (var e in notice.Entities)
+            {
+                var v = (TEntity) e;
+                var ps = getPoly(v);
+                foreach (var p in ps)
+                {
+                    var chunk = p.GetChunk(data);
+                    l.MarkAdded(getKey(v), chunk);
+                }
+            }
+        });
+        var destroyed = data.EntityTypeTree[typeof(TEntity)].Destroyed;
+        destroyed.Subscribe(notice =>
+        {
+            var v = (TEntity) notice.Entity;
+            var ps = getPoly(v);
+            foreach (var p in ps)
+            {
+                var chunk = p.GetChunk(data);
+                l.MarkRemoved(getKey(v), chunk);
+            }
+        });
+    }
+    
+    public static void ListenForValueChange<TKey, TEntity, TValue>(
+        this ChunkChangeListener<TKey> l,
+        Data data, RefAction<ValChangeNotice<TValue>> valueTrigger, Func<TEntity, MapPolygon> getPoly,
+        Func<TEntity, TKey> getKey)
+        where TEntity : Entity
+    {
+        valueTrigger.Subscribe(n =>
+        {
+            var e = (TEntity) n.Entity;
+            var poly = getPoly(e);
+            var key = getKey(e);
+            l.Changed[poly.GetChunk(data)].Invoke(key);
+        });
+    }
+    public static void ListenDynamic<TKey, TValue>(
+        this ChunkChangeListener<TKey> l,
+        Data data, 
+        Func<TValue, MapPolygon> getPoly, 
+        Func<TValue, TKey> getKey,
+        RefAction<TValue> createTrigger,
+        RefAction<TValue> removeTrigger)
+    {
+        createTrigger.Subscribe(v =>
+        {
+            var chunk = getPoly(v).GetChunk(data);
+            var key = getKey(v);
+            l.MarkAdded(key, chunk);
+        });
+        removeTrigger.Subscribe(v =>
+        {
+            var chunk = getPoly(v).GetChunk(data);
+            var key = getKey(v);
+            l.MarkRemoved(getKey(v), chunk);
+        });
     }
 }

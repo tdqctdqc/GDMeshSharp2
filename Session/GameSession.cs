@@ -14,8 +14,11 @@ public class GameSession : Node, IDataSession
     private WriteKey _key;
     public override void _Process(float delta)
     {
-        _logic?.Process(delta);
-        Client?.Process(delta);
+        if (_logic != null)
+        {
+            var gameStateChanged = _logic.Process(delta);
+            Client?.Process(delta, gameStateChanged);
+        }
     }
 
     public void Setup()

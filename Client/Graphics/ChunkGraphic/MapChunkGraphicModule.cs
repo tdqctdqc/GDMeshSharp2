@@ -5,15 +5,15 @@ using Godot;
 
 public class MapChunkGraphicModule : Node2D
 {
-    private Dictionary<MapChunkGraphicLayer, Vector2> _layers;
+    private Dictionary<IMapChunkGraphicLayer, Vector2> _layers;
     public MapChunkGraphicModule()
     {
-        _layers = new Dictionary<MapChunkGraphicLayer, Vector2>();
+        _layers = new Dictionary<IMapChunkGraphicLayer, Vector2>();
     }
 
-    protected void AddLayer(Vector2 range, MapChunkGraphicLayer layer)
+    protected void AddLayer(Vector2 range, IMapChunkGraphicLayer layer)
     {
-        AddChild(layer);
+        AddChild((Node)layer);
         _layers.Add(layer, range);
     }
     public void Update(Data data)
@@ -25,12 +25,12 @@ public class MapChunkGraphicModule : Node2D
             var range = kvp.Value;
             if (scaledZoom >= range.x && scaledZoom <= range.y)
             {
-                kvp.Key.Visible = true;
+                kvp.Key.Node.Visible = true;
                 kvp.Key.Update(data);
             }
             else
             {
-                kvp.Key.Visible = false;
+                kvp.Key.Node.Visible = false;
             }
         }
     }
