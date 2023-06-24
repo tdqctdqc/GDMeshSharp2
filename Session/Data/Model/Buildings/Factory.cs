@@ -11,14 +11,14 @@ public class Factory : ProductionBuildingModel
         };
     public override int ProductionCap { get; } = 100;
     public Factory() : base(BuildingType.Industry, ItemManager.IndustrialPoint, nameof(Factory),
-        100, 200)
+        100, 2000)
     {
     }
 
     public override Dictionary<Item, int> BuildCosts { get; protected set; }
         = new Dictionary<Item, int>
         {
-            {ItemManager.Iron, 100}
+            {ItemManager.Iron, 1000}
         };
     protected override bool CanBuildInTriSpec(PolyTri t, Data data)
     {

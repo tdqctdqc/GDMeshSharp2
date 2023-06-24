@@ -7,7 +7,7 @@ public class Ranch : ProductionBuildingModel
     public Ranch() 
         : base(BuildingType.Grazing, ItemManager.Food, nameof(Ranch), 
             25, 
-            100
+            500
         )
     {
     }

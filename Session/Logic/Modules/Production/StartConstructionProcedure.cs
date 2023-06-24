@@ -37,6 +37,11 @@ public class StartConstructionProcedure : Procedure
         {
             return false;
         }
+
+        if (Construction.Model.Model().BuildCosts.Any(kvp => regime.Items[kvp.Key] < kvp.Value))
+        {
+            return false;
+        }
         return true;
     }
 

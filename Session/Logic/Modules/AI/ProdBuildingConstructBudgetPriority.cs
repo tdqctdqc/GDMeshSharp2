@@ -37,18 +37,10 @@ public class ProdBuildingConstructBudgetPriority : BudgetPriority
     }
 
     public override void Calculate(Regime regime, Data data, ItemWallet budget, Dictionary<Item, float> prices,
-        int credit, int availLabor, Action<Message> queueMessage, Action<Func<HostWriteKey, Entity>> queueEntityCreation)
+        int credit, int availLabor, MajorTurnOrders orders)
     {
-        var sw = new Stopwatch();
-        sw.Start();
         var buildings = SelectBuildings(regime, data, budget, prices, credit, availLabor);
-        sw.Stop();
-        var selectBuildingTime = sw.Elapsed.TotalMilliseconds;
-        sw.Reset();
-        sw.Start();
-        SelectBuildSites(regime, data, buildings, budget, queueMessage);
-        sw.Stop();
-        var selectBuildSiteTime = sw.Elapsed.TotalMilliseconds;
+        SelectBuildSites(regime, data, buildings, budget, orders);
         // GD.Print("select buildings " + selectBuildingTime + " select sites " + selectBuildSiteTime);
     }
 
@@ -124,11 +116,12 @@ public class ProdBuildingConstructBudgetPriority : BudgetPriority
         return res;
     }
     private void SelectBuildSites(Regime regime, Data data, Dictionary<BuildingModel, int> toBuild, 
-        ItemWallet budget, Action<Message> queueMessage)
+        ItemWallet budget, MajorTurnOrders orders)
     {
         var currConstruction = data.Society.CurrentConstruction;
         var availPolys = regime.Polygons;
-        var newConstructionPoses = new HashSet<PolyTriPosition>();
+        
+        //sort buildings by type then assign polys from that
         foreach (var kvp in toBuild)
         {
             var building = kvp.Key;
@@ -139,24 +132,7 @@ public class ProdBuildingConstructBudgetPriority : BudgetPriority
                 poly = availPolys
                     .FirstOrDefault(p => p.PolyBuildingSlots[building.BuildingType] > 0);
                 if (poly == null) continue;
-                var slots = poly.PolyBuildingSlots.AvailableSlots[building.BuildingType]
-                    .Where(pt => newConstructionPoses.Contains(pt) == false);
-                
-                if (slots.Count() == 0) continue;
-                
-                var pos = slots.First();
-                newConstructionPoses.Add(pos);
-
-                var proc = StartConstructionProcedure.Construct(
-                    building.MakeRef<BuildingModel>(),
-                    pos,
-                    regime.MakeRef()
-                );
-                foreach (var buildCost in building.BuildCosts)
-                {
-                    budget.Remove(buildCost.Key, buildCost.Value);
-                }
-                queueMessage(proc);
+                orders.StartConstructions.ConstructionsToStart.Add(StartConstructionRequest.Construct(building, poly));
             }
         }
     }

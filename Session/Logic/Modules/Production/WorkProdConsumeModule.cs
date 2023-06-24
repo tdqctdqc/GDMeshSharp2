@@ -33,42 +33,18 @@ public class WorkProdConsumeModule : LogicModule
     public override void Calculate(Data data, Action<Message> queueMessage,
         Action<Func<HostWriteKey, Entity>> queueEntityCreation)
     {
-        var swTotal = new Stopwatch();
-        swTotal.Start();
-        var sw = new Stopwatch();
-        
-        sw.Start();
-        Clear();
         var tick = data.BaseDomain.GameClock.Tick;
         _ticksSinceLast = tick - _lastRunTick;
         _lastRunTick = tick;
         var proc = WorkProdConsumeProcedure.Create(_ticksSinceLast);
-        sw.Stop();
-        // GD.Print("\t workprodconsume pre time " + sw.Elapsed.TotalMilliseconds);
-        sw.Reset();
         
-        sw.Start();
         Parallel.ForEach(data.Society.Regimes.Entities, 
             regime => WorkForRegime(regime, data, proc));
-        sw.Stop();
-        // GD.Print("\t regime prod time " + sw.Elapsed.TotalMilliseconds);
-        sw.Reset();
         
-        sw.Start();
         Parallel.ForEach(data.Society.Regimes.Entities,
             regime => ConsumeForRegime(proc, regime, data));
-        sw.Stop();
-        // GD.Print("\t regime consume time " + sw.Elapsed.TotalMilliseconds);
-        sw.Reset();
         
-        sw.Start();
         queueMessage(proc);
-        sw.Stop();
-        // GD.Print("\t queueing msgs " + sw.Elapsed.TotalMilliseconds);
-        sw.Reset();
-        
-        swTotal.Stop();
-        // GD.Print("\t total time for workprodconsume " + swTotal.Elapsed.TotalMilliseconds);
     }
 
     private void WorkForRegime(Regime regime, Data data, WorkProdConsumeProcedure proc)
@@ -123,8 +99,12 @@ public class WorkProdConsumeModule : LogicModule
         var constructLaborRunningTotal = constructionLaborNeeded;
         if (constructionLaborNeeded == 0) return;
         
-        var constructLaborRatio = Mathf.Clamp(totalLaborerUnemployed  / constructionLaborNeeded, 0f, 1f);
-        if (constructionLaborNeeded == 0) constructLaborRatio = 0f; 
+        var constructLaborRatio = 0f;
+        
+        if (totalLaborerUnemployed == 0) constructLaborRatio = 0f;
+        else constructLaborRatio = Mathf.Clamp((float)totalLaborerUnemployed / (float)constructionLaborNeeded, 0f, 1f);
+
+        
         foreach (var poly in regimePolys)
         {
             var scratch = _polyScratches[poly.Id];
@@ -148,6 +128,12 @@ public class WorkProdConsumeModule : LogicModule
         if (totalConstructLabor > constructionLaborNeeded)
         {
             throw new Exception($"needed {constructionLaborNeeded} have {totalConstructLabor}");
+        }
+
+        var effective = Mathf.FloorToInt(constructionLaborNeeded * constructLaborRatio);
+        if (totalConstructLabor < effective)
+        {
+            throw new Exception($"expected {effective} have {totalConstructLabor} ratio {constructLaborRatio}");
         }
 
     }
@@ -193,13 +179,15 @@ public class WorkProdConsumeModule : LogicModule
             id => ItemWallet.Construct());
         proc.DemandsByRegime.TryAdd(regime.Id, demands);
         
-        var numHungryPeeps = regime.Polygons
+        var numPeeps = regime.Polygons
             .Where(p => p.HasPeep(data))
             .Select(p => p.GetPeep(data))
             .Sum(p => p.Size);
-        var foodDesired = numHungryPeeps * data.BaseDomain.Rules.FoodConsumptionPerPeepPoint * _ticksSinceLast;
+        var foodDesired = numPeeps * data.BaseDomain.Rules.FoodConsumptionPerPeepPoint * _ticksSinceLast;
         demands.Add(ItemManager.Food, foodDesired);
-        var foodStock = regime.Items[ItemManager.Food] + proc.RegimeResourceGains[regime.Id][ItemManager.Food];
+        var foodStock = regime.Items[ItemManager.Food] 
+                        // + proc.RegimeResourceGains[regime.Id][ItemManager.Food]
+                        ;
         var foodConsumption = Mathf.Min(foodDesired, foodStock);
         consumptions.Add(ItemManager.Food, foodConsumption);
     }

@@ -6,7 +6,8 @@ using Godot;
 public class Mine : ExtractionBuildingModel
 {
     public Mine(string name, Item prodItem) 
-        : base(prodItem, name, true, 150, 300)
+        : base(prodItem, name, true, 
+            150, 3000)
     {
         if (prodItem.Attributes.Has<MineableAttribute>() == false) throw new Exception();
     }

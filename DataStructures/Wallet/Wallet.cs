@@ -31,7 +31,10 @@ public abstract class Wallet<T>
             return;
             throw new Exception("Trying to remove whats not in wallet");
         }
-        if(Contents[t] < amount) throw new Exception("Trying to remove more than in wallet");
+        if(Contents[t] < amount)
+        {
+            throw new Exception("Trying to remove more than in wallet");
+        }
         Contents[t] -= amount;
     }
 

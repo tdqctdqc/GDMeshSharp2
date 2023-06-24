@@ -60,20 +60,20 @@ public class PolyEmploymentScratch
         if (regimeConstructNeedTotal > regimeUnemployedLaborerTotal)
         {
             contribution = unemployed;
-            ByJob.AddOrSum(builderJob, contribution);
             Available -= contribution;
             Desired += contribution;
         }
         else
         {
-            var shareOfTotalUnemployed = (float)unemployed / regimeUnemployedLaborerTotal;
-            contribution = Mathf.CeilToInt(shareOfTotalUnemployed * unemployed);
+            var shareOfTotalUnemployed = (float)unemployed / (float)regimeUnemployedLaborerTotal;
+            var shareOfNeed = shareOfTotalUnemployed * regimeConstructNeedTotal;
+            contribution = Mathf.CeilToInt(shareOfNeed);
             contribution = Mathf.Min(regimeConstructNeedRunningTotal, contribution);
             contribution = Mathf.Min(Available, contribution);
             Available -= contribution;
             Desired += Mathf.CeilToInt(shareOfTotalUnemployed * regimeConstructNeedTotal);
-            ByJob.AddOrSum(builderJob, contribution);
         }
+        ByJob.AddOrSum(builderJob, contribution);
 
         return contribution;
     }

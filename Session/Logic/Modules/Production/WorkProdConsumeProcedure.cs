@@ -1,4 +1,5 @@
 
+using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Collections.Generic;
@@ -90,7 +91,15 @@ public class WorkProdConsumeProcedure : Procedure
             foreach (var kvp2 in consumptions.Contents)
             {
                 var item = (Item)key.Data.Models[kvp2.Key];
-                r.Items.Remove(item, kvp2.Value);
+                try
+                {
+                    r.Items.Remove(item, kvp2.Value);
+                }
+                catch (Exception e)
+                {
+                    GD.Print($"trying to remove ${kvp2.Value} of ${r.Items[item]} ${item.Name}");
+                    throw;
+                }
             }
             r.History.ConsumptionHistory.TakeSnapshot(tick, consumptions);
         }

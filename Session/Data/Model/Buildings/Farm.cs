@@ -7,16 +7,16 @@ public class Farm : ProductionBuildingModel
 {
     public Farm() 
         : base(BuildingType.Agriculture, ItemManager.Food, nameof(Farm), 
-            1, 
-            200
+            50, 
+            1000
             )
     {
     }
-    public override int ProductionCap { get; } = 2000;
+    public override int ProductionCap { get; } = 1500;
     public override Dictionary<Item, int> BuildCosts { get; protected set; }
         = new Dictionary<Item, int>
         {
-            {ItemManager.Food, 1}
+            {ItemManager.Food, 10000}
         };
     public override Dictionary<PeepJob, int> JobLaborReqs { get; }
         = new Dictionary<PeepJob, int>

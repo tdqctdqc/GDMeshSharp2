@@ -22,7 +22,6 @@ public abstract class BudgetPriority
         Dictionary<Item, float> prices,
         int credit,
         int availLabor,
-        Action<Message> queueMessage,
-        Action<Func<HostWriteKey, Entity>> queueEntityCreation);
+        MajorTurnOrders orders);
 
 }

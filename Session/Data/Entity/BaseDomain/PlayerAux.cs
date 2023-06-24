@@ -19,5 +19,4 @@
         }
 
         public Player LocalPlayer => ByGuid[Game.I.PlayerGuid];
-        
     }

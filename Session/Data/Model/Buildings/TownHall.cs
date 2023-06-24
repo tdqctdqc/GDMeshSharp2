@@ -16,7 +16,9 @@ public class TownHall : WorkBuildingModel
         {
             {ItemManager.Iron, 200}
         };
-    public TownHall() : base(BuildingType.Government, nameof(TownHall), 50, 100)
+    public TownHall() 
+        : base(BuildingType.Government, nameof(TownHall), 
+            50, 500)
     {
     }
 

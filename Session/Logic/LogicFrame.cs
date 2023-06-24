@@ -18,7 +18,6 @@ public class LogicFrame
     {
         var results = new ConcurrentBag<Message>();
         var entityCreateFuncs = new ConcurrentBag<Func<HostWriteKey, Entity>>();
-        var modCount = _modules.Length;
         Parallel.ForEach(_modules, m =>
         {
             Game.I.Logger.RunAndLogTime(

@@ -9,6 +9,7 @@ public class RuleVars : Entity
     private static Type DomainType() => typeof(BaseDomain);
     public override EntityTypeTreeNode GetEntityTypeTreeNode() => EntityTypeTreeNode;
     public static EntityTypeTreeNode EntityTypeTreeNode { get; private set; }
+    public int TickCycleLength { get; private set; }
     public int FoodConsumptionPerPeepPoint { get; protected set; }
     public float MinSurplusRatioToGetGrowth { get; private set; }
     public float MaxEffectiveSurplusRatio { get; private set; }
@@ -19,7 +20,8 @@ public class RuleVars : Entity
     public static RuleVars CreateDefault(GenWriteKey key)
     {
         var v = new RuleVars(
-            1,
+            4,
+            2,
             .01f,
             1f,
             .02f,
@@ -31,6 +33,7 @@ public class RuleVars : Entity
         return v;
     }
     [SerializationConstructor] private RuleVars(
+        int tickCycleLength,
         int foodConsumptionPerPeepPoint, 
         float minSurplusRatioToGetGrowth,
         float maxEffectiveSurplusRatio,

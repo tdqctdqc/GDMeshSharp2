@@ -3,68 +3,74 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 
 public class HostLogic : ILogic
 {
     public ConcurrentQueue<Command> CommandQueue { get; }
     public EntityValueCache<Regime, RegimeAi> AIs { get; }
+    private ConcurrentDictionary<Regime, TurnOrders> _submittedTurn;
     private HostServer _server;
     private HostWriteKey _hKey;
     private ProcedureWriteKey _pKey;
     private Data _data;
-    private readonly LogicFrame[] _frames;
-    private int _tick = 0;
-    private int _frameIter = 0;
-    private float _framePeriod = 1f;
-    private float _frameTimer = 1f;
-    private Task<LogicResults> _calculating;
-    
+    private Task<LogicResults> _calculatingLogicResult;
+    private Task<bool> _calculatingAiOrders;
+    private LogicModule[] _majorModules, _minorModules;
     public HostLogic(Data data)
     {
+        _submittedTurn = new ConcurrentDictionary<Regime, TurnOrders>();
         AIs = EntityValueCache<Regime, RegimeAi>
             .ConstructConstant(data, r => new RegimeAi(r, data));
         CommandQueue = new ConcurrentQueue<Command>();
-        _frames = new LogicFrame[]
+        _majorModules = new LogicModule[]
         {
-            new LogicFrame(new WorkProdConsumeModule()),
-            new LogicFrame(new ConstructBuildingsModule()),
-            new LogicFrame(new PeepGrowthModule()),
-            new LogicFrame(),
-            new LogicFrame(new AiProdConstructModule(AIs, data)),
+            new WorkProdConsumeModule(),
+            new ConstructBuildingsModule(),
+            new PeepGrowthModule()
         };
+        _minorModules = new LogicModule[] { };
     }
 
     public bool Process(float delta)
     {
-        _frameTimer += delta;
-        if (_calculating != null && _calculating.IsCompleted)
+        DoCommands();
+        if (_data.Society.Regimes.Entities.All(p => _submittedTurn.ContainsKey(p)))
         {
-            if( _calculating.Exception != null)
+            _submittedTurn.Clear();
+            _calculatingLogicResult = Task.Run(CalculateFrameResults);
+            return false;
+        }
+        else if (_calculatingLogicResult != null && _calculatingLogicResult.IsCompleted)
+        {
+            if( _calculatingLogicResult.Exception != null)
             {
-                throw _calculating.Exception;
+                throw _calculatingLogicResult.Exception;
             }
             
-            var result = _calculating.Result;
+            var result = _calculatingLogicResult.Result;
             EnactFrame(result);
             DoCommands();
-            _calculating = null;
+            _calculatingLogicResult = null;
+            
+            _calculatingAiOrders = Task.Run(() =>
+            {
+                if (_data.BaseDomain.GameClock.MajorTurn(_data))
+                {
+                    CalcAiMajorTurnOrders();
+                    return true;
+                }
+                else
+                {
+                    CalcAiMinorTurnOrders();
+                    return true;
+                }
+            });
             return true;
         }
-        
-        if (_frameTimer >= _framePeriod 
-            && _calculating == null)
-        {
-            _frameTimer = 0f;
-            // DoCommands();
-            _calculating = Task.Run(CalculateFrameResults);
-        }
-        else if (_calculating == null)
-        {
-            // DoCommands();
-        }
-
         return false;
+
     }
     public void SetDependencies(HostServer server, GameSession session, Data data)
     {
@@ -74,17 +80,80 @@ public class HostLogic : ILogic
         _pKey = new ProcedureWriteKey(data, session);
     }
 
-    private LogicResults CalculateFrameResults()
+    public void SubmitTurn(TurnOrders orders)
     {
-        var logicResult = _frames[_frameIter].Calculate(_data);
-        _frameIter = (_frameIter + 1) % _frames.Length;
-        return logicResult;
+        _submittedTurn.TryAdd(orders.Regime.Entity(), orders);
     }
 
+    private void CalcAiMajorTurnOrders()
+    {
+        var aiRegimes = _data.Society.Regimes.Entities
+            .Where(r => r.IsPlayerRegime(_data) == false);
+        Parallel.ForEach(aiRegimes, r =>
+        {
+            var orders = AIs[r].GetMajorTurnOrders(_data);
+            SubmitTurn(orders);
+        });
+    }
+    private void CalcAiMinorTurnOrders()
+    {
+        var aiRegimes = _data.Society.Regimes.Entities
+            .Where(r => r.IsPlayerRegime(_data) == false);
+        Parallel.ForEach(aiRegimes, r =>
+        {
+            var orders = AIs[r].GetMinorTurnOrders(_data);
+            SubmitTurn(orders);
+        });
+    }
+    private LogicResults CalculateFrameResults()
+    {
+        if (_data.BaseDomain.GameClock.MajorTurn(_data))
+        {
+            return DoMajorTurn();
+        }
+        else
+        {
+            return DoMinorTurn();
+        }
+    }
+
+    private LogicResults DoMajorTurn()
+    {
+        var msgs = new ConcurrentBag<Message>();
+        var entityCreateFuncs = new ConcurrentBag<Func<HostWriteKey, Entity>>();
+        
+        foreach (var m in _majorModules)
+        {
+            m.Calculate(_data, msgs.Add, entityCreateFuncs.Add);
+        }
+        
+        foreach (var kvp in _submittedTurn)
+        {
+            var orders = (MajorTurnOrders) kvp.Value;
+            orders.StartConstructions.Enact(_data, msgs.Add, 
+                entityCreateFuncs.Add);
+        }
+        return new LogicResults(msgs, entityCreateFuncs);
+    }
+    private LogicResults DoMinorTurn()
+    {
+        var msgs = new ConcurrentBag<Message>();
+        var entityCreateFuncs = new ConcurrentBag<Func<HostWriteKey, Entity>>();
+        
+        foreach (var m in _minorModules)
+        {
+            m.Calculate(_data, msgs.Add, entityCreateFuncs.Add);
+        }
+        
+        foreach (var kvp in _submittedTurn)
+        {
+            var orders = (MinorTurnOrders) kvp.Value;
+            
+        }
+        return new LogicResults(msgs, entityCreateFuncs);
+    }
     private void EnactFrame(LogicResults logicResult)
     {
-        //todo ticking for remote as well?
-        new TickProcedure().Enact(_pKey);
         for (var i = 0; i < logicResult.Procedures.Count; i++)
         {
             logicResult.Procedures[i].Enact(_pKey);
@@ -113,6 +182,8 @@ public class HostLogic : ILogic
         }
         
         _server.ReceiveLogicResult(logicResult, _hKey);
+        //todo ticking for remote as well?
+        new TickProcedure().Enact(_pKey);
         _server.PushPackets(_hKey);
     }
 

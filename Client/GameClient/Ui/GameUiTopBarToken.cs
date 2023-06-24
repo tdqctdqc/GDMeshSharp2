@@ -18,6 +18,11 @@ public class GameUiTopBarToken : ButtonBarToken
         AddWindowButton<EntityOverviewWindow>(Ui.Entities);
         AddWindowButton<ClientSettingsWindow>(Ui.ClientSettings);
         AddWindowButton<LoggerWindow>(Ui.Logger);
+        AddButton("Submit Turn", () =>
+        {
+            var c = SubmitTurnCommand.Construct();
+            Game.I.Client.Requests.QueueCommand.Invoke(c);
+        });
         
         var hostClientLabel = new Label();
         hostClientLabel.Text = host ? "Host" : "Client";
@@ -32,5 +37,7 @@ public class GameUiTopBarToken : ButtonBarToken
         var peepsInfo = new RegimePeepsInfoBar();
         peepsInfo.Setup(data);
         Container.AddChildWithVSeparator(peepsInfo);
+        
+        
     }
 }

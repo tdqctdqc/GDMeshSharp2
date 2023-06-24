@@ -20,8 +20,7 @@ public class BudgetAI
     }
 
     public void Calculate(Data data, 
-        Action<Message> queueMessage, 
-        Action<Func<HostWriteKey, Entity>> queueEntityCreation)
+        MajorTurnOrders orders)
     {
         var prices = data.Models.Items.Models.Values.ToDictionary(v => v, v => 1f);
         var totalPrice =
@@ -36,13 +35,13 @@ public class BudgetAI
         foreach (var kvp in _priorities)
         {
             DoPriority(kvp.Value, data, prices, budget, totalPriorityWeight, totalPrice, 
-                totalLaborAvail, queueMessage, queueEntityCreation);
+                totalLaborAvail, orders);
         }
     }
 
     private void DoPriority(BudgetPriority priority, Data data, Dictionary<Item, float> prices, 
         ItemWallet budget, float totalPriorityWeight, float totalPrice, int totalLaborAvail, 
-        Action<Message> queueMessage, Action<Func<HostWriteKey, Entity>> queueEntityCreation)
+        MajorTurnOrders orders)
     {
         var priorityWeight = priority.Weight;
         var priorityShare = priorityWeight / totalPriorityWeight;
@@ -55,6 +54,6 @@ public class BudgetAI
                                 $"total price {totalPrice}");
         }
         priority.Calculate(_regime, data, budget, prices, credit,
-            labor, queueMessage, queueEntityCreation);
+            labor, orders);
     }
 }

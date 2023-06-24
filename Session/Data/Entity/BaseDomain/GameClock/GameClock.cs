@@ -20,4 +20,9 @@ public class GameClock : Entity
         Tick = tick;
     }
 
+    public bool MajorTurn(Data data)
+    {
+        return Tick % data.BaseDomain.Rules.TickCycleLength == 0;
+    }
+
 }
