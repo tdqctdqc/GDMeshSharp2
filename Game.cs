@@ -10,7 +10,7 @@ public class Game : Node
     public static Game I { get; private set; }
     public Serializer Serializer { get; private set; }
     public Logger Logger { get; private set; }
-    public Guid PlayerGuid { get; private set; } = Guid.NewGuid();
+    // public Guid PlayerGuid { get; private set; } = Guid.NewGuid();
     public RandomNumberGenerator Random = new RandomNumberGenerator();
     private ISession _session;
 
@@ -120,10 +120,5 @@ public class Game : Node
         _session = (ISession)session;
         _session.Setup();
         AddChild(session);
-    }
-
-    public void SetPlayerGuid(Guid guid, WriteKey key)
-    {
-        PlayerGuid = guid;
     }
 }

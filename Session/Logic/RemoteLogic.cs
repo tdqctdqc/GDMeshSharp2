@@ -44,12 +44,4 @@ public class RemoteLogic : ILogic
     {
         p.Enact(_pKey);
     }
-
-    public void ProcessDecision(Decision d)
-    {
-        if (d.Decided) return;
-        if (d.IsPlayerDecision(_sKey.Data) == false
-            || d.Decider.Entity().GetPlayer(_sKey.Data).PlayerGuid != Game.I.PlayerGuid) return;
-        _sKey.Data.Notices.NeedDecision?.Invoke(d);
-    }
 }

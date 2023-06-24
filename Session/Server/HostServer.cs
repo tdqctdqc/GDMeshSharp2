@@ -74,22 +74,6 @@ public class HostServer : Node, IServer
                 _peers[j].QueuePacket(bytes);
             }
         }
-        
-        for (var i = 0; i < results.Decisions.Count; i++)
-        {
-            var d = results.Decisions[i];
-            if (d.Decided) continue;
-            if (d.IsPlayerDecision(_key.Data))
-            {
-                var p = d.Decider.Entity().GetPlayer(_key.Data);
-                if (p.PlayerGuid != Game.I.PlayerGuid)
-                {
-                    var bytes = d.Wrap();
-                    var peer = _peersByGuid[p.PlayerGuid];
-                    peer.QueuePacket(bytes);
-                }
-            }
-        }
     }
 
     public void PushPackets(HostWriteKey key)
@@ -98,8 +82,7 @@ public class HostServer : Node, IServer
     }
     public void QueueCommandLocal(Command c)
     {
-        GD.Print("queueing command in server");
-        c.SetGuid(Game.I.PlayerGuid);
+        c.SetGuid(_key.Data.ClientPlayerData.LocalPlayerGuid);
         _logic.CommandQueue.Enqueue(c);
     }
 }

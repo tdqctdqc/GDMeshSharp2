@@ -7,9 +7,9 @@ public class SubmitTurnCommand : Command
 {
     public TurnOrders Orders { get; private set; }
 
-    public static SubmitTurnCommand Construct()
+    public static SubmitTurnCommand Construct(TurnOrders orders)
     {
-        
+        return new SubmitTurnCommand(orders);
     }
     [SerializationConstructor] private SubmitTurnCommand(TurnOrders orders)
     {
@@ -18,7 +18,8 @@ public class SubmitTurnCommand : Command
 
     public override void Enact(HostWriteKey key, Action<Procedure> queueProcedure)
     {
-        key.Logic.SubmitTurn(Orders);
+        var player = key.Data.BaseDomain.PlayerAux.ByGuid[CommandingPlayerGuid];
+        key.Logic.SubmitTurn(player, Orders);
     }
 
     public override bool Valid(Data data)

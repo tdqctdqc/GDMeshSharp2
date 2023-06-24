@@ -13,13 +13,13 @@ public class RegimeAi
 
     public MajorTurnOrders GetMajorTurnOrders(Data data)
     {
-        var orders = new MajorTurnOrders();
+        var orders = new MajorTurnOrders(data.BaseDomain.GameClock.Tick, Regime.MakeRef());
         Budget.Calculate(data, orders);
         return orders; 
     }
     public MinorTurnOrders GetMinorTurnOrders(Data data)
     {
-        var orders = new MinorTurnOrders();
+        var orders = new MinorTurnOrders(data.BaseDomain.GameClock.Tick, Regime.MakeRef());
 
         return orders; 
     }

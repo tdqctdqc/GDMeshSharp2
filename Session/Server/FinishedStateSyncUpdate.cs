@@ -18,7 +18,7 @@ public class FinishedStateSyncUpdate : Update
     public override void Enact(ServerWriteKey key)
     {
         GD.Print("Finished state sync");
-        Game.I.SetPlayerGuid(PlayerGuid, key);
+        key.Data.ClientPlayerData.SetLocalPlayerGuid(PlayerGuid);
         key.Data.Notices.FinishedStateSync?.Invoke();
     }
 }

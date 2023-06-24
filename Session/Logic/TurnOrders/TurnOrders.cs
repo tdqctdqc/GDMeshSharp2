@@ -5,4 +5,11 @@ using System.Linq;
 public class TurnOrders
 {
     public EntityRef<Regime> Regime { get; private set; }
+    public int Tick { get; private set; }
+
+    public TurnOrders(int tick, EntityRef<Regime> regime)
+    {
+        Tick = tick;
+        Regime = regime;
+    }
 }

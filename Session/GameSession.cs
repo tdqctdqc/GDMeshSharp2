@@ -7,7 +7,8 @@ public class GameSession : Node, IDataSession
 {
     RefFulfiller ISession.RefFulfiller => Data.RefFulfiller;
     public Data Data { get; private set; }
-    public IClient Client { get; private set; }
+    public IClient Client => _client;
+    private GameClient _client;
     private ILogic _logic;
     public IServer Server { get; private set; }
     public UserCredential UserCredential { get; private set; }
@@ -28,6 +29,7 @@ public class GameSession : Node, IDataSession
     public void StartAsHost(GenData data, MapGraphics graphics = null)
     {
         Data = data;
+        Data.ClientPlayerData.SetLocalPlayerGuid(new Guid());
         var hServer = new HostServer();
         Server = hServer;
         var logic = new HostLogic(Data);
@@ -39,8 +41,9 @@ public class GameSession : Node, IDataSession
         hServer.SetDependencies(logic, Data, this);
         logic.SetDependencies(hServer, this, Data);
         StartServer(hServer);
-        Player.Create(Game.I.PlayerGuid, "Doot", hKey);
+        Player.Create(_key.Data.ClientPlayerData.LocalPlayerGuid, "Doot", hKey);
         StartClient(hServer, graphics);
+        _client.Ui.Prompts.PushPrompt(Prompt.GetChooseRegimePrompt(r => logic.Start(), hKey));
     }
     
     public void StartAsRemote()
@@ -70,9 +73,8 @@ public class GameSession : Node, IDataSession
 
     private void StartClient(IServer server, MapGraphics graphics)
     {
-        var client = new GameClient();
-        Client = client;
-        client.Setup(this, server, graphics);
+        _client = new GameClient();
+        _client.Setup(this, server, graphics);
         AddChild((Node)Client);
     }
     public override void _UnhandledInput(InputEvent e)

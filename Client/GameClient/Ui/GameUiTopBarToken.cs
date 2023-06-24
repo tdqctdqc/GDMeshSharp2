@@ -5,22 +5,22 @@ using Godot;
 
 public class GameUiTopBarToken : ButtonBarToken
 {
-    public static GameUiTopBarToken Get(bool host, Data data)
+    public static GameUiTopBarToken Get(bool host, GameClient client, Data data)
     {
         var g = new GameUiTopBarToken();
         Create<GameUiTopBarToken, HBoxContainer>(g);
-        g.Setup(host,data);
+        g.Setup(host,client, data);
         return g;
     }
     
-    public void Setup(bool host, Data data)
+    public void Setup(bool host, GameClient client, Data data)
     {
         AddWindowButton<EntityOverviewWindow>(Ui.Entities);
         AddWindowButton<ClientSettingsWindow>(Ui.ClientSettings);
         AddWindowButton<LoggerWindow>(Ui.Logger);
         AddButton("Submit Turn", () =>
         {
-            var c = SubmitTurnCommand.Construct();
+            var c = SubmitTurnCommand.Construct(data.ClientPlayerData.Orders);
             Game.I.Client.Requests.QueueCommand.Invoke(c);
         });
         

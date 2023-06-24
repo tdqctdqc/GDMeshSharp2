@@ -8,6 +8,7 @@ using System.Linq;
 public class Data
 {
     private IdDispenser _idDispenser;
+    public ClientPlayerData ClientPlayerData { get; private set; }
     public DataNotices Notices { get; private set; }
     public Models Models { get; private set; }
     public RefFulfiller RefFulfiller { get; private set; }
@@ -50,6 +51,7 @@ public class Data
         AddDomain(BaseDomain);
         AddDomain(Planet);
         AddDomain(Society);
+        ClientPlayerData = new ClientPlayerData(this);
     }
     
     public void AddEntity(Entity e, StrongWriteKey key)

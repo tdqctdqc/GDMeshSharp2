@@ -8,7 +8,7 @@ public class PromptWindow : WindowDialog
     public Action Satisfied { get; set; }
     public Action Dismissed { get; set; }
     private Container _container;
-    public void Setup(IPrompt prompt)
+    public void Setup(Prompt prompt)
     {
         this.AssignChildNode(ref _container, "Container");
         _container.ClearChildren();

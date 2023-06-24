@@ -43,6 +43,7 @@ public class RuleVars : Entity
         float declineRateCeiling,
         int id) : base(id)
     {
+        TickCycleLength = tickCycleLength;
         FoodConsumptionPerPeepPoint = foodConsumptionPerPeepPoint;
         MinSurplusRatioToGetGrowth = minSurplusRatioToGetGrowth;
         MaxEffectiveSurplusRatio = maxEffectiveSurplusRatio;

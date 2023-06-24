@@ -9,9 +9,9 @@ public class GameClient : Node, IClient
     public ClientRequests Requests { get; private set; }
     public ICameraController Cam { get; private set; }
     public MapGraphics Graphics { get; private set; }
-    public Data Data { get; private set; }
     public ClientWriteKey Key { get; private set; }
     public ClientSettings Settings { get; private set; }
+    
     public override void _Ready()
     {
         
@@ -34,8 +34,7 @@ public class GameClient : Node, IClient
         Requests.GiveTree(session.Data.EntityTypeTree);
         Settings = ClientSettings.Load();
         Key = new ClientWriteKey(session.Data, session);
-        Data = session.Data;
-        var cam = WorldCameraController.Construct(Data);
+        var cam = WorldCameraController.Construct(session.Data);
         AddChild(cam);
         cam.Current = true;
         Cam = cam;
