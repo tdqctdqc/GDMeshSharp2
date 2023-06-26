@@ -9,7 +9,7 @@ public abstract class BuildingModel : IModel
     public int NumTicksToBuild { get; private set; }
     public int LaborPerTickToBuild { get; private set; }
     public BuildingType BuildingType { get; private set; }
-    public Icon BuildingIcon { get; }
+    public Icon Icon { get; }
     public abstract Dictionary<Item, int> BuildCosts { get; protected set; }
 
     public BuildingModel(BuildingType buildingType, string name, int numTicksToBuild, int laborPerTickToBuild)
@@ -18,7 +18,7 @@ public abstract class BuildingModel : IModel
         Name = name;
         NumTicksToBuild = numTicksToBuild;
         LaborPerTickToBuild = laborPerTickToBuild;
-        BuildingIcon = Icon.Create(Name, Icon.AspectRatio._1x1, 25f);
+        Icon = Icon.Create(Name, Icon.AspectRatio._1x1, 25f);
     }
 
     protected abstract bool CanBuildInTriSpec(PolyTri t, Data data);

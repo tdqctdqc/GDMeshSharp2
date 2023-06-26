@@ -61,38 +61,24 @@ public class PeepGenerator : Generator
         var foodConsPerPeep = _data.BaseDomain.Rules.FoodConsumptionPerPeepPoint;
         var territory = r.Polygons.Entities();
         var foodSurplus = new ConcurrentBag<float>();
-        makeFoodBuildings(BuildingModelManager.Farm);
-        makeFoodBuildings(BuildingModelManager.Ranch);
-
-        void makeFoodBuildings(ProductionBuildingModel building)
+        makeFoodProd(FoodProdTechniqueManager.Farm);
+        makeFoodProd(FoodProdTechniqueManager.Ranch);
+        
+        void makeFoodProd(FoodProdTechnique technique)
         {
-            var buildingSurplus = building.ProductionCap - building.TotalLaborReq() * foodConsPerPeep;
-            var buildingPolyCounts = new ConcurrentDictionary<MapPolygon, int>();
+            var buildingSurplus = technique.BaseProd - technique.BaseLabor * foodConsPerPeep;
             Parallel.ForEach(territory, p =>
             {
-                if (building.CanBuildInPoly(p, _data) == false) return;
                 var tris = p.Tris.Tris;
-                var numBuilding = Mathf.FloorToInt(p.PolyBuildingSlots[building.BuildingType] * developmentRatio);
+                var numBuilding = Mathf.FloorToInt(technique.NumForPoly(p) * developmentRatio);
                 if (numBuilding == 0) return;
                 foodSurplus.Add(buildingSurplus * numBuilding);
-                
-                foreach (var kvp in building.JobLaborReqs)
-                {
-                    p.GetPeep(_key.Data)
-                        .GrowSize(kvp.Value * numBuilding, _key);
-                }
-                buildingPolyCounts.TryAdd(p, numBuilding);
+                p.GetPeep(_key.Data)
+                    .GrowSize(technique.BaseLabor * numBuilding, _key);
+                p.PolyFoodProd.Add(technique, numBuilding);
             });
-            
-            foreach (var kvp in buildingPolyCounts)
-            {
-                for (var i = 0; i < kvp.Value; i++)
-                {
-                    MapBuilding.CreateGen(kvp.Key, building, _key);
-                }
-            }
         }
-
+        
         return foodSurplus.Sum() / foodConsPerPeep;
     }
     
@@ -189,7 +175,6 @@ public class PeepGenerator : Generator
             if (buildings == null) continue;
             
             var laborBuildings = buildings
-                .Where(b => b.Model.Model() != BuildingModelManager.Farm)
                 .Select(b => b.Model.Model())
                 .SelectWhereOfType<BuildingModel, WorkBuildingModel>();
             if (laborBuildings.Count() > 0)
@@ -204,7 +189,6 @@ public class PeepGenerator : Generator
             var buildings = p.GetBuildings(_data);
             if (buildings == null) continue;
             var workBuildings = buildings
-                .Where(b => b.Model.Model() != BuildingModelManager.Farm)
                 .Select(b => b.Model.Model())
                 .SelectWhereOfType<BuildingModel, WorkBuildingModel>();
             var peep = p.GetPeep(_data);

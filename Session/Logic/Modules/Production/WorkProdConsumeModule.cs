@@ -62,7 +62,8 @@ public class WorkProdConsumeModule : LogicModule
             var scratch = _polyScratches.GetOrAdd(poly.Id,
                 p => new PolyEmploymentScratch((MapPolygon) data[p], data));
             scratch.Init(poly, data);
-            ProduceForPoly(poly, proc, scratch, data);
+            ProduceFoodForPoly(poly, proc, scratch, data);
+            WorkInBuildingsForPoly(poly, proc, scratch, data);
             totalLaborerUnemployed += scratch.Available;
         }
         
@@ -137,7 +138,15 @@ public class WorkProdConsumeModule : LogicModule
         }
 
     }
-    private void ProduceForPoly(MapPolygon poly, WorkProdConsumeProcedure proc, PolyEmploymentScratch scratch, Data data)
+
+    private void ProduceFoodForPoly(MapPolygon poly, WorkProdConsumeProcedure proc, PolyEmploymentScratch scratch, Data data)
+    {
+        var peep = poly.GetPeep(data);
+        if (peep == null) return;
+        var foodProd = scratch.HandleFoodProdJobs(poly.PolyFoodProd, data);
+        proc.RegimeResourceGains[poly.Regime.RefId].Add(ItemManager.Food, foodProd);
+    }
+    private void WorkInBuildingsForPoly(MapPolygon poly, WorkProdConsumeProcedure proc, PolyEmploymentScratch scratch, Data data)
     {
         var peep = poly.GetPeep(data);
         if (peep == null) return;

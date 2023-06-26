@@ -9,8 +9,10 @@ public abstract class ProductionBuildingModel : WorkBuildingModel
     public Item ProdItem { get; private set; }
     public abstract int ProductionCap { get; }
     public override int Capacity => ProductionCap;
-    protected ProductionBuildingModel(BuildingType buildingType, Item prodItem, string name, int numTicksToBuild, int laborPerTickToBuild)
-        : base(buildingType, name, numTicksToBuild, laborPerTickToBuild)
+    protected ProductionBuildingModel(BuildingType buildingType, Item prodItem, string name, int numTicksToBuild, 
+        int laborPerTickToBuild, int income)
+        : base(buildingType, name, numTicksToBuild, laborPerTickToBuild,
+            income)
     {
         ProdItem = prodItem;
     }

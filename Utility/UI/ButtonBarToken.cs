@@ -34,9 +34,10 @@ public class ButtonBarToken : Node
         Container.AddChild(settingsWindowBtn);
     }
 
-    public void AddButton(string label, Action action)
+    public Button AddButton(string label, Action action)
     {
         var b = ButtonToken.CreateButton( label, action);
         Container.AddChild(b);
+        return b;
     }
 }

@@ -25,6 +25,28 @@ public class PolyEmploymentScratch
         Available = Total;
         ByJob.Clear();
     }
+    public int HandleFoodProdJobs(PolyFoodProd foodProd, Data data)
+    {
+        var totalLaborNeeded = foodProd.BaseLabor(data);
+        if (totalLaborNeeded == 0) return 0;
+        var ratio = (float)Available / totalLaborNeeded;
+        if (ratio > 1f) ratio = 1f;
+        var job = PeepJobManager.Farmer;
+        foreach (var kvp in foodProd.Nums)
+        {
+            var technique = (FoodProdTechnique)data.Models[kvp.Key];
+            if (Available == 0) break;
+            var numBuildings = kvp.Value;
+            var desiredLabor = technique.BaseLabor * numBuildings;
+            Desired += desiredLabor;
+            var numLabor = Mathf.CeilToInt(ratio * desiredLabor);
+            numLabor = Mathf.Min(Available, numLabor);
+            Available -= numLabor;
+            ByJob.AddOrSum(job, numLabor);
+        }
+
+        return Mathf.FloorToInt(ratio * foodProd.BaseProd(data));
+    }
     public float HandleBuildingJobs(IEnumerable<WorkBuildingModel> work, Data data)
     {
         var totalLaborNeeded = work.Sum(wb => wb.TotalLaborReq());

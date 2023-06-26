@@ -25,33 +25,10 @@ public class PolyBuildingSlots
     }
     public void SetSlotNumbers(MapPolygon poly, StrongWriteKey key)
     {
-        var agSlots = poly.Tris.Tris
-            .Where(t =>
-                t.Landform.IsLand
-                && t.Landform.MinRoughness <= LandformManager.Hill.MinRoughness
-                && t.Vegetation.MinMoisture >= VegetationManager.Arid.MinMoisture
-                && float.IsNaN(t.GetArea()) == false
-            )
-            .Sum(t => t.GetArea() * t.Landform.FertilityMod * t.Vegetation.FertilityMod)
-            / 5000f;
-        
-        
-        var grazeSlots = poly.Tris.Tris
-              .Where(t =>
-                  t.Landform.IsLand
-                  && t.Landform.MinRoughness <= LandformManager.Hill.MinRoughness
-                  && t.Vegetation.MinMoisture < VegetationManager.Grassland.MinMoisture
-                  && float.IsNaN(t.GetArea()) == false
-              )
-              .Sum(t => t.GetArea() 
-                        * t.Landform.FertilityMod 
-                        * ShapingFunctions.ProjectToRange(t.Vegetation.FertilityMod, 1f, .5f, 1f))
-            / 10000f;
-
         var industrySlots = 5;
         var govSlots = 1;
         var extrSlots = 5;
-        var totalSlots = grazeSlots + agSlots + industrySlots + govSlots + extrSlots;
+        var totalSlots = industrySlots + govSlots + extrSlots;
         
         AvailableSlots.Clear();
         var tris = poly.Tris.Tris.Where(t => t.Landform.IsLand)
@@ -68,12 +45,6 @@ public class PolyBuildingSlots
         AddSlots(BuildingType.Industry, poly, tris, 5);
         AddSlots(BuildingType.Government, poly, tris, 1);
         AddSlots(BuildingType.Extraction, poly, tris, 5);
-        AddSlots(BuildingType.Agriculture, poly, tris, Mathf.FloorToInt(agSlots));
-        AddSlots(BuildingType.Grazing, poly, tris, Mathf.FloorToInt(grazeSlots));
-        if (AvailableSlots[BuildingType.Agriculture].Any(i => AvailableSlots[BuildingType.Industry].Contains(i)))
-        {
-            throw new Exception();
-        }
     }
     private void AddSlots(BuildingType type, MapPolygon poly, HashSet<byte> availTriIds, int num)
     {

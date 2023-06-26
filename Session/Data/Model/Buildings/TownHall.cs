@@ -18,7 +18,7 @@ public class TownHall : WorkBuildingModel
         };
     public TownHall() 
         : base(BuildingType.Government, nameof(TownHall), 
-            50, 500)
+            50, 500, 0)
     {
     }
 

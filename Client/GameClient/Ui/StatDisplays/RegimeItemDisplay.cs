@@ -2,7 +2,7 @@
 using System;
 using Godot;
 
-public class RegimeItemDisplay : HBoxContainer
+public class RegimeItemDisplay : IconStatDisplay
 {
     public Regime Regime => _data.BaseDomain.PlayerAux.LocalPlayer.Regime.Entity(); 
     public Item Item { get; private set; }
@@ -14,33 +14,12 @@ public class RegimeItemDisplay : HBoxContainer
     }
 
     private RegimeItemDisplay(Item item, Data data)
+    : base(item.Icon, data, () =>
+        {
+            var r = data.BaseDomain.PlayerAux.LocalPlayer.Regime.Entity();
+            return r != null ? r.Items[item] : 0;
+        }, data.Notices.Ticked.Blank)
     {
-        _data = data;
-        Item = item;
-        float height = 50f;
-        float width = 100f;
-        RectMinSize = new Vector2(width, height);
-        var amount = new Label();
-        var icon = item.Icon.GetTextureRect(Vector2.One * height);
-        icon.RectMinSize = icon.RectSize;
-        AddChild(icon);
-        AddChild(amount);
-        icon.RectScale = new Vector2(1f, -1f);
-        
-        SubscribedStatLabel.Construct<int>(
-            "", 
-            amount,
-            () =>
-            {
-                var r = data.BaseDomain.PlayerAux.LocalPlayer.Regime.Entity();
-                return r != null ? r.Items[item] : 0;
-            }, 
-            data.Notices.Ticked.Blank
-        );
-        
-        var template = new RegimeItemStockDataTooltipTemplate();
-        var instance = new DataTooltipInstance<RegimeItemDisplay>(template, this);
-        var tooltipToken = TooltipToken.Construct(instance, this, data);
     }
 
     private RegimeItemDisplay()

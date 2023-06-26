@@ -19,17 +19,17 @@ public partial class MapPolygon : Entity,
     public float Altitude { get; protected set; }
     public float Roughness { get; protected set; }
     public float Moisture { get; protected set; }
-    public float Fertility { get; private set; }
-    
     public EntityRef<Regime> Regime { get; protected set; }
     public PolyTris Tris { get; protected set; }
     public bool IsLand { get; protected set; }
     public EmploymentReport Employment { get; private set; }
     public PolyBuildingSlots PolyBuildingSlots { get; private set; }
+    public PolyFoodProd PolyFoodProd { get; private set; }
     [SerializationConstructor] private MapPolygon(int id, Vector2 center, EntityRefCollection<MapPolygon> neighbors, 
         Dictionary<int, PolyBorderChain> neighborBorders, Color color, float altitude, float roughness, 
-        float moisture, float fertility, EntityRef<Regime> regime, PolyTris tris, bool isLand,
-        EmploymentReport employment, PolyBuildingSlots polyBuildingSlots) : base(id)
+        float moisture, EntityRef<Regime> regime, PolyTris tris, bool isLand,
+        EmploymentReport employment, PolyBuildingSlots polyBuildingSlots, PolyFoodProd polyFoodProd) 
+            : base(id)
     {
         Center = center;
         Neighbors = neighbors;
@@ -38,12 +38,12 @@ public partial class MapPolygon : Entity,
         Altitude = altitude;
         Roughness = roughness;
         Moisture = moisture;
-        Fertility = fertility;
         Regime = regime;
         Tris = tris;
         IsLand = isLand;
         Employment = employment;
         PolyBuildingSlots = polyBuildingSlots;
+        PolyFoodProd = polyFoodProd;
     }
 
     public static MapPolygon Create(Vector2 center, float mapWidth, GenWriteKey key)
@@ -61,12 +61,12 @@ public partial class MapPolygon : Entity,
             0f,
             0f,
             0f,
-            0f,
             new EntityRef<Regime>(-1),
             null,
             true,
             EmploymentReport.Construct(),
-            PolyBuildingSlots.Construct()
+            PolyBuildingSlots.Construct(),
+            PolyFoodProd.Construct()
         );
         key.Create(p);
         return p;
@@ -100,7 +100,6 @@ public partial class MapPolygon : Entity,
     public void SetTerrainStats(GenWriteKey key)
     {
         PolyBuildingSlots.SetSlotNumbers(this, key);
-        Fertility = Tris.Tris.Select(i => i.GetFertility()).Average();
     }
     public void SetIsLand(bool isLand, GenWriteKey key)
     {

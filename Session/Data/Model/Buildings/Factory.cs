@@ -11,7 +11,7 @@ public class Factory : ProductionBuildingModel
         };
     public override int ProductionCap { get; } = 100;
     public Factory() : base(BuildingType.Industry, ItemManager.IndustrialPoint, nameof(Factory),
-        100, 2000)
+        100, 2000, 10)
     {
     }
 

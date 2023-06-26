@@ -4,9 +4,8 @@ using System.Linq;
 
 public enum BuildingType
 {
-    Agriculture,
-    Grazing,
     Industry,
+    Financial,
     Government,
     Extraction
 }

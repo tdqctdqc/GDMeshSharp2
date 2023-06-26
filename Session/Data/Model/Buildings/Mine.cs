@@ -7,7 +7,7 @@ public class Mine : ExtractionBuildingModel
 {
     public Mine(string name, Item prodItem) 
         : base(prodItem, name, true, 
-            150, 3000)
+            150, 3000, 20)
     {
         if (prodItem.Attributes.Has<MineableAttribute>() == false) throw new Exception();
     }

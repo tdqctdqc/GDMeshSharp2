@@ -5,6 +5,7 @@ using Godot;
 
 public class GameUiTopBarToken : ButtonBarToken
 {
+    private Button _submitTurn;
     public static GameUiTopBarToken Get(bool host, GameClient client, Data data)
     {
         var g = new GameUiTopBarToken();
@@ -18,11 +19,19 @@ public class GameUiTopBarToken : ButtonBarToken
         AddWindowButton<EntityOverviewWindow>(Ui.Entities);
         AddWindowButton<ClientSettingsWindow>(Ui.ClientSettings);
         AddWindowButton<LoggerWindow>(Ui.Logger);
-        AddButton("Submit Turn", () =>
+        _submitTurn = AddButton("Submit Turn", () =>
         {
             var c = SubmitTurnCommand.Construct(data.ClientPlayerData.Orders);
             Game.I.Client.Requests.QueueCommand.Invoke(c);
+            _submitTurn.Text = "Turn Submitted";
+            _submitTurn.Disabled = true;
         });
+        data.Notices.Ticked.Subscribe(i =>
+        {
+            _submitTurn.Text = "Submit Turn";
+            _submitTurn.Disabled = false;
+        });
+        
         
         var hostClientLabel = new Label();
         hostClientLabel.Text = host ? "Host" : "Client";
@@ -37,7 +46,5 @@ public class GameUiTopBarToken : ButtonBarToken
         var peepsInfo = new RegimePeepsInfoBar();
         peepsInfo.Setup(data);
         Container.AddChildWithVSeparator(peepsInfo);
-        
-        
     }
 }

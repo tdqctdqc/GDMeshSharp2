@@ -25,7 +25,7 @@ public class RegimeConstructionOverview : ScrollContainer
         {
             var hbox = new HBoxContainer();
             var building = construction.Model.Model();
-            hbox.AddChild(building.BuildingIcon.GetTextureRect(Vector2.One * 50f));
+            hbox.AddChild(building.Icon.GetTextureRect(Vector2.One * 50f));
             var ticksDone = construction.TicksDone();
             hbox.CreateLabelAsChild($"{ticksDone} / {building.NumTicksToBuild}");
             _container.AddChild(hbox);

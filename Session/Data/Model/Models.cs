@@ -22,6 +22,7 @@ public class Models
     public RoadModelManager Roads { get; private set; }
     public CultureManager Cultures { get; private set; }
     public RegimeTemplateManager RegimeTemplates { get; private set; }
+    public FoodProdTechniqueManager FoodProdTechniques { get; private set; }
     public Models()
     {
         _managers = new Dictionary<Type, IModelManager>();
@@ -45,6 +46,8 @@ public class Models
         AddManager(Cultures);
         RegimeTemplates = new RegimeTemplateManager(Cultures);
         AddManager(RegimeTemplates);
+        FoodProdTechniques = new FoodProdTechniqueManager();
+        AddManager(FoodProdTechniques);
 
         SetIds();
     }

@@ -12,6 +12,7 @@ public class ItemBar : HBoxContainer
         AddItem(ItemManager.Oil, data);
         AddItem(ItemManager.Iron, data);
         AddItem(ItemManager.IndustrialPoint, data);
+        AddItem(ItemManager.FinancialPower, data);
     }
 
     private void AddItem(Item sr, Data data)

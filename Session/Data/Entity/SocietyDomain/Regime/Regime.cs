@@ -15,11 +15,12 @@ public class Regime : Entity
     public RegimeHistory History { get; private set; }
     public string Name { get; protected set; }
     public EntityRefCollection<MapPolygon> Polygons { get; protected set; }
+    public RegimeFinance Finance { get; private set; }
 
     [SerializationConstructor] private Regime(int id, string name, Color primaryColor, Color secondaryColor, 
         EntityRefCollection<MapPolygon> polygons, EntityRef<MapPolygon> capital,
         ItemWallet items, RegimeHistory history, ModelRef<Culture> culture,
-        ModelRef<RegimeTemplate> template) : base(id)
+        ModelRef<RegimeTemplate> template, RegimeFinance finance) : base(id)
     {
         Items = items;
         PrimaryColor = primaryColor;
@@ -30,6 +31,7 @@ public class Regime : Entity
         History = history;
         Culture = culture;
         Template = template;
+        Finance = finance;
     }
 
     public static Regime Create(MapPolygon seed, RegimeTemplate regimeTemplate, CreateWriteKey key)
@@ -42,7 +44,8 @@ public class Regime : Entity
             polygons, new EntityRef<MapPolygon>(seed.Id),
             ItemWallet.Construct(), RegimeHistory.Construct(key.Data), 
             regimeTemplate.Culture.MakeRef(),
-            regimeTemplate.MakeRef()
+            regimeTemplate.MakeRef(),
+            RegimeFinance.Construct()
         );
         key.Create(r);
         seed.SetRegime(r, key);

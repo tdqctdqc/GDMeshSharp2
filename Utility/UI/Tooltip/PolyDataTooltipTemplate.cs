@@ -27,7 +27,6 @@ public class PolyDataTooltipTemplate : DataTooltipTemplate<PolyTriPosition>
             GetBuildings,
             GetConstructions,
             GetResourceDeposits,
-            GetFertility,
             GetAltitude,
             
         };
@@ -54,11 +53,6 @@ public class PolyDataTooltipTemplate : DataTooltipTemplate<PolyTriPosition>
     private static Control GetAltitude(PolyTriPosition t, Data d)
     {
         return NodeExt.CreateLabel("Altitude: " + t.Poly(d).Altitude);
-    }
-
-    private static Control GetFertility(PolyTriPosition t, Data d)
-    {
-        return NodeExt.CreateLabel("Fertility: " + t.Poly(d).Fertility);
     }
 
     private static Control GetVeg(PolyTriPosition t, Data d)
@@ -134,7 +128,7 @@ public class PolyDataTooltipTemplate : DataTooltipTemplate<PolyTriPosition>
             var innerContainer = new HBoxContainer();
             var building = kvp.Key;
             var progress = kvp.Value;
-            var bIcon = building.BuildingIcon.GetTextureRect(Vector2.One);
+            var bIcon = building.Icon.GetTextureRect(Vector2.One);
             bIcon.RectMinSize = Vector2.One * 50f;
             innerContainer.AddChild(bIcon);
             innerContainer.AddChild(NodeExt.CreateLabel($"{(int)progress.x} / {(int)progress.y}"));

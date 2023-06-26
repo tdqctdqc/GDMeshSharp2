@@ -5,8 +5,8 @@ using Godot;
 
 public abstract class ExtractionBuildingModel : ProductionBuildingModel
 {
-    public ExtractionBuildingModel(Item prodItem, string name, bool fromDeposit, int numTicksToBuild, int laborPerTickToBuild) 
-        : base(BuildingType.Extraction, prodItem, name, numTicksToBuild, laborPerTickToBuild)
+    public ExtractionBuildingModel(Item prodItem, string name, bool fromDeposit, int numTicksToBuild, int laborPerTickToBuild, int income) 
+        : base(BuildingType.Extraction, prodItem, name, numTicksToBuild, laborPerTickToBuild, income)
     {
         if (prodItem.Attributes.Has<ExtractableAttribute>() == false) throw new Exception();
     }
